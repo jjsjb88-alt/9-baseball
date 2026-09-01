@@ -232,3 +232,15 @@ AI는 `playerAimHistoryRef`의 완료된 과거 선택만 본다. `selectedIdx`,
 - 프로덕션 미리보기에서 HTML, CSS, 앱·vendor·런타임 JavaScript가 모두 HTTP 200으로 응답했다.
 
 검증은 `pnpm test` 11/11, `pnpm run build`, `git diff --check`, `pnpm run test:policy`를 통과했다. 브라우저 연결 복구 절차와 사용 가능 유형 조회 뒤에도 목록이 비어 있어 화면 클릭과 스크린샷 QA는 이번 바퀴에도 수행하지 못했다. 다음 세션은 브라우저가 제공되는 환경에서 역할 선택 → `CORE TEST` → 타석 종료 → 네 문항 저장 → 다음 플레이어 → JSON 다운로드를 직접 확인하고 인간 3인 결과를 수집한다.
+
+## 20. Core Test UI Entry Regression
+
+2026-09-02에 `CORE TEST`의 역할 선택 진입 경로를 실제 React UI 클릭 회귀 테스트로 고정했다.
+
+- `tests/core-test-ui.test.jsx`는 happy-dom에서 전체 `BaseballSim`을 렌더링하고 Testing Library로 튜토리얼 `건너뛰기`와 `CORE TEST · 한 타석` 버튼을 클릭한다.
+- 역할 화면에서 저장 건수 0/3과 코어 테스트 진입 버튼이 노출되는지 확인한다.
+- 진입 뒤 코어 테스트 전용 안내, 상대 투수, `① 카드 선택`이 즉시 노출되는지 확인한다. 따라서 정규 경기의 동료 1~3번 자동 타석으로 빠지는 회귀를 자동 검사에서 잡을 수 있다.
+- Tone은 이 DOM 회귀에서 모듈만 격리한다. 게임 판정, PUBLIC/TRUE INTENT, 실제 컴포넌트 상태 전이는 모킹하지 않는다.
+- UI 테스트 의존성은 개발 전용 `happy-dom`, `@testing-library/react`이며 프로덕션 번들에는 들어가지 않는다.
+
+검증은 `pnpm test` 12/12, `pnpm run build`, `git diff --check`, `pnpm run test:policy`를 통과했다. 브라우저 런타임의 복구 절차와 사용 가능 유형 조회 뒤에도 목록이 비어 있어 실제 픽셀과 한 타석 종료 이후 설문 저장 → 다음 플레이어 → JSON 다운로드는 확인하지 못했다. 다음 세션은 브라우저가 제공되면 이 남은 후반 흐름과 스크린샷을 먼저 확인한 뒤 인간 3인 결과를 수집한다.
