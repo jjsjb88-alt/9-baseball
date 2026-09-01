@@ -12,6 +12,7 @@ LOG_DIR="$PROJECT_ROOT/logs"
 TIMEOUT_BIN="/c/Program Files/Git/usr/bin/timeout.exe"
 
 mkdir -p "$LOG_DIR"
+run_id="$(date '+%Y%m%d-%H%M%S')-$$"
 
 if [[ ! -f "$PROMPT_FILE" ]]; then
   printf 'Missing prompt: %s\n' "$PROMPT_FILE" >&2
@@ -38,10 +39,10 @@ while :; do
   round=$((round + 1))
   started_at="$(date '+%Y-%m-%dT%H:%M:%S%z')"
   log_file="$LOG_DIR/$(date '+%Y-%m-%d').log"
-  last_message="$LOG_DIR/$(date '+%Y-%m-%d')-round-$(printf '%04d' "$round")-last.md"
+  last_message="$LOG_DIR/$(date '+%Y-%m-%d')-$run_id-round-$(printf '%04d' "$round")-last.md"
 
   {
-    printf '\n===== ROUND %04d START %s =====\n' "$round" "$started_at"
+    printf '\n===== RUN %s ROUND %04d START %s =====\n' "$run_id" "$round" "$started_at"
     printf 'model=%s reasoning=%s max_turns=%s timeout_seconds=%s\n' \
       "$LOOP_MODEL" "$LOOP_REASONING_EFFORT" "$LOOP_MAX_TURNS" "$LOOP_SESSION_TIMEOUT_SECONDS"
   } | tee -a "$log_file"
@@ -70,7 +71,6 @@ EOF
       --json \
       --color never \
       --approve-for-me \
-      --sandbox workspace-write \
       --cd "$PROJECT_ROOT" \
       --model "$LOOP_MODEL" \
       --config "model_reasoning_effort=\"$LOOP_REASONING_EFFORT\"" \
@@ -81,7 +81,7 @@ EOF
 
   ended_at="$(date '+%Y-%m-%dT%H:%M:%S%z')"
   {
-    printf '===== ROUND %04d END %s exit=%s =====\n' "$round" "$ended_at" "$codex_status"
+    printf '===== RUN %s ROUND %04d END %s exit=%s =====\n' "$run_id" "$round" "$ended_at" "$codex_status"
   } | tee -a "$log_file"
 
   if [[ -f "$STOP_FILE" ]]; then

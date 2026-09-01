@@ -17,4 +17,4 @@ export LOOP_SMOKE_TEST="${LOOP_SMOKE_TEST:-0}"
 # the versioned executable directory changes.
 export CODEX_HOME="${CODEX_HOME:-/c/Users/정현아/.codex}"
 export CODEX_BIN="${CODEX_BIN:-/c/Users/정현아/AppData/Local/OpenAI/Codex/bin/b99306303521e97e/codex.exe}"
-export PATH="/c/Users/정현아/AppData/Local/OpenAI/Codex/bin/b99306303521e97e:/c/Users/정현아/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:/c/Users/정현아/.cache/codex-runtimes/codex-primary-runtime/dependencies/bin/fallback:/c/Program Files/Git/bin:/c/Program Files/Git/cmd:/c/Windows/System32:/c/Windows/System32/WindowsPowerShell/v1.0:${PATH:-}"
+export PATH="/c/Users/정현아/AppData/Local/OpenAI/Codex/bin/b99306303521e97e:/c/Users/정현아/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:/c/Users/정현아/.cache/codex-runtimes/codex-primary-runtime/dependencies/bin/fallback:/c/Program Files/Git/usr/bin:/c/Program Files/Git/bin:/c/Program Files/Git/cmd:/c/Windows/System32:/c/Windows/System32/WindowsPowerShell/v1.0:/usr/bin:/bin:${PATH:-}"
