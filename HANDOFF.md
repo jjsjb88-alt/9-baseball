@@ -193,3 +193,18 @@ AI는 `playerAimHistoryRef`의 완료된 과거 선택만 본다. `selectedIdx`,
 - `다음 플레이어`는 상태를 초기화하고 새 한 타석의 첫 투구를 명시적으로 예약한다. 정규 경기의 TURN GUARD는 그대로 유지한다.
 
 검증은 `pnpm test` 3/3, `pnpm run build`, `git diff --check`, 로컬 서버 HTTP 200까지 통과했다. 브라우저 런타임에 사용 가능한 브라우저가 없어 스크린샷 및 클릭 회귀는 완료하지 못했다. 다음 세션은 역할 선택 → 코어 테스트 즉시 진입 → 타석 종료 → 네 문항 저장 → 다음 플레이어 재시작 → JSON 다운로드를 실제 브라우저에서 먼저 확인한 뒤 인간 3인 테스트를 진행한다.
+
+## 17. Fixed-seed Policy Regression
+
+2026-09-02에 Random / MaxProb / Pattern / PowerSpam 네 정책을 고정 시드로 비교하는 회귀 도구를 추가했다.
+
+- 실행 명령은 `pnpm run test:policy`다. 각 정책은 기본 3,000타석을 수행하며 H/PA, TB/PA, 접촉률, DEEP READ 비율을 표로 출력한다.
+- 정책봇은 판정식을 복사하지 않고 실제 `resolveShowdownContact()`를 호출한다.
+- PUBLIC MODEL, ROOKIE의 2스트라이크 중하 Tell, ADAPTER/FOX의 최근 노림 역이용도 `src/game/showdown-pitch-model.js`로 분리해 실제 게임과 정책봇이 함께 사용한다.
+- 정책 선택 난수와 투구·판정 난수는 별도 스트림이다. Random 정책의 추가 난수 소비가 이후 판정 난수열을 바꾸면 안 된다.
+- 기계적 합격 기준은 세 가지다: PowerSpam TB/PA가 최선 비파워 정책의 1.05배 이하, PowerSpam 접촉률이 MaxProb보다 0.04 이상 낮음, Pattern DEEP READ 비율이 MaxProb보다 높음.
+- 최초 실행에서는 PowerSpam TB/PA 비율이 1.397로 실패했다. 원인은 POWER의 PQ 보너스가 오독에도 붙고 실제 POWER 존 카드가 공용 엔진 POWER 경로에 연결되지 않은 구조였다.
+- 수정 뒤 POWER는 `READ`/`DEEP_READ`에서만 PQ 보너스를 받으며, 오독 시 CQ 페널티가 커진다. 실제 POWER 존 카드와 `강타` 수식어가 모두 이 경로를 사용한다.
+- 최종 고정 시드 결과는 Random 0.547, MaxProb 0.687, Pattern 0.694, PowerSpam 0.709 TB/PA다. PowerSpam/최선 비파워 비율은 1.022이며 접촉률은 PowerSpam 0.552 대 MaxProb 0.691, DEEP READ는 Pattern 0.015 대 MaxProb 0.006이다.
+
+검증은 `pnpm test` 7/7, `pnpm run build`, `git diff --check`, `pnpm run test:policy`를 통과했다. 앱 내 브라우저는 연결 복구 절차 뒤에도 사용 가능 목록이 비어 있어 CORE TEST의 클릭 및 스크린샷 QA는 여전히 다음 세션의 최우선 작업이다.
