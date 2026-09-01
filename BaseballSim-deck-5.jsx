@@ -142,6 +142,14 @@ const TUTORIAL_SLIDES = [
   },
 ];
 
+const CORE_TEST_STORAGE_KEY = "9zone-core-test-results-v1";
+const CORE_TEST_QUESTIONS = [
+  { id: "choseLowProbability", text: "최고 확률이 아닌 존을 의도적으로 고른 순간이 있었나요?" },
+  { id: "feltLikeRead", text: "적중했을 때 ‘운이 좋았다’보다 ‘읽었다’는 감정이 컸나요?" },
+  { id: "plannedCounter", text: "실패했을 때 다음 공의 역심리를 생각하게 됐나요?" },
+  { id: "powerDominant", text: "POWER만 반복하는 것이 가장 합리적인 전략처럼 느껴졌나요?" },
+];
+
 
 const PITCH_TYPES = [
   { id: "fastball", name: "직구", power: 75, controlMod: 1.0 },
@@ -1153,6 +1161,20 @@ export default function BaseballSim() {
   // 실전형 가이드 연습 (타석/투구 실제 화면에서 툴팁으로 설명)
   const practiceModeRef = useRef(false); // 'batter' | 'pitcher' | false
   const [practiceMode, setPracticeMode] = useState(false);
+  const coreTestModeRef = useRef(false);
+  const [coreTestMode, setCoreTestMode] = useState(false);
+  const [coreTestComplete, setCoreTestComplete] = useState(false);
+  const [coreTestAnswers, setCoreTestAnswers] = useState({});
+  const [coreTestNote, setCoreTestNote] = useState("");
+  const [coreTestSaved, setCoreTestSaved] = useState(false);
+  const [coreTestResultCount, setCoreTestResultCount] = useState(() => {
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(CORE_TEST_STORAGE_KEY) || "[]");
+      return Array.isArray(saved) ? saved.length : 0;
+    } catch {
+      return 0;
+    }
+  });
   const [log, setLog] = useState([]);
   const [pitchHistory, setPitchHistory] = useState([]); // [{zone, pitchId}] - 이 경기 동안 AI투수가 실제로 던진 기록 (패턴읽기용)
   const [showPitchHistory, setShowPitchHistory] = useState(false); // 모바일 화면공간 절약을 위해 기본 접힘
@@ -1857,6 +1879,11 @@ export default function BaseballSim() {
       foulsThisPARef.current = 0;
       if (userRole === "pitcher" && !fromAuto) drawUpTo(); // 투수: 타자 하나 상대할 때마다 손패 리필
       if (team === "user" && userRole === "batter") {
+        if (coreTestModeRef.current && !fromAuto) {
+          setCoreTestComplete(true);
+          setMessage("한 타석 완료 — 읽기 감각을 바로 기록해 주세요");
+          return;
+        }
         userOrderIndexRef.current = (userOrderIndexRef.current + 1) % 9;
         setUserOrderIndex(userOrderIndexRef.current);
         drawUpTo(); // 타석 종료 -> 손패 리필
@@ -2478,12 +2505,42 @@ export default function BaseballSim() {
     setPitcherPose("idle");
     pitcherStreakRef.current = 0;
     setPitcherStreak(0);
-    userOrderIndexRef.current = 0;
+    const initialOrderIndex = coreTestModeRef.current && role === "batter" ? USER_LINEUP_SLOT : 0;
+    userOrderIndexRef.current = initialOrderIndex;
     resetDeck(role);
     resetPitcherStamina();
-    setUserOrderIndex(0);
-    setMessage(role === "pitcher" ? "존을 선택해 투구하세요" : "AI 투수 준비 중...");
+    setUserOrderIndex(initialOrderIndex);
+    setMessage(role === "pitcher" ? "존을 선택해 투구하세요" : coreTestModeRef.current ? "코어 테스트 — 한 타석에서 투수의 의도를 읽어 보세요" : "AI 투수 준비 중...");
     // TURN GUARD: 시작 직후에는 1~3번 동료 타석을 먼저 처리한다.
+  };
+
+  const launchGame = (role, mode = false) => {
+    ensureAudio();
+    const isCoreTest = mode === "core";
+    coreTestModeRef.current = isCoreTest;
+    setCoreTestMode(isCoreTest);
+    setCoreTestComplete(false);
+    setCoreTestAnswers({});
+    setCoreTestNote("");
+    setCoreTestSaved(false);
+    practiceModeRef.current = mode;
+    setPracticeMode(mode);
+    startGame(role);
+    if (isCoreTest) setTimeout(() => startAiPitchRef.current(), 250);
+  };
+
+  const returnToRole = () => {
+    coreTestModeRef.current = false;
+    setCoreTestMode(false);
+    setCoreTestComplete(false);
+    practiceModeRef.current = false;
+    setPracticeMode(false);
+    setUserRole(null);
+    userRoleRef.current = null;
+    setAppStage("role");
+    setGameOver(false);
+    setBattingTeam(null);
+    setHalvesPlayed(0);
   };
 
   // 타순 로테이션 패치: 유저=타자일 땐 자기 타순 슬롯일 때만 직접플레이(나머지 타순=자동시뮬), 유저=투수일 땐 매 타석 전부 직접
@@ -2493,7 +2550,7 @@ export default function BaseballSim() {
   const wasUserTurnRef = useRef(false);
 
   React.useEffect(() => {
-    if (!isUserBattingNow || gameOver || pendingEvent || pendingLevelUpRef.current) return;
+    if (!isUserBattingNow || coreTestModeRef.current || gameOver || pendingEvent || pendingLevelUpRef.current) return;
     if (autoSimTimeoutRef.current) { clearTimeout(autoSimTimeoutRef.current); autoSimTimeoutRef.current = null; }
     setAutoSimming(false);
     if (!pendingPitch && !windingUp) setTimeout(() => startAiPitchRef.current(), 250);
@@ -2559,7 +2616,7 @@ export default function BaseballSim() {
 
   // 유저 턴이 새로 시작될 때(false->true) 확률적으로 랜덤 이벤트 발생
   React.useEffect(() => {
-    if (isUserTurnNow && !wasUserTurnRef.current && !gameOver) {
+    if (isUserTurnNow && !wasUserTurnRef.current && !gameOver && !coreTestModeRef.current) {
       const pool = userRole === "batter" ? BATTER_EVENTS : PITCHER_EVENTS;
       if (pool.length > 0 && Math.random() < 0.28) {
         setPendingEvent(pool[Math.floor(Math.random() * pool.length)]);
@@ -2711,6 +2768,44 @@ export default function BaseballSim() {
       setMessage("피드백 저장 실패 - 다시 시도해줘");
     } finally {
       setFeedbackSaving(false);
+    }
+  };
+
+  const submitCoreTest = () => {
+    if (CORE_TEST_QUESTIONS.some(({ id }) => typeof coreTestAnswers[id] !== "boolean")) return;
+    const result = {
+      version: 1,
+      timestamp: new Date().toISOString(),
+      answers: { ...coreTestAnswers },
+      note: coreTestNote.trim(),
+      finalPlay: lastPlay?.text || null,
+      pitchesSeen: pitchHistory.map(({ zone, pitchId }) => ({ zone, pitchId })),
+    };
+    try {
+      const previous = JSON.parse(window.localStorage.getItem(CORE_TEST_STORAGE_KEY) || "[]");
+      const results = Array.isArray(previous) ? [...previous, result] : [result];
+      window.localStorage.setItem(CORE_TEST_STORAGE_KEY, JSON.stringify(results));
+      setCoreTestResultCount(results.length);
+      setCoreTestSaved(true);
+    } catch {
+      setMessage("결과 저장 실패 — 브라우저의 로컬 저장소를 확인해 주세요");
+    }
+  };
+
+  const downloadCoreTestResults = () => {
+    try {
+      const results = JSON.parse(window.localStorage.getItem(CORE_TEST_STORAGE_KEY) || "[]");
+      const blob = new Blob([JSON.stringify(results, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `9zone-core-test-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      setMessage("테스트 결과를 내보내지 못했습니다");
     }
   };
 
@@ -3255,7 +3350,7 @@ export default function BaseballSim() {
         </div>
       )}
 
-      {practiceMode && appStage === "game" && (
+      {practiceMode && practiceMode !== "core" && appStage === "game" && (
         <div
           className="fixed left-1/2 z-40 mono"
           style={{
@@ -3268,7 +3363,7 @@ export default function BaseballSim() {
             <span style={{ fontSize: 14 }}>🎓</span>
             <div style={{ fontSize: 10.5, color: "#e8e4d8", lineHeight: 1.4, flex: 1 }}>{getPracticeTip()}</div>
             <button
-              onClick={() => { practiceModeRef.current = false; setPracticeMode(false); setUserRole(null); userRoleRef.current = null; setAppStage("role"); setGameOver(false); setBattingTeam(null); setHalvesPlayed(0); }}
+              onClick={returnToRole}
               className="mono"
               style={{ fontSize: 9, color: "#7a8f7f", border: "1px solid #3a4a3e", borderRadius: 4, padding: "2px 6px", whiteSpace: "nowrap" }}
             >
@@ -3440,13 +3535,13 @@ export default function BaseballSim() {
             <TeamEmblem team="ai" size={64} />
           </div>
           <div className="flex gap-4">
-            <button onClick={() => { ensureAudio(); practiceModeRef.current = false; setPracticeMode(false); startGame("pitcher"); }}
+            <button onClick={() => launchGame("pitcher")}
               className="display rounded transition-transform hover:-translate-y-1 flex flex-col items-center gap-1 role-choice"
               style={{ padding: 6, border: "2px solid #a8623a", backgroundColor: "#1a1210" }}>
               <img src={IMG_SELECT_PITCHER} alt="" style={{ height: 104, imageRendering: "pixelated", display: "block" }} />
               <span style={{ fontWeight: 800, fontSize: 13 }}>투수로 시작</span>
             </button>
-            <button onClick={() => { ensureAudio(); practiceModeRef.current = false; setPracticeMode(false); startGame("batter"); }}
+            <button onClick={() => launchGame("batter")}
               className="display rounded transition-transform hover:-translate-y-1 flex flex-col items-center gap-1 role-choice"
               style={{ padding: 6, border: "2px solid #3d7a5f", backgroundColor: "#101a14" }}>
               <img src={IMG_SELECT_BATTER} alt="" style={{ height: 104, imageRendering: "pixelated", display: "block" }} />
@@ -3475,17 +3570,33 @@ export default function BaseballSim() {
 
           <div className="flex gap-3 mt-1">
             <button
-              onClick={() => { ensureAudio(); practiceModeRef.current = "pitcher"; setPracticeMode("pitcher"); startGame("pitcher"); }}
+              onClick={() => launchGame("pitcher", "pitcher")}
               className="mono text-[10px] px-3 py-1.5 rounded border border-[#3a4a3e] text-[#7a8f7f] hover:border-[#c17849] hover:text-[#c17849]"
             >
               🎓 투수 가이드 연습
             </button>
             <button
-              onClick={() => { ensureAudio(); practiceModeRef.current = "batter"; setPracticeMode("batter"); startGame("batter"); }}
+              onClick={() => launchGame("batter", "batter")}
               className="mono text-[10px] px-3 py-1.5 rounded border border-[#3a4a3e] text-[#7a8f7f] hover:border-[#3d7a5f] hover:text-[#3d7a5f]"
             >
               🎓 타자 가이드 연습
             </button>
+          </div>
+          <div className="w-full max-w-sm mt-2 pt-4" style={{ borderTop: "1px solid #2a3a2e" }}>
+            <button
+              onClick={() => launchGame("batter", "core")}
+              className="display w-full rounded transition-transform hover:-translate-y-0.5"
+              style={{ padding: "12px 16px", border: "2px solid #ffb000", backgroundColor: "#2a2110", color: "#fff3d0" }}
+            >
+              <span style={{ display: "block", fontWeight: 900, fontSize: 15 }}>CORE TEST · 한 타석</span>
+              <span className="mono" style={{ display: "block", marginTop: 4, fontSize: 9, color: "#c9aa5f" }}>즉시 시작 · 성장 없음 · 종료 후 4문항</span>
+            </button>
+            <div className="mono text-center" style={{ marginTop: 7, fontSize: 9, color: coreTestResultCount >= 3 ? "#7fe0b0" : "#7a8f7f" }}>
+              이 기기에 저장된 테스트 {coreTestResultCount}/3
+              {coreTestResultCount > 0 && (
+                <button onClick={downloadCoreTestResults} className="underline" style={{ marginLeft: 8, color: "#ffb000" }}>JSON 받기</button>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -3521,7 +3632,7 @@ export default function BaseballSim() {
         </div>
       )}
 
-      {userRole && !pendingLevelUp && !pendingEvent && !cardRewards && !gameOver && isUserTurnNow && (
+      {userRole && !pendingLevelUp && !pendingEvent && !cardRewards && !gameOver && isUserTurnNow && !coreTestComplete && (
         <div className="combat-shell">
           {/* 진행 단계 표시 - 지금 무슨 단계인지 한눈에 */}
           <div className="flex items-center gap-1 mb-1 combat-header">
@@ -4413,7 +4524,73 @@ export default function BaseballSim() {
         </div>
       )}
 
-      {gameOver && (
+      {coreTestMode && coreTestComplete && (
+        <div className="modal-animate w-full max-w-md">
+          <div className="display text-2xl font-bold text-[#ffb000] text-center mb-1">한 타석 완료</div>
+          <div className="mono text-[10px] text-[#a8b8ac] text-center mb-4">
+            {lastPlay?.text || "결과 확인"} · 첫 느낌 그대로 답해 주세요
+          </div>
+          {coreTestSaved ? (
+            <div className="bg-[#111a14] border border-[#3d7a5f] rounded-md p-5 text-center">
+              <div className="display text-lg font-bold text-[#7fe0b0] mb-2">기록 완료</div>
+              <div className="mono text-xs text-[#a8b8ac] mb-4">이 기기의 코어 테스트 {coreTestResultCount}/3</div>
+              <div className="flex gap-2">
+                <button onClick={() => launchGame("batter", "core")} className="mono text-xs px-4 py-2 rounded border border-[#3a4a3e] flex-1 hover:border-[#ffb000]">다음 플레이어</button>
+                <button onClick={returnToRole} className="display text-sm font-bold px-4 py-2 rounded bg-[#a8623a] flex-1 hover:bg-[#c17849]">역할 선택으로</button>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-[#111a14] border border-[#2a3a2e] rounded-md p-4">
+              <div className="space-y-3">
+                {CORE_TEST_QUESTIONS.map((question, index) => (
+                  <div key={question.id} className="rounded p-3" style={{ backgroundColor: "#0d1f17", border: "1px solid #2a3a2e" }}>
+                    <div className="mono text-[11px] text-[#e8e4d8] mb-2">{index + 1}. {question.text}</div>
+                    <div className="flex gap-2">
+                      {[true, false].map((answer) => {
+                        const active = coreTestAnswers[question.id] === answer;
+                        return (
+                          <button
+                            key={String(answer)}
+                            type="button"
+                            aria-pressed={active}
+                            onClick={() => setCoreTestAnswers((current) => ({ ...current, [question.id]: answer }))}
+                            className="mono text-xs flex-1 rounded py-1.5"
+                            style={{
+                              border: `1px solid ${active ? "#ffb000" : "#3a4a3e"}`,
+                              backgroundColor: active ? "#3a2f14" : "transparent",
+                              color: active ? "#fff3d0" : "#7a8f7f",
+                            }}
+                          >
+                            {answer ? "예" : "아니오"}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <textarea
+                value={coreTestNote}
+                onChange={(event) => setCoreTestNote(event.target.value)}
+                placeholder="기억에 남은 선택이나 헷갈린 점 (선택)"
+                className="mono text-xs w-full h-20 bg-[#0d1f17] border border-[#3a4a3e] rounded p-3 text-[#e8e4d8] mt-3 mb-3 resize-none focus:outline-none focus:border-[#ffb000]"
+              />
+              <div className="flex gap-2">
+                <button onClick={returnToRole} className="mono text-xs px-4 py-2 rounded border border-[#3a4a3e] flex-1 hover:border-[#c73e3e]">취소</button>
+                <button
+                  onClick={submitCoreTest}
+                  disabled={CORE_TEST_QUESTIONS.some(({ id }) => typeof coreTestAnswers[id] !== "boolean")}
+                  className="display text-sm font-bold px-4 py-2 rounded bg-[#a8623a] flex-1 hover:bg-[#c17849] disabled:opacity-35"
+                >
+                  결과 저장
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {gameOver && !coreTestMode && (
         <div className="w-full max-w-md flex flex-col items-center">
           <div className="display text-2xl font-bold text-[#ffb000] mb-2">경기 종료!</div>
           <div className="mono text-sm mb-4">
@@ -4435,7 +4612,7 @@ export default function BaseballSim() {
             </div>
           )}
           <button
-            onClick={() => { practiceModeRef.current = false; setPracticeMode(false); setUserRole(null); userRoleRef.current = null; setAppStage("role"); setGameOver(false); setBattingTeam(null); setHalvesPlayed(0); }}
+            onClick={returnToRole}
             className="display text-sm font-bold px-6 py-3 rounded bg-[#a8623a] hover:bg-[#c17849]"
           >
             새 게임
