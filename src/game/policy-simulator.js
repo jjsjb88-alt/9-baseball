@@ -55,6 +55,7 @@ const stageForPlateAppearance = (index, total) => {
 export function simulatePolicy(policy, { seed = 0x9a0e2026, plateAppearances = 3000 } = {}) {
   if (!POLICY_NAMES.includes(policy)) throw new Error(`Unknown policy: ${policy}`);
   const random = createSeededRandom(seed);
+  const policyRandom = createSeededRandom(seed ^ 0x0a11ce);
   const recentAims = [];
   const twoStrikeObservations = { total: 0, zones: Array(9).fill(0) };
   const metrics = {
@@ -83,7 +84,7 @@ export function simulatePolicy(policy, { seed = 0x9a0e2026, plateAppearances = 3
       const actualZone = sampleDistribution(trueIntent, random);
 
       let aim;
-      if (policy === "Random") aim = Math.floor(random() * 9);
+      if (policy === "Random") aim = Math.floor(policyRandom() * 9);
       else if (policy === "Pattern") aim = patternZone(publicIntent, strikes, twoStrikeObservations);
       else aim = maxZone(publicIntent);
 
