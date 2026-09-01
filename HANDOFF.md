@@ -208,3 +208,16 @@ AI는 `playerAimHistoryRef`의 완료된 과거 선택만 본다. `selectedIdx`,
 - 최종 고정 시드 결과는 Random 0.547, MaxProb 0.687, Pattern 0.694, PowerSpam 0.709 TB/PA다. PowerSpam/최선 비파워 비율은 1.022이며 접촉률은 PowerSpam 0.552 대 MaxProb 0.691, DEEP READ는 Pattern 0.015 대 MaxProb 0.006이다.
 
 검증은 `pnpm test` 7/7, `pnpm run build`, `git diff --check`, `pnpm run test:policy`를 통과했다. 앱 내 브라우저는 연결 복구 절차 뒤에도 사용 가능 목록이 비어 있어 CORE TEST의 클릭 및 스크린샷 QA는 여전히 다음 세션의 최우선 작업이다.
+
+## 18. Core Test Result Regression
+
+2026-09-02에 브라우저 연결 부재로 반복 미검증되던 CORE TEST 결과 경로를 순수 모듈과 자동 테스트로 고정했다.
+
+- 질문 정의, 네 문항 완결성 판정, 결과 스냅샷 생성, 로컬 저장소 읽기/추가, JSON 직렬화는 `src/game/core-test-results.js`에 있다.
+- React UI는 저장 건수, 저장 버튼 활성화, 결과 추가, JSON 다운로드에 이 모듈을 직접 사용한다. 같은 규칙을 본체에 다시 복사하지 않는다.
+- `false` 응답도 유효한 답으로 보존하며, 네 문항 중 하나라도 불리언이 아니면 결과를 만들지 않는다.
+- 결과에는 공개 가능한 `zone`과 `pitchId`만 복사한다. TRUE INTENT 같은 숨은 필드를 투구 기록에 추가하지 않는다.
+- 손상된 JSON이나 배열이 아닌 기존 값은 빈 결과로 복구한다. 반면 저장소 접근 자체가 거부되면 다운로드를 빈 파일 성공처럼 위장하지 않고 기존 UI 오류 처리로 전파한다.
+- 회귀 테스트 4개가 설문 완결성, `false` 보존, 메모 정리와 결과 스냅샷, 손상 저장값 복구, 저장소 접근 실패 전파를 검사한다.
+
+검증은 `pnpm test` 11/11, `pnpm run build`, `git diff --check`, `pnpm run test:policy`를 통과했다. 로컬 Vite 서버도 `http://localhost:5174/`에서 기동했다. 브라우저 연결 복구 절차 뒤에도 사용 가능한 브라우저 목록이 비어 있어 실제 클릭과 스크린샷 QA는 완료하지 못했다. 다음 세션은 브라우저가 제공되는 환경에서 역할 선택 → `CORE TEST` → 타석 종료 → 네 문항 저장 → 다음 플레이어 → JSON 다운로드를 직접 확인하고 인간 3인 결과를 수집한다.
