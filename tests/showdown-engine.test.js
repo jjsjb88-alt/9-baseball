@@ -1,7 +1,5 @@
-import { describe, expect, it, vi } from "vitest";
-
-vi.mock("tone", () => ({}));
-import { resolveShowdownContact } from "../BaseballSim-deck-5.jsx";
+import { describe, expect, it } from "vitest";
+import { resolveShowdownContact } from "../src/game/showdown-engine.js";
 
 const sequence = (...values) => {
   let index = 0;

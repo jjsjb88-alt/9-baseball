@@ -23,13 +23,14 @@ npm run preview
 
 - `BaseballSim-deck-5.jsx`: 게임 본체이자 소스 오브 트루스. 기존 자산과 최신 코어 규칙이 함께 있다.
 - `src/main.jsx`: 로컬 React 진입점.
+- `src/game/showdown-engine.js`: 실제 플레이와 자동시뮬이 함께 import하는 CQ/PQ 판정 엔진.
 - `src/styles.css`: Tailwind와 전역 스타일 진입점.
 - `assets/sprites-v2/frames/`: 전투용 고해상도 타자·투수 키포즈 36장. 앱은 이 폴더를 한 번에 로드한다.
 - `work/process_sprite_v2.py`: 생성된 6칸 시트를 투명 512px 개별 프레임으로 정리하는 재현용 도구.
 - `tests/showdown-engine.test.js`: 실제 게임이 export하는 CQ/PQ 판정 엔진의 최소 회귀 테스트.
 - `HANDOFF.md`: 설계 원칙, 변경 지점, 플레이테스트 체크리스트.
 
-별도의 프로토타입 JSX를 계속 복제하지 않는다. 코어 규칙 변경은 본체의 `resolveShowdownContact()`와 그 호출부를 수정한다. 자동시뮬도 반드시 같은 함수를 호출해야 한다.
+별도의 프로토타입 JSX를 계속 복제하지 않는다. 코어 규칙 변경은 `src/game/showdown-engine.js`의 `resolveShowdownContact()`와 그 호출부를 수정한다. 자동시뮬도 반드시 같은 함수를 호출해야 한다.
 
 ## 지금 반드시 지킬 것
 
