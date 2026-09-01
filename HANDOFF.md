@@ -95,9 +95,8 @@ AI는 `playerAimHistoryRef`의 완료된 과거 선택만 본다. `selectedIdx`,
 ## 10. 다음 작업 우선순위
 
 1. 1타자 vs 1투수 짧은 코어 테스트 모드로 실제 인간 3인 플레이테스트.
-2. 공용 엔진을 `src/game/`로 물리 분리하되 본체와 시뮬이 동일 모듈을 import하도록 리팩터링.
-3. 고정 시드 정책봇(Random / MaxProb / Pattern / PowerSpam) 추가와 지배전략 회귀 기준 수립.
-4. Tell 발견 연출, 히트스톱, 사운드 보강. 신규 카드 대량 추가는 그 이후.
+2. 고정 시드 정책봇(Random / MaxProb / Pattern / PowerSpam) 추가와 지배전략 회귀 기준 수립.
+3. Tell 발견 연출, 히트스톱, 사운드 보강. 신규 카드 대량 추가는 그 이후.
 
 ## 11. Visual & Impact Pass 01
 
@@ -171,3 +170,13 @@ AI는 `playerAimHistoryRef`의 완료된 과거 선택만 본다. `selectedIdx`,
 - 켜기·끄기·상태 확인은 `loop/task.ps1`의 `Start`, `Stop`, `Status`로 한다.
 
 설치 검증은 `-SmokeTest -MaxRounds 2`로 진행했다. 실행 ID `20260901-120415-2075`의 두 바퀴는 서로 다른 thread ID를 발급받았고 모두 `exit=0`으로 끝났다. 두 세션은 PROMPT와 지정 문서만 읽었으며 소스·문서·Git을 수정하지 않았다. 실제 자율 개발은 시작하지 않았다.
+
+## 15. Shared Engine Extraction
+
+2026-09-02에 `resolveShowdownContact()`를 467 kB 규모의 React 본체에서 `src/game/showdown-engine.js` 순수 모듈로 분리했다.
+
+- `BaseballSim-deck-5.jsx`의 실제 유저 타격 경로와 동료 타자 자동시뮬은 같은 import를 사용한다.
+- 판정 수식, 난수 호출 순서, 반환 형태는 변경하지 않았다.
+- 테스트는 React와 Tone을 로드하지 않고 공용 엔진을 직접 import한다.
+- `pnpm test` 3/3과 `pnpm run build`가 통과했다. 빌드의 500 kB 초과 청크 경고는 기존 알려진 문제로 남아 있다.
+- 로컬 서버 실행은 확인했지만 사용 가능한 앱 내 브라우저가 없어 이번 바퀴에서는 스크린샷 QA를 완료하지 못했다.
