@@ -221,3 +221,14 @@ AI는 `playerAimHistoryRef`의 완료된 과거 선택만 본다. `selectedIdx`,
 - 회귀 테스트 4개가 설문 완결성, `false` 보존, 메모 정리와 결과 스냅샷, 손상 저장값 복구, 저장소 접근 실패 전파를 검사한다.
 
 검증은 `pnpm test` 11/11, `pnpm run build`, `git diff --check`, `pnpm run test:policy`를 통과했다. 로컬 Vite 서버도 `http://localhost:5174/`에서 기동했다. 브라우저 연결 복구 절차 뒤에도 사용 가능한 브라우저 목록이 비어 있어 실제 클릭과 스크린샷 QA는 완료하지 못했다. 다음 세션은 브라우저가 제공되는 환경에서 역할 선택 → `CORE TEST` → 타석 종료 → 네 문항 저장 → 다음 플레이어 → JSON 다운로드를 직접 확인하고 인간 3인 결과를 수집한다.
+
+## 19. Production Bundle Split
+
+2026-09-02에 Vite 8의 Rolldown 코드 분할 설정을 추가해 프로덕션 JavaScript의 500 kB 초과 청크 경고를 제거했다.
+
+- `vite.config.js`의 `build.rolldownOptions.output.codeSplitting`에서 `node_modules`를 vendor 청크로 분리한다.
+- 기준 빌드의 단일 JavaScript 청크 798.47 kB는 앱 312.34 kB, vendor 485.38 kB, Rolldown 런타임 0.58 kB로 나뉘었다.
+- 경고 한도를 올려 숨긴 것이 아니라 실제 산출물을 분리했다. 게임 소스와 런타임 동작은 변경하지 않았다.
+- 프로덕션 미리보기에서 HTML, CSS, 앱·vendor·런타임 JavaScript가 모두 HTTP 200으로 응답했다.
+
+검증은 `pnpm test` 11/11, `pnpm run build`, `git diff --check`, `pnpm run test:policy`를 통과했다. 브라우저 연결 복구 절차와 사용 가능 유형 조회 뒤에도 목록이 비어 있어 화면 클릭과 스크린샷 QA는 이번 바퀴에도 수행하지 못했다. 다음 세션은 브라우저가 제공되는 환경에서 역할 선택 → `CORE TEST` → 타석 종료 → 네 문항 저장 → 다음 플레이어 → JSON 다운로드를 직접 확인하고 인간 3인 결과를 수집한다.
