@@ -16,6 +16,14 @@ import {
   computeDistribution,
   sampleDistribution,
 } from "./src/game/showdown-pitch-model.js";
+import {
+  CORE_TEST_QUESTIONS,
+  appendCoreTestResult,
+  createCoreTestResult,
+  hasCompleteCoreTestAnswers,
+  readCoreTestResults,
+  serializeCoreTestResults,
+} from "./src/game/core-test-results.js";
 
 const SPRITE_V2_MODULES = import.meta.glob("./assets/sprites-v2/frames/*.png", {
   eager: true,
@@ -146,15 +154,6 @@ const TUTORIAL_SLIDES = [
     visual: "start",
   },
 ];
-
-const CORE_TEST_STORAGE_KEY = "9zone-core-test-results-v1";
-const CORE_TEST_QUESTIONS = [
-  { id: "choseLowProbability", text: "최고 확률이 아닌 존을 의도적으로 고른 순간이 있었나요?" },
-  { id: "feltLikeRead", text: "적중했을 때 ‘운이 좋았다’보다 ‘읽었다’는 감정이 컸나요?" },
-  { id: "plannedCounter", text: "실패했을 때 다음 공의 역심리를 생각하게 됐나요?" },
-  { id: "powerDominant", text: "POWER만 반복하는 것이 가장 합리적인 전략처럼 느껴졌나요?" },
-];
-
 
 const PITCH_TYPES = [
   { id: "fastball", name: "직구", power: 75, controlMod: 1.0 },
@@ -1141,14 +1140,7 @@ export default function BaseballSim() {
   const [coreTestAnswers, setCoreTestAnswers] = useState({});
   const [coreTestNote, setCoreTestNote] = useState("");
   const [coreTestSaved, setCoreTestSaved] = useState(false);
-  const [coreTestResultCount, setCoreTestResultCount] = useState(() => {
-    try {
-      const saved = JSON.parse(window.localStorage.getItem(CORE_TEST_STORAGE_KEY) || "[]");
-      return Array.isArray(saved) ? saved.length : 0;
-    } catch {
-      return 0;
-    }
-  });
+  const [coreTestResultCount, setCoreTestResultCount] = useState(() => readCoreTestResults(window.localStorage).length);
   const [log, setLog] = useState([]);
   const [pitchHistory, setPitchHistory] = useState([]); // [{zone, pitchId}] - 이 경기 동안 AI투수가 실제로 던진 기록 (패턴읽기용)
   const [showPitchHistory, setShowPitchHistory] = useState(false); // 모바일 화면공간 절약을 위해 기본 접힘
@@ -2744,19 +2736,15 @@ export default function BaseballSim() {
   };
 
   const submitCoreTest = () => {
-    if (CORE_TEST_QUESTIONS.some(({ id }) => typeof coreTestAnswers[id] !== "boolean")) return;
-    const result = {
-      version: 1,
-      timestamp: new Date().toISOString(),
-      answers: { ...coreTestAnswers },
-      note: coreTestNote.trim(),
-      finalPlay: lastPlay?.text || null,
-      pitchesSeen: pitchHistory.map(({ zone, pitchId }) => ({ zone, pitchId })),
-    };
+    if (!hasCompleteCoreTestAnswers(coreTestAnswers)) return;
     try {
-      const previous = JSON.parse(window.localStorage.getItem(CORE_TEST_STORAGE_KEY) || "[]");
-      const results = Array.isArray(previous) ? [...previous, result] : [result];
-      window.localStorage.setItem(CORE_TEST_STORAGE_KEY, JSON.stringify(results));
+      const result = createCoreTestResult({
+        answers: coreTestAnswers,
+        note: coreTestNote,
+        lastPlay,
+        pitchHistory,
+      });
+      const results = appendCoreTestResult(window.localStorage, result);
       setCoreTestResultCount(results.length);
       setCoreTestSaved(true);
     } catch {
@@ -2766,8 +2754,7 @@ export default function BaseballSim() {
 
   const downloadCoreTestResults = () => {
     try {
-      const results = JSON.parse(window.localStorage.getItem(CORE_TEST_STORAGE_KEY) || "[]");
-      const blob = new Blob([JSON.stringify(results, null, 2)], { type: "application/json" });
+      const blob = new Blob([serializeCoreTestResults(window.localStorage)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -4551,7 +4538,7 @@ export default function BaseballSim() {
                 <button onClick={returnToRole} className="mono text-xs px-4 py-2 rounded border border-[#3a4a3e] flex-1 hover:border-[#c73e3e]">취소</button>
                 <button
                   onClick={submitCoreTest}
-                  disabled={CORE_TEST_QUESTIONS.some(({ id }) => typeof coreTestAnswers[id] !== "boolean")}
+                  disabled={!hasCompleteCoreTestAnswers(coreTestAnswers)}
                   className="display text-sm font-bold px-4 py-2 rounded bg-[#a8623a] flex-1 hover:bg-[#c17849] disabled:opacity-35"
                 >
                   결과 저장
