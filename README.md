@@ -43,3 +43,72 @@ npm run preview
 8. 캐릭터 포즈 전환과 화면의 2차 동작을 분리한다. 포즈는 고정 키프레임, 이동·회전·히트스톱은 `requestAnimationFrame` 타임라인이 담당한다.
 
 상세 내용은 [HANDOFF.md](./HANDOFF.md)를 먼저 읽는다.
+
+## 자율 개발 루프
+
+Windows용 자율 루프가 준비되어 있다. 운영 루프는 아직 꺼져 있다. 2026-09-01에 파일을 수정하지 않는 스모크 모드로 독립 세션 두 바퀴만 실행했고, 두 바퀴 모두 종료 코드 0으로 끝났다.
+
+한 바퀴마다 `codex exec --ephemeral`을 새로 실행한다. 이전 세션을 `resume`하거나 대화를 이어 붙이지 않으며, 작업 맥락은 문서와 Git 커밋으로만 넘긴다.
+
+### 시작 전에 채울 것
+
+1. `docs/DESIGN.md`에 고정 기획을 적는다.
+2. `docs/STATUS.md`에 현재 상태와 다음 한 가지를 적는다.
+3. `docs/feedback/INBOX.md`에 첫 지시를 적는다.
+4. `loop/PROMPT.md`의 `[작성 필요]` 항목을 마무리한다.
+5. `loop/env.sh`에서 모델, 추론 강도, 작업 사이클 상한, 대기 시간, 최대 바퀴 수를 확인한다.
+
+기본값은 `gpt-5.6-sol`, 추론 강도 `high`, 작업 사이클 상한 12, 바퀴 사이 30초, 최대 바퀴 수 0(무한)이다. 설치된 Codex CLI에는 직접적인 `--max-turns` 옵션이 없으므로 `LOOP_MAX_TURNS`는 각 새 세션의 지시문에 작업-검증 사이클 상한으로 주입된다. 별도의 1시간 세션 시간 제한도 적용된다.
+
+### 켜기·끄기·상태 보기
+
+프로젝트 루트에서 PowerShell로 실행한다.
+
+```powershell
+# 켜기: STOP을 지우고 작업을 활성화한 뒤 백그라운드에서 시작
+powershell -NoProfile -ExecutionPolicy Bypass -File .\loop\task.ps1 Start
+
+# 끄기: 새 바퀴를 막고, 현재 바퀴가 끝나면 정상 종료
+powershell -NoProfile -ExecutionPolicy Bypass -File .\loop\task.ps1 Stop
+
+# 상태 보기
+powershell -NoProfile -ExecutionPolicy Bypass -File .\loop\task.ps1 Status
+```
+
+`loop/loop.ps1`을 인수 없이 직접 실행하면 무한 루프가 현재 터미널에 붙는다. 평상시에는 직접 실행하지 말고 위의 `task.ps1 Start`를 사용한다. 작업 스케줄러 항목은 로그인 시 시작하고 비정상 종료 시 1분 뒤 재시작하지만, `STOP` 또는 최대 바퀴 수 도달에 따른 정상 종료는 즉시 재시작하지 않는다.
+
+다시 등록하거나 실행만 막고 싶을 때는 다음을 쓴다.
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\loop\task.ps1 Register
+powershell -NoProfile -ExecutionPolicy Bypass -File .\loop\task.ps1 Disable
+```
+
+등록 직후에는 항상 비활성 상태다. `loop/env.sh`에는 Codex, Node.js, pnpm, Git, Windows 시스템 도구의 PATH가 명시되어 있다. Codex 앱 업데이트로 버전이 붙은 실행 파일 경로가 바뀌면 `CODEX_BIN`과 PATH 첫 항목도 갱신한다.
+
+### 로그 보기
+
+로그는 `logs/YYYY-MM-DD.log`에 누적되고 Git에는 들어가지 않는다. 각 실행과 바퀴에는 고유 실행 ID, 시작·종료 시각, 종료 코드가 붙는다.
+
+```powershell
+Get-Content ".\logs\$(Get-Date -Format yyyy-MM-dd).log" -Tail 120
+```
+
+설치 확인만 다시 하고 싶으면 다음처럼 스모크 모드를 쓴다. 이 모드는 새 세션을 열어 문서를 읽지만 파일 수정·개발·테스트·Git 조작은 하지 않는다.
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\loop\loop.ps1 `
+  -MaxRounds 2 -WaitSeconds 1 -MaxTurns 1 -SessionTimeoutSeconds 300 -SmokeTest
+```
+
+### 루프 관련 파일
+
+- `loop/loop.ps1`: Windows 진입점. 한정 실행과 스모크 옵션을 Bash 본체에 전달한다.
+- `loop/loop.sh`: 무한 반복, 독립 `codex exec`, 날짜별 로그, STOP 처리를 담당한다.
+- `loop/env.sh`: 모델·추론 강도·사이클 상한·대기·최대 바퀴·명시적 PATH 설정이다.
+- `loop/PROMPT.md`: 매 새 세션이 읽는 여섯 절짜리 운영 지시서다.
+- `loop/task.ps1`: 작업 스케줄러 등록·켜기·끄기·상태 보기 제어기다.
+- `docs/DESIGN.md`: 거의 바뀌지 않는 기획서 틀이다.
+- `docs/STATUS.md`: 매 바퀴가 갱신하는 현재 상태 틀이다.
+- `docs/feedback/INBOX.md`: 가장 먼저 처리할 사용자 지시함이다.
+- `logs/`: 날짜별 실행 로그와 각 바퀴의 마지막 응답이 저장되는 Git 제외 폴더다.

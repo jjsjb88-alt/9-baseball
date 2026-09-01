@@ -156,3 +156,18 @@ AI는 `playerAimHistoryRef`의 완료된 과거 선택만 본다. `selectedIdx`,
 - 컷신 캐릭터 src가 반드시 `assets/sprites-v2/frames/`를 가리킨다.
 - 연출 종료 후 컷신과 파편 DOM이 제거된다.
 - 배너와 컷신 동시 생성 시 중복 key 경고가 없어야 한다.
+
+## 14. 자율 개발 루프 운영
+
+2026-09-01에 대화 기억 대신 파일과 Git 커밋으로 이어지는 Windows 자율 루프를 설치했다.
+
+- 운영 본체는 `loop/loop.sh`, Windows 진입점은 `loop/loop.ps1`이다.
+- 매 바퀴는 `codex exec --ephemeral`을 새로 실행한다. `resume` 또는 `fork`를 사용하지 않는다.
+- `loop/PROMPT.md`를 읽고, `docs/feedback/INBOX.md` → `docs/DESIGN.md` → `docs/STATUS.md` → `HANDOFF.md` 순으로 맥락을 복원한다.
+- `loop/env.sh`에 모델, 추론 강도, 작업 사이클 상한, 바퀴 사이 대기, 최대 바퀴 수, 세션 시간 제한, 모든 실행 PATH가 있다.
+- `loop/STOP`은 현재 바퀴가 끝난 뒤 정상 종료시킨다.
+- 날짜별 JSONL 실행 로그와 마지막 응답은 `logs/`에 저장되며 Git에서 제외된다.
+- Windows 작업 스케줄러의 `9ZONE SHOWDOWN Codex Loop` 작업은 로그인 트리거와 실패 시 1분 재시작 정책으로 등록되어 있다. 현재 상태는 **Disabled**다.
+- 켜기·끄기·상태 확인은 `loop/task.ps1`의 `Start`, `Stop`, `Status`로 한다.
+
+설치 검증은 `-SmokeTest -MaxRounds 2`로 진행했다. 실행 ID `20260901-120415-2075`의 두 바퀴는 서로 다른 thread ID를 발급받았고 모두 `exit=0`으로 끝났다. 두 세션은 PROMPT와 지정 문서만 읽었으며 소스·문서·Git을 수정하지 않았다. 실제 자율 개발은 시작하지 않았다.
