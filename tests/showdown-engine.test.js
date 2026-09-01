@@ -19,6 +19,13 @@ describe("resolveShowdownContact", () => {
     expect(power.pq).toBeGreaterThan(normal.pq);
   });
 
+  it("does not turn a misread POWER swing into a strong ball", () => {
+    const normal = resolveShowdownContact({ read: "MISREAD", mastered: false, variance: sequence(0.99, 0.99, 0.99, 0.99) });
+    const power = resolveShowdownContact({ read: "MISREAD", mastered: false, modifier: "smash", variance: sequence(0.99, 0.99, 0.99, 0.99) });
+    expect(power.cq).toBeLessThan(normal.cq);
+    expect(power.pq).toBe(normal.pq);
+  });
+
   it("penalizes BASIC SWING mastery", () => {
     const mastered = resolveShowdownContact({ read: "READ", mastered: true, variance: sequence(0.9, 0.9, 0.9) });
     const basic = resolveShowdownContact({ read: "READ", mastered: false, variance: sequence(0.9, 0.9, 0.9) });

@@ -11,6 +11,11 @@ import React, { useState, useMemo, useCallback, useRef } from "react";
 import * as Tone from "tone";
 import STADIUM_COMBAT_BG from "./assets/stadium-combat-bg-v1.png";
 import { resolveShowdownContact } from "./src/game/showdown-engine.js";
+import {
+  buildTrueIntent,
+  computeDistribution,
+  sampleDistribution,
+} from "./src/game/showdown-pitch-model.js";
 
 const SPRITE_V2_MODULES = import.meta.glob("./assets/sprites-v2/frames/*.png", {
   eager: true,
@@ -341,23 +346,6 @@ const EXP_TABLE = { out: 4, strikeout: 3, walk: 6, single: 10, double: 18, tripl
 const EXP_TABLE_PITCHER = { strikeout: 12, out: 8, walk: 1, single: 1, double: 1, triple: 1, homerun: 0 };
 const expToNext = (level) => 50 + (level - 1) * 25;
 
-// 목표 zone 기준 확률분포 산출 (control 반영). 실투시 인접 zone/유인구로 갈라짐
-function computeDistribution(targetZone, control, pitchControlMod) {
-  if (targetZone === 9) return { 9: 100 };
-  const acc = clamp(control * pitchControlMod, 5, 65); // 상한 65 - 아무리 제구 좋아도 타겟존이 압도적 1위가 되진 않게(읽기실력의 여지 남김)
-  const dist = { [targetZone]: acc };
-  const missTotal = 100 - acc;
-  dist[9] = missTotal * 0.25;
-  const row = Math.floor(targetZone / 3);
-  const col = targetZone % 3;
-  const adj = [[row - 1, col], [row + 1, col], [row, col - 1], [row, col + 1]].filter(
-    ([r, c]) => r >= 0 && r < 3 && c >= 0 && c < 3
-  ).map(([r, c]) => r * 3 + c);
-  const each = (missTotal * 0.75) / adj.length;
-  adj.forEach((z) => { dist[z] = (dist[z] || 0) + each; });
-  return dist;
-}
-
 // 표시되는 후보확률에 읽기노이즈 추가 - eye 낮으면 화면 %랭킹이 실제와 어긋날 수 있음
 // (제구=순수 실행력, eye=순수 읽기실력으로 분리하기 위함. 실제 투구 결과는 이 노이즈의 영향을 받지 않음)
 function applyReadNoise(dist, eye) {
@@ -624,20 +612,6 @@ function resolveContact(eff, zone, pitch, isWaste, mode = "safe", extraDifficult
   if (q > 0.40) return { outcome: "triple", power };
   if (q > 0.24) return { outcome: "double", power };
   return { outcome: "single", power };
-}
-
-function normalizeDistribution(dist) {
-  const total = Object.values(dist).reduce((sum, value) => sum + Math.max(0, value), 0) || 1;
-  return Object.fromEntries(Object.entries(dist).map(([zone, value]) => [zone, Math.max(0, value) * 100 / total]));
-}
-
-function rollFromDistribution(dist) {
-  let roll = rand() * 100;
-  for (const [zone, weight] of Object.entries(dist)) {
-    roll -= weight;
-    if (roll <= 0) return Number(zone);
-  }
-  return 9;
 }
 
 // ============ 커스텀 UI 아이콘 (SVG) ============
@@ -2152,13 +2126,11 @@ export default function BaseballSim() {
     const tiredPitch = { ...pitch, power: clamp(pitch.power * staminaFactor(), 1, 99) }; // 지치면 구위 저하
     const publicIntent = computeDistribution(targetZone, effControl, pitch.controlMod);
     const aiStage = halvesPlayed >= 4 ? "FOX" : halvesPlayed >= 2 ? "ADAPTER" : "ROOKIE";
-    const trueIntent = { ...publicIntent };
-    if (count.strikes >= 2) trueIntent[7] = (trueIntent[7] || 0) + (aiStage === "ROOKIE" ? 45 : aiStage === "ADAPTER" ? 25 : 10);
-    if (aiStage !== "ROOKIE") {
-      const recentAims = playerAimHistoryRef.current.slice(aiStage === "FOX" ? -8 : -4);
-      recentAims.forEach((zone) => { trueIntent[zone] = Math.max(1, (trueIntent[zone] || 0) * (aiStage === "FOX" ? 0.55 : 0.75)); });
-    }
-    const dist = normalizeDistribution(trueIntent);
+    const dist = buildTrueIntent(publicIntent, {
+      strikes: count.strikes,
+      aiStage,
+      recentAims: playerAimHistoryRef.current,
+    });
     // 노림수압축 버프: 이번 투구는 화면에 노이즈 없는 진짜 확률 그대로 보임 (집중 2 소모)
     const compressBuffed = tacticalBuffRef.current === "compress" && focusRef.current >= 2;
     const displayDist = compressBuffed ? dist : applyReadNoise(publicIntent, effBatter.eye);
@@ -2215,7 +2187,7 @@ export default function BaseballSim() {
         const pitchId = Date.now();
         // 투수가 실제로 던진 결과를 여기서 미리 확정 - 공이 날아가는 궤적이 이 값을 실제로 향하게 함
         const wildOut = {};
-        const actualZone = rollFromDistribution(dist);
+        const actualZone = sampleDistribution(dist, rand);
         const isWaste = actualZone === 9;
         const pinpointSuccess = mode === "pinpoint" && actualZone === targetZone && !isWaste;
         const newPendingPitch = { id: pitchId, wild: !!wildOut.wild, trueDist: dist, publicDist: displayDist, aiStage, targetZone, pitch: tiredPitch, mode, effControl, dist: displayDist, zoneCandidates, pitchCandidates, dots, flightMs, actualZone, isWaste, pinpointSuccess };
@@ -2449,7 +2421,7 @@ export default function BaseballSim() {
       const mastered = combo.zones.some((zoneCard) => zoneCard.zone === actualZone && zoneCard.mastered !== false && zoneCard.style !== "basic");
       let { outcome: rcOutcome, power: rcPower } = resolveShowdownContact({
         read: readResult, mastered,
-        modifier: mod === "smash" ? "smash" : mod === "cut" ? "cut" : playedStyleRef.current === "contact" ? "contact" : null,
+        modifier: mod === "smash" || playedStyleRef.current === "power" ? "smash" : mod === "cut" ? "cut" : playedStyleRef.current === "contact" ? "contact" : null,
         covered: isWide || mod === "pushHit", pitchPower: pendingPitch.pitch.power + (aiDec.hit ? 12 : 0),
       });
       if (mod === "smash" && !["swingMiss", "foul"].includes(rcOutcome)) playSound("powerContact");
