@@ -60,6 +60,38 @@ const startNextPitch = async () => {
 };
 
 describe("CORE TEST UI", () => {
+  it("shows feedback load failures in the export panel and retries without offering invalid JSON", async () => {
+    const storedFeedback = {
+      rating: 5,
+      text: "투수의 패턴을 읽는 순간이 좋았다",
+      role: "batter",
+      timestamp: "2026-09-02T01:02:03.000Z",
+    };
+    const list = vi.fn()
+      .mockRejectedValueOnce(new Error("storage blocked"))
+      .mockResolvedValueOnce({ keys: ["feedback:one"] });
+    window.storage = {
+      list,
+      get: vi.fn().mockResolvedValue({ value: JSON.stringify(storedFeedback) }),
+    };
+    render(<BaseballSim />);
+
+    fireEvent.click(screen.getByRole("button", { name: "건너뛰기" }));
+    fireEvent.click(screen.getByRole("button", { name: "내보내기(관리자)" }));
+
+    expect((await screen.findByRole("alert")).textContent).toContain("피드백 불러오기 실패");
+    expect(screen.getByRole("button", { name: "파일로 다운로드" }).disabled).toBe(true);
+    expect(screen.queryByDisplayValue("불러오기 실패")).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "다시 불러오기" }));
+
+    await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
+    expect(screen.getByText("1건 수집됨")).toBeTruthy();
+    expect(screen.getByDisplayValue(/투수의 패턴을 읽는 순간이 좋았다/)).toBeTruthy();
+    expect(screen.getByRole("button", { name: "파일로 다운로드" }).disabled).toBe(false);
+    expect(list).toHaveBeenCalledTimes(2);
+  });
+
   it("shows feedback save failures in the open modal and retries without losing input", async () => {
     const set = vi.fn()
       .mockRejectedValueOnce(new Error("storage blocked"))

@@ -1115,6 +1115,7 @@ export default function BaseballSim() {
   const [showExport, setShowExport] = useState(false);
   const [exportData, setExportData] = useState("");
   const [exportLoading, setExportLoading] = useState(false);
+  const [exportLoadError, setExportLoadError] = useState("");
   const [count, setCount] = useState({ balls: 0, strikes: 0, outs: 0 });
   const [bases, setBases] = useState([false, false, false]);
   const [score, setScore] = useState({ user: 0, ai: 0 });
@@ -2800,6 +2801,7 @@ export default function BaseballSim() {
   };
 
   const loadAllFeedback = async () => {
+    setExportLoadError("");
     setExportLoading(true);
     try {
       const list = await window.storage.list("feedback:", true);
@@ -2815,8 +2817,8 @@ export default function BaseballSim() {
       }
       entries.sort((a, b) => (a.timestamp || "").localeCompare(b.timestamp || ""));
       setExportData(JSON.stringify(entries, null, 2));
-    } catch (e) {
-      setExportData("불러오기 실패");
+    } catch {
+      setExportLoadError("피드백 불러오기 실패 — 저장 환경을 확인한 뒤 다시 시도해 주세요");
     } finally {
       setExportLoading(false);
     }
@@ -4733,6 +4735,14 @@ export default function BaseballSim() {
               <div className="mono text-xs text-[#7a8f7f]">불러오는 중...</div>
             ) : (
               <>
+                {exportLoadError && (
+                  <div role="alert" className="mono text-[11px] text-[#ff8080] mb-3 text-center">
+                    <div>{exportLoadError}</div>
+                    <button onClick={loadAllFeedback} className="underline mt-2 text-[#ffb000]">
+                      다시 불러오기
+                    </button>
+                  </div>
+                )}
                 <div className="mono text-[10px] text-[#7a8f7f] mb-2">
                   {(() => { try { return `${JSON.parse(exportData).length}건 수집됨`; } catch { return "0건"; } })()}
                 </div>
@@ -4752,7 +4762,7 @@ export default function BaseballSim() {
               </button>
               <button
                 onClick={downloadFeedback}
-                disabled={exportLoading || !exportData}
+                disabled={exportLoading || !!exportLoadError || !exportData}
                 className="display text-sm font-bold px-4 py-2 rounded bg-[#a8623a] hover:bg-[#c17849] disabled:opacity-40 flex-1"
               >
                 파일로 다운로드
