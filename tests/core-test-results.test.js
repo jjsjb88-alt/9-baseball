@@ -85,11 +85,24 @@ describe("core-test results", () => {
     const storage = memoryStorage("{broken");
     expect(readCoreTestResults(storage)).toEqual([]);
 
-    const result = { version: 1, answers: completeAnswers };
+    const result = exportedResult();
     expect(appendCoreTestResult(storage, result)).toEqual([result]);
     expect(JSON.parse(storage.value())).toEqual([result]);
     expect(JSON.parse(serializeCoreTestResults(storage))).toEqual([result]);
     expect(CORE_TEST_STORAGE_KEY).toBe("9zone-core-test-results-v1");
+  });
+
+  it("keeps invalid stored entries out of the UI count, append path, and export", () => {
+    const first = exportedResult();
+    const invalid = { version: 1, answers: completeAnswers };
+    const second = exportedResult({ timestamp: "2026-09-02T02:00:00.000Z" });
+    const storage = memoryStorage(JSON.stringify([first, invalid]));
+
+    expect(readCoreTestResults(storage)).toEqual([first]);
+    expect(appendCoreTestResult(storage, second)).toEqual([first, second]);
+    expect(JSON.parse(storage.value())).toEqual([first, second]);
+    expect(JSON.parse(serializeCoreTestResults(storage))).toEqual([first, second]);
+    expect(() => appendCoreTestResult(storage, invalid)).toThrow("invalid core-test result");
   });
 
   it("does not disguise an unavailable storage backend as an empty export", () => {

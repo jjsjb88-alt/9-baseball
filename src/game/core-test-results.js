@@ -47,7 +47,7 @@ export function isValidCoreTestResult(result) {
 export function parseCoreTestResults(serialized) {
   try {
     const parsed = JSON.parse(serialized || "[]");
-    return Array.isArray(parsed) ? parsed : [];
+    return Array.isArray(parsed) ? parsed.filter(isValidCoreTestResult) : [];
   } catch {
     return [];
   }
@@ -77,6 +77,10 @@ export function createCoreTestResult({ answers, note, lastPlay, pitchHistory, no
 }
 
 export function appendCoreTestResult(storage, result) {
+  if (!isValidCoreTestResult(result)) {
+    throw new TypeError("Cannot store an invalid core-test result");
+  }
+
   const previous = parseCoreTestResults(storage.getItem(CORE_TEST_STORAGE_KEY));
   const results = [...previous, result];
   storage.setItem(CORE_TEST_STORAGE_KEY, JSON.stringify(results));
