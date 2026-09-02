@@ -339,3 +339,14 @@ AI는 `playerAimHistoryRef`의 완료된 과거 선택만 본다. `selectedIdx`,
 - 보고서 CLI의 입력 검증과 version 1 내보내기 형식은 바꾸지 않았다.
 
 검증은 전체 `pnpm test` 17/17, `pnpm run test:policy`, `pnpm run build`, `git diff --check`를 통과했다. 정책 수치는 PowerSpam/최선 비파워 TB/PA 1.022이며 구현 커밋은 `9f755e8`이다. 로컬 앱은 `http://localhost:5174/`에서 기동했지만 브라우저 연결 복구 절차 뒤 사용 가능한 브라우저 유형이 0개라 실제 픽셀·레이아웃과 스크린샷 QA는 수행하지 못했다. 다음 세션은 브라우저가 제공되면 자동화된 CORE TEST 후반 화면을 먼저 확인한 뒤 앱에서 내려받은 실제 인간 3인 JSON을 수집한다.
+
+## 29. Core Test Save Error Feedback
+
+2026-09-02에 CORE TEST 완료 설문에서 로컬 저장소 쓰기가 실패해도 사용자에게 오류가 보이지 않던 문제를 막았다.
+
+- 이전에는 저장 예외가 공용 `message`만 바꿨지만, 완료 설문이 열린 동안 그 메시지를 표시하는 전투 화면은 숨겨져 있었다.
+- 완료 설문 전용 `coreTestSaveError` 상태를 추가하고 설문 안에 `role="alert"` 오류를 표시한다.
+- 새 저장 시도 직전과 다음 CORE TEST 시작 때 오류를 비운다. 실패 뒤에는 답변과 메모를 유지하므로 저장소 상태를 해결한 뒤 같은 화면에서 다시 시도할 수 있다.
+- UI 회귀 테스트는 `localStorage.setItem()`이 한 번 실패하도록 만든 뒤 오류가 보이고 `기록 완료`로 넘어가지 않는지 확인한다. 저장소를 복구한 다음 같은 설문을 재저장해 다음 플레이어와 JSON 다운로드까지 기존 후반 흐름이 유지되는지도 확인한다.
+
+검증은 전체 `pnpm test` 17/17, `pnpm run test:policy`, `pnpm run build`, `git diff --check`를 통과했으며 코드 커밋은 `7439e52`다. 로컬 앱은 `http://localhost:5174/`에서 기동했지만 브라우저 연결 복구 절차와 사용 가능 유형 조회 결과가 0개라 실제 픽셀·레이아웃과 스크린샷 QA는 수행하지 못했다. 다음 세션은 브라우저가 제공되면 CORE TEST 완료 설문의 정상 저장과 실패 경고를 화면에서 먼저 확인한 뒤 실제 인간 3인의 JSON을 수집한다.
