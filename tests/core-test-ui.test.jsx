@@ -97,13 +97,15 @@ describe("CORE TEST UI", () => {
       window.setTimeout(() => callback(Date.now()), 16)
     ));
     const createObjectURL = vi.spyOn(URL, "createObjectURL")
-      .mockImplementationOnce(() => { throw new Error("downloads blocked"); })
+      .mockReturnValueOnce("blob:failed-core-test-results")
       .mockReturnValue("blob:core-test-results");
     const revokeObjectURL = vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
     const downloadedNames = [];
-    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function click() {
-      downloadedNames.push(this.download);
-    });
+    vi.spyOn(HTMLAnchorElement.prototype, "click")
+      .mockImplementationOnce(() => { throw new Error("downloads blocked"); })
+      .mockImplementation(function click() {
+        downloadedNames.push(this.download);
+      });
 
     const firstRender = render(<BaseballSim />);
     enterCoreTest();
@@ -147,11 +149,14 @@ describe("CORE TEST UI", () => {
     fireEvent.click(screen.getByRole("button", { name: "JSON 받기" }));
     expect(screen.getByRole("alert").textContent).toContain("JSON 내보내기 실패");
     expect(downloadedNames).toEqual([]);
+    expect(document.body.querySelector("a[download]")).toBeNull();
+    expect(revokeObjectURL).toHaveBeenCalledWith("blob:failed-core-test-results");
 
     fireEvent.click(screen.getByRole("button", { name: "JSON 받기" }));
     expect(screen.queryByRole("alert")).toBeNull();
     expect(createObjectURL).toHaveBeenCalledTimes(2);
     expect(downloadedNames).toEqual([`9zone-core-test-${new Date().toISOString().slice(0, 10)}.json`]);
     expect(revokeObjectURL).toHaveBeenCalledWith("blob:core-test-results");
+    expect(document.body.querySelector("a[download]")).toBeNull();
   }, 20_000);
 });

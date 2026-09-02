@@ -2771,18 +2771,29 @@ export default function BaseballSim() {
 
   const downloadCoreTestResults = () => {
     setCoreTestDownloadError("");
+    let url = null;
+    let anchor = null;
     try {
       const blob = new Blob([serializeCoreTestResults(window.localStorage)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `9zone-core-test-${new Date().toISOString().slice(0, 10)}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      url = URL.createObjectURL(blob);
+      anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `9zone-core-test-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(anchor);
+      anchor.click();
     } catch {
       setCoreTestDownloadError("JSON 내보내기 실패 — 브라우저의 다운로드 설정을 확인한 뒤 다시 시도해 주세요");
+    } finally {
+      try {
+        anchor?.remove();
+      } catch {
+        // Download cleanup is best-effort; the visible failure path is handled above.
+      }
+      try {
+        if (url) URL.revokeObjectURL(url);
+      } catch {
+        // The object URL is already detached from the UI even if revocation is blocked.
+      }
     }
   };
 
