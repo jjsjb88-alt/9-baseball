@@ -304,3 +304,15 @@ AI는 `playerAimHistoryRef`의 완료된 과거 선택만 본다. `selectedIdx`,
 - 회귀 테스트는 정상 내보내기와 누락 필드, 잘못된 버전·시각·메모·존을 확인한다.
 
 검증은 대상 회귀 7/7, 전체 `pnpm test` 16/16, `pnpm run test:policy`, `pnpm run build`, `git diff --check`를 통과했다. 기존 검증용 미추적 JSON 두 파일의 불완전한 객체 4건은 CLI에서 모두 무효로 건너뛰어 `0/3 (MORE NEEDED)`가 됐다. 코드 커밋은 `665aafb`다. 로컬 앱은 `http://localhost:5174/`에서 기동했지만 브라우저 연결 복구 뒤 사용 가능 목록이 비어 실제 픽셀·레이아웃과 스크린샷 QA는 수행하지 못했다. 다음 세션은 브라우저가 제공되면 CORE TEST 후반 화면을 먼저 확인한 뒤 앱에서 내려받은 완전한 실제 인간 3인 JSON을 수집한다.
+
+## 26. Core Test Exact Public Schema Validation
+
+2026-09-02에 CORE TEST 보고서 입력 검증을 필수 필드 확인에서 앱 공개 스키마의 정확 일치 검사로 강화했다.
+
+- 최상위 결과는 `version`, `timestamp`, `answers`, `note`, `finalPlay`, `pitchesSeen`만 허용한다.
+- 답변 객체는 네 질문 ID만, 각 투구 기록은 `zone`과 `pitchId`만 허용한다. 따라서 수동 JSON에 `hiddenIntent`, `hiddenTell`, `trueDist` 같은 필드를 섞어도 앱 내보내기로 인정하지 않는다.
+- 구종 ID는 실제 앱이 생성하는 `fastball`, `slider`, `curve`, `change`만 허용한다.
+- 앱의 `createCoreTestResult()` 출력 형식과 version 1 저장 형식은 바꾸지 않았다.
+- 회귀 테스트는 최상위·답변·투구의 추가 필드와 존재하지 않는 구종을 모두 거부하는지 확인한다.
+
+검증은 전체 `pnpm test` 16/16, `pnpm run test:policy`, `pnpm run build`, `git diff --check`를 통과했다. 기존 미추적 검증용 JSON 두 파일의 객체 4건은 CLI에서 모두 무효로 건너뛰어 `0/3 (MORE NEEDED)`가 됐다. 코드 커밋은 `d04a444`다. 로컬 앱은 `http://localhost:5174/`에서 기동했지만 브라우저 연결 복구 뒤 사용 가능한 브라우저 유형이 0개라 실제 픽셀·레이아웃과 스크린샷 QA는 수행하지 못했다. 다음 세션은 브라우저가 제공되면 CORE TEST 후반 화면을 먼저 확인한 뒤 앱에서 내려받은 완전한 실제 인간 3인 JSON을 수집한다.
