@@ -327,3 +327,15 @@ AI는 `playerAimHistoryRef`의 완료된 과거 선택만 본다. `selectedIdx`,
 - 정상 앱 내보내기 스키마와 집계·중복 제거·요약 동작은 바꾸지 않았다.
 
 검증은 전체 `pnpm test` 16/16, `pnpm run test:policy`, `pnpm run build`, `git diff --check`를 통과했다. 정책 수치는 PowerSpam/최선 비파워 TB/PA 1.022로 기존 기준을 유지했고 코드 커밋은 `4310731`이다. 로컬 앱은 `http://localhost:5174/`에서 기동했지만 브라우저 연결 복구 절차 뒤 사용 가능한 브라우저 목록이 비어 실제 픽셀·레이아웃과 스크린샷 QA는 수행하지 못했다. 다음 세션은 브라우저가 제공되면 자동화된 CORE TEST 후반 화면을 먼저 확인한 뒤 앱에서 내려받은 실제 인간 3인 JSON을 수집한다.
+
+## 28. Core Test Local Storage Validation
+
+2026-09-02에 CORE TEST 로컬 저장소의 배열 안에 손상된 항목이 섞였을 때 화면 카운트와 다운로드가 실제 보고서 집계와 어긋나는 문제를 막았다.
+
+- `parseCoreTestResults()`는 이제 배열 여부만 확인하지 않고 각 항목에 `isValidCoreTestResult()`를 적용한다.
+- 역할 선택 화면의 저장 건수, 새 응답을 추가할 때 읽는 기존 결과, `JSON 받기` 직렬화가 모두 같은 정제 경로를 사용한다.
+- 새로 추가하는 결과도 앱 스키마를 통과하지 못하면 `appendCoreTestResult()`가 저장 전에 거부한다.
+- 유효 응답과 손상 응답이 섞인 저장값에서 유효 응답만 읽고, 다음 저장 시 손상 항목을 제거하며, 다운로드에도 유효 응답만 남기는 회귀 테스트를 추가했다.
+- 보고서 CLI의 입력 검증과 version 1 내보내기 형식은 바꾸지 않았다.
+
+검증은 전체 `pnpm test` 17/17, `pnpm run test:policy`, `pnpm run build`, `git diff --check`를 통과했다. 정책 수치는 PowerSpam/최선 비파워 TB/PA 1.022이며 구현 커밋은 `9f755e8`이다. 로컬 앱은 `http://localhost:5174/`에서 기동했지만 브라우저 연결 복구 절차 뒤 사용 가능한 브라우저 유형이 0개라 실제 픽셀·레이아웃과 스크린샷 QA는 수행하지 못했다. 다음 세션은 브라우저가 제공되면 자동화된 CORE TEST 후반 화면을 먼저 확인한 뒤 앱에서 내려받은 실제 인간 3인 JSON을 수집한다.
