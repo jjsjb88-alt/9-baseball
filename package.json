@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:policy": "node scripts/policy-bot-report.js"
+    "test:policy": "node scripts/policy-bot-report.js",
+    "report:core-test": "node scripts/core-test-report.js"
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",

@@ -54,3 +54,66 @@ export function serializeCoreTestResults(storage) {
   const results = parseCoreTestResults(storage.getItem(CORE_TEST_STORAGE_KEY));
   return JSON.stringify(results, null, 2);
 }
+
+export function mergeCoreTestResultSets(resultSets) {
+  const results = [];
+  const fingerprints = new Set();
+  let duplicates = 0;
+  let skipped = 0;
+
+  for (const resultSet of resultSets) {
+    if (!Array.isArray(resultSet)) {
+      skipped += 1;
+      continue;
+    }
+
+    for (const result of resultSet) {
+      if (!result || typeof result !== "object" || !hasCompleteCoreTestAnswers(result.answers)) {
+        skipped += 1;
+        continue;
+      }
+
+      const fingerprint = JSON.stringify(result);
+      if (fingerprints.has(fingerprint)) {
+        duplicates += 1;
+        continue;
+      }
+
+      fingerprints.add(fingerprint);
+      results.push(result);
+    }
+  }
+
+  results.sort((left, right) => String(left.timestamp || "").localeCompare(String(right.timestamp || "")));
+  return { results, duplicates, skipped };
+}
+
+export function summarizeCoreTestResults(results) {
+  const validResults = Array.isArray(results)
+    ? results.filter((result) => hasCompleteCoreTestAnswers(result?.answers))
+    : [];
+
+  const questions = CORE_TEST_QUESTIONS.map(({ id, text }) => {
+    const yes = validResults.filter((result) => result.answers[id] === true).length;
+    const no = validResults.length - yes;
+    const desiredAnswer = id === "powerDominant" ? false : true;
+    const positive = desiredAnswer ? yes : no;
+
+    return {
+      id,
+      text,
+      yes,
+      no,
+      positive,
+      positiveRate: validResults.length > 0 ? positive / validResults.length : null,
+    };
+  });
+
+  return {
+    total: validResults.length,
+    target: 3,
+    readyForReview: validResults.length >= 3,
+    questions,
+    notes: validResults.map((result) => result.note).filter(Boolean),
+  };
+}
