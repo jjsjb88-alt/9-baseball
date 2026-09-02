@@ -65,7 +65,9 @@ describe("CORE TEST UI", () => {
     vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => (
       window.setTimeout(() => callback(Date.now()), 16)
     ));
-    const createObjectURL = vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:core-test-results");
+    const createObjectURL = vi.spyOn(URL, "createObjectURL")
+      .mockImplementationOnce(() => { throw new Error("downloads blocked"); })
+      .mockReturnValue("blob:core-test-results");
     const revokeObjectURL = vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
     const downloadedNames = [];
     vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function click() {
@@ -112,7 +114,12 @@ describe("CORE TEST UI", () => {
     expect(screen.getByText("이 기기에 저장된 테스트 1/3")).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "JSON 받기" }));
-    expect(createObjectURL).toHaveBeenCalledOnce();
+    expect(screen.getByRole("alert").textContent).toContain("JSON 내보내기 실패");
+    expect(downloadedNames).toEqual([]);
+
+    fireEvent.click(screen.getByRole("button", { name: "JSON 받기" }));
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(createObjectURL).toHaveBeenCalledTimes(2);
     expect(downloadedNames).toEqual([`9zone-core-test-${new Date().toISOString().slice(0, 10)}.json`]);
     expect(revokeObjectURL).toHaveBeenCalledWith("blob:core-test-results");
   }, 20_000);

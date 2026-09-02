@@ -1141,6 +1141,7 @@ export default function BaseballSim() {
   const [coreTestNote, setCoreTestNote] = useState("");
   const [coreTestSaved, setCoreTestSaved] = useState(false);
   const [coreTestSaveError, setCoreTestSaveError] = useState("");
+  const [coreTestDownloadError, setCoreTestDownloadError] = useState("");
   const [coreTestResultCount, setCoreTestResultCount] = useState(() => readCoreTestResults(window.localStorage).length);
   const [log, setLog] = useState([]);
   const [pitchHistory, setPitchHistory] = useState([]); // [{zone, pitchId}] - 이 경기 동안 AI투수가 실제로 던진 기록 (패턴읽기용)
@@ -2756,6 +2757,7 @@ export default function BaseballSim() {
   };
 
   const downloadCoreTestResults = () => {
+    setCoreTestDownloadError("");
     try {
       const blob = new Blob([serializeCoreTestResults(window.localStorage)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
@@ -2767,7 +2769,7 @@ export default function BaseballSim() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch {
-      setMessage("테스트 결과를 내보내지 못했습니다");
+      setCoreTestDownloadError("JSON 내보내기 실패 — 브라우저의 다운로드 설정을 확인한 뒤 다시 시도해 주세요");
     }
   };
 
@@ -3559,6 +3561,11 @@ export default function BaseballSim() {
                 <button onClick={downloadCoreTestResults} className="underline" style={{ marginLeft: 8, color: "#ffb000" }}>JSON 받기</button>
               )}
             </div>
+            {coreTestDownloadError && (
+              <div role="alert" className="mono text-center" style={{ marginTop: 7, fontSize: 9, color: "#ff8080" }}>
+                {coreTestDownloadError}
+              </div>
+            )}
           </div>
         </div>
       )}
