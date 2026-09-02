@@ -60,7 +60,7 @@ describe("CORE TEST UI", () => {
     expect(screen.getByText("① 카드 선택")).toBeTruthy();
   });
 
-  it("saves a completed at-bat, restarts for the next player, and downloads JSON", async () => {
+  it("reports a failed save, retries, restarts for the next player, and downloads JSON", async () => {
     vi.spyOn(Math, "random").mockReturnValue(0);
     vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => (
       window.setTimeout(() => callback(Date.now()), 16)
@@ -87,6 +87,15 @@ describe("CORE TEST UI", () => {
     fireEvent.change(screen.getByPlaceholderText("기억에 남은 선택이나 헷갈린 점 (선택)"), {
       target: { value: "다음 공도 노리고 싶었다" },
     });
+
+    const setItem = vi.spyOn(window.localStorage, "setItem")
+      .mockImplementationOnce(() => { throw new Error("storage blocked"); });
+    fireEvent.click(screen.getByRole("button", { name: "결과 저장" }));
+
+    expect(screen.getByRole("alert").textContent).toContain("결과 저장 실패");
+    expect(screen.queryByText("기록 완료")).toBeNull();
+
+    setItem.mockRestore();
     fireEvent.click(screen.getByRole("button", { name: "결과 저장" }));
 
     expect(screen.getByText("기록 완료")).toBeTruthy();

@@ -1140,6 +1140,7 @@ export default function BaseballSim() {
   const [coreTestAnswers, setCoreTestAnswers] = useState({});
   const [coreTestNote, setCoreTestNote] = useState("");
   const [coreTestSaved, setCoreTestSaved] = useState(false);
+  const [coreTestSaveError, setCoreTestSaveError] = useState("");
   const [coreTestResultCount, setCoreTestResultCount] = useState(() => readCoreTestResults(window.localStorage).length);
   const [log, setLog] = useState([]);
   const [pitchHistory, setPitchHistory] = useState([]); // [{zone, pitchId}] - 이 경기 동안 AI투수가 실제로 던진 기록 (패턴읽기용)
@@ -2487,6 +2488,7 @@ export default function BaseballSim() {
     setCoreTestAnswers({});
     setCoreTestNote("");
     setCoreTestSaved(false);
+    setCoreTestSaveError("");
     practiceModeRef.current = mode;
     setPracticeMode(mode);
     startGame(role);
@@ -2737,6 +2739,7 @@ export default function BaseballSim() {
 
   const submitCoreTest = () => {
     if (!hasCompleteCoreTestAnswers(coreTestAnswers)) return;
+    setCoreTestSaveError("");
     try {
       const result = createCoreTestResult({
         answers: coreTestAnswers,
@@ -2748,7 +2751,7 @@ export default function BaseballSim() {
       setCoreTestResultCount(results.length);
       setCoreTestSaved(true);
     } catch {
-      setMessage("결과 저장 실패 — 브라우저의 로컬 저장소를 확인해 주세요");
+      setCoreTestSaveError("결과 저장 실패 — 브라우저의 로컬 저장소를 확인한 뒤 다시 시도해 주세요");
     }
   };
 
@@ -4534,6 +4537,11 @@ export default function BaseballSim() {
                 placeholder="기억에 남은 선택이나 헷갈린 점 (선택)"
                 className="mono text-xs w-full h-20 bg-[#0d1f17] border border-[#3a4a3e] rounded p-3 text-[#e8e4d8] mt-3 mb-3 resize-none focus:outline-none focus:border-[#ffb000]"
               />
+              {coreTestSaveError && (
+                <div role="alert" className="mono text-[11px] text-[#ff8080] mb-3 text-center">
+                  {coreTestSaveError}
+                </div>
+              )}
               <div className="flex gap-2">
                 <button onClick={returnToRole} className="mono text-xs px-4 py-2 rounded border border-[#3a4a3e] flex-1 hover:border-[#c73e3e]">취소</button>
                 <button
