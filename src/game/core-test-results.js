@@ -1,5 +1,10 @@
 export const CORE_TEST_STORAGE_KEY = "9zone-core-test-results-v1";
 
+const CORE_TEST_RESULT_KEYS = ["answers", "finalPlay", "note", "pitchesSeen", "timestamp", "version"];
+const CORE_TEST_ANSWER_KEYS = ["choseLowProbability", "feltLikeRead", "plannedCounter", "powerDominant"];
+const CORE_TEST_PITCH_KEYS = ["pitchId", "zone"];
+const CORE_TEST_PITCH_IDS = new Set(["change", "curve", "fastball", "slider"]);
+
 export const CORE_TEST_QUESTIONS = [
   { id: "choseLowProbability", text: "최고 확률이 아닌 존을 의도적으로 고른 순간이 있었나요?" },
   { id: "feltLikeRead", text: "적중했을 때 ‘운이 좋았다’보다 ‘읽었다’는 감정이 컸나요?" },
@@ -11,9 +16,17 @@ export function hasCompleteCoreTestAnswers(answers) {
   return CORE_TEST_QUESTIONS.every(({ id }) => typeof answers?.[id] === "boolean");
 }
 
+function hasExactKeys(value, expectedKeys) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const keys = Object.keys(value).sort();
+  return keys.length === expectedKeys.length
+    && keys.every((key, index) => key === expectedKeys[index]);
+}
+
 export function isValidCoreTestResult(result) {
-  if (!result || typeof result !== "object" || Array.isArray(result)) return false;
-  if (result.version !== 1 || !hasCompleteCoreTestAnswers(result.answers)) return false;
+  if (!hasExactKeys(result, CORE_TEST_RESULT_KEYS)) return false;
+  if (result.version !== 1 || !hasExactKeys(result.answers, CORE_TEST_ANSWER_KEYS)) return false;
+  if (!hasCompleteCoreTestAnswers(result.answers)) return false;
   if (typeof result.timestamp !== "string") return false;
 
   const timestamp = new Date(result.timestamp);
@@ -23,14 +36,11 @@ export function isValidCoreTestResult(result) {
   if (!Array.isArray(result.pitchesSeen)) return false;
 
   return result.pitchesSeen.every((pitch) => (
-    pitch
-    && typeof pitch === "object"
-    && !Array.isArray(pitch)
+    hasExactKeys(pitch, CORE_TEST_PITCH_KEYS)
     && Number.isInteger(pitch.zone)
     && pitch.zone >= 0
     && pitch.zone <= 9
-    && typeof pitch.pitchId === "string"
-    && pitch.pitchId.length > 0
+    && CORE_TEST_PITCH_IDS.has(pitch.pitchId)
   ));
 }
 

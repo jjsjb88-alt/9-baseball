@@ -68,6 +68,16 @@ describe("core-test results", () => {
     expect(isValidCoreTestResult(exportedResult({ timestamp: "September 2, 2026" }))).toBe(false);
     expect(isValidCoreTestResult(exportedResult({ note: null }))).toBe(false);
     expect(isValidCoreTestResult(exportedResult({ pitchesSeen: [{ zone: 10, pitchId: "fastball" }] }))).toBe(false);
+    expect(isValidCoreTestResult(exportedResult({ hiddenIntent: 0.91 }))).toBe(false);
+    expect(isValidCoreTestResult(exportedResult({
+      answers: { ...completeAnswers, hiddenTell: true },
+    }))).toBe(false);
+    expect(isValidCoreTestResult(exportedResult({
+      pitchesSeen: [{ zone: 7, pitchId: "fastball", trueDist: [0.1, 0.9] }],
+    }))).toBe(false);
+    expect(isValidCoreTestResult(exportedResult({
+      pitchesSeen: [{ zone: 7, pitchId: "knuckleball" }],
+    }))).toBe(false);
   });
 
   it("recovers from malformed storage and appends a valid result", () => {
