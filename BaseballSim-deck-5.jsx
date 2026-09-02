@@ -1116,6 +1116,7 @@ export default function BaseballSim() {
   const [exportData, setExportData] = useState("");
   const [exportLoading, setExportLoading] = useState(false);
   const [exportLoadError, setExportLoadError] = useState("");
+  const [exportDownloadError, setExportDownloadError] = useState("");
   const [count, setCount] = useState({ balls: 0, strikes: 0, outs: 0 });
   const [bases, setBases] = useState([false, false, false]);
   const [score, setScore] = useState({ user: 0, ai: 0 });
@@ -2802,6 +2803,7 @@ export default function BaseballSim() {
 
   const loadAllFeedback = async () => {
     setExportLoadError("");
+    setExportDownloadError("");
     setExportLoading(true);
     try {
       const list = await window.storage.list("feedback:", true);
@@ -2825,15 +2827,31 @@ export default function BaseballSim() {
   };
 
   const downloadFeedback = () => {
-    const blob = new Blob([exportData], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `9zone-feedback-${Date.now()}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    setExportDownloadError("");
+    let url = null;
+    let anchor = null;
+    try {
+      const blob = new Blob([exportData], { type: "application/json" });
+      url = URL.createObjectURL(blob);
+      anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `9zone-feedback-${Date.now()}.json`;
+      document.body.appendChild(anchor);
+      anchor.click();
+    } catch {
+      setExportDownloadError("피드백 다운로드 실패 — 내용을 유지했습니다. 다운로드 환경을 확인한 뒤 다시 시도해 주세요");
+    } finally {
+      try {
+        anchor?.remove();
+      } catch {
+        // Download cleanup is best-effort; the visible failure path is handled above.
+      }
+      try {
+        if (url) URL.revokeObjectURL(url);
+      } catch {
+        // The object URL is already detached from the UI even if revocation is blocked.
+      }
+    }
   };
 
   const getPracticeTip = () => {
@@ -4644,7 +4662,7 @@ export default function BaseballSim() {
 
       {appStage !== "tutorial" && (
         <button
-          onClick={() => { setShowExport(true); loadAllFeedback(); }}
+          onClick={() => { setExportDownloadError(""); setShowExport(true); loadAllFeedback(); }}
           className="fixed top-3 left-3 mono text-[9px] px-2 py-1 rounded border border-[#3a4a3e] bg-[#111a14] hover:bg-[#1a2a1a] text-[#7a8f7f] z-40"
         >
           내보내기(관리자)
@@ -4741,6 +4759,11 @@ export default function BaseballSim() {
                     <button onClick={loadAllFeedback} className="underline mt-2 text-[#ffb000]">
                       다시 불러오기
                     </button>
+                  </div>
+                )}
+                {exportDownloadError && (
+                  <div role="alert" className="mono text-[11px] text-[#ff8080] mb-3 text-center">
+                    {exportDownloadError}
                   </div>
                 )}
                 <div className="mono text-[10px] text-[#7a8f7f] mb-2">

@@ -92,6 +92,51 @@ describe("CORE TEST UI", () => {
     expect(list).toHaveBeenCalledTimes(2);
   });
 
+  it("shows feedback download failures in the export panel and retries without losing data", async () => {
+    const storedFeedback = {
+      rating: 5,
+      text: "투수의 패턴을 읽는 순간이 좋았다",
+      role: "batter",
+      timestamp: "2026-09-02T01:02:03.000Z",
+    };
+    window.storage = {
+      list: vi.fn().mockResolvedValue({ keys: ["feedback:one"] }),
+      get: vi.fn().mockResolvedValue({ value: JSON.stringify(storedFeedback) }),
+    };
+    const createObjectURL = vi.spyOn(URL, "createObjectURL")
+      .mockReturnValueOnce("blob:failed-feedback")
+      .mockReturnValueOnce("blob:feedback");
+    const revokeObjectURL = vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+    const downloadedNames = [];
+    vi.spyOn(HTMLAnchorElement.prototype, "click")
+      .mockImplementationOnce(() => { throw new Error("downloads blocked"); })
+      .mockImplementation(function click() {
+        downloadedNames.push(this.download);
+      });
+    render(<BaseballSim />);
+
+    fireEvent.click(screen.getByRole("button", { name: "건너뛰기" }));
+    fireEvent.click(screen.getByRole("button", { name: "내보내기(관리자)" }));
+    await screen.findByText("1건 수집됨");
+
+    fireEvent.click(screen.getByRole("button", { name: "파일로 다운로드" }));
+
+    expect(screen.getByRole("alert").textContent).toContain("피드백 다운로드 실패");
+    expect(screen.getByDisplayValue(/투수의 패턴을 읽는 순간이 좋았다/)).toBeTruthy();
+    expect(downloadedNames).toEqual([]);
+    expect(document.body.querySelector("a[download]")).toBeNull();
+    expect(revokeObjectURL).toHaveBeenCalledWith("blob:failed-feedback");
+
+    fireEvent.click(screen.getByRole("button", { name: "파일로 다운로드" }));
+
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(createObjectURL).toHaveBeenCalledTimes(2);
+    expect(downloadedNames).toHaveLength(1);
+    expect(downloadedNames[0]).toMatch(/^9zone-feedback-\d+\.json$/);
+    expect(revokeObjectURL).toHaveBeenCalledWith("blob:feedback");
+    expect(document.body.querySelector("a[download]")).toBeNull();
+  });
+
   it("shows feedback save failures in the open modal and retries without losing input", async () => {
     const set = vi.fn()
       .mockRejectedValueOnce(new Error("storage blocked"))
