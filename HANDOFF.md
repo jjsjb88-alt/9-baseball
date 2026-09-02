@@ -280,3 +280,15 @@ AI는 `playerAimHistoryRef`의 완료된 과거 선택만 본다. `selectedIdx`,
 - 이 변경은 내보내기 형식, 유효 응답 판정, 시간순 정렬, 요약 기준을 바꾸지 않는다.
 
 검증은 대상 회귀 6/6, 전체 `pnpm test` 15/15, `pnpm run build`, `pnpm run test:policy`, `git diff --check`를 통과했다. 코드 커밋은 `a8a189a`다. 로컬 앱은 `http://localhost:5174/`에서 기동했지만 브라우저 연결 복구 뒤에도 사용 가능 목록이 비어 실제 픽셀·레이아웃 및 스크린샷 QA는 수행하지 못했다. 다음 세션은 브라우저가 제공되면 자동화된 CORE TEST 후반 화면을 먼저 확인한 뒤 인간 3명의 실제 JSON을 수집한다.
+
+## 24. Core Game Design Baseline
+
+2026-09-02에 비어 있던 `docs/DESIGN.md`를 이 인수인계서에서 이미 확정한 제품 가설로 채웠다.
+
+- 한 문장 정의와 핵심 감정을 “확률 선택”이 아닌 “투수를 읽고 위험을 감수한 존 베팅”으로 고정했다.
+- READ → BET → REVEAL → IMPACT를 제품의 핵심 플레이 흐름으로 명시했다.
+- READ와 HIT의 분리, PUBLIC/TRUE INTENT 정보 비대칭, 정확한 READ에서만 강한 POWER, BASIC SWING, 공용 판정 엔진, 인간 플레이테스트 우선 원칙을 설계 기준으로 올렸다.
+- TRUE INTENT 노출, 연속 READ 공격 배율, 현재 선택을 엿보는 AI, 판정식 복사, 검증 전 콘텐츠 대량 추가를 명시적으로 금지했다.
+- 새 규칙을 발명하거나 런타임 코드를 바꾸지 않았으며 커밋은 `8a9b1ff`다.
+
+문서 변경은 `git diff --check`를 통과했다. 로컬 앱은 `http://localhost:5174/`에서 기동했지만 연결 복구 절차 뒤 사용 가능한 브라우저 유형이 0개라 CORE TEST 후반 화면의 픽셀·스크린샷 QA는 수행하지 못했다. 다음 세션은 브라우저가 제공되면 그 화면을 먼저 확인한 뒤 인간 3명의 실제 JSON을 수집한다.
