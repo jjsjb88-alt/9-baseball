@@ -55,6 +55,17 @@ export function serializeCoreTestResults(storage) {
   return JSON.stringify(results, null, 2);
 }
 
+function canonicalizeJson(value) {
+  if (Array.isArray(value)) return value.map(canonicalizeJson);
+  if (!value || typeof value !== "object") return value;
+
+  return Object.fromEntries(
+    Object.keys(value)
+      .sort()
+      .map((key) => [key, canonicalizeJson(value[key])]),
+  );
+}
+
 export function mergeCoreTestResultSets(resultSets) {
   const results = [];
   const fingerprints = new Set();
@@ -73,7 +84,7 @@ export function mergeCoreTestResultSets(resultSets) {
         continue;
       }
 
-      const fingerprint = JSON.stringify(result);
+      const fingerprint = JSON.stringify(canonicalizeJson(result));
       if (fingerprints.has(fingerprint)) {
         duplicates += 1;
         continue;

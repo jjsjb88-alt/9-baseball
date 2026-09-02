@@ -69,10 +69,21 @@ describe("core-test results", () => {
 
   it("merges cumulative exports without double-counting the same response", () => {
     const first = { version: 1, timestamp: "2026-09-02T01:00:00.000Z", answers: completeAnswers, note: "첫 번째" };
+    const reorderedFirst = {
+      note: "첫 번째",
+      answers: {
+        powerDominant: completeAnswers.powerDominant,
+        plannedCounter: completeAnswers.plannedCounter,
+        feltLikeRead: completeAnswers.feltLikeRead,
+        choseLowProbability: completeAnswers.choseLowProbability,
+      },
+      timestamp: "2026-09-02T01:00:00.000Z",
+      version: 1,
+    };
     const second = { version: 1, timestamp: "2026-09-02T02:00:00.000Z", answers: completeAnswers, note: "두 번째" };
     const malformed = { version: 1, answers: { choseLowProbability: true } };
 
-    expect(mergeCoreTestResultSets([[first], [first, second, malformed], { broken: true }])).toEqual({
+    expect(mergeCoreTestResultSets([[first], [reorderedFirst, second, malformed], { broken: true }])).toEqual({
       results: [first, second],
       duplicates: 1,
       skipped: 2,
