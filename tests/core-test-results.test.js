@@ -67,6 +67,7 @@ describe("core-test results", () => {
     expect(isValidCoreTestResult(exportedResult({ version: 2 }))).toBe(false);
     expect(isValidCoreTestResult(exportedResult({ timestamp: "September 2, 2026" }))).toBe(false);
     expect(isValidCoreTestResult(exportedResult({ note: null }))).toBe(false);
+    expect(isValidCoreTestResult(exportedResult({ pitchesSeen: [] }))).toBe(false);
     expect(isValidCoreTestResult(exportedResult({ pitchesSeen: [{ zone: 10, pitchId: "fastball" }] }))).toBe(false);
     expect(isValidCoreTestResult(exportedResult({ hiddenIntent: 0.91 }))).toBe(false);
     expect(isValidCoreTestResult(exportedResult({

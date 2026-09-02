@@ -33,7 +33,7 @@ export function isValidCoreTestResult(result) {
   if (Number.isNaN(timestamp.getTime()) || timestamp.toISOString() !== result.timestamp) return false;
   if (typeof result.note !== "string") return false;
   if (result.finalPlay !== null && typeof result.finalPlay !== "string") return false;
-  if (!Array.isArray(result.pitchesSeen)) return false;
+  if (!Array.isArray(result.pitchesSeen) || result.pitchesSeen.length === 0) return false;
 
   return result.pitchesSeen.every((pitch) => (
     hasExactKeys(pitch, CORE_TEST_PITCH_KEYS)
