@@ -55,10 +55,14 @@ export function parseCoreTestResults(serialized) {
 
 export function readCoreTestResults(storage) {
   try {
-    return parseCoreTestResults(storage.getItem(CORE_TEST_STORAGE_KEY));
+    return readCoreTestResultsStrict(storage);
   } catch {
     return [];
   }
+}
+
+export function readCoreTestResultsStrict(storage) {
+  return parseCoreTestResults(storage.getItem(CORE_TEST_STORAGE_KEY));
 }
 
 export function createCoreTestResult({ answers, note, lastPlay, pitchHistory, now = () => new Date() }) {

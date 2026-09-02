@@ -8,6 +8,7 @@ import {
   isValidCoreTestResult,
   mergeCoreTestResultSets,
   readCoreTestResults,
+  readCoreTestResultsStrict,
   serializeCoreTestResults,
   summarizeCoreTestResults,
 } from "../src/game/core-test-results.js";
@@ -108,6 +109,7 @@ describe("core-test results", () => {
   it("does not disguise an unavailable storage backend as an empty export", () => {
     const unavailableStorage = { getItem: () => { throw new Error("blocked"); } };
     expect(readCoreTestResults(unavailableStorage)).toEqual([]);
+    expect(() => readCoreTestResultsStrict(unavailableStorage)).toThrow("blocked");
     expect(() => serializeCoreTestResults(unavailableStorage)).toThrow("blocked");
   });
 

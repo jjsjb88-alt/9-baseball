@@ -20,6 +20,20 @@ const enterCoreTest = () => {
   fireEvent.click(screen.getByRole("button", { name: /CORE TEST · 한 타석/ }));
 };
 
+const storedCoreTestResult = {
+  version: 1,
+  timestamp: "2026-09-02T01:02:03.000Z",
+  answers: {
+    choseLowProbability: true,
+    feltLikeRead: true,
+    plannedCounter: true,
+    powerDominant: false,
+  },
+  note: "패턴을 찾았다",
+  finalPlay: "볼넷",
+  pitchesSeen: [{ zone: 7, pitchId: "fastball" }],
+};
+
 const takeNextPitch = async () => {
   const takeButton = await waitFor(
     () => {
@@ -45,6 +59,23 @@ const startNextPitch = async () => {
 };
 
 describe("CORE TEST UI", () => {
+  it("reports a failed initial result load and restores the count on retry", () => {
+    window.localStorage.setItem("9zone-core-test-results-v1", JSON.stringify([storedCoreTestResult]));
+    vi.spyOn(window.localStorage, "getItem")
+      .mockImplementationOnce(() => { throw new Error("storage blocked"); });
+
+    render(<BaseballSim />);
+    fireEvent.click(screen.getByRole("button", { name: "건너뛰기" }));
+
+    expect(screen.getByRole("alert").textContent).toContain("저장 결과 불러오기 실패");
+    expect(screen.getByText("이 기기에 저장된 테스트 0/3")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "다시 불러오기" }));
+
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(screen.getByText("이 기기에 저장된 테스트 1/3")).toBeTruthy();
+  });
+
   it("enters the player at-bat directly from role selection", () => {
     render(<BaseballSim />);
 

@@ -21,7 +21,7 @@ import {
   appendCoreTestResult,
   createCoreTestResult,
   hasCompleteCoreTestAnswers,
-  readCoreTestResults,
+  readCoreTestResultsStrict,
   serializeCoreTestResults,
 } from "./src/game/core-test-results.js";
 
@@ -1142,7 +1142,19 @@ export default function BaseballSim() {
   const [coreTestSaved, setCoreTestSaved] = useState(false);
   const [coreTestSaveError, setCoreTestSaveError] = useState("");
   const [coreTestDownloadError, setCoreTestDownloadError] = useState("");
-  const [coreTestResultCount, setCoreTestResultCount] = useState(() => readCoreTestResults(window.localStorage).length);
+  const [coreTestLoadError, setCoreTestLoadError] = useState("");
+  const [coreTestResultCount, setCoreTestResultCount] = useState(0);
+  const refreshCoreTestResults = () => {
+    setCoreTestLoadError("");
+    try {
+      setCoreTestResultCount(readCoreTestResultsStrict(window.localStorage).length);
+    } catch {
+      setCoreTestLoadError("저장 결과 불러오기 실패 — 브라우저의 로컬 저장소를 확인한 뒤 다시 시도해 주세요");
+    }
+  };
+  React.useEffect(() => {
+    refreshCoreTestResults();
+  }, []);
   const [log, setLog] = useState([]);
   const [pitchHistory, setPitchHistory] = useState([]); // [{zone, pitchId}] - 이 경기 동안 AI투수가 실제로 던진 기록 (패턴읽기용)
   const [showPitchHistory, setShowPitchHistory] = useState(false); // 모바일 화면공간 절약을 위해 기본 접힘
@@ -2750,6 +2762,7 @@ export default function BaseballSim() {
       });
       const results = appendCoreTestResult(window.localStorage, result);
       setCoreTestResultCount(results.length);
+      setCoreTestLoadError("");
       setCoreTestSaved(true);
     } catch {
       setCoreTestSaveError("결과 저장 실패 — 브라우저의 로컬 저장소를 확인한 뒤 다시 시도해 주세요");
@@ -3564,6 +3577,14 @@ export default function BaseballSim() {
             {coreTestDownloadError && (
               <div role="alert" className="mono text-center" style={{ marginTop: 7, fontSize: 9, color: "#ff8080" }}>
                 {coreTestDownloadError}
+              </div>
+            )}
+            {coreTestLoadError && (
+              <div role="alert" className="mono text-center" style={{ marginTop: 7, fontSize: 9, color: "#ff8080" }}>
+                <div>{coreTestLoadError}</div>
+                <button onClick={refreshCoreTestResults} className="underline" style={{ marginTop: 4, color: "#ffb000" }}>
+                  다시 불러오기
+                </button>
               </div>
             )}
           </div>
