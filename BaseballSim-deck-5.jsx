@@ -1111,6 +1111,7 @@ export default function BaseballSim() {
   const [feedbackText, setFeedbackText] = useState("");
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
   const [feedbackSaving, setFeedbackSaving] = useState(false);
+  const [feedbackSubmitError, setFeedbackSubmitError] = useState("");
   const [showExport, setShowExport] = useState(false);
   const [exportData, setExportData] = useState("");
   const [exportLoading, setExportLoading] = useState(false);
@@ -2732,6 +2733,7 @@ export default function BaseballSim() {
   // ============ 피드백 저장/내보내기 ============
   const submitFeedback = async () => {
     if (feedbackRating === 0 && !feedbackText.trim()) return;
+    setFeedbackSubmitError("");
     setFeedbackSaving(true);
     try {
       const id = `feedback:${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -2743,8 +2745,8 @@ export default function BaseballSim() {
       });
       await window.storage.set(id, payload, true); // shared - 다른 플레이테스터 피드백과 함께 모임
       setFeedbackSubmitted(true);
-    } catch (e) {
-      setMessage("피드백 저장 실패 - 다시 시도해줘");
+    } catch {
+      setFeedbackSubmitError("피드백 저장 실패 — 입력을 유지했습니다. 저장 환경을 확인한 뒤 다시 시도해 주세요");
     } finally {
       setFeedbackSaving(false);
     }
@@ -4631,7 +4633,7 @@ export default function BaseballSim() {
       {/* 피드백 버튼 - 튜토리얼 제외 항상 노출 */}
       {appStage !== "tutorial" && (
         <button
-          onClick={() => setShowFeedback(true)}
+          onClick={() => { setFeedbackSubmitError(""); setShowFeedback(true); }}
           className="fixed top-3 right-3 mono text-[10px] px-3 py-1.5 rounded border border-[#ffb000] bg-[#111a14] hover:bg-[#1a2a1a] text-[#ffb000] z-40"
         >
           💬 피드백
@@ -4694,6 +4696,12 @@ export default function BaseballSim() {
                   placeholder="재밌었던 점, 아쉬운 점, 헷갈렸던 부분 등 자유롭게..."
                   className="mono text-xs w-full h-28 bg-[#0d1f17] border border-[#3a4a3e] rounded p-3 text-[#e8e4d8] mb-4 resize-none focus:outline-none focus:border-[#ffb000]"
                 />
+
+                {feedbackSubmitError && (
+                  <div role="alert" className="mono text-[11px] text-[#ff8080] mb-4 text-center">
+                    {feedbackSubmitError}
+                  </div>
+                )}
 
                 <div className="flex gap-2">
                   <button

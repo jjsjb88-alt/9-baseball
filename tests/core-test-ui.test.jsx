@@ -13,6 +13,7 @@ afterEach(() => {
   vi.restoreAllMocks();
   cleanup();
   window.localStorage.clear();
+  delete window.storage;
 });
 
 const enterCoreTest = () => {
@@ -59,6 +60,32 @@ const startNextPitch = async () => {
 };
 
 describe("CORE TEST UI", () => {
+  it("shows feedback save failures in the open modal and retries without losing input", async () => {
+    const set = vi.fn()
+      .mockRejectedValueOnce(new Error("storage blocked"))
+      .mockResolvedValueOnce(undefined);
+    window.storage = { set };
+    render(<BaseballSim />);
+
+    fireEvent.click(screen.getByRole("button", { name: "건너뛰기" }));
+    fireEvent.click(screen.getByRole("button", { name: /피드백/ }));
+    fireEvent.click(screen.getAllByRole("button", { name: "⭐" })[4]);
+    const feedback = screen.getByPlaceholderText("재밌었던 점, 아쉬운 점, 헷갈렸던 부분 등 자유롭게...");
+    fireEvent.change(feedback, { target: { value: "패턴을 읽는 순간이 좋았다" } });
+
+    fireEvent.click(screen.getByRole("button", { name: "제출" }));
+
+    expect((await screen.findByRole("alert")).textContent).toContain("피드백 저장 실패");
+    expect(feedback.value).toBe("패턴을 읽는 순간이 좋았다");
+    expect(screen.getAllByRole("button", { name: "⭐" })[4].className).toContain("scale-110");
+
+    fireEvent.click(screen.getByRole("button", { name: "제출" }));
+
+    expect(await screen.findByText("고마워요!")).toBeTruthy();
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(set).toHaveBeenCalledTimes(2);
+  });
+
   it("reports a failed initial result load and restores the count on retry", () => {
     window.localStorage.setItem("9zone-core-test-results-v1", JSON.stringify([storedCoreTestResult]));
     vi.spyOn(window.localStorage, "getItem")
