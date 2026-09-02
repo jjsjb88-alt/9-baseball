@@ -2809,14 +2809,17 @@ export default function BaseballSim() {
       const list = await window.storage.list("feedback:", true);
       const keys = list?.keys || [];
       const entries = [];
+      let failedEntries = 0;
       for (const k of keys) {
         try {
           const res = await window.storage.get(k, true);
-          if (res?.value) entries.push(JSON.parse(res.value));
-        } catch (e) {
-          // 개별 항목 실패는 건너뜀
+          if (!res?.value) throw new Error("feedback entry is missing");
+          entries.push(JSON.parse(res.value));
+        } catch {
+          failedEntries += 1;
         }
       }
+      if (failedEntries > 0) throw new Error("feedback export is incomplete");
       entries.sort((a, b) => (a.timestamp || "").localeCompare(b.timestamp || ""));
       setExportData(JSON.stringify(entries, null, 2));
     } catch {

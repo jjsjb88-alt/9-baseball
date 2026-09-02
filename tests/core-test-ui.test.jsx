@@ -60,6 +60,54 @@ const startNextPitch = async () => {
 };
 
 describe("CORE TEST UI", () => {
+  it("blocks incomplete feedback exports when an individual entry fails and retries the full load", async () => {
+    const storedFeedback = [
+      {
+        rating: 5,
+        text: "첫 번째 피드백",
+        role: "batter",
+        timestamp: "2026-09-02T01:02:03.000Z",
+      },
+      {
+        rating: 4,
+        text: "두 번째 피드백",
+        role: "pitcher",
+        timestamp: "2026-09-02T02:03:04.000Z",
+      },
+    ];
+    let loadAttempt = 0;
+    window.storage = {
+      list: vi.fn().mockImplementation(() => {
+        loadAttempt += 1;
+        return Promise.resolve({ keys: ["feedback:one", "feedback:two"] });
+      }),
+      get: vi.fn().mockImplementation((key) => {
+        if (loadAttempt === 1 && key === "feedback:two") {
+          return Promise.reject(new Error("entry blocked"));
+        }
+        const index = key === "feedback:one" ? 0 : 1;
+        return Promise.resolve({ value: JSON.stringify(storedFeedback[index]) });
+      }),
+    };
+    render(<BaseballSim />);
+
+    fireEvent.click(screen.getByRole("button", { name: "건너뛰기" }));
+    fireEvent.click(screen.getByRole("button", { name: "내보내기(관리자)" }));
+
+    expect((await screen.findByRole("alert")).textContent).toContain("피드백 불러오기 실패");
+    expect(screen.getByRole("button", { name: "파일로 다운로드" }).disabled).toBe(true);
+    expect(screen.getByDisplayValue("").value).toBe("");
+
+    fireEvent.click(screen.getByRole("button", { name: "다시 불러오기" }));
+
+    await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
+    expect(screen.getByText("2건 수집됨")).toBeTruthy();
+    expect(screen.getByDisplayValue(/첫 번째 피드백/).value).toContain("두 번째 피드백");
+    expect(screen.getByRole("button", { name: "파일로 다운로드" }).disabled).toBe(false);
+    expect(window.storage.list).toHaveBeenCalledTimes(2);
+    expect(window.storage.get.mock.calls.filter(([key]) => key.startsWith("feedback:")).length).toBe(4);
+  });
+
   it("shows feedback load failures in the export panel and retries without offering invalid JSON", async () => {
     const storedFeedback = {
       rating: 5,
