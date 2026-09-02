@@ -2,6 +2,12 @@
 
 `BaseballSim-deck-5.jsx`의 기존 UI·그래픽·사운드·경기 흐름을 유지하면서 `CORE TEST 02`의 타자 심리전 규칙을 통합한 로컬 개발 프로젝트다. 현재 목표는 콘텐츠 확장이 아니라 **한 공을 읽고 베팅하는 15초가 재미있는지** 검증하는 것이다.
 
+## 웹에서 플레이
+
+[9ZONE SHOWDOWN 바로 플레이하기](https://jjsjb88-alt.github.io/9-baseball/)
+
+`main` 브랜치에 변경 사항을 푸시하면 테스트와 프로덕션 빌드를 통과한 버전이 GitHub Pages에 자동 배포된다. 배포 상태는 저장소의 **Actions → Deploy to GitHub Pages**에서 확인한다.
+
 ## 실행
 
 Node.js 20 이상을 권장한다.
@@ -18,6 +24,8 @@ npm test
 npm run build
 npm run preview
 ```
+
+GitHub Pages용 빌드는 저장소 하위 경로인 `/9-baseball/`을 자동 적용한다. 로컬 개발 서버는 기존처럼 `/`에서 실행된다.
 
 ## 소스 구조
 

@@ -8,3 +8,4 @@ work/
 loop/STOP
 loop/*.pid
 loop/.state/
+.core-test-report-*.json
