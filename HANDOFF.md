@@ -363,7 +363,20 @@ AI는 `playerAimHistoryRef`의 완료된 과거 선택만 본다. `selectedIdx`,
 
 검증은 전체 `pnpm test` 17/17, `pnpm run test:policy`, `pnpm run build`, `git diff --check`를 통과했으며 구현 커밋은 `97436de`다. 로컬 앱은 `http://127.0.0.1:5174/`에서 기동했지만 브라우저 연결 복구 뒤 사용 가능한 브라우저 유형이 0개라 실제 픽셀·레이아웃과 스크린샷 QA는 수행하지 못했다. 다음 세션은 브라우저가 제공되면 CORE TEST 완료 설문의 정상·실패 저장과 역할 화면의 정상·실패 JSON 내보내기를 화면에서 먼저 확인한 뒤 실제 인간 3인의 JSON을 수집한다.
 
-## 31. Core Test Initial Load Error Feedback
+## 31. Core Test Error Feedback Follow-ups
+
+### 31.2 Partial Download Cleanup
+
+2026-09-02에 CORE TEST JSON 내보내기가 Blob URL 생성 이후 링크 클릭 단계에서 실패할 때 임시 자원이 남던 문제를 막았다.
+
+- 이전에는 링크 클릭이 예외를 던지면 역할 선택 화면에 오류는 표시됐지만, 임시 다운로드 링크가 DOM에 남고 생성된 Blob URL도 해제되지 않았다.
+- `downloadCoreTestResults()`는 이제 링크와 Blob URL을 `finally`에서 최선으로 정리한다. 생성 전 실패, 클릭 중 실패, 정상 다운로드가 같은 정리 경로를 사용한다.
+- 실패해도 저장된 CORE TEST 결과는 바꾸지 않으며, 오류가 보이는 같은 역할 선택 화면에서 `JSON 받기`를 다시 누를 수 있다.
+- UI 회귀 테스트는 첫 링크 클릭을 실패시킨 뒤 접근 가능한 오류, 임시 링크 제거, 실패 Blob URL 해제를 확인한다. 두 번째 클릭은 날짜 기반 파일명으로 성공하며 성공 Blob URL과 임시 링크도 정리되는지 확인한다.
+
+검증은 대상 CORE TEST UI 3/3, 전체 `pnpm test` 18/18, `pnpm run test:policy`, `pnpm run build`, `git diff --check`를 통과했으며 구현 커밋은 `8bb26c8`이다. 정책 수치는 PowerSpam/최선 비파워 TB/PA 1.022로 기존 기준을 유지했다. 로컬 앱은 `http://localhost:5174/`에서 기동했지만 브라우저 연결 복구 절차와 사용 가능 유형 조회 결과가 0개라 실제 픽셀·레이아웃과 스크린샷 QA를 수행하지 못했다. 다음 세션은 브라우저가 제공되면 자동화된 CORE TEST 후반 흐름을 화면에서 먼저 확인한 뒤 앱에서 내려받은 실제 인간 3인 JSON을 수집한다.
+
+### 31.1 Initial Load Error Feedback
 
 2026-09-02에 역할 선택 화면이 CORE TEST 로컬 저장소를 처음 읽지 못했을 때 기존 결과가 없는 것처럼 `0/3`만 표시하던 문제를 막았다.
 
