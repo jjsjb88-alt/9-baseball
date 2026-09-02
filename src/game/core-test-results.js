@@ -11,6 +11,29 @@ export function hasCompleteCoreTestAnswers(answers) {
   return CORE_TEST_QUESTIONS.every(({ id }) => typeof answers?.[id] === "boolean");
 }
 
+export function isValidCoreTestResult(result) {
+  if (!result || typeof result !== "object" || Array.isArray(result)) return false;
+  if (result.version !== 1 || !hasCompleteCoreTestAnswers(result.answers)) return false;
+  if (typeof result.timestamp !== "string") return false;
+
+  const timestamp = new Date(result.timestamp);
+  if (Number.isNaN(timestamp.getTime()) || timestamp.toISOString() !== result.timestamp) return false;
+  if (typeof result.note !== "string") return false;
+  if (result.finalPlay !== null && typeof result.finalPlay !== "string") return false;
+  if (!Array.isArray(result.pitchesSeen)) return false;
+
+  return result.pitchesSeen.every((pitch) => (
+    pitch
+    && typeof pitch === "object"
+    && !Array.isArray(pitch)
+    && Number.isInteger(pitch.zone)
+    && pitch.zone >= 0
+    && pitch.zone <= 9
+    && typeof pitch.pitchId === "string"
+    && pitch.pitchId.length > 0
+  ));
+}
+
 export function parseCoreTestResults(serialized) {
   try {
     const parsed = JSON.parse(serialized || "[]");
@@ -79,7 +102,7 @@ export function mergeCoreTestResultSets(resultSets) {
     }
 
     for (const result of resultSet) {
-      if (!result || typeof result !== "object" || !hasCompleteCoreTestAnswers(result.answers)) {
+      if (!isValidCoreTestResult(result)) {
         skipped += 1;
         continue;
       }
@@ -101,7 +124,7 @@ export function mergeCoreTestResultSets(resultSets) {
 
 export function summarizeCoreTestResults(results) {
   const validResults = Array.isArray(results)
-    ? results.filter((result) => hasCompleteCoreTestAnswers(result?.answers))
+    ? results.filter(isValidCoreTestResult)
     : [];
 
   const questions = CORE_TEST_QUESTIONS.map(({ id, text }) => {

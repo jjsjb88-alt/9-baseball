@@ -5,6 +5,7 @@ import {
   appendCoreTestResult,
   createCoreTestResult,
   hasCompleteCoreTestAnswers,
+  isValidCoreTestResult,
   mergeCoreTestResultSets,
   readCoreTestResults,
   serializeCoreTestResults,
@@ -14,6 +15,16 @@ import {
 const completeAnswers = Object.fromEntries(
   CORE_TEST_QUESTIONS.map(({ id }, index) => [id, index % 2 === 0]),
 );
+
+const exportedResult = (overrides = {}) => ({
+  version: 1,
+  timestamp: "2026-09-02T01:00:00.000Z",
+  answers: completeAnswers,
+  note: "",
+  finalPlay: null,
+  pitchesSeen: [{ zone: 7, pitchId: "fastball" }],
+  ...overrides,
+});
 
 const memoryStorage = (initialValue = null) => {
   let value = initialValue;
@@ -50,6 +61,15 @@ describe("core-test results", () => {
     });
   });
 
+  it("accepts only complete version 1 exports as report input", () => {
+    expect(isValidCoreTestResult(exportedResult())).toBe(true);
+    expect(isValidCoreTestResult({ answers: completeAnswers })).toBe(false);
+    expect(isValidCoreTestResult(exportedResult({ version: 2 }))).toBe(false);
+    expect(isValidCoreTestResult(exportedResult({ timestamp: "September 2, 2026" }))).toBe(false);
+    expect(isValidCoreTestResult(exportedResult({ note: null }))).toBe(false);
+    expect(isValidCoreTestResult(exportedResult({ pitchesSeen: [{ zone: 10, pitchId: "fastball" }] }))).toBe(false);
+  });
+
   it("recovers from malformed storage and appends a valid result", () => {
     const storage = memoryStorage("{broken");
     expect(readCoreTestResults(storage)).toEqual([]);
@@ -68,8 +88,10 @@ describe("core-test results", () => {
   });
 
   it("merges cumulative exports without double-counting the same response", () => {
-    const first = { version: 1, timestamp: "2026-09-02T01:00:00.000Z", answers: completeAnswers, note: "첫 번째" };
+    const first = exportedResult({ note: "첫 번째" });
     const reorderedFirst = {
+      pitchesSeen: [{ pitchId: "fastball", zone: 7 }],
+      finalPlay: null,
       note: "첫 번째",
       answers: {
         powerDominant: completeAnswers.powerDominant,
@@ -80,7 +102,7 @@ describe("core-test results", () => {
       timestamp: "2026-09-02T01:00:00.000Z",
       version: 1,
     };
-    const second = { version: 1, timestamp: "2026-09-02T02:00:00.000Z", answers: completeAnswers, note: "두 번째" };
+    const second = exportedResult({ timestamp: "2026-09-02T02:00:00.000Z", note: "두 번째" });
     const malformed = { version: 1, answers: { choseLowProbability: true } };
 
     expect(mergeCoreTestResultSets([[first], [reorderedFirst, second, malformed], { broken: true }])).toEqual({
@@ -98,9 +120,13 @@ describe("core-test results", () => {
       powerDominant: false,
     };
     const results = [
-      { answers: positiveAnswers, note: "패턴을 찾았다" },
-      { answers: positiveAnswers, note: "" },
-      { answers: { ...positiveAnswers, feltLikeRead: false, powerDominant: true }, note: "운처럼 느껴졌다" },
+      exportedResult({ answers: positiveAnswers, note: "패턴을 찾았다" }),
+      exportedResult({ timestamp: "2026-09-02T02:00:00.000Z", answers: positiveAnswers }),
+      exportedResult({
+        timestamp: "2026-09-02T03:00:00.000Z",
+        answers: { ...positiveAnswers, feltLikeRead: false, powerDominant: true },
+        note: "운처럼 느껴졌다",
+      }),
     ];
 
     const summary = summarizeCoreTestResults(results);
