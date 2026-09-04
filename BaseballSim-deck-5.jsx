@@ -1586,9 +1586,7 @@ export default function BaseballSim() {
   };
   // 역할별 손패: 타자는 타석당 1장 소모(넉넉), 투수는 매 투구 소모(적게) — 시뮬 기준 대칭점
   const handSizeFor = (lv, role) =>
-    (role ?? userRoleRef.current) === "pitcher"
-      ? 2 + Math.floor((lv - 1) / 4)   // 투수: 2장 시작, 4레벨마다 +1
-      : Math.min(8, 6 + Math.floor((lv - 1) / 4));  // 타자: 6장 시작(선택지 확보), 4레벨마다 +1, 상한 8
+    Math.min(8, 6 + Math.floor((lv - 1) / 4));  // 6장 시작(선택지 확보), 4레벨마다 +1, 상한 8
   // 성향 축 분리: 예전엔 컨택/파워 효과가 상쇄돼 기대값이 같았음(정책봇 실측: 실력격차 .009)
   //   contact = 출루형(아웃확률↓, 장타등급↓) / power = 장타형(등급↑, 아웃확률↑)
   const CARD_STYLES = {
@@ -1600,17 +1598,6 @@ export default function BaseballSim() {
     control: { label: "제구", controlMult: 1.25, stuffMult: 0.85, color: "#3d7a5f", hint: "코스 정확 / 구위 약함" },
     stuff: { label: "구위", controlMult: 0.8, stuffMult: 1.3, color: "#c73e3e", hint: "위력적 / 코스 흔들림" },
     normal: { label: "표준", controlMult: 1, stuffMult: 1, color: "#7a8f7f", hint: "균형" },
-  };
-  const buildPitcherDeck = () => {
-    const d = [];
-    const styleByZone = ["control", "normal", "stuff", "control", "normal", "stuff", "control", "normal", "stuff"];
-    // 구종도 카드에 흡수 — "이 코스엔 커브밖에 없다" 같은 판단이 생기게
-    const typeByZone = ["fastball", "slider", "curve", "change", "fastball", "slider", "curve", "change", "fastball"];
-    for (let z = 0; z < 9; z++) d.push({ kind: "pitch", zone: z, style: styleByZone[z], ptype: typeByZone[z] });
-    d.push({ kind: "pitch", zone: 9, style: "control", ptype: "curve" }); // 유인구(존 밖)
-    d.push({ kind: "pitch", zone: 9, style: "stuff", ptype: "slider" });
-    for (let i = d.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [d[i], d[j]] = [d[j], d[i]]; }
-    return d;
   };
   const buildStartingDeck = () => {
     const d = [];
@@ -1633,8 +1620,6 @@ export default function BaseballSim() {
   // 커리어 덱: 경기가 끝나도 유지되는 내 덱(카드 획득으로 성장)
   const [careerDeck, setCareerDeck] = useState([]);       // 타자 커리어 덱
   const careerDeckRef = useRef([]);
-  const [careerPitchDeck, setCareerPitchDeck] = useState([]); // 투수 커리어 덱(별도)
-  const careerPitchDeckRef = useRef([]);
   const [cardRewards, setCardRewards] = useState(null); // 3장 중 1택
   const [cardRewardScope, setCardRewardScope] = useState("career"); // "run"=이번 런 덱에만 | "career"=커리어 덱에 영구
   const cardLabel = (card) =>
@@ -1707,26 +1692,17 @@ export default function BaseballSim() {
   };
   // 강화: 보유 카드 1장의 등급을 올림(덱 매수 불변) - 정책봇 실측상 이게 진짜 성장 축
   const upgradeCard = (target) => {
-    const isPitch = target.kind === "pitch";
-    const ref = isPitch ? careerPitchDeckRef : careerDeckRef;
-    const base = ref.current.length > 0 ? ref.current : (isPitch ? buildPitcherDeck() : buildStartingDeck());
+    const ref = careerDeckRef;
+    const base = ref.current.length > 0 ? ref.current : buildStartingDeck();
     const idx = base.findIndex((cd) => cd.kind === target.kind && cd.zone === target.zone && cd.style === target.style && (cd.tier || 1) < 3);
     const next = base.map((cd, i) => (i === idx ? { ...cd, tier: (cd.tier || 1) + 1 } : cd));
     ref.current = next;
-    if (isPitch) { setCareerPitchDeck(next); saveCareerRef.current({ careerPitchDeck: next }); }
-    else { setCareerDeck(next); saveCareerRef.current({ careerDeck: next }); }
+    setCareerDeck(next); saveCareerRef.current({ careerDeck: next });
     setCardRewards(null);
     pushLog(`⭐ 카드 강화: ${cardLabel(target)} → ★${(base[idx]?.tier || 1) + 1}`);
   };
   const acquireCard = (card) => {
-    if (card.kind === "pitch") {
-      const base = careerPitchDeckRef.current.length > 0 ? careerPitchDeckRef.current : buildPitcherDeck();
-      const next = [...base, card];
-      careerPitchDeckRef.current = next;
-      setCareerPitchDeck(next);
-      setCardRewards(null);
-      saveCareerRef.current({ careerPitchDeck: next });
-    } else {
+    {
       const base = careerDeckRef.current.length > 0 ? careerDeckRef.current : buildStartingDeck();
       const next = [...base, card];
       careerDeckRef.current = next;
@@ -1811,12 +1787,9 @@ export default function BaseballSim() {
   // 아래 2개는 매 프레임(60fps) 갱신되므로 React state 대신 ref+DOM직접조작으로 처리 (안그러면 매프레임 전체 리렌더 -> 모바일에서 버튼 탭 씹힘)
   const windupCircleRef = useRef(null);
   const windupTextRef = useRef(null);
-  const deliveryMarkerElRef = useRef(null);
   // [비활성] 리얼타임 모드는 덱빌딩 방향과 안 맞아 UI에서 제거됨(2025 세션). 항상 "strategy".
   // 관련 코드(resolveRealtimeSwing / startDelivery / 딜리버리 미니게임)는 복구 대비로 남겨둠 - 인수인계 문서 참고.
   const [speedMode, setSpeedMode] = useState("strategy");
-  const [pitcherSpeedMode, setPitcherSpeedMode] = useState("strategy"); // [비활성] 위와 동일 - 항상 strategy
-  const [deliveryPending, setDeliveryPending] = useState(null); // {targetZone, pitch, sweetWidth, periodMs}
   const deliveryActiveRef = useRef(false);
 
   const ballElRef = useRef(null);
@@ -1841,13 +1814,13 @@ export default function BaseballSim() {
     };
   }, [traits, count.balls, count.strikes, bases, batterEventBuff]);
   const aiDist = useMemo(
-    () => (userRole === "pitcher" ? aiGuessDistribution(recentTargets, effBatter.eye, favorZone, effBatter.zoneRating, count.balls, count.strikes) : null),
+    () => null, // 투수 역할이 없으므로 상대 노림 히트맵도 없다
     [userRole, recentTargets, effBatter.eye, favorZone]
   );
 
   const gainExp = (hitType) => {
     if (practiceModeRef.current) return; // 가이드 연습 중엔 경험치/레벨 영향 없음
-    const gained = (userRoleRef.current === "pitcher" ? EXP_TABLE_PITCHER : EXP_TABLE)[hitType];
+    const gained = EXP_TABLE[hitType];
     if (!gained) return;
     // setState updater 안에 부수효과(다른 setState/pushLog)를 넣으면 React가 updater를
     // 여러 번 호출할 수 있어 부수효과가 중복 실행될 위험이 있음 -> 여기선 현재 값으로 직접 계산 후
@@ -1861,7 +1834,7 @@ export default function BaseballSim() {
     setExp(newExp);
     if (newLevel !== level) {
       const tier = newLevel % 3 === 0 ? "major" : "normal";
-      setPendingLevelUp({ tier, choices: rollTraitChoices(traits, tier, userRole === "pitcher"), toLevel: newLevel });
+      setPendingLevelUp({ tier, choices: rollTraitChoices(traits, tier, false), toLevel: newLevel });
       setLevel(newLevel); levelRef.current = newLevel;
       pushLog(`레벨업! Lv.${newLevel}`);
     }
@@ -2099,125 +2072,12 @@ export default function BaseballSim() {
 
   // 유저 = 투수: AI타자(effBatter 적용)가 반응
   // 실제 투구 결과 산출 (전략모드 직접호출/리얼타임모드 딜리버리미니게임 둘 다 여기로 수렴)
-  const executeThrow = (targetZone, pitch, effControl, forceWild) => {
-    const effPitch = ptEffects.stuffDelta ? { ...pitch, power: clamp(pitch.power + ptEffects.stuffDelta, 1, 99) } : pitch;
-    const wildOut = {};
-    const actualZone = forceWild
-      ? Math.floor(rand() * 10)
-      : rollActualZoneWithWildPitch(targetZone, effControl, effPitch.controlMod, WILD_PITCH_BASE + ptEffects.wildPitchDelta, wildOut);
-    const isWild = forceWild || wildOut.wild;
-    if (isWild) { pushLog("⚠ 실투! 공이 손에서 빠졌다"); showBanner("실투!", "bad"); }
-    {
-      const isW = actualZone === 9;
-      const pin = pitchMode === "pinpoint" && actualZone === targetZone && !isW;
-      showPitchMark({ zone: actualZone, pinpoint: pin, wild: isWild, targetZone });
-    }
-    const guess = aiGuessZone(recentTargets, effBatter.eye, favorZone, effBatter.zoneRating, count.balls, count.strikes);
-    const isWaste = actualZone === 9;
-    const pinpointSuccess = pitchMode === "pinpoint" && actualZone === targetZone && !isWaste;
-
-    let swings;
-    if (guess === actualZone && !isWaste) swings = true;
-    else if (!isWaste) swings = rand() < (count.strikes === 2 ? 0.7 : 0.4);
-    else {
-      const cardSM = pitchStyleRef.current === "stuff" ? 1.25 : pitchStyleRef.current === "control" ? 0.85 : 1;
-      const sf = clamp((PITCHER_PRESET.stuff + ptEffects.stuffDelta) * cardSM * staminaFactor() / 50, 0.5, 2);
-      let cc = chaseChance(effBatter.eye, count.balls, count.strikes, effPitch, sf, foulsThisPARef.current);
-      if (effBatter.wasteContactEnabled) cc += 0.2; // 배드볼히터는 더 따라나감
-      swings = rand() < cc;
-      if (swings) pushLog(`🎣 유인구에 방망이 나옴! (${Math.round(cc * 100)}%)`);
-    }
-
-    if (!swings) { applyOutcome(isWaste ? "ball" : "strike", actualZone); return; }
-    if (isWaste && !effBatter.wasteContactEnabled) { applyOutcome(rand() < 0.6 ? "swingMiss" : "foul", actualZone); return; }
-    const aiMode = guess === actualZone && !isWaste ? "guess" : "safe";
-    const extraDifficulty = pinpointSuccess && !ptEffects.noPinpointDifficulty ? 0.3 : 0;
-    {
-      // 구위(stuff) 반영: 리얼타임 삭제 전엔 딜리버리 마커 속도에만 쓰여서 지금은 죽어있던 스탯.
-      // 이제 전략모드에서도 "구위 높을수록 타자가 헛스윙하고 타구 질이 죽는다"로 작동시킴.
-      // 카드 성향(제구형/구위형)과 체력도 함께 반영해 최종 구위를 산출.
-      const cardStuffMult = pitchStyleRef.current === "stuff" ? 1.25 : pitchStyleRef.current === "control" ? 0.85 : 1;
-      const effStuff = clamp((PITCHER_PRESET.stuff + ptEffects.stuffDelta) * cardStuffMult * staminaFactor(), 1, 120);
-      const stuffMiss = 1 + (effStuff - 50) / 220;   // 구위 50=중립, 100이면 헛스윙 +23%
-      const stuffPower = 1 - (effStuff - 50) / 400;  // 구위 높을수록 타구 질(장타력) 억제
-      const effVsStuff = {
-        ...effBatter,
-        missMult: effBatter.missMult * clamp(stuffMiss, 0.75, 1.5) * foulPressure(),
-        hrMult: effBatter.hrMult * clamp(stuffPower, 0.7, 1.2),
-      };
-      // 정타 봉쇄: 구위/변화가 타자 컨택을 이기면 "맞아도 죽는 타구"로 만든다
-      const dec = deceptionRoll(effStuff, effPitch, 1, (effBatter.zoneRating[actualZone] ?? 50));
-      if (dec.hit && !isWaste) pushLog(`🌀 배트 중심을 비껴갔다! (빗맞힘 ${Math.round(dec.chance * 100)}%)`);
-      let { outcome: rcOutcome, power: rcPower } = resolveContact(effVsStuff, actualZone, effPitch, isWaste, aiMode, extraDifficulty, "strategy", 0.5, false, dec.hit && !isWaste ? 0.68 : 1);
-      applyOutcome(rcOutcome, actualZone, rcPower);
-    }
-  };
 
   // 전략모드: 미니게임 없이 제구 스탯 그대로 반영해서 바로 실행
-  const playPitchCard = (zone, style) => {
-    const idx = handRef.current.findIndex((cd) => cd.kind === "pitch" && cd.zone === zone && cd.style === style);
-    if (idx === -1) return false;
-    discardCardAt(idx);
-    return true;
-  };
-  const userThrow = (targetZone, style = "normal", ptype) => {
-    pitchStyleRef.current = style;
-    const st = PITCH_CARD_STYLES[style] || PITCH_CARD_STYLES.normal;
-    const base = PITCH_TYPES.find((p) => p.id === (ptype || selectedType)) || PITCH_TYPES[0];
-    const pitch = { ...base, power: clamp(base.power * st.stuffMult, 1, 99) };
-    const effControl = clamp(getPitcherControl(pitchMode === "pinpoint") * st.controlMult, 5, 99);
-    setPitcherPoseBriefly("release", 500);
-    executeThrow(targetZone, pitch, effControl, false);
-  };
 
   // 리얼타임모드: 딜리버리 타이밍 미니게임 시작 - 구위(마커속도) vs 제구(적중구간 폭) 트레이드오프
   const deliveryMarkerRef = useRef(0);
-  const startDelivery = (targetZone, ptype) => {
-    const pitch = PITCH_TYPES.find((p) => p.id === (ptype || selectedType)) || PITCH_TYPES[0];
-    const sweetWidth = clamp(getPitcherControl() * 0.6, 15, 70); // 제구 높을수록 적중구간 넓음
-    const periodMs = clamp(1400 - PITCHER_PRESET.stuff * 8, 400, 1400); // 구위 높을수록 마커 빠름(어려움)
-    setDeliveryPending({ targetZone, pitch, sweetWidth, periodMs });
-    startPitcherWindup(Math.min(900, periodMs));
-    const start = Date.now();
-    deliveryMarkerRef.current = 0;
-    const tick = () => {
-      if (!deliveryActiveRef.current) return;
-      const elapsed = Date.now() - start;
-      const t = (elapsed % periodMs) / periodMs;
-      const pos = t < 0.5 ? t * 2 * 100 : (1 - t) * 2 * 100;
-      deliveryMarkerRef.current = pos;
-      if (deliveryMarkerElRef.current) deliveryMarkerElRef.current.style.left = `${pos}%`;
-      requestAnimationFrame(tick);
-    };
-    deliveryActiveRef.current = true;
-    requestAnimationFrame(tick);
-  };
 
-  const releaseDelivery = (intent = "control") => {
-    if (!deliveryPending) return;
-    deliveryActiveRef.current = false;
-    const { targetZone, pitch, sweetWidth } = deliveryPending;
-    const pos = deliveryMarkerRef.current;
-    const dist = Math.abs(pos - 50); // 중앙(50)이 스윗스팟 중심
-    const quality = clamp(1 - dist / (sweetWidth / 2), 0, 1); // 1=완벽, 0=완전실패
-    const isPower = intent === "power";
-    const baseEffControl = getPitcherControl(pitchMode === "pinpoint");
-    // 전력투구: 구위 확 끌어올리는 대신 제구 흔들리고 폭투위험↑ / 컨트롤투구: 구위 낮추는 대신 제구 안정, 폭투위험↓
-    const controlAdj = isPower ? -8 : 8;
-    const powerAdj = isPower ? 14 : -10;
-    const effControlFinal = clamp(baseEffControl + (quality - 0.5) * 50 + controlAdj, 5, 99);
-    const wildThreshold = isPower ? 0.22 : 0.06; // 전력투구는 타이밍 살짝만 놓쳐도 폭투될 위험
-    const totalWhiff = quality < wildThreshold;
-    const boostedPitch = { ...pitch, power: clamp(pitch.power + powerAdj, 1, 99) };
-    setMessage(
-      quality > 0.85 ? `완벽한 릴리즈! (${isPower ? "전력투구" : "컨트롤투구"})`
-      : quality < 0.15 ? "타이밍 완전히 놓침!"
-      : isPower ? "전력투구!" : "컨트롤투구"
-    );
-    setDeliveryPending(null);
-    setPitcherPoseBriefly("release", 500);
-    executeThrow(targetZone, boostedPitch, effControlFinal, totalWhiff);
-  };
 
   const startAiPitch = useCallback(() => {
     // 구종숨기기 버프: 이번 투구는 AI가 내 약점존을 못 읽고 평탄하게(거의 무작위로) 던짐 (집중 2 소모)
@@ -2646,12 +2506,10 @@ export default function BaseballSim() {
   // "지금 무슨 단계인지"를 매번 추론했음 -> 조건문이 길어지고 버그 잡기 어려웠음.
   // 아래 phase 하나만 보고 분기하도록 점진 전환 중.
   //   ready     : 투구 대기(다음투구 누르거나 카드 낼 수 있음)
-  //   delivery  : 투수 리얼타임 딜리버리 미니게임 진행중
   //   windup    : 와인드업 진행중(입력 불가)
   //   reveal    : 공 던져짐, 확률 공개 - 카드 선택/스윙확정 단계
   //   result    : 결과 연출(컷신/착탄) 재생중
-  const phase = deliveryPending ? "delivery"
-    : windingUp ? "windup"
+  const phase = windingUp ? "windup"
     : pendingPitch ? "reveal"
     : (cutscene || incomingBall) ? "result"
     : "ready";
@@ -2859,9 +2717,6 @@ export default function BaseballSim() {
           if (Array.isArray(saved.careerDeck) && saved.careerDeck.length > 0) {
             setCareerDeck(saved.careerDeck); careerDeckRef.current = saved.careerDeck;
           }
-          if (Array.isArray(saved.careerPitchDeck) && saved.careerPitchDeck.length > 0) {
-            setCareerPitchDeck(saved.careerPitchDeck); careerPitchDeckRef.current = saved.careerPitchDeck;
-          }
         }
       } catch (e) {
         // 저장된 커리어 없음 - 처음 시작이므로 기본값 그대로 둠
@@ -2880,7 +2735,6 @@ export default function BaseballSim() {
       traits: overrides.traits ?? traits,
       gamesPlayed: overrides.gamesPlayed ?? gamesPlayed,
       careerDeck: overrides.careerDeck ?? careerDeckRef.current,
-      careerPitchDeck: overrides.careerPitchDeck ?? careerPitchDeckRef.current,
     };
     window.storage.set("career", JSON.stringify(payload), false).catch(() => {});
   };
@@ -3668,7 +3522,7 @@ export default function BaseballSim() {
           }}
         >
           {(() => {
-            const focusPitcher = userRole === "pitcher" && (cutscene.tier === "strikeout" || cutscene.tier === "out");
+            const focusPitcher = false; // 투수 역할이 없으므로 컷신은 항상 타자 시점
             return (
               <CinematicImpactScene
                 tier={cutscene.tier}
@@ -3848,8 +3702,7 @@ export default function BaseballSim() {
                   if (!window.confirm("커리어(레벨/특성/경기수/덱)를 전부 초기화할까요? 되돌릴 수 없습니다.")) return;
                   setLevel(1); levelRef.current = 1; setExp(0); setTraits([]); setGamesPlayed(0);
                   setCareerDeck([]); careerDeckRef.current = [];
-                  setCareerPitchDeck([]); careerPitchDeckRef.current = [];
-                  saveCareer({ level: 1, exp: 0, traits: [], gamesPlayed: 0, careerDeck: [], careerPitchDeck: [] });
+                  saveCareer({ level: 1, exp: 0, traits: [], gamesPlayed: 0, careerDeck: [] });
                 }}
                 className="mono ml-2 underline"
                 style={{ fontSize: 10, color: "#c73e3e" }}
@@ -3994,19 +3847,6 @@ export default function BaseballSim() {
           )}
 
           {/* 배틀 스테이지: 위=상대, 아래=나, 가운데=존 그리드(축소) */}
-          {userRole === "pitcher" && (
-            <div ref={batterMotionRef} className="relative flex flex-col items-center combat-pitcher sprite-motion-stage" style={{ marginBottom: 2 }}>
-              {characterPose !== "idle" && <img src={getBatterSpriteSrc()} alt="" className="sprite-afterimage sprite-afterimage-a" style={{ height: 128 }} />}
-              {characterPose !== "idle" && <img src={getBatterSpriteSrc()} alt="" className="sprite-afterimage sprite-afterimage-b" style={{ height: 128 }} />}
-              <img
-                src={getBatterSpriteSrc()}
-                alt="상대 타자"
-                className="combat-character-sprite"
-                style={{ height: 128, imageRendering: "pixelated", filter: "drop-shadow(0 12px 18px rgba(0,0,0,0.75))", display: "block" }}
-              />
-              <span className="mono" style={{ fontSize: 9, color: "#7a8f7f", marginTop: -2 }}>상대 타자</span>
-            </div>
-          )}
 
           {userRole === "batter" && (
             <div ref={pitcherMotionRef} className="relative flex flex-col items-center sprite-motion-stage" style={{ marginBottom: 2 }}>
@@ -4252,26 +4092,6 @@ export default function BaseballSim() {
               )}
             </div>
           )}
-          {userRole === "pitcher" && (
-            <div ref={pitcherMotionRef} className="relative flex flex-col items-center sprite-motion-stage">
-              {pitcherPose !== "idle" && <img src={getPitcherSpriteSrc()} alt="" className="sprite-afterimage sprite-afterimage-a pitcher-afterimage" style={{ height: 122 }} />}
-              {pitcherPose !== "idle" && <img src={getPitcherSpriteSrc()} alt="" className="sprite-afterimage sprite-afterimage-b pitcher-afterimage" style={{ height: 122 }} />}
-              <img
-                src={getPitcherSpriteSrc()}
-                alt="투수"
-                className="combat-character-sprite"
-                style={{ height: 122, imageRendering: "pixelated", filter: "drop-shadow(0 8px 12px rgba(0,0,0,0.7))", display: "block" }}
-              />
-              <div style={{ width: 84, marginTop: 3 }}>
-                <div style={{ height: 6, borderRadius: 3, backgroundColor: "#16211a", border: "1px solid #2a3a2e", overflow: "hidden" }}>
-                  <div style={{ height: "100%", width: `${pitcherStamina}%`, backgroundColor: pitcherStamina > 60 ? "#3d7a5f" : pitcherStamina > 30 ? "#ffb000" : "#c73e3e", transition: "width 0.3s" }} />
-                </div>
-                <div className="mono flex justify-between" style={{ fontSize: 8, color: "#7a8f7f", marginTop: 1 }}>
-                  <span><img src={IMG_ICON_STAMINA} alt="" style={{ width: 10, height: 10, imageRendering: "pixelated", display: "inline-block", verticalAlign: "middle", marginRight: 2 }} />내 체력</span><span>{Math.round(pitcherStamina)}</span>
-                </div>
-              </div>
-            </div>
-          )}
           </div>
 
           {/* ⑤ 카운트 · 아웃 — HP는 바, 카운트는 점. 형태부터 다르게 해서 혼동을 막는다. */}
@@ -4303,15 +4123,6 @@ export default function BaseballSim() {
                 background: "linear-gradient(180deg, #e8e4d8 0%, #cfc9b8 100%)",
                 clipPath: "polygon(0% 0%, 100% 0%, 100% 55%, 50% 100%, 0% 55%)",
                 opacity: 0.85, boxShadow: "0 2px 6px rgba(0,0,0,0.4)",
-              }}
-            />
-          )}
-          {userRole === "pitcher" && (
-            <div
-              style={{
-                width: 56, height: 14, marginBottom: 10, marginTop: -2,
-                background: "linear-gradient(180deg, #e8e4d8 0%, #cfc9b8 100%)",
-                borderRadius: 3, opacity: 0.8, boxShadow: "0 2px 6px rgba(0,0,0,0.4)",
               }}
             />
           )}
@@ -4359,11 +4170,6 @@ export default function BaseballSim() {
             </div>
           )}
 
-          {userRole === "pitcher" && (
-            <div className="mono text-[10px] text-[#7a8f7f] mb-1 text-center">
-              🎯 실효제구 {Math.round(getPitcherControl(pitchMode === "pinpoint"))}
-            </div>
-          )}
 
           {userRole === "batter" && pitchStage === "reacting" && pendingPitch && (
             <div className="mono text-[10px] text-[#a8b8ac] mb-1.5 flex gap-1.5 items-center flex-wrap justify-center">
@@ -4381,7 +4187,7 @@ export default function BaseballSim() {
             </div>
           )}
 
-          {(userRole === "batter" || userRole === "pitcher") && (
+          {userRole === "batter" && (
             <div
               ref={guideHandRef}
               className={`w-64 mb-1.5 combat-deck${userRole === "batter" && uiPhase === "BET" ? " is-dimmed" : ""}`}
@@ -4390,9 +4196,6 @@ export default function BaseballSim() {
               <div className="flex items-center justify-between mono mb-1.5" style={{ fontSize: 10, color: "#7a8f7f" }}>
                 <span style={{ color: "#ffb000", fontWeight: 800 }}>
                   <img src={IMG_ICON_CARD} alt="" style={{ width: 12, height: 12, imageRendering: "pixelated", display: "inline-block", verticalAlign: "middle", marginRight: 3 }} />카드 탭으로 조합 (최대 2장) → 다시 탭 = {userRole === "pitcher" ? "투구" : "스윙"} ({hand.length}/{handSizeFor(level, userRole)})
-                  {userRole === "pitcher" && pitcherStamina < 60 && (
-                    <span style={{ color: "#c73e3e", marginLeft: 4 }}>· 지쳐서 손패 -{pitcherStamina < 30 ? 2 : 1}</span>
-                  )}
                 </span>
                 <span className="flex items-center gap-2">
                   <span>덱 {deck.length} · 버림 {discard.length}</span>
@@ -4511,52 +4314,6 @@ export default function BaseballSim() {
                       </button>
                     );
                   }
-                  if (card.kind === "pitch") {
-                    const pst = PITCH_CARD_STYLES[card.style] || PITCH_CARD_STYLES.normal;
-                    const isWasteCard = card.zone === 9;
-                    return (
-                      <button
-                        key={`p-${card.zone}-${card.style}-${idx}`}
-                        disabled={phase !== "ready"}
-                        title={pst.hint}
-                        onClick={() => {
-                          if (!playPitchCard(card.zone, card.style)) return;
-                          drawOne(); // 투수는 매 투구마다 카드 소모 -> 즉시 1장 보충
-                          if (pitcherSpeedMode === "realtime") startDelivery(card.zone, card.ptype);
-                          else userThrow(card.zone, card.style, card.ptype);
-                        }}
-                        className="mono transition-transform disabled:opacity-30 disabled:cursor-not-allowed hover:-translate-y-1 combat-card"
-                        style={{
-                          width: 52, height: 68, borderRadius: 6, padding: "4px 2px",
-                          backgroundImage: `url(${isWasteCard ? IMG_CARD_FRAME_TACTIC : IMG_CARD_FRAME_PITCH})`,
-                          backgroundSize: "100% 100%", backgroundRepeat: "no-repeat",
-                          border: "0",
-                          backgroundColor: isWasteCard ? "rgba(30,24,48,0.5)" : "rgba(22,33,26,0.5)",
-                          color: "#e8e4d8",
-                          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2,
-                          boxShadow: "0 2px 4px rgba(0,0,0,0.4)",
-                        }}
-                      >
-                        <span style={{ fontSize: 10, fontWeight: 800 }}>{isWasteCard ? "유인구" : ZONE_LABELS[card.zone]}</span>
-                        {isWasteCard ? (
-                          <span style={{ fontSize: 8, fontWeight: 900, color: count.strikes === 2 ? "#3d7a5f" : "#a8b8ac" }}>
-                            유인 {Math.round(chaseChance(effBatter.eye, count.balls, count.strikes, PITCH_TYPES.find((pt) => pt.id === card.ptype), 1, foulsThisPARef.current) * 100)}%
-                          </span>
-                        ) : (
-                          <span style={{ fontSize: 8, fontWeight: 900, color: "#8fb0d0" }}>
-                            빗맞 {Math.round(deceptionRoll(
-                              (PITCHER_PRESET.stuff + ptEffects.stuffDelta) * (card.style === "stuff" ? 1.25 : card.style === "control" ? 0.85 : 1),
-                              PITCH_TYPES.find((pt) => pt.id === card.ptype),
-                              staminaFactor(),
-                              effBatter.zoneRating[card.zone] ?? 50
-                            ).chance * 100)}%
-                          </span>
-                        )}
-                        <span style={{ fontSize: 8, color: "#a8b8ac" }}>{(PITCH_TYPES.find((pt) => pt.id === card.ptype) || {}).name ?? ""}</span>
-                        <span style={{ fontSize: 8, fontWeight: 800, color: pst.color }}>{pst.label}</span>
-                      </button>
-                    );
-                  }
                   const z = card.zone;
                   const isCand = pendingPitch?.zoneCandidates?.includes(z) && pitchStage === "reacting";
                   const pct = isCand ? Math.round(pendingPitch.dist[z] || 0) : null;
@@ -4618,87 +4375,8 @@ export default function BaseballSim() {
             </div>
           )}
 
-          {userRole === "pitcher" && deliveryPending && (
-            <div className="w-64 mb-1.5">
-              <div className="mono text-[10px] text-[#ffb000] mb-1 text-center">릴리즈 타이밍을 맞춰라!</div>
-              <div
-                className="relative w-full h-8 rounded overflow-hidden"
-                style={{ backgroundColor: "#16211a", border: "2px solid #3a4a3e" }}
-              >
-                <div
-                  className="absolute top-0 bottom-0"
-                  style={{
-                    left: `calc(50% - ${deliveryPending.sweetWidth / 2}%)`,
-                    width: `${deliveryPending.sweetWidth}%`,
-                    backgroundColor: "#3d7a5f",
-                  }}
-                />
-                <div
-                  ref={deliveryMarkerElRef}
-                  className="absolute top-0 bottom-0"
-                  style={{ left: "0%", width: 4, marginLeft: -2, backgroundColor: "#ff4444", boxShadow: "0 0 6px rgba(255,68,68,0.8)" }}
-                />
-              </div>
-              <div className="flex gap-1.5 mt-2">
-                <button
-                  onClick={() => releaseDelivery("power")}
-                  className="mono text-xs flex-1 px-3 py-2 rounded font-bold"
-                  style={{ border: "1px solid #c73e3e", backgroundColor: "#2a1414", color: "#ff8080" }}
-                >
-                  전력투구!
-                </button>
-                <button
-                  onClick={() => releaseDelivery("control")}
-                  className="mono text-xs flex-1 px-3 py-2 rounded font-bold"
-                  style={{ border: "1px solid #3d7a5f", backgroundColor: "#16281f", color: "#7fd9a8" }}
-                >
-                  컨트롤!
-                </button>
-              </div>
-              <div className="mono text-[10px] text-[#7a8f7f] mt-1 text-center">
-                초록 구간 = 적중존(제구 반영) · 빨간 막대 = 지금 위치 (구위가 높을수록 빠르게 움직임)<br />
-                전력투구=구위↑/제구·폭투위험 (빗나가면 크게 흔들림) · 컨트롤=안정적이지만 구위↓
-              </div>
-            </div>
-          )}
 
-          {userRole === "pitcher" && !gameOver && isUserTurnNow && (
-            <div className="w-64 mb-1.5" style={{ backgroundColor: "#111a14", border: "1px solid #2a3a2e", borderRadius: 6, padding: "8px 10px" }}>
-              <div className="mono text-[10px] text-[#a8b8ac] flex justify-between mb-1">
-                <span>연속 아웃: {pitcherStreak}</span>
-                <span style={{ color: pitcherStreak >= 6 ? "#ffb000" : pitcherStreak >= 3 ? "#3d7a5f" : "#7a8f7f" }}>
-                  {pitcherStreak >= 6 ? "🔥 완전몰입 (제구+15)" : pitcherStreak >= 3 ? "✓ 리듬 탄다 (제구+8)" : `몰입까지 ${3 - pitcherStreak}아웃`}
-                </span>
-              </div>
-              <div className="h-1.5 rounded overflow-hidden" style={{ backgroundColor: "#0d1f17" }}>
-                <div
-                  className="h-full"
-                  style={{
-                    width: `${clamp((pitcherStreak / 6) * 100, 0, 100)}%`,
-                    backgroundColor: pitcherStreak >= 6 ? "#ffb000" : "#3d7a5f",
-                    transition: "width 0.2s",
-                  }}
-                />
-              </div>
-            </div>
-          )}
 
-          {userRole === "pitcher" && !deliveryPending && (
-            <div className="flex gap-2 mb-1.5">
-              <button
-                onClick={() => setPitchMode("zone")}
-                className={`mono text-[11px] px-3 py-1.5 rounded border transition-colors flex items-center justify-center gap-1 ${pitchMode === "zone" ? "bg-[#2f5f4a] border-[#3d7a5f] font-bold" : "border-[#3a4a3e] hover:border-[#3d7a5f]"}`}
-              >
-                <IconZoneSafe size={12} color={pitchMode === "zone" ? "#e8e4d8" : "#3d7a5f"} /> 존 피칭 (안정/제구 그대로)
-              </button>
-              <button
-                onClick={() => setPitchMode("pinpoint")}
-                className={`mono text-[11px] px-3 py-1.5 rounded border transition-colors flex items-center justify-center gap-1 ${pitchMode === "pinpoint" ? "bg-[#a8623a] border-[#c17849] font-bold" : "border-[#3a4a3e] hover:border-[#c17849]"}`}
-              >
-                <IconPinpoint size={12} color={pitchMode === "pinpoint" ? "#e8e4d8" : "#c73e3e"} /> 핀포인트 (성공시 극악 난이도/실투 위험↑)
-              </button>
-            </div>
-          )}
 
           {/* ⑥ 액션 바 — 확정은 BET 시트에서만 한다(두 영역이 동시에 입력을 기다리지 않게) */}
           {userRole === "batter" && (
@@ -5081,7 +4759,7 @@ export default function BaseballSim() {
             </div>
           </div>
 
-          {!cardRewards && (careerDeck.length > 0 || careerPitchDeck.length > 0) && (
+          {!cardRewards && careerDeck.length > 0 && (
             <div className="mono text-[10px] text-[#7a8f7f] mb-3">
               {`내 타격덱 ${careerDeck.length}장`}
             </div>
