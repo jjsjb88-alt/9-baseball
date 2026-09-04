@@ -288,10 +288,12 @@ describe("CORE TEST UI", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "런 시작" }));
 
-    // 아웃 3개가 목숨이고, 체력 바는 1막 투수의 것이다.
-    expect(screen.getByText("OUT 0/3")).toBeTruthy();
+    // 타석 화면은 폰 한 화면에 들어가야 하므로 페이지가 스크롤되지 않는다.
+    expect(document.querySelector(".game-root.is-play")).toBeTruthy();
+    // 체력 바는 1막 투수의 것이고, 상단바가 지금 상대를 말한다.
     expect(screen.getByText("일반 투수 HP")).toBeTruthy();
     expect(screen.getByText("50/50")).toBeTruthy();
+    expect(screen.getByText("1막 독립리그 · 무명 좌완")).toBeTruthy();
     expect(screen.getByText("▸ 투수를 관찰하세요")).toBeTruthy();
   });
 

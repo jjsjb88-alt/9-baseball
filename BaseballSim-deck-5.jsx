@@ -2482,6 +2482,9 @@ export default function BaseballSim() {
     : "다음 투수 준비 중…";
   const phaseLabel = phaseInstruction(uiPhase, autoPhaseLabel);
   const phaseInputTarget = resolvePhaseInputTarget(uiPhase);
+  // 폰 한 화면에 다 들어가야 하는 상태. 이때는 페이지 자체가 스크롤되지 않는다.
+  const compactPlay = appStage === "game" && userRole === "batter" && isUserTurnNow
+    && !gameOver && !coreTestComplete && !pendingLevelUp && !pendingEvent && !cardRewards && !runReward;
   // 히스토리 스트립 필터. 오래된 기록에는 문맥이 없으므로 조건 필터에서 자연히 빠진다.
   const filteredPitchHistory = pitchHistory.filter((entry) => (
     historyFilter === "count" ? (entry.balls === count.balls && entry.strikes === count.strikes)
@@ -2926,7 +2929,7 @@ export default function BaseballSim() {
 
   return (
     <div
-      className={`min-h-screen font-sans flex flex-col items-center py-3 px-3 relative overflow-hidden game-root ${userRole === "batter" && isUserTurnNow && !gameOver && !coreTestComplete ? "has-fixed-topbar " : ""}${shake ? `screen-shake screen-shake-${shake}` : ""} ${readFlash?.result === "DEEP_READ" ? "deep-read-freeze" : ""}`}
+      className={`min-h-screen font-sans flex flex-col items-center py-3 px-3 relative overflow-hidden game-root ${compactPlay ? "is-play " : ""}${shake ? `screen-shake screen-shake-${shake}` : ""} ${readFlash?.result === "DEEP_READ" ? "deep-read-freeze" : ""}`}
       style={{
         background: "linear-gradient(180deg, #060d09 0%, #0d1f17 45%, #0f2419 75%, #16301f 100%)",
         color: "#e8e4d8",
@@ -2969,7 +2972,7 @@ export default function BaseballSim() {
                    background: "linear-gradient(180deg, rgba(61,122,95,0) 0%, rgba(30,58,42,0.35) 100%)" }} />
       </div>
 
-      <div className="relative w-full flex flex-col items-center" style={{ zIndex: 1, paddingTop: 36 }}>
+      <div className="relative w-full flex flex-col items-center game-content" style={{ zIndex: 1, paddingTop: 36 }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Space+Mono:wght@400;700&display=swap');
         .display { font-family: 'Oswald', sans-serif; letter-spacing: 0.04em; }
@@ -3021,6 +3024,63 @@ export default function BaseballSim() {
         }
         .pitcher-afterimage.sprite-afterimage-b { transform: translate3d(calc(-50% + 15px), 2px, 0) scale(0.985); }
         [data-motion="windup"] .sprite-afterimage { opacity: 0.065; }
+        /* ===== 폰 한 화면 모드 =====
+           내 타석 동안에는 페이지가 스크롤되지 않는다. 모든 영역이 뷰포트 높이 안에서 나눠 갖는다. */
+        .game-root.is-play { height: 100dvh; min-height: 0; overflow: hidden; padding: 0; justify-content: flex-start; }
+        .game-root.is-play .game-content { flex: 1 1 0; min-height: 0; padding-top: 0 !important; }
+        /* 남는 높이는 한 곳에 몰지 않고 구획 사이로 고르게 나눈다 */
+        .game-root.is-play .combat-shell { flex: 1 1 0; min-height: 0; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 2px; padding: 4px 6px 6px; overflow: hidden; border: 0; }
+        /* 상단 고정 대신 흐름 안에 둔다 - 스크롤이 없으니 fixed가 필요 없다 */
+        .game-root.is-play .showdown-topbar { position: static; padding: 0 0 4px; border-bottom: 1px solid #22321f; flex: 0 0 auto; width: 100%; max-width: 320px; }
+        .game-root.is-play .corner-admin { display: none; }
+        .game-root.is-play .corner-feedback { display: none; }
+
+        /* 한 화면에 들어가려면 빠져야 하는 것들 */
+        .game-root.is-play .combat-read,
+        .game-root.is-play .combat-eye,
+        .game-root.is-play .combat-last,
+        .game-root.is-play .combat-log,
+        .game-root.is-play .combat-plate,
+        .game-root.is-play .combat-swingmode,
+        .game-root.is-play .combat-windup-text,
+        .game-root.is-play .combat-focus,
+        .game-root.is-play .combat-deck-head,
+        .game-root.is-play .combat-combo-hint,
+        .game-root.is-play .combat-combo-sum { display: none; }
+
+        .game-root.is-play .combat-message { font-size: 10px; min-height: 0; margin: 0 0 1px; line-height: 1.25; }
+        .game-root.is-play .combat-pitchinfo { margin: 0 0 2px; font-size: 9px; }
+        .game-root.is-play .showdown-history { margin: 0 0 3px; flex: 0 0 auto; }
+        .game-root.is-play .showdown-history-dots { min-height: 14px; max-height: 30px; overflow: hidden; }
+
+        /* 무대: 남는 높이를 전부 가져가고, 그리드는 엄지로 누를 수 있게 키운다 */
+        .game-root.is-play .combat-pitcher-stage { flex: 0 1 auto; margin-bottom: 0; }
+        .game-root.is-play .combat-pitcher-stage .combat-character-sprite,
+        .game-root.is-play .combat-pitcher-stage .sprite-afterimage { height: 76px !important; }
+        /* 무대는 남는 높이를 가져가되 내용을 가운데 둔다 - 위아래로 벌어지지 않게 */
+        .game-root.is-play .combat-stage { flex: 0 1 auto; min-height: 0; align-items: center; justify-content: center; margin-bottom: 2px; }
+        .game-root.is-play .combat-stage .combat-character-sprite,
+        .game-root.is-play .combat-stage .sprite-afterimage { height: 108px !important; }
+        .game-root.is-play .combat-zone-grid { width: min(52vw, 190px) !important; height: min(52vw, 190px) !important; }
+        .game-root.is-play .showdown-count { margin: 0 0 3px; gap: 9px; }
+
+        /* 손패는 카드가 두 줄까지만 보이게 */
+        .game-root.is-play .combat-deck { flex: 0 0 auto; padding: 4px 5px !important; margin-bottom: 3px; max-height: 132px; overflow: hidden; }
+        .game-root.is-play .combat-card { width: 44px !important; height: 56px !important; }
+        .game-root.is-play .combat-actions { flex: 0 0 auto; margin-bottom: 0; width: 100%; max-width: 320px; }
+        .game-root.is-play .combat-actions button { padding-top: 6px; padding-bottom: 6px; }
+
+        /* 카운트 줄에 붙는 주자·집중 */
+        .showdown-count-bases { display: inline-flex; gap: 3px; align-items: center; margin-left: 2px; }
+        .showdown-base { width: 7px; height: 7px; border: 1px solid #4a5a4e; transform: rotate(45deg); display: inline-block; }
+        .showdown-base.is-on { background: #ffb000; border-color: #fff3d0; }
+        .showdown-count-focus { font-size: 9px; font-weight: 800; color: #ffb000; }
+
+        /* BET 시트의 스윙 방식 */
+        .showdown-sheet-swing { display: flex; gap: 6px; margin-bottom: 8px; }
+        .showdown-sheet-swingbtn { flex: 1; display: flex; flex-direction: column; align-items: center; font-size: 11px; font-weight: 800; padding: 4px 0; border: 1px solid #2a3a2e; border-radius: 5px; background: #16211a; color: #a8b8ac; }
+        .showdown-sheet-swingbtn.is-on { border-color: #ffb000; background: #3a2f14; color: #fff3d0; }
+
         /* ===== 런 구조 ===== */
         .showdown-acts { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
         .showdown-act-card { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 7px 10px; border: 1px solid #2a3a2e; border-radius: 6px; background: #111a14; min-width: 88px; }
@@ -3560,6 +3620,7 @@ export default function BaseballSim() {
       ) : (
         <>
 
+      {!compactPlay && (
       <div className="w-full max-w-md mb-2">
         <div className="flex items-center justify-between mono" style={{ fontSize: 10, color: "#7a8f7f", marginBottom: 4 }}>
           <span>9ZONE SHOWDOWN <span style={{ color: "#ffb000" }}>· DECK</span></span>
@@ -3644,6 +3705,7 @@ export default function BaseballSim() {
           </div>
         )}
       </div>
+      )}
 
       {appStage === "role" && (
         <div className="flex flex-col items-center gap-4 relative role-shell">
@@ -3808,7 +3870,7 @@ export default function BaseballSim() {
           {/* 배틀 스테이지: 위=상대, 아래=나, 가운데=존 그리드(축소) */}
 
           {userRole === "batter" && (
-            <div ref={pitcherMotionRef} className="relative flex flex-col items-center sprite-motion-stage" style={{ marginBottom: 2 }}>
+            <div ref={pitcherMotionRef} className="relative flex flex-col items-center sprite-motion-stage combat-pitcher-stage" style={{ marginBottom: 2 }}>
               {pitcherPose !== "idle" && <img src={getPitcherSpriteSrc()} alt="" className="sprite-afterimage sprite-afterimage-a pitcher-afterimage" style={{ height: 116 }} />}
               {pitcherPose !== "idle" && <img src={getPitcherSpriteSrc()} alt="" className="sprite-afterimage sprite-afterimage-b pitcher-afterimage" style={{ height: 116 }} />}
               <img
@@ -4072,11 +4134,18 @@ export default function BaseballSim() {
                   ))}
                 </span>
               ))}
+              <span className="showdown-count-bases" aria-label="주자">
+                {[1, 2, 0].map((key) => (
+                  <span key={key} className={`showdown-base${bases[key] ? " is-on" : ""}`} />
+                ))}
+              </span>
+              <span className="showdown-count-focus">✨{focusPoints}</span>
             </div>
           )}
 
           {userRole === "batter" && (
             <div
+              className="combat-plate"
               style={{
                 width: 40, height: 30, marginBottom: 10, marginTop: -2,
                 background: "linear-gradient(180deg, #e8e4d8 0%, #cfc9b8 100%)",
@@ -4093,7 +4162,7 @@ export default function BaseballSim() {
           {userRole === "batter" && (
             <div
               ref={windingUp ? windupTextRef : null}
-              className="mono text-[10px] mb-1 text-center"
+              className="mono text-[10px] mb-1 text-center combat-windup-text"
               style={{
                 color: windingUp ? "#ffb000"
                   : pitchStage === "aiming" ? "#3d7a5f"
@@ -4111,7 +4180,7 @@ export default function BaseballSim() {
           )}
 
           {userRole === "batter" && (
-            <div className="flex gap-1.5 mb-1.5">
+            <div className="flex gap-1.5 mb-1.5 combat-swingmode">
               <button
                 onClick={() => setSwingMode("safe")}
                 className={`mono flex-1 py-1 rounded border transition-colors flex items-center justify-center gap-1 ${swingMode === "safe" ? "bg-[#2f5f4a] border-[#3d7a5f] font-bold" : "border-[#3a4a3e]"}`}
@@ -4131,7 +4200,7 @@ export default function BaseballSim() {
 
 
           {userRole === "batter" && pitchStage === "reacting" && pendingPitch && (
-            <div className="mono text-[10px] text-[#a8b8ac] mb-1.5 flex gap-1.5 items-center flex-wrap justify-center">
+            <div className="mono text-[10px] text-[#a8b8ac] mb-1.5 flex gap-1.5 items-center flex-wrap justify-center combat-pitchinfo">
               {pendingPitch.wild && (
                 <span style={{ color: "#ffb000", fontWeight: 800, border: "1px solid #ffb000", borderRadius: 3, padding: "0 4px" }}>⚠ 실투</span>
               )}
@@ -4152,7 +4221,7 @@ export default function BaseballSim() {
               className={`w-64 mb-1.5 combat-deck${userRole === "batter" && uiPhase === "BET" ? " is-dimmed" : ""}`}
               style={{ backgroundColor: "#141d16", border: "2px solid #ffb000", borderRadius: 8, padding: "7px 8px", boxShadow: "0 0 24px rgba(255,176,0,0.2), 0 14px 34px rgba(0,0,0,0.36)" }}
             >
-              <div className="flex items-center justify-between mono mb-1.5" style={{ fontSize: 10, color: "#7a8f7f" }}>
+              <div className="flex items-center justify-between mono mb-1.5 combat-deck-head" style={{ fontSize: 10, color: "#7a8f7f" }}>
                 <span style={{ color: "#ffb000", fontWeight: 800 }}>
                   <img src={IMG_ICON_CARD} alt="" style={{ width: 12, height: 12, imageRendering: "pixelated", display: "inline-block", verticalAlign: "middle", marginRight: 3 }} />카드 탭으로 조합 (최대 2장) → 다시 탭 = {userRole === "pitcher" ? "투구" : "스윙"} ({hand.length}/{handSizeFor(level, userRole)})
                 </span>
@@ -4170,7 +4239,7 @@ export default function BaseballSim() {
               </div>
               {/* 현재 조합 표시 */}
               {userRole === "batter" && (
-                <div className="mono mb-1.5 text-center" style={{
+                <div className="mono mb-1.5 text-center combat-combo-hint" style={{
                   fontSize: 9, padding: "3px 6px", borderRadius: 4,
                   border: `1px solid ${selectedIdx.length ? "#ffb000" : "#2a3a2e"}`,
                   backgroundColor: selectedIdx.length ? "rgba(58,47,20,0.6)" : "transparent",
@@ -4195,7 +4264,7 @@ export default function BaseballSim() {
                 const md = sel.find((cd) => cd.kind === "mod");
                 const wide = zs.length >= 2;
                 return (
-                  <div className="mono mb-1.5" style={{
+                  <div className="mono mb-1.5 combat-combo-sum" style={{
                     fontSize: 9, padding: "3px 8px", borderRadius: 4,
                     border: "1px solid #ffb000", backgroundColor: "rgba(58,47,20,0.6)", color: "#fff3d0",
                   }}>
@@ -4329,7 +4398,7 @@ export default function BaseballSim() {
           )}
 
           {userRole === "batter" && (
-            <div className="mono mb-1.5" style={{ fontSize: 10, color: "#ffb000" }}>
+            <div className="mono mb-1.5 combat-focus" style={{ fontSize: 10, color: "#ffb000" }}>
               <img src={IMG_ICON_FOCUS} alt="" style={{ width: 12, height: 12, imageRendering: "pixelated", display: "inline-block", verticalAlign: "middle", marginRight: 3 }} />집중 {focusPoints}{tacticalBuff ? ` · ${TACTIC_DEFS[tacticalBuff]?.label ?? tacticalBuff} 예약중` : ""}
             </div>
           )}
@@ -4378,6 +4447,22 @@ export default function BaseballSim() {
                     <b>⚠ {ZONE_LABELS[betPreview.weakZones[0].zone]} {betPreview.weakZones[0].mult.toFixed(2)}</b>
                   </div>
                 )}
+              </div>
+              <div className="showdown-sheet-swing">
+                <button
+                  type="button"
+                  onClick={() => setSwingMode("safe")}
+                  className={`mono showdown-sheet-swingbtn${swingMode === "safe" ? " is-on" : ""}`}
+                >
+                  존스윙<span className="showdown-sheet-mod-sub">안정</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSwingMode("guess")}
+                  className={`mono showdown-sheet-swingbtn${swingMode === "guess" ? " is-on" : ""}`}
+                >
+                  게스히팅<span className="showdown-sheet-mod-sub">한방</span>
+                </button>
               </div>
               <div className="showdown-sheet-mods">
                 {Object.entries(MOD_DEFS).map(([modId, def]) => {
