@@ -3,8 +3,8 @@ import { buildTrueIntent, computeDistribution, sampleDistribution } from "./show
 
 export const POLICY_NAMES = ["Random", "MaxProb", "Pattern", "PowerSpam"];
 
-const MASTERED_ZONES = new Set([1, 3, 4, 7]);
-const PITCHES = [
+export const MASTERED_ZONES = new Set([1, 3, 4, 7]);
+export const PITCHES = [
   { power: 75, controlMod: 1 },
   { power: 60, controlMod: 0.85 },
   { power: 45, controlMod: 0.75 },
@@ -23,10 +23,10 @@ export function createSeededRandom(seed) {
   };
 }
 
-const maxZone = (dist) =>
+export const maxZone = (dist) =>
   Number(Object.entries(dist).reduce((best, entry) => (entry[1] > best[1] ? entry : best))[0]);
 
-const patternZone = (publicIntent, strikes, observations) => {
+export const patternZone = (publicIntent, strikes, observations) => {
   if (strikes < 2 || observations.total < 12) return maxZone(publicIntent);
   const [zone, count] = observations.zones.reduce(
     (best, value, index) => (value > best[1] ? [index, value] : best),
@@ -35,7 +35,7 @@ const patternZone = (publicIntent, strikes, observations) => {
   return count / observations.total >= 0.16 ? zone : maxZone(publicIntent);
 };
 
-const readResult = ({ aim, actualZone, publicIntent, trueIntent }) => {
+export const readResult = ({ aim, actualZone, publicIntent, trueIntent }) => {
   if (actualZone === 9) return "CHASE";
   if (aim === actualZone && (trueIntent[aim] || 0) - (publicIntent[aim] || 0) >= 12) return "DEEP_READ";
   if (aim === actualZone) return "READ";
