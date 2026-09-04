@@ -129,7 +129,7 @@ const TUTORIAL_SLIDES = [
   },
   {
     title: "수식어 카드",
-    body: "**강타** — 장타력 크게↑, 대신 헛스윙도↑\n**밀어치기** — 존 1장으로 인접 코스까지 커버\n**커트** — 나쁜 결과를 파울로 바꿔 승부를 연장\n**집중** — 크게 빗나가도 컨택을 시도\n**노림** — 이번 투구의 확률 정보를 선명하게\n\n수식어는 손패에서 뽑혀야 쓸 수 있다. 그리고 두 장을 쓰면 **손패가 그만큼 빨리 마른다** — 그게 조합의 대가다.",
+    body: "**강타** — 장타력 크게↑, 대신 헛스윙도↑\n**밀어치기** — 존 1장으로 인접 코스까지 커버\n**커트** — 단독으로 낸다. 이 공을 무조건 파울로 끊고 카드 1장\n**집중** — 크게 빗나가도 컨택을 시도\n**노림** — 이번 투구의 확률 정보를 선명하게\n\n수식어는 손패에서 뽑혀야 쓸 수 있다. 그리고 두 장을 쓰면 **손패가 그만큼 빨리 마른다** — 그게 조합의 대가다.",
     visual: "modCards",
   },
   {
@@ -139,7 +139,7 @@ const TUTORIAL_SLIDES = [
   },
   {
     title: "수식어 카드",
-    body: "**강타** — 장타력 크게↑, 헛스윙도↑\n**밀어치기** — 인접 코스까지 커버, 장타는↓\n**커트** — 나쁜 결과가 나오면 파울로 바꿔 승부를 연장한다\n**집중** — 크게 빗나가도 컨택을 시도한다\n**노림** — 이번 투구의 확률 노이즈를 걷어내 진짜 분포를 보여준다\n\n수식어는 혼자서는 쓸 수 없다. 반드시 존 카드와 함께.",
+    body: "**강타** — 장타력 크게↑, 헛스윙도↑\n**밀어치기** — 인접 코스까지 커버, 장타는↓\n**커트** — 단독으로 내는 카드다. 이 공을 무조건 파울로 끊고 카드 1장을 뽑는다\n**집중** — 크게 빗나가도 컨택을 시도한다\n**노림** — 이번 투구의 확률 노이즈를 걷어내 진짜 분포를 보여준다\n\n커트를 뺀 수식어는 혼자서는 쓸 수 없다. 반드시 존 카드와 함께.",
     visual: "mods",
   },
   {
@@ -1530,7 +1530,7 @@ export default function BaseballSim() {
   const MOD_DEFS = {
     smash:   { label: "강타",   color: "#c73e3e", hint: "장타력 크게↑ / 헛스윙↑" },
     pushHit: { label: "밀어치기", color: "#3d7a5f", hint: "인접 존까지 커버 / 장타↓" },
-    cut:     { label: "커트",   color: "#a8b8ac", hint: "나쁜 결과를 파울로 전환" },
+    cut:     { label: "커트",   color: "#a8b8ac", hint: "단독 사용 — 무조건 파울 + 카드 1장", solo: true },
     focusMod:{ label: "집중",   color: "#ffb000", hint: "빗나가도 컨택 시도 가능" },
     readMod: { label: "노림",   color: "#8fb0d0", hint: "이번 투구 확률 노이즈 제거" },
   };
@@ -1830,7 +1830,7 @@ export default function BaseballSim() {
   const RESULT_BANNER_MS = 1200;
   const READ_LINE_KO = {
     DEEP_READ: "DEEP READ", READ: "READ 성공", COVERED: "넓게 커버 적중",
-    NEAR_READ: "가까스로 스침", MISREAD: "빗나감", CHASE: "유인구에 속음", TAKE: "지켜봄",
+    NEAR_READ: "가까스로 스침", MISREAD: "빗나감", CHASE: "유인구에 속음", TAKE: "지켜봄", CUT: "커트",
   };
   const buildResultBanner = (outcome, power, read, hpDelta) => {
     const zoneTxt = read?.actualZone == null ? "" : read.actualZone === 9 ? "존 밖" : ZONE_LABELS[read.actualZone];
@@ -1840,7 +1840,8 @@ export default function BaseballSim() {
     const line1 = laidOff
       ? "존 밖 — 골라냄"
       : `${READ_LINE_KO[read?.result] ?? "판독 없음"}${missedRead ? `  (실제: ${zoneTxt})` : ""}`;
-    const line2 = read?.result === "TAKE" || outcome === "ball" || outcome === "strike" ? "스윙 안 함"
+    const line2 = read?.result === "CUT" ? "파울로 끊음"
+      : read?.result === "TAKE" || outcome === "ball" || outcome === "strike" ? "스윙 안 함"
       : outcome === "swingMiss" ? "헛스윙"
       : outcome === "foul" ? "커트"
       : outcome === "homerun" ? "완벽한 타구"
@@ -1869,7 +1870,7 @@ export default function BaseballSim() {
   };
   const HIT_OUTCOMES = ["single", "double", "triple", "homerun"];
   // 런에서의 한 결과 처리. 이닝도 팀도 없다 - 내 타석 결과가 곧 투수 체력과 남은 아웃이다.
-  const applyOutcome = (outcome, zone, contactPower = 0.5) => {
+  const applyOutcome = (outcome, zone, contactPower = 0.5, { forceDraw = false } = {}) => {
     const zoneTxt = zone === 9 ? "존 밖" : ZONE_LABELS[zone] ?? "";
     {
       const tone = HIT_OUTCOMES.includes(outcome) ? "good"
@@ -1963,7 +1964,7 @@ export default function BaseballSim() {
       setCount({ ...count, strikes: Math.min(2, count.strikes + 1) });
       foulsThisPARef.current += 1;
       // 커트 드로우는 타석당 2회까지 - 무한 커트로 손패를 계속 늘리는 걸 막고, 길어질수록 타자가 조급해짐
-      const canDrawOnFoul = foulsThisPARef.current <= 2;
+      const canDrawOnFoul = forceDraw || foulsThisPARef.current <= 2;
       setMessage(canDrawOnFoul
         ? `커트 — 투수 HP -${applied.damage} · 카드 1장 드로우`
         : `커트 ${foulsThisPARef.current}회 — 조급해짐(헛스윙 +${Math.round((foulPressure() - 1) * 100)}%)`);
@@ -2181,6 +2182,10 @@ export default function BaseballSim() {
     const zoneSel = sel.filter((i) => hand[i]?.kind === "zone");
     const modSel = sel.filter((i) => hand[i]?.kind === "mod");
 
+    if (card.kind === "mod" && MOD_DEFS[card.mod]?.solo) {
+      playCutCard(idx);
+      return;
+    }
     if (card.kind === "mod") {
       if (modSel.length >= 1) { rejectCombo("수식어는 한 장만 붙일 수 있다"); return; }
       if (sel.length >= 2) { rejectCombo("한 스윙에 최대 2장"); return; }
@@ -2201,6 +2206,30 @@ export default function BaseballSim() {
     setSel(sel);
     const z = hand[sel.find((i) => hand[i]?.kind === "zone")]?.zone ?? null;
     setAimedZone(z); aimedZoneRef.current = z;
+  };
+
+  // 커트 카드: 존 카드에 붙이지 않는다. 단독으로 내면 이 공을 무조건 파울로 끊고 한 장 뽑는다.
+  // 승부를 끝내지 않고 투수 체력만 갉는 선택지 - 아웃을 내주지 않는 대신 카드 한 장을 태운다.
+  const playCutCard = (idx) => {
+    if (!pendingPitch || decidedRef.current) { setMessage("공이 온 뒤에 낼 수 있다"); return; }
+    decidedRef.current = true;
+    ballFlightActiveRef.current = false;
+    const { actualZone, isWaste, pinpointSuccess } = pendingPitch;
+    showPitchMark({ zone: actualZone, pinpoint: pinpointSuccess, wild: pendingPitch.wild, targetZone: pendingPitch.targetZone });
+    setPitchHistory((h) => [...h, {
+      zone: actualZone, pitchId: pendingPitch.pitch.id,
+      balls: count.balls, strikes: count.strikes, runners: bases.some(Boolean),
+    }].slice(-30));
+    setPendingPitch(null);
+    setPitchStage("idle");
+    setAimedZone(null);
+    aimedZoneRef.current = null;
+    setSel([]);
+    discardCardAt(idx);
+    lastReadRef.current = { result: "CUT", actualZone, isWaste, wide: false };
+    pushLog("✂ 커트 — 파울로 끊고 카드 1장");
+    playSound("contact");
+    applyOutcome("foul", actualZone, 0.5, { forceDraw: true });
   };
 
   // 조합 결과 요약(판정/표시 공용)
@@ -2349,14 +2378,10 @@ export default function BaseballSim() {
       const mastered = combo.zones.some((zoneCard) => zoneCard.zone === actualZone && zoneCard.mastered !== false && zoneCard.style !== "basic");
       let { outcome: rcOutcome, power: rcPower } = resolveShowdownContact({
         read: readResult, mastered,
-        modifier: mod === "smash" || playedStyleRef.current === "power" ? "smash" : mod === "cut" ? "cut" : playedStyleRef.current === "contact" ? "contact" : null,
+        modifier: mod === "smash" || playedStyleRef.current === "power" ? "smash" : playedStyleRef.current === "contact" ? "contact" : null,
         covered: isWide || mod === "pushHit", pitchPower: pendingPitch.pitch.power + (aiDec.hit ? 12 : 0),
       });
       if (mod === "smash" && !["swingMiss", "foul"].includes(rcOutcome)) playSound("powerContact");
-      if (mod === "cut" && (rcOutcome === "swingMiss" || rcOutcome === "out")) {
-        rcOutcome = "foul";
-        pushLog("✂ 커트로 잘라냈다 — 승부 계속");
-      }
       applyOutcome(rcOutcome, actualZone, rcPower);
     }
   };
@@ -4274,7 +4299,6 @@ export default function BaseballSim() {
                     {wide ? "넓게 커버 (명중↑ 장타↓)"
                       : md === "smash" ? "강타 (장타↑ 헛스윙↑)"
                       : md === "pushHit" ? "인접까지 커버 (장타↓)"
-                      : md === "cut" ? "나쁜 결과는 파울로"
                       : md === "focusMod" ? "크게 빗나가도 컨택 시도"
                       : md === "readMod" ? "확률 노이즈 제거"
                       : "정확히 이 코스만"}
@@ -4306,9 +4330,11 @@ export default function BaseballSim() {
                           boxShadow: on ? "0 0 16px rgba(255,176,0,0.85)" : "0 2px 4px rgba(0,0,0,0.4)",
                         }}
                       >
-                        <span style={{ fontSize: 7, opacity: 0.8 }}>수식어</span>
+                        <span style={{ fontSize: 7, opacity: 0.8 }}>{def.solo ? "즉시" : "수식어"}</span>
                         <span style={{ fontSize: 10, fontWeight: 800, lineHeight: 1.1, textAlign: "center" }}>{def.label}</span>
-                        {on && <span style={{ fontSize: 7, fontWeight: 900, color: "#ffb000" }}>붙임</span>}
+                        {def.solo
+                          ? <span style={{ fontSize: 7, fontWeight: 900, color: "#7fe0b0" }}>파울+1장</span>
+                          : on && <span style={{ fontSize: 7, fontWeight: 900, color: "#ffb000" }}>붙임</span>}
                       </button>
                     );
                   }
@@ -4465,7 +4491,7 @@ export default function BaseballSim() {
                 </button>
               </div>
               <div className="showdown-sheet-mods">
-                {Object.entries(MOD_DEFS).map(([modId, def]) => {
+                {Object.entries(MOD_DEFS).filter(([, def]) => !def.solo).map(([modId, def]) => {
                   const on = betMod === modId;
                   const handIdx = on
                     ? selectedIdx.find((i) => hand[i]?.kind === "mod" && hand[i]?.mod === modId)
