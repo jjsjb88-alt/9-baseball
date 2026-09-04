@@ -33,6 +33,9 @@ GitHub Pages용 빌드는 저장소 하위 경로인 `/9-baseball/`을 자동 �
 - `BaseballSim-deck-5.jsx`: 게임 본체이자 소스 오브 트루스. 기존 자산과 최신 코어 규칙이 함께 있다.
 - `src/main.jsx`: 로컬 React 진입점.
 - `src/game/showdown-engine.js`: 실제 플레이와 자동시뮬이 함께 import하는 CQ/PQ 판정 엔진.
+- `src/game/showdown-phase.js`: 화면 페이즈(`OBSERVE|READ|BET|REVEAL|AUTO|PITCH`) 단일 소스. 페이즈 라벨과 입력 허용 영역을 여기서만 정한다.
+- `src/game/showdown-bet.js`: BET 바텀시트 미리보기 계산. 커버 존 계산은 실제 판정과 같은 함수를 쓴다.
+- `docs/SCREEN-SPEC-v1.md`: 화면 설계서 v1. 현재 타석 화면의 기준 문서다.
 - `src/styles.css`: Tailwind와 전역 스타일 진입점.
 - `assets/sprites-v2/frames/`: 전투용 고해상도 타자·투수 키포즈 36장. 앱은 이 폴더를 한 번에 로드한다.
 - `work/process_sprite_v2.py`: 생성된 6칸 시트를 투명 512px 개별 프레임으로 정리하는 재현용 도구.
@@ -50,6 +53,7 @@ GitHub Pages용 빌드는 저장소 하위 경로인 `/9-baseball/`을 자동 �
 5. AI는 과거 선택만 기억한다. 현재 고른 카드를 엿보면 안 된다.
 6. 자동시뮬과 실제 게임은 같은 판정 엔진을 쓴다.
 7. 유저 타순에서는 어떤 예약 타이머도 자동 타석을 실행하지 못한다.
+   - OBSERVE 게이트의 2.5초 타이머도 내 타순 + 투구 대기 상태를 둘 다 확인한 뒤에만 투구한다.
 8. 캐릭터 포즈 전환과 화면의 2차 동작을 분리한다. 포즈는 고정 키프레임, 이동·회전·히트스톱은 `requestAnimationFrame` 타임라인이 담당한다.
 
 상세 내용은 [HANDOFF.md](./HANDOFF.md)를 먼저 읽는다.

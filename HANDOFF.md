@@ -610,3 +610,30 @@ AI는 `playerAimHistoryRef`의 완료된 과거 선택만 본다. `selectedIdx`,
 - 로컬 URL의 브라우저 선택은 `No browser is available`로 실패했다. Browser 스킬의 지정 복구 절차를 읽고 기존 런타임을 재사용해 사용 가능한 브라우저 유형을 한 번만 조회했으며 결과는 빈 목록 `[]`였다.
 - 다른 브라우저 자동화 도구로 우회하지 않았고, 화면을 직접 보지 못했으므로 스크린샷이나 픽셀·레이아웃을 합격 처리하지 않았다. 제품 코드는 변경하지 않았다.
 - 다음 세션은 사용 가능한 브라우저가 있을 때 이 후반 흐름만 먼저 확인한다. 결함이 보이면 하나만 수정하고 회귀 검사를 추가한 뒤 인간 3인 플레이테스트로 넘어간다.
+
+## 52. Screen Spec v1 — 페이즈 UI 패스
+
+알파 피드백 "뭘 하는지 모르겠음 / 뭐가 진행되는지 알 수 없음"을 화면 설계서 v1(`docs/SCREEN-SPEC-v1.md`)대로 구현했다.
+카드 손패 규칙은 그대로 두고 **화면 골격만** 스펙에 맞췄다. 적용 범위는 유저가 직접 치는 모든 타석(일반 경기 + CORE TEST)이다.
+
+- 화면 페이즈 단일 소스는 `src/game/showdown-phase.js`다. `OBSERVE|READ|BET|REVEAL|AUTO|PITCH`를 여기서만 결정하고,
+  페이즈마다 입력 허용 영역(`history|hand|sheet|none`)이 정확히 하나임을 상수 표로 고정한다. 라벨은 어떤 상태에서도 비지 않는다.
+- BET 미리보기는 `src/game/showdown-bet.js`의 `previewBet()`이 계산한다. 커버 존 계산(`coveredZones`)은 실제 판정
+  (`userGuess`)과 **같은 함수**를 쓴다. 미리보기용 근사식을 따로 두지 않는다. READ 등급은 미리보기에서 절대 계산하지 않는다.
+- OBSERVE 게이트: 투구 전 최대 2.5초. 탭하면 즉시 스킵한다. 예약 타이머는 `isUserBattingRef` + `phaseRef`를 둘 다 확인하므로
+  TURN GUARD가 유지된다(내 타순이 아니거나 이미 투구 중이면 실행하지 않는다).
+- 투수 HP는 상단 고정 바 하나뿐이다(투수 스프라이트 아래 중복 게이지는 제거). 볼카운트·아웃은 점으로 표시해 형태부터 구분한다.
+  내 타석 결과는 실제로 HP를 깎는다: 홈런 30 / 3루타 22 / 2루타 18 / 안타 12 / 볼 2 / 파울 1 / 그 외 0.
+  기존 투구당 스태미나 소모는 그대로다.
+- 결과 배너는 판독 / 실행 / 야구 결과 + HP 세 줄로 분리해 렌더한다. READ 배너가 먼저 뜨고 0.9초 뒤에 결과 배너가 뜬다.
+  오독은 크게 외치지 않고 괄호로 실제 코스만 적는다. 존 밖으로 빠져 스윙이 나가지 않은 공은 "속음"이 아니라 "골라냄"이다.
+- 히스토리 스트립은 그리드 위로 올라갔고 `전체 / 이 카운트 / 주자` 필터가 붙었다. 필터용 문맥(balls/strikes/runners)은
+  `pitchHistory`에 함께 쌓지만 CORE TEST 내보내기 스키마는 여전히 `{zone, pitchId}`만 담는다.
+- 첫 투구 가이드는 6초 스포트라이트 투어이며 `localStorage`의 `9zone-first-pitch-guide-v1`로 1회만 재생한다.
+  스펙과 달리 **실제 투구를 대신 실행하지는 않는다**(가짜 게임 상태를 만들지 않기 위해 관람용 투어로 구현).
+- 문맥 힌트 4종(집중 최초 / 폭 1칸 최초 / DEEP READ 최초 / HP 50%)은 각 1회, 누적 4개까지 뜨며 헤더의 `힌트 ON/OFF`로 끈다.
+- 폭 상한은 `BATTER_BASE.widthCap`에서 읽는다(하드코딩 금지). 불연속 존·상한 초과는 메시지 + 짧은 진동으로 거부한다.
+- `game-root`가 `overflow:hidden`이라 sticky가 듣지 않아 상단 영역은 `position: fixed` + 루트 패딩으로 고정했다.
+  내 타석 동안 개발용 토글(내보내기·연출)은 숨기고 피드백 버튼은 우하단으로 내린다.
+- 회귀 검사: `tests/showdown-phase.test.js`, `tests/showdown-bet.test.js`, 그리고 `tests/core-test-ui.test.jsx`의
+  "previews the bet before the swing and only commits from the sheet".
