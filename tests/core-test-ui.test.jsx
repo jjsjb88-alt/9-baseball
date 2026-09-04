@@ -275,6 +275,26 @@ describe("CORE TEST UI", () => {
     await waitFor(() => expect(screen.queryByRole("button", { name: "승부!" })).toBeNull());
   });
 
+  it("offers a three-act run instead of an inning game", () => {
+    render(<BaseballSim />);
+    fireEvent.click(screen.getByRole("button", { name: "건너뛰기" }));
+
+    // 시작 화면은 세 리그를 보여주고, 투수 역할과 이닝 선택은 사라졌다.
+    expect(screen.getAllByText("독립리그").length).toBeGreaterThan(0);
+    expect(screen.getByText("퓨처스리그")).toBeTruthy();
+    expect(screen.getByText("1부리그")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /투수로 시작/ })).toBeNull();
+    expect(screen.queryByText(/9이닝/)).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "런 시작" }));
+
+    // 아웃 3개가 목숨이고, 체력 바는 1막 투수의 것이다.
+    expect(screen.getByText("OUT 0/3")).toBeTruthy();
+    expect(screen.getByText("일반 투수 HP")).toBeTruthy();
+    expect(screen.getByText("50/50")).toBeTruthy();
+    expect(screen.getByText("▸ 투수를 관찰하세요")).toBeTruthy();
+  });
+
   it("enters the player at-bat directly from role selection", () => {
     render(<BaseballSim />);
 

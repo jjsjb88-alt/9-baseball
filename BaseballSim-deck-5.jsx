@@ -363,7 +363,6 @@ function upgradeByGrind(outcome, pitchesSeen) {
 }
 const EXP_TABLE = { out: 4, strikeout: 3, walk: 6, single: 10, double: 18, triple: 26, homerun: 40 };
 // 투수 시점 경험치: 아웃/삼진이 성과, 출루 허용은 소량(경험은 쌓임)
-const EXP_TABLE_PITCHER = { strikeout: 12, out: 8, walk: 1, single: 1, double: 1, triple: 1, homerun: 0 };
 const expToNext = (level) => 50 + (level - 1) * 25;
 
 // 표시되는 후보확률에 읽기노이즈 추가 - eye 낮으면 화면 %랭킹이 실제와 어긋날 수 있음
@@ -502,48 +501,7 @@ function rollActualZoneWithWildPitch(targetZone, control, pitchControlMod, wildP
 // AI 타자의 노림수 분포 산출.
 // 예전엔 "직전 투구 존을 eye% 확률로 그대로 노림"이라 투수 입장에서 딜레마가 없었음(같은 곳만 안 던지면 됨).
 // 이제는 (1) 최근 패턴 누적 (2) 타자 강점존 (3) 카운트 상황 (4) 노이즈 를 섞어 분포를 만든다.
-function aiGuessDistribution(recentTargets, eye, favorZone, zoneRating = null, balls = 0, strikes = 0) {
-  const w = new Array(9).fill(0);
 
-  // (1) 최근 패턴: 최신일수록 가중(직전만 보지 않음). eye가 높을수록 패턴 학습이 예리함
-  const recent = recentTargets.slice(-5).filter((z) => z >= 0 && z <= 8);
-  recent.forEach((z, i) => {
-    const recency = (i + 1) / recent.length; // 0~1
-    w[z] += (eye / 100) * 26 * recency;
-  });
-
-  // (2) 타자 강점존: 자기가 잘 치는 코스를 기본적으로 노림
-  if (zoneRating) {
-    const max = Math.max(...zoneRating);
-    for (let z = 0; z < 9; z++) w[z] += Math.pow(zoneRating[z] / max, 2.2) * 22;
-  } else {
-    w[favorZone] += 22;
-  }
-
-  // (3) 카운트 상황: 유리하면 좋은 코스만 기다리고(집중), 몰리면 넓게 방어(평탄화)
-  const aggressive = balls > strikes;         // 타자 유리
-  const defensive = strikes >= 2;             // 타자 불리
-  for (let z = 0; z < 9; z++) {
-    if (aggressive) w[z] = Math.pow(w[z], 1.35);  // 뾰족하게(특정 존 집중)
-    if (defensive) w[z] = Math.pow(w[z], 0.6);    // 평탄하게(넓게 대비)
-  }
-
-  // (4) 노이즈: 완전히 읽히지 않도록 바닥값
-  for (let z = 0; z < 9; z++) w[z] += 4;
-
-  const total = w.reduce((a, b) => a + b, 0);
-  const dist = {};
-  for (let z = 0; z < 9; z++) dist[z] = (w[z] / total) * 100;
-  return dist;
-}
-
-function aiGuessZone(recentTargets, eye, favorZone, zoneRating = null, balls = 0, strikes = 0) {
-  const dist = aiGuessDistribution(recentTargets, eye, favorZone, zoneRating, balls, strikes);
-  const entries = Object.entries(dist);
-  let r = rand() * 100;
-  for (const [z, p] of entries) { r -= p; if (r <= 0) return Number(z); }
-  return favorZone;
-}
 
 function zoneCandidateCount(eye) {
   return clamp(Math.round(6 - (eye * 5) / 100), 1, 6);
@@ -1430,7 +1388,6 @@ export default function BaseballSim() {
   const [pendingPitch, setPendingPitch] = useState(null);
   const [selectedType, setSelectedType] = useState(PITCH_TYPES[0].id);
   const [swingMode, setSwingMode] = useState("safe"); // "safe"(존스윙) | "guess"(게스히팅)
-  const [pitchMode, setPitchMode] = useState("zone"); // "zone"(존피칭) | "pinpoint"(핀포인트피칭)
   const [message, setMessage] = useState("역할을 선택하세요");
 
   // 레벨/특성 상태 (배터 기준)
@@ -1461,7 +1418,6 @@ export default function BaseballSim() {
       + pitcherControlBonus(pitcherStreakRef.current, ptEffects.streakThresholdBonus, ptEffects.streakMultiplier)
       + ptEffects.controlDelta
       + (pitcherEventBuff?.controlDelta || 0);
-    if (pitchMode === "zone") v -= ptEffects.zonePitchingPenalty;
     if (pinpoint) v *= ptEffects.pinpointPenaltyOverride ?? 0.7;
     v *= staminaFactor(); // 몰린 투수는 제구가 흔들린다
     return clamp(v, 5, 99);
@@ -1593,11 +1549,6 @@ export default function BaseballSim() {
     contact: { label: "컨택", hrMult: 0.7, missMult: 0.65, outBias: -0.06, grade: 0.65, color: "#3d7a5f", hint: "안타 확률↑ / 장타는 어려움" },
     power: { label: "파워", hrMult: 1.45, missMult: 1.35, outBias: 0.05, grade: 1.5, color: "#c73e3e", hint: "장타·홈런↑ / 헛스윙·아웃↑" },
     normal: { label: "표준", hrMult: 1, missMult: 1, outBias: 0, grade: 1, color: "#7a8f7f", hint: "균형" },
-  };
-  const PITCH_CARD_STYLES = {
-    control: { label: "제구", controlMult: 1.25, stuffMult: 0.85, color: "#3d7a5f", hint: "코스 정확 / 구위 약함" },
-    stuff: { label: "구위", controlMult: 0.8, stuffMult: 1.3, color: "#c73e3e", hint: "위력적 / 코스 흔들림" },
-    normal: { label: "표준", controlMult: 1, stuffMult: 1, color: "#7a8f7f", hint: "균형" },
   };
   const buildStartingDeck = () => {
     const d = [];
@@ -3070,6 +3021,14 @@ export default function BaseballSim() {
         }
         .pitcher-afterimage.sprite-afterimage-b { transform: translate3d(calc(-50% + 15px), 2px, 0) scale(0.985); }
         [data-motion="windup"] .sprite-afterimage { opacity: 0.065; }
+        /* ===== 런 구조 ===== */
+        .showdown-acts { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+        .showdown-act-card { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 7px 10px; border: 1px solid #2a3a2e; border-radius: 6px; background: #111a14; min-width: 88px; }
+        .showdown-act-no { font-size: 9px; font-weight: 900; color: #ffb000; letter-spacing: .06em; }
+        .showdown-act-league { font-size: 12px; font-weight: 800; color: #e8e4d8; }
+        .showdown-act-tier { font-size: 9px; color: #7a8f7f; }
+        .showdown-act-hp { font-size: 9px; color: #c73e3e; font-weight: 800; margin-top: 2px; }
+
         /* ===== 화면 설계서 v1 ===== */
         /* 상단 고정. game-root가 overflow:hidden이라 sticky가 듣지 않으므로 fixed + 루트 패딩으로 자리를 만든다. */
         .showdown-topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 30; padding: 5px 10px 6px; background: rgba(8,19,13,.96); border-bottom: 1px solid #22321f; }
@@ -4570,10 +4529,8 @@ export default function BaseballSim() {
               <div className="flex gap-3 justify-center">
                 {cardRewards.map((card, i) => {
                   const isTactic = card.kind === "tactic";
-                  const isPitch = card.kind === "pitch";
                   const def = isTactic ? TACTIC_DEFS[card.type] : null;
-                  const styleSet = isPitch ? PITCH_CARD_STYLES : CARD_STYLES;
-                  const sd = styleSet[card.style] || styleSet.normal;
+                  const sd = CARD_STYLES[card.style] || CARD_STYLES.normal;
                   return (
                     <button
                       key={i}
@@ -4586,22 +4543,19 @@ export default function BaseballSim() {
                       className="mono transition-transform hover:-translate-y-1.5"
                       style={{
                         width: 76, height: 104, borderRadius: 8, padding: 6,
-                        border: `2px solid ${isTactic ? "#6a4aa0" : isPitch ? "#a8623a" : "#3a4a3e"}`,
-                        backgroundColor: isTactic ? "#1e1830" : isPitch ? "#241812" : "#16211a",
+                        border: `2px solid ${isTactic ? "#6a4aa0" : "#3a4a3e"}`,
+                        backgroundColor: isTactic ? "#1e1830" : "#16211a",
                         color: isTactic ? "#d8c8ff" : "#e8e4d8",
                         display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4,
                         boxShadow: "0 4px 10px rgba(0,0,0,0.5)",
                       }}
                     >
                       <span style={{ fontSize: 8, opacity: 0.7, color: card.__upgrade ? "#ffb000" : undefined, fontWeight: card.__upgrade ? 900 : 400 }}>
-                        {card.__upgrade ? `⭐ 강화 → ★${(card.tier || 1) + 1}` : isTactic ? "전술" : isPitch ? "투구" : "존"}
+                        {card.__upgrade ? `⭐ 강화 → ★${(card.tier || 1) + 1}` : isTactic ? "전술" : "존"}
                       </span>
                       <span style={{ fontSize: 12, fontWeight: 800, lineHeight: 1.15, textAlign: "center" }}>
                         {isTactic ? def.label : cardLabel(card)}
                       </span>
-                      {isPitch && (
-                        <span style={{ fontSize: 8, color: "#a8b8ac" }}>{(PITCH_TYPES.find((pt) => pt.id === card.ptype) || {}).name ?? ""}</span>
-                      )}
                       {!isTactic && (
                         <span style={{ fontSize: 9, fontWeight: 800, color: sd.color }}>{sd.label}</span>
                       )}
