@@ -33,3 +33,34 @@ describe("resolveShowdownContact", () => {
     expect(basic.pq).toBeLessThan(mastered.pq);
   });
 });
+
+describe("read protection", () => {
+  it("turns a whiff into a cut when the read was precise", () => {
+    const plain = resolveShowdownContact({ read: "READ", mastered: true, variance: sequence(0.5, 0) });
+    const saved = resolveShowdownContact({ read: "READ", mastered: true, whiffBecomesFoul: true, variance: sequence(0.5, 0) });
+    expect(plain.outcome).toBe("swingMiss");
+    expect(saved.outcome).toBe("foul");
+    expect(saved.whiffSaved).toBe(true);
+  });
+
+  it("does not protect a misread", () => {
+    const result = resolveShowdownContact({ read: "MISREAD", mastered: true, whiffBecomesFoul: true, variance: sequence(0.5, 0) });
+    expect(result.outcome).toBe("swingMiss");
+  });
+
+  it("stops protecting once the batter has cut too many times in the at-bat", () => {
+    const inside = resolveShowdownContact({ read: "READ", mastered: true, whiffBecomesFoul: true, cutsThisPa: 2, variance: sequence(0.5, 0) });
+    const beyond = resolveShowdownContact({ read: "READ", mastered: true, whiffBecomesFoul: true, cutsThisPa: 3, variance: sequence(0.5, 0) });
+    expect(inside.outcome).toBe("foul");
+    expect(beyond.outcome).toBe("swingMiss");
+  });
+});
+
+describe("read protection and POWER", () => {
+  it("leaves POWER swings exposed - the risk is what POWER buys", () => {
+    const plain = resolveShowdownContact({ read: "READ", mastered: true, whiffBecomesFoul: true, variance: sequence(0.5, 0) });
+    const power = resolveShowdownContact({ read: "READ", mastered: true, modifier: "smash", whiffBecomesFoul: true, variance: sequence(0.5, 0) });
+    expect(plain.outcome).toBe("foul");
+    expect(power.outcome).toBe("swingMiss");
+  });
+});

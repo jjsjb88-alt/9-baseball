@@ -8,6 +8,12 @@ export function resolveShowdownContact({
   modifier = null,
   covered = false,
   pitchPower = 60,
+  // 정확히 읽은 공은 최소한 배트에 맞는다. 읽기 성공에서 나오는 헛스윙을 파울로 바꾼다.
+  // 읽기와 타격의 분리는 유지된다 - 읽어도 빗맞고 아웃날 수 있다. 다만 "아무 일도 없음"은 없앤다.
+  whiffBecomesFoul = false,
+  // 커트를 반복해 무한정 버티지 못하게, 이 타석에서 이미 끊은 횟수가 상한을 넘으면 보호가 풀린다.
+  cutsThisPa = 0,
+  maxProtectedCuts = 3,
   variance = Math.random,
 }) {
   const preciseRead = read === "DEEP_READ" || read === "READ";
@@ -18,6 +24,10 @@ export function resolveShowdownContact({
   const missChance = clamp(0.64 - cq * 0.0062, 0.05, 0.68);
 
   if (variance() < missChance) {
+    const protectedRead = whiffBecomesFoul && preciseRead && modifier !== "smash" && cutsThisPa < maxProtectedCuts;
+    if (protectedRead) {
+      return { outcome: "foul", cq, pq: 0, power: 0, whiffSaved: true };
+    }
     if (modifier === "cut" && variance() < 0.62) {
       return { outcome: "foul", cq, pq: 0, power: 0 };
     }

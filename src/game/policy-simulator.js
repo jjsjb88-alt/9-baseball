@@ -73,6 +73,7 @@ export function simulatePolicy(policy, { seed = 0x9a0e2026, plateAppearances = 3
 
   for (let pa = 0; pa < plateAppearances; pa += 1) {
     let strikes = 0;
+    let fouls = 0;
     let complete = false;
     const aiStage = stageForPlateAppearance(pa, plateAppearances);
 
@@ -90,6 +91,8 @@ export function simulatePolicy(policy, { seed = 0x9a0e2026, plateAppearances = 3
 
       const read = readResult({ aim, actualZone, publicIntent, trueIntent });
       const result = resolveShowdownContact({
+        whiffBecomesFoul: true,
+        cutsThisPa: fouls,
         read,
         mastered: MASTERED_ZONES.has(actualZone) && aim === actualZone,
         modifier: policy === "PowerSpam" ? "smash" : null,
@@ -119,6 +122,7 @@ export function simulatePolicy(policy, { seed = 0x9a0e2026, plateAppearances = 3
         complete = strikes >= 3;
       } else if (result.outcome === "foul") {
         strikes = Math.min(2, strikes + 1);
+        fouls += 1;
       } else {
         complete = true;
       }

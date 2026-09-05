@@ -2378,6 +2378,8 @@ export default function BaseballSim() {
       const mastered = combo.zones.some((zoneCard) => zoneCard.zone === actualZone && zoneCard.mastered !== false && zoneCard.style !== "basic");
       let { outcome: rcOutcome, power: rcPower } = resolveShowdownContact({
         read: readResult, mastered,
+        // 읽기가 맞았는데 헛스윙으로 아무 일도 안 일어나는 박탈감을 없앤다 - 최소한 커트는 된다.
+        whiffBecomesFoul: true, cutsThisPa: foulsThisPARef.current,
         modifier: mod === "smash" || playedStyleRef.current === "power" ? "smash" : playedStyleRef.current === "contact" ? "contact" : null,
         covered: isWide || mod === "pushHit", pitchPower: pendingPitch.pitch.power + (aiDec.hit ? 12 : 0),
       });

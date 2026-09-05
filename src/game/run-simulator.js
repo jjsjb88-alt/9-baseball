@@ -49,6 +49,7 @@ export function simulateRun(policy, { seed = 1, rewardPolicy = "heal" } = {}) {
     const act = currentAct(run);
     let balls = 0;
     let strikes = 0;
+    let fouls = 0;
     let paDone = false;
 
     while (!paDone && pitches < 4000) {
@@ -89,6 +90,8 @@ export function simulateRun(policy, { seed = 1, rewardPolicy = "heal" } = {}) {
       }
 
       const result = resolveShowdownContact({
+        whiffBecomesFoul: true,
+        cutsThisPa: fouls,
         read: readResult({ aim, actualZone, publicIntent, trueIntent }),
         mastered: MASTERED_ZONES.has(actualZone) && aim === actualZone,
         modifier: policy === "PowerSpam" ? "smash" : null,
@@ -104,6 +107,7 @@ export function simulateRun(policy, { seed = 1, rewardPolicy = "heal" } = {}) {
         paDone = strikeout;
       } else if (result.outcome === "foul") {
         strikes = Math.min(2, strikes + 1);
+        fouls += 1;
         run = applyRunOutcome(run, { outcome: "foul" }).run;
       } else if (result.outcome === "out") {
         run = applyRunOutcome(run, { outcome: "out" }).run;
