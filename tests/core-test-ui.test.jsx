@@ -276,6 +276,8 @@ describe("CORE TEST UI", () => {
   });
 
   it("offers a three-act run instead of an inning game", () => {
+    // 타석 시작 시 28% 확률로 뜨는 돌발 상황이 화면을 가리면 검사가 흔들린다. 뜨지 않는 쪽으로 고정한다.
+    vi.spyOn(Math, "random").mockReturnValue(0.9);
     render(<BaseballSim />);
     fireEvent.click(screen.getByRole("button", { name: "건너뛰기" }));
 
