@@ -1,7 +1,17 @@
 
 # 9ZONE SHOWDOWN
 
-`BaseballSim-deck-5.jsx`의 기존 UI·그래픽·사운드·경기 흐름을 유지하면서 `CORE TEST 02`의 타자 심리전 규칙을 통합한 로컬 개발 프로젝트다. 현재 목표는 콘텐츠 확장이 아니라 **한 공을 읽고 베팅하는 15초가 재미있는지** 검증하는 것이다.
+아웃 3개를 목숨으로 세 리그의 투수를 차례로 눕히는 9존 야구 로그라이크다. 이닝도 동료 타석도 없다. 현재 목표는 콘텐츠 확장이 아니라 **한 공을 읽고 베팅하는 15초가 재미있는지** 검증하는 것이다.
+
+## 런 구조
+
+| 막 | 리그 | 투수 | 체력 |
+|---|---|---|---|
+| 1 | 독립리그 | 일반 투수 | 50 |
+| 2 | 퓨처스리그 | 엘리트 투수 | 80 |
+| 3 | 1부리그 | 보스 투수 | 115 |
+
+아웃 3개가 런 전체의 목숨이다. 안타·장타·커트(파울)·볼넷·득점이 투수 체력을 깎고, 막을 돌파할 때마다 **카드 한 장(이번 런 한정)** 또는 **아웃 1개 회복** 중 하나를 고른다.
 
 ## 웹에서 플레이
 
@@ -22,6 +32,8 @@ npm run dev
 
 ```bash
 npm test
+npm run test:policy
+npm run report:run
 npm run build
 npm run preview
 ```
@@ -33,6 +45,11 @@ GitHub Pages용 빌드는 저장소 하위 경로인 `/9-baseball/`을 자동 �
 - `BaseballSim-deck-5.jsx`: 게임 본체이자 소스 오브 트루스. 기존 자산과 최신 코어 규칙이 함께 있다.
 - `src/main.jsx`: 로컬 React 진입점.
 - `src/game/showdown-engine.js`: 실제 플레이와 자동시뮬이 함께 import하는 CQ/PQ 판정 엔진.
+- `src/game/showdown-run.js`: 런 규칙 단일 소스(막 구성, 체력, 데미지, 아웃, 보상).
+- `src/game/run-simulator.js`: 런 밸런스 측정용 시뮬레이터. `pnpm run report:run`으로 클리어율을 뽑는다.
+- `src/game/showdown-phase.js`: 화면 페이즈(`OBSERVE|READ|BET|REVEAL|AUTO|PITCH`) 단일 소스. 페이즈 라벨과 입력 허용 영역을 여기서만 정한다.
+- `src/game/showdown-bet.js`: BET 바텀시트 미리보기 계산. 커버 존 계산은 실제 판정과 같은 함수를 쓴다.
+- `docs/SCREEN-SPEC-v1.md`: 화면 설계서 v1. 현재 타석 화면의 기준 문서다.
 - `src/styles.css`: Tailwind와 전역 스타일 진입점.
 - `assets/sprites-v2/frames/`: 전투용 고해상도 타자·투수 키포즈 36장. 앱은 이 폴더를 한 번에 로드한다.
 - `work/process_sprite_v2.py`: 생성된 6칸 시트를 투명 512px 개별 프레임으로 정리하는 재현용 도구.
@@ -43,13 +60,14 @@ GitHub Pages용 빌드는 저장소 하위 경로인 `/9-baseball/`을 자동 �
 
 ## 지금 반드시 지킬 것
 
-1. 플레이 흐름은 `READ → BET → REVEAL → IMPACT`다.
+1. 플레이 흐름은 `READ → BET → REVEAL → IMPACT`이고, 런은 `1막 → 보상 → 2막 → 보상 → 3막`이다.
 2. READ 성공은 안타 확정이 아니다. 읽기와 실행은 분리한다.
 3. CQ는 접촉, PQ는 접촉 후 타구 질만 담당한다.
 4. PUBLIC 확률만 화면에 보이고 TRUE INTENT는 숨긴다.
 5. AI는 과거 선택만 기억한다. 현재 고른 카드를 엿보면 안 된다.
 6. 자동시뮬과 실제 게임은 같은 판정 엔진을 쓴다.
-7. 유저 타순에서는 어떤 예약 타이머도 자동 타석을 실행하지 못한다.
+7. 예약 타이머는 내 타석이 아니거나 이미 투구 중이면 절대 투구를 실행하지 않는다.
+   - OBSERVE 게이트의 2.5초 타이머도 내 타순 + 투구 대기 상태를 둘 다 확인한 뒤에만 투구한다.
 8. 캐릭터 포즈 전환과 화면의 2차 동작을 분리한다. 포즈는 고정 키프레임, 이동·회전·히트스톱은 `requestAnimationFrame` 타임라인이 담당한다.
 
 상세 내용은 [HANDOFF.md](./HANDOFF.md)를 먼저 읽는다.

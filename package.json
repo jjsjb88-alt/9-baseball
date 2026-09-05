@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:policy": "node scripts/policy-bot-report.js",
-    "report:core-test": "node scripts/core-test-report.js"
+    "report:core-test": "node scripts/core-test-report.js",
+    "report:run": "node scripts/run-balance-report.js"
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",

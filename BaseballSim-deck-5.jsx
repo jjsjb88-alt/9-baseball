@@ -12,10 +12,32 @@ import * as Tone from "tone";
 import STADIUM_COMBAT_BG from "./assets/stadium-combat-bg-v1.png";
 import { resolveShowdownContact } from "./src/game/showdown-engine.js";
 import {
+  applyWasteBias,
   buildTrueIntent,
   computeDistribution,
   sampleDistribution,
 } from "./src/game/showdown-pitch-model.js";
+import {
+  ACTS,
+  MAX_OUTS,
+  ROUTE_NODES,
+  applyRunOutcome,
+  createRun,
+  currentAct,
+  rollRoutes,
+  takeRoute,
+} from "./src/game/showdown-run.js";
+import {
+  phaseInputTarget as resolvePhaseInputTarget,
+  phaseInstruction,
+  resolveUiPhase,
+} from "./src/game/showdown-phase.js";
+import {
+  coveredZones,
+  previewBet,
+  zoneMultiplier,
+  WEAK_ZONE_MULT,
+} from "./src/game/showdown-bet.js";
 import {
   CORE_TEST_QUESTIONS,
   appendCoreTestResult,
@@ -110,7 +132,7 @@ const TUTORIAL_SLIDES = [
   },
   {
     title: "수식어 카드",
-    body: "**강타** — 장타력 크게↑, 대신 헛스윙도↑\n**밀어치기** — 존 1장으로 인접 코스까지 커버\n**커트** — 나쁜 결과를 파울로 바꿔 승부를 연장\n**집중** — 크게 빗나가도 컨택을 시도\n**노림** — 이번 투구의 확률 정보를 선명하게\n\n수식어는 손패에서 뽑혀야 쓸 수 있다. 그리고 두 장을 쓰면 **손패가 그만큼 빨리 마른다** — 그게 조합의 대가다.",
+    body: "**강타** — 장타력 크게↑, 대신 헛스윙도↑\n**밀어치기** — 존 1장으로 인접 코스까지 커버\n**커트** — 단독으로 낸다. 이 공을 무조건 파울로 끊고 카드 1장\n**집중** — 크게 빗나가도 컨택을 시도\n**노림** — 이번 투구의 확률 정보를 선명하게\n\n수식어는 손패에서 뽑혀야 쓸 수 있다. 그리고 두 장을 쓰면 **손패가 그만큼 빨리 마른다** — 그게 조합의 대가다.",
     visual: "modCards",
   },
   {
@@ -120,7 +142,7 @@ const TUTORIAL_SLIDES = [
   },
   {
     title: "수식어 카드",
-    body: "**강타** — 장타력 크게↑, 헛스윙도↑\n**밀어치기** — 인접 코스까지 커버, 장타는↓\n**커트** — 나쁜 결과가 나오면 파울로 바꿔 승부를 연장한다\n**집중** — 크게 빗나가도 컨택을 시도한다\n**노림** — 이번 투구의 확률 노이즈를 걷어내 진짜 분포를 보여준다\n\n수식어는 혼자서는 쓸 수 없다. 반드시 존 카드와 함께.",
+    body: "**강타** — 장타력 크게↑, 헛스윙도↑\n**밀어치기** — 인접 코스까지 커버, 장타는↓\n**커트** — 단독으로 내는 카드다. 이 공을 무조건 파울로 끊고 카드 1장을 뽑는다\n**집중** — 크게 빗나가도 컨택을 시도한다\n**노림** — 이번 투구의 확률 노이즈를 걷어내 진짜 분포를 보여준다\n\n커트를 뺀 수식어는 혼자서는 쓸 수 없다. 반드시 존 카드와 함께.",
     visual: "mods",
   },
   {
@@ -168,6 +190,8 @@ const BATTER_BASE = {
   name: "나",
   eye: 65,
   zoneRating: [55, 70, 58, 60, 85, 62, 45, 68, 50],
+  // 한 번에 겹쳐 노릴 수 있는 코스 수(폭 상한). 화면과 판정 모두 이 스탯을 읽는다 - 하드코딩 금지.
+  widthCap: 2,
 };
 
 // ============ 특성 풀 ============
@@ -342,7 +366,6 @@ function upgradeByGrind(outcome, pitchesSeen) {
 }
 const EXP_TABLE = { out: 4, strikeout: 3, walk: 6, single: 10, double: 18, triple: 26, homerun: 40 };
 // 투수 시점 경험치: 아웃/삼진이 성과, 출루 허용은 소량(경험은 쌓임)
-const EXP_TABLE_PITCHER = { strikeout: 12, out: 8, walk: 1, single: 1, double: 1, triple: 1, homerun: 0 };
 const expToNext = (level) => 50 + (level - 1) * 25;
 
 // 표시되는 후보확률에 읽기노이즈 추가 - eye 낮으면 화면 %랭킹이 실제와 어긋날 수 있음
@@ -418,7 +441,7 @@ function getEffectiveBatter(base, traits, ctx) {
   }
   contactMult = clamp(contactMult, 0.5, 1.5);
   zoneRating = zoneRating.map((v) => clamp(v * contactMult, 0, 100));
-  return { zoneRating, eye, hrMult, missMult, wasteContactEnabled, wasteContactPenalty };
+  return { zoneRating, eye, hrMult, missMult, wasteContactEnabled, wasteContactPenalty, widthCap: base.widthCap ?? 1 };
 }
 
 // AI 투수 의사결정.
@@ -481,48 +504,7 @@ function rollActualZoneWithWildPitch(targetZone, control, pitchControlMod, wildP
 // AI 타자의 노림수 분포 산출.
 // 예전엔 "직전 투구 존을 eye% 확률로 그대로 노림"이라 투수 입장에서 딜레마가 없었음(같은 곳만 안 던지면 됨).
 // 이제는 (1) 최근 패턴 누적 (2) 타자 강점존 (3) 카운트 상황 (4) 노이즈 를 섞어 분포를 만든다.
-function aiGuessDistribution(recentTargets, eye, favorZone, zoneRating = null, balls = 0, strikes = 0) {
-  const w = new Array(9).fill(0);
 
-  // (1) 최근 패턴: 최신일수록 가중(직전만 보지 않음). eye가 높을수록 패턴 학습이 예리함
-  const recent = recentTargets.slice(-5).filter((z) => z >= 0 && z <= 8);
-  recent.forEach((z, i) => {
-    const recency = (i + 1) / recent.length; // 0~1
-    w[z] += (eye / 100) * 26 * recency;
-  });
-
-  // (2) 타자 강점존: 자기가 잘 치는 코스를 기본적으로 노림
-  if (zoneRating) {
-    const max = Math.max(...zoneRating);
-    for (let z = 0; z < 9; z++) w[z] += Math.pow(zoneRating[z] / max, 2.2) * 22;
-  } else {
-    w[favorZone] += 22;
-  }
-
-  // (3) 카운트 상황: 유리하면 좋은 코스만 기다리고(집중), 몰리면 넓게 방어(평탄화)
-  const aggressive = balls > strikes;         // 타자 유리
-  const defensive = strikes >= 2;             // 타자 불리
-  for (let z = 0; z < 9; z++) {
-    if (aggressive) w[z] = Math.pow(w[z], 1.35);  // 뾰족하게(특정 존 집중)
-    if (defensive) w[z] = Math.pow(w[z], 0.6);    // 평탄하게(넓게 대비)
-  }
-
-  // (4) 노이즈: 완전히 읽히지 않도록 바닥값
-  for (let z = 0; z < 9; z++) w[z] += 4;
-
-  const total = w.reduce((a, b) => a + b, 0);
-  const dist = {};
-  for (let z = 0; z < 9; z++) dist[z] = (w[z] / total) * 100;
-  return dist;
-}
-
-function aiGuessZone(recentTargets, eye, favorZone, zoneRating = null, balls = 0, strikes = 0) {
-  const dist = aiGuessDistribution(recentTargets, eye, favorZone, zoneRating, balls, strikes);
-  const entries = Object.entries(dist);
-  let r = rand() * 100;
-  for (const [z, p] of entries) { r -= p; if (r <= 0) return Number(z); }
-  return favorZone;
-}
 
 function zoneCandidateCount(eye) {
   return clamp(Math.round(6 - (eye * 5) / 100), 1, 6);
@@ -1121,19 +1103,23 @@ export default function BaseballSim() {
   const [bases, setBases] = useState([false, false, false]);
   const [score, setScore] = useState({ user: 0, ai: 0 });
   // 이닝/공수교대
-  const [battingTeam, setBattingTeam] = useState(null); // 'user' | 'ai' - 지금 공격중인 쪽
-  const [halvesPlayed, setHalvesPlayed] = useState(0); // 종료된 하프이닝 수
+  const [battingTeam, setBattingTeam] = useState(null); // 런 진행중 여부 표시용('user' 고정)
+  // ===== 런 =====
+  // 이닝은 없다. 아웃 3개가 목숨이고 1막 독립리그 → 2막 퓨처스리그 → 3막 1부리그 순서로 투수를 눕힌다.
+  const [run, setRun] = useState(() => createRun());
+  const runRef = useRef(run);
+  const applyRun = (next) => { runRef.current = next; setRun(next); };
+  const [runReward, setRunReward] = useState(null); // "choosing" | "train" | "shop" | null
+  const [routeOptions, setRouteOptions] = useState(null); // 갈래 두 개
+  const [pendingRoute, setPendingRoute] = useState(null); // 고른 갈래(들를 곳 처리 후 이동)
+  const [shopOffers, setShopOffers] = useState(null); // 상점 매물
+  const [actBriefing, setActBriefing] = useState(null); // 막 시작 브리핑(첫 투구 전에 규칙과 상대를 알려준다)
+  const SHOP_CARD_COST = 3;
+  const SHOP_REMOVE_COST = 2;
   const [gameOver, setGameOver] = useState(false);
-  const [autoSimming, setAutoSimming] = useState(false);
-  const autoSimTimeoutRef = useRef(null);
   const pendingLevelUpRef = useRef(null);
   // 경기 길이 선택: 로그라이크는 한 판이 짧아야 반복이 성립함(기본 5이닝)
-  const [maxInnings, setMaxInnings] = useState(5);
-  const MAX_INNINGS = maxInnings;
   // ===== 타순 로테이션 패치 (A안: 유저 4번타자 고정, 나머지는 자동시뮬) =====
-  const USER_LINEUP_SLOT = 3; // 0-indexed, 4번타자. TODO(M-2): 스토브리그서 편집 가능하게
-  const userOrderIndexRef = useRef(0); // 유저팀 타순 포인터 - PA 끝날 때만 전진, 이닝 넘어가도 안 리셋
-  const [userOrderIndex, setUserOrderIndex] = useState(0);
   // 실전형 가이드 연습 (타석/투구 실제 화면에서 툴팁으로 설명)
   const practiceModeRef = useRef(false); // 'batter' | 'pitcher' | false
   const [practiceMode, setPracticeMode] = useState(false);
@@ -1174,6 +1160,10 @@ export default function BaseballSim() {
     impactTimersRef.current.push(timer);
   };
   const swingReasonRef = useRef(""); // 결과 배너에 붙일 "왜 이렇게 됐는지" 짧은 설명
+  // 인과 3줄 배너의 1줄(판독)을 만들 재료. 실행/결과 줄은 applyOutcome에서 붙인다.
+  const lastReadRef = useRef(null); // {result, actualZone, isWaste, wide}
+  // 투수 HP: 스펙의 "목표까지 거리". 한 타석의 결과가 실제로 HP를 깎아야 바가 의미를 갖는다.
+  const HP_DAMAGE = { homerun: 30, triple: 22, double: 18, single: 12, ball: 2, foul: 1, out: 0, strike: 0, swingMiss: 0 };
   const buildSwingReason = ({ matched, canCorrect, quality, nearMiss }) => {
     const parts = [];
     if (!matched && nearMiss) parts.push("빗맞은 코스");
@@ -1307,6 +1297,89 @@ export default function BaseballSim() {
   const soundReadyRef = useRef(false);
   const synthsRef = useRef(null);
 
+  const bgmRef = useRef(null);
+  const bgmEnabledRef = useRef(true);
+  const [bgmEnabled, setBgmEnabled] = useState(true);
+  const BGM_FLAG_KEY = "9zone-bgm-v1";
+
+  // 막마다 다른 루프. 리그가 올라갈수록 빨라지고 어두워진다.
+  const BGM_TRACKS = [
+    { bpm: 88, bass: ["C2", "C2", "G1", "A1", "F1", "F1", "G1", "G1"], lead: ["E4", null, "G4", null, "C5", null, "G4", null] },
+    { bpm: 100, bass: ["A1", "A1", "E2", "E2", "F1", "F1", "G1", "G1"], lead: ["C5", null, "B4", null, "E5", null, "A4", null] },
+    { bpm: 116, bass: ["D2", "D2", "A1", "A1", "Bb1", "Bb1", "C2", "C2"], lead: ["F4", "A4", null, "D5", null, "C5", "A4", null] },
+  ];
+
+  const stopBgm = () => {
+    const bgm = bgmRef.current;
+    bgmRef.current = null;
+    if (!bgm) return;
+    try {
+      bgm.sequence.stop();
+      bgm.sequence.dispose();
+      Tone.Transport.stop();
+      bgm.bass.dispose();
+      bgm.lead.dispose();
+      bgm.hat.dispose();
+    } catch (e) {
+      // 정리 실패는 무시 - 소리가 남더라도 게임은 계속된다
+    }
+  };
+
+  const startBgm = (actIndex = 0) => {
+    if (!soundReadyRef.current || !bgmEnabledRef.current) return;
+    stopBgm();
+    try {
+      const track = BGM_TRACKS[Math.min(BGM_TRACKS.length - 1, actIndex)];
+      const bass = new Tone.MonoSynth({
+        oscillator: { type: "square" },
+        envelope: { attack: 0.01, decay: 0.24, sustain: 0.05, release: 0.2 },
+        filterEnvelope: { attack: 0.01, decay: 0.2, sustain: 0.2, baseFrequency: 120, octaves: 2 },
+      }).toDestination();
+      bass.volume.value = -24;
+      const lead = new Tone.Synth({
+        oscillator: { type: "triangle" },
+        envelope: { attack: 0.01, decay: 0.18, sustain: 0, release: 0.2 },
+      }).toDestination();
+      lead.volume.value = -30;
+      const hat = new Tone.NoiseSynth({
+        noise: { type: "white" },
+        envelope: { attack: 0.001, decay: 0.03, sustain: 0 },
+      }).toDestination();
+      hat.volume.value = -38;
+      Tone.Transport.bpm.value = track.bpm;
+      const sequence = new Tone.Sequence((time, step) => {
+        const bassNote = track.bass[step % track.bass.length];
+        if (bassNote) bass.triggerAttackRelease(bassNote, "8n", time);
+        const leadNote = track.lead[step % track.lead.length];
+        if (leadNote) lead.triggerAttackRelease(leadNote, "16n", time + 0.02);
+        if (step % 2 === 1) hat.triggerAttackRelease("32n", time);
+      }, [0, 1, 2, 3, 4, 5, 6, 7], "8n");
+      sequence.start(0);
+      Tone.Transport.start();
+      bgmRef.current = { sequence, bass, lead, hat };
+    } catch (e) {
+      // Tone이 없는 환경(테스트 등)에서는 무음으로 진행
+    }
+  };
+
+  const toggleBgm = () => {
+    const next = !bgmEnabledRef.current;
+    bgmEnabledRef.current = next;
+    setBgmEnabled(next);
+    try { window.localStorage?.setItem(BGM_FLAG_KEY, next ? "on" : "off"); } catch (e) { /* 저장 실패 무시 */ }
+    if (next) startBgm(runRef.current.actIndex);
+    else stopBgm();
+  };
+
+  React.useEffect(() => {
+    try {
+      const saved = window.localStorage?.getItem(BGM_FLAG_KEY);
+      if (saved === "off") { bgmEnabledRef.current = false; setBgmEnabled(false); }
+    } catch (e) { /* 읽기 실패 무시 */ }
+    return () => stopBgm();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const ensureAudio = useCallback(async () => {
     if (soundReadyRef.current) return;
     try {
@@ -1343,6 +1416,16 @@ export default function BaseballSim() {
       else if (type === "deepRead") {
         s.read.triggerAttackRelease("D2", "8n", now, 0.8);
         s.read.triggerAttackRelease("A2", "8n", now + 0.08, 0.65);
+      }
+      else if (type === "bigDamage") {
+        s.strike.triggerAttackRelease("C1", "8n", now, 1);
+        s.contact.triggerAttackRelease("C3", "16n", now + 0.02, 0.9);
+        s.cheer.triggerAttackRelease(["G3", "C4"], "16n", now + 0.05, 0.5);
+      }
+      else if (type === "actClear") {
+        s.cheer.triggerAttackRelease(["C4", "E4", "G4"], "8n", now);
+        s.cheer.triggerAttackRelease(["E4", "G4", "C5"], "8n", now + 0.14);
+        s.cheer.triggerAttackRelease(["G4", "C5", "E5"], "4n", now + 0.3);
       }
       else if (type === "powerContact") {
         s.strike.triggerAttackRelease("C1", "8n", now, 0.9);
@@ -1407,7 +1490,6 @@ export default function BaseballSim() {
   const [pendingPitch, setPendingPitch] = useState(null);
   const [selectedType, setSelectedType] = useState(PITCH_TYPES[0].id);
   const [swingMode, setSwingMode] = useState("safe"); // "safe"(존스윙) | "guess"(게스히팅)
-  const [pitchMode, setPitchMode] = useState("zone"); // "zone"(존피칭) | "pinpoint"(핀포인트피칭)
   const [message, setMessage] = useState("역할을 선택하세요");
 
   // 레벨/특성 상태 (배터 기준)
@@ -1421,46 +1503,25 @@ export default function BaseballSim() {
   const ptEffects = useMemo(() => pitcherTraitEffects(traits), [traits]);
   // ===== 투수 체력(스태미나) =====
   // 투구마다 소모, 낮아질수록 제구/구위 저하 -> 일정 이하로 떨어지면 구원투수 교체
-  const RELIEVER_NAMES = ["불펜 1번", "불펜 2번", "마무리"];
-  const staminaRef = useRef(100);
-  const [pitcherStamina, setPitcherStamina] = useState(100);
-  const [pitcherIdx, setPitcherIdx] = useState(0); // 0=선발, 1~=구원
-  const pitcherIdxRef = useRef(0);
+  // 투수 HP가 깎일수록 제구가 흔들린다. 체력 게이지는 런의 HP 하나뿐이다.
+  const actNow = () => currentAct(runRef.current);
+  const pitcherHpPercent = () => {
+    const act = actNow();
+    return act.hp > 0 ? clamp((runRef.current.hp / act.hp) * 100, 0, 100) : 0;
+  };
   const staminaFactor = () => {
-    // 100~60: 온전, 60~30: 서서히 저하, 30이하: 급격히 저하
-    const s = staminaRef.current;
+    const s = pitcherHpPercent();
     if (s >= 60) return 1;
     if (s >= 30) return 0.85 + (s - 30) * 0.005;
     return 0.6 + s * 0.0083;
   };
-  const consumeStamina = (amount) => {
-    staminaRef.current = Math.max(0, staminaRef.current - amount);
-    setPitcherStamina(staminaRef.current);
-    if (staminaRef.current <= 0) swapPitcher();
-  };
-  const swapPitcher = () => {
-    const next = pitcherIdxRef.current + 1;
-    pitcherIdxRef.current = next;
-    setPitcherIdx(next);
-    staminaRef.current = next >= RELIEVER_NAMES.length ? 60 : 100;
-    setPitcherStamina(staminaRef.current);
-    pitcherStreakRef.current = 0;
-    setPitcherStreak(0);
-    pushLog(`🔁 투수 교체! ${RELIEVER_NAMES[Math.min(next, RELIEVER_NAMES.length) - 1] ?? "불펜"} 등판 (체력 회복)`);
-  };
-  const resetPitcherStamina = () => {
-    staminaRef.current = 100; setPitcherStamina(100);
-    pitcherIdxRef.current = 0; setPitcherIdx(0);
-  };
-
   const getPitcherControl = (pinpoint) => {
-    let v = PITCHER_PRESET.control
+    let v = actNow().control
       + pitcherControlBonus(pitcherStreakRef.current, ptEffects.streakThresholdBonus, ptEffects.streakMultiplier)
       + ptEffects.controlDelta
       + (pitcherEventBuff?.controlDelta || 0);
-    if (pitchMode === "zone") v -= ptEffects.zonePitchingPenalty;
     if (pinpoint) v *= ptEffects.pinpointPenaltyOverride ?? 0.7;
-    if (userRole === "batter") v *= staminaFactor(); // 지친 투수는 제구 흔들림
+    v *= staminaFactor(); // 몰린 투수는 제구가 흔들린다
     return clamp(v, 5, 99);
   };
   const deadlineRef = useRef(null);
@@ -1487,6 +1548,28 @@ export default function BaseballSim() {
   const [readCombo, setReadCombo] = useState(0);
   const readComboRef = useRef(0);
   const [readFlash, setReadFlash] = useState(null); // {result, hit, id}
+
+  // ===== 화면 설계서 v1: 페이즈 UI 상태 =====
+  // 한 페이즈에 한 질문. 활성 영역은 항상 하나. 아래 상태는 "지금 무엇을 묻고 있는가"만 담당한다.
+  const [observeReady, setObserveReady] = useState(false); // OBSERVE 대기중 - 탭하면 즉시 투구
+  const observeTimerRef = useRef(null);
+  const isUserBattingRef = useRef(false); // TURN GUARD - 예약 타이머가 남의 타석을 던지지 못하게
+  const [resultBanner, setResultBanner] = useState(null); // {read, exec, result, id} - 인과 3줄
+  const resultBannerTimerRef = useRef(null);
+  const [historyFilter, setHistoryFilter] = useState("all"); // all | count | runners
+  const [hpFlash, setHpFlash] = useState(null); // {delta, fromPct, big, id} - HP 감소 팝업 + 잔상
+  const [pitcherHurt, setPitcherHurt] = useState(null); // "small" | "big" - 투수 피격 반응
+  const hurtTimerRef = useRef(null);
+  const [guideStep, setGuideStep] = useState(null); // 첫 투구 강제 가이드 0~4
+  const guideTimerRef = useRef(null);
+  const guideStartedRef = useRef(false); // 이 세션에서 이미 재생했는지
+  const [hintBubble, setHintBubble] = useState(null); // {id, text} - 문맥 힌트 말풍선
+  const hintTimerRef = useRef(null);
+  const [hintsEnabled, setHintsEnabled] = useState(true);
+  const seenHintsRef = useRef([]);
+  const GUIDE_FLAG_KEY = "9zone-first-pitch-guide-v1";
+  const HINT_FLAG_KEY = "9zone-context-hints-v1";
+  const localStore = () => { try { return window.localStorage; } catch { return null; } };
   const comboMult = () => 1;
   const registerRead = (result) => {
     const hit = result === "READ" || result === "DEEP_READ";
@@ -1551,7 +1634,7 @@ export default function BaseballSim() {
   const MOD_DEFS = {
     smash:   { label: "강타",   color: "#c73e3e", hint: "장타력 크게↑ / 헛스윙↑" },
     pushHit: { label: "밀어치기", color: "#3d7a5f", hint: "인접 존까지 커버 / 장타↓" },
-    cut:     { label: "커트",   color: "#a8b8ac", hint: "나쁜 결과를 파울로 전환" },
+    cut:     { label: "커트",   color: "#a8b8ac", hint: "단독 사용 — 무조건 파울 + 카드 1장", solo: true },
     focusMod:{ label: "집중",   color: "#ffb000", hint: "빗나가도 컨택 시도 가능" },
     readMod: { label: "노림",   color: "#8fb0d0", hint: "이번 투구 확률 노이즈 제거" },
   };
@@ -1563,31 +1646,13 @@ export default function BaseballSim() {
   };
   // 역할별 손패: 타자는 타석당 1장 소모(넉넉), 투수는 매 투구 소모(적게) — 시뮬 기준 대칭점
   const handSizeFor = (lv, role) =>
-    (role ?? userRoleRef.current) === "pitcher"
-      ? 2 + Math.floor((lv - 1) / 4)   // 투수: 2장 시작, 4레벨마다 +1
-      : Math.min(8, 6 + Math.floor((lv - 1) / 4));  // 타자: 6장 시작(선택지 확보), 4레벨마다 +1, 상한 8
+    Math.min(8, 6 + Math.floor((lv - 1) / 4));  // 6장 시작(선택지 확보), 4레벨마다 +1, 상한 8
   // 성향 축 분리: 예전엔 컨택/파워 효과가 상쇄돼 기대값이 같았음(정책봇 실측: 실력격차 .009)
   //   contact = 출루형(아웃확률↓, 장타등급↓) / power = 장타형(등급↑, 아웃확률↑)
   const CARD_STYLES = {
     contact: { label: "컨택", hrMult: 0.7, missMult: 0.65, outBias: -0.06, grade: 0.65, color: "#3d7a5f", hint: "안타 확률↑ / 장타는 어려움" },
     power: { label: "파워", hrMult: 1.45, missMult: 1.35, outBias: 0.05, grade: 1.5, color: "#c73e3e", hint: "장타·홈런↑ / 헛스윙·아웃↑" },
     normal: { label: "표준", hrMult: 1, missMult: 1, outBias: 0, grade: 1, color: "#7a8f7f", hint: "균형" },
-  };
-  const PITCH_CARD_STYLES = {
-    control: { label: "제구", controlMult: 1.25, stuffMult: 0.85, color: "#3d7a5f", hint: "코스 정확 / 구위 약함" },
-    stuff: { label: "구위", controlMult: 0.8, stuffMult: 1.3, color: "#c73e3e", hint: "위력적 / 코스 흔들림" },
-    normal: { label: "표준", controlMult: 1, stuffMult: 1, color: "#7a8f7f", hint: "균형" },
-  };
-  const buildPitcherDeck = () => {
-    const d = [];
-    const styleByZone = ["control", "normal", "stuff", "control", "normal", "stuff", "control", "normal", "stuff"];
-    // 구종도 카드에 흡수 — "이 코스엔 커브밖에 없다" 같은 판단이 생기게
-    const typeByZone = ["fastball", "slider", "curve", "change", "fastball", "slider", "curve", "change", "fastball"];
-    for (let z = 0; z < 9; z++) d.push({ kind: "pitch", zone: z, style: styleByZone[z], ptype: typeByZone[z] });
-    d.push({ kind: "pitch", zone: 9, style: "control", ptype: "curve" }); // 유인구(존 밖)
-    d.push({ kind: "pitch", zone: 9, style: "stuff", ptype: "slider" });
-    for (let i = d.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [d[i], d[j]] = [d[j], d[i]]; }
-    return d;
   };
   const buildStartingDeck = () => {
     const d = [];
@@ -1610,15 +1675,41 @@ export default function BaseballSim() {
   // 커리어 덱: 경기가 끝나도 유지되는 내 덱(카드 획득으로 성장)
   const [careerDeck, setCareerDeck] = useState([]);       // 타자 커리어 덱
   const careerDeckRef = useRef([]);
-  const [careerPitchDeck, setCareerPitchDeck] = useState([]); // 투수 커리어 덱(별도)
-  const careerPitchDeckRef = useRef([]);
-  const [cardRewards, setCardRewards] = useState(null); // 경기 종료 후 3장 중 1택
+  const [cardRewards, setCardRewards] = useState(null); // 3장 중 1택
+  const [cardRewardScope, setCardRewardScope] = useState("career"); // "run"=이번 런 덱에만 | "career"=커리어 덱에 영구
   const cardLabel = (card) =>
     card.kind === "mod" ? MOD_DEFS[card.mod].label
     : card.kind === "tactic" ? TACTIC_DEFS[card.type].label
     : card.kind === "pitch" ? (card.zone === 9 ? "유인구" : ZONE_LABELS[card.zone])
     : ZONE_LABELS[card.zone];
-  const rollCardRewards = (role) => {
+  // 이번 런에만 남는 카드. 런이 끝나면 사라진다 - 커리어 덱은 건드리지 않는다.
+  const acquireRunCard = (card) => {
+    deckRef.current = [...deckRef.current, card];
+    for (let i = deckRef.current.length - 1; i > 0; i--) {
+      const j = Math.floor(rand() * (i + 1));
+      [deckRef.current[i], deckRef.current[j]] = [deckRef.current[j], deckRef.current[i]];
+    }
+    syncDeckState();
+    setCardRewards(null);
+    pushLog(`🃏 이번 런 카드 획득: ${cardLabel(card)}`);
+  };
+  const upgradeRunCard = (target) => {
+    const matches = (cd) => cd.kind === target.kind && cd.zone === target.zone && cd.style === target.style && (cd.tier || 1) < 3;
+    let done = false;
+    const bump = (list) => list.map((cd) => {
+      if (done || !matches(cd)) return cd;
+      done = true;
+      return { ...cd, tier: (cd.tier || 1) + 1 };
+    });
+    deckRef.current = bump(deckRef.current);
+    handRef.current = bump(handRef.current);
+    discardRef.current = bump(discardRef.current);
+    syncDeckState();
+    setCardRewards(null);
+    pushLog(`⭐ 이번 런 카드 강화: ${cardLabel(target)}`);
+  };
+
+  const rollCardRewards = (role, { fromRunDeck = false } = {}) => {
     const pool = [];
     if (role === "pitcher") {
       const ptypes = PITCH_TYPES.map((pt) => pt.id);
@@ -1644,8 +1735,8 @@ export default function BaseballSim() {
       picked.push(pool.splice(i, 1)[0]);
     }
     // 3번째 선택지는 "보유 카드 강화"(덱 매수 불변) - 카드 추가는 아키타입 이동, 강화가 성장
-    const ownDeck = role === "pitcher"
-      ? (careerPitchDeckRef.current.length ? careerPitchDeckRef.current : buildPitcherDeck())
+    const ownDeck = fromRunDeck
+      ? [...deckRef.current, ...handRef.current, ...discardRef.current]
       : (careerDeckRef.current.length ? careerDeckRef.current : buildStartingDeck());
     const upCands = ownDeck.filter((cd) => cd.kind !== "tactic" && (cd.tier || 1) < 3);
     if (upCands.length) {
@@ -1656,26 +1747,17 @@ export default function BaseballSim() {
   };
   // 강화: 보유 카드 1장의 등급을 올림(덱 매수 불변) - 정책봇 실측상 이게 진짜 성장 축
   const upgradeCard = (target) => {
-    const isPitch = target.kind === "pitch";
-    const ref = isPitch ? careerPitchDeckRef : careerDeckRef;
-    const base = ref.current.length > 0 ? ref.current : (isPitch ? buildPitcherDeck() : buildStartingDeck());
+    const ref = careerDeckRef;
+    const base = ref.current.length > 0 ? ref.current : buildStartingDeck();
     const idx = base.findIndex((cd) => cd.kind === target.kind && cd.zone === target.zone && cd.style === target.style && (cd.tier || 1) < 3);
     const next = base.map((cd, i) => (i === idx ? { ...cd, tier: (cd.tier || 1) + 1 } : cd));
     ref.current = next;
-    if (isPitch) { setCareerPitchDeck(next); saveCareerRef.current({ careerPitchDeck: next }); }
-    else { setCareerDeck(next); saveCareerRef.current({ careerDeck: next }); }
+    setCareerDeck(next); saveCareerRef.current({ careerDeck: next });
     setCardRewards(null);
     pushLog(`⭐ 카드 강화: ${cardLabel(target)} → ★${(base[idx]?.tier || 1) + 1}`);
   };
   const acquireCard = (card) => {
-    if (card.kind === "pitch") {
-      const base = careerPitchDeckRef.current.length > 0 ? careerPitchDeckRef.current : buildPitcherDeck();
-      const next = [...base, card];
-      careerPitchDeckRef.current = next;
-      setCareerPitchDeck(next);
-      setCardRewards(null);
-      saveCareerRef.current({ careerPitchDeck: next });
-    } else {
+    {
       const base = careerDeckRef.current.length > 0 ? careerDeckRef.current : buildStartingDeck();
       const next = [...base, card];
       careerDeckRef.current = next;
@@ -1692,8 +1774,8 @@ export default function BaseballSim() {
     let target = n ?? handSizeFor(levelRef.current || 1);
     // 투수가 지치면 던질 수 있는 코스가 줄어든다(선택의 여지가 사라지는 압박)
     if (userRoleRef.current === "pitcher") {
-      if (staminaRef.current < 30) target = Math.max(1, target - 2);
-      else if (staminaRef.current < 60) target = Math.max(1, target - 1);
+      if (pitcherHpPercent() < 30) target = Math.max(1, target - 2);
+      else if (pitcherHpPercent() < 60) target = Math.max(1, target - 1);
     }
     while (handRef.current.length < target) {
       if (deckRef.current.length === 0) {
@@ -1760,12 +1842,9 @@ export default function BaseballSim() {
   // 아래 2개는 매 프레임(60fps) 갱신되므로 React state 대신 ref+DOM직접조작으로 처리 (안그러면 매프레임 전체 리렌더 -> 모바일에서 버튼 탭 씹힘)
   const windupCircleRef = useRef(null);
   const windupTextRef = useRef(null);
-  const deliveryMarkerElRef = useRef(null);
   // [비활성] 리얼타임 모드는 덱빌딩 방향과 안 맞아 UI에서 제거됨(2025 세션). 항상 "strategy".
   // 관련 코드(resolveRealtimeSwing / startDelivery / 딜리버리 미니게임)는 복구 대비로 남겨둠 - 인수인계 문서 참고.
   const [speedMode, setSpeedMode] = useState("strategy");
-  const [pitcherSpeedMode, setPitcherSpeedMode] = useState("strategy"); // [비활성] 위와 동일 - 항상 strategy
-  const [deliveryPending, setDeliveryPending] = useState(null); // {targetZone, pitch, sweetWidth, periodMs}
   const deliveryActiveRef = useRef(false);
 
   const ballElRef = useRef(null);
@@ -1790,13 +1869,13 @@ export default function BaseballSim() {
     };
   }, [traits, count.balls, count.strikes, bases, batterEventBuff]);
   const aiDist = useMemo(
-    () => (userRole === "pitcher" ? aiGuessDistribution(recentTargets, effBatter.eye, favorZone, effBatter.zoneRating, count.balls, count.strikes) : null),
+    () => null, // 투수 역할이 없으므로 상대 노림 히트맵도 없다
     [userRole, recentTargets, effBatter.eye, favorZone]
   );
 
   const gainExp = (hitType) => {
     if (practiceModeRef.current) return; // 가이드 연습 중엔 경험치/레벨 영향 없음
-    const gained = (userRoleRef.current === "pitcher" ? EXP_TABLE_PITCHER : EXP_TABLE)[hitType];
+    const gained = EXP_TABLE[hitType];
     if (!gained) return;
     // setState updater 안에 부수효과(다른 setState/pushLog)를 넣으면 React가 updater를
     // 여러 번 호출할 수 있어 부수효과가 중복 실행될 위험이 있음 -> 여기선 현재 값으로 직접 계산 후
@@ -1810,7 +1889,7 @@ export default function BaseballSim() {
     setExp(newExp);
     if (newLevel !== level) {
       const tier = newLevel % 3 === 0 ? "major" : "normal";
-      setPendingLevelUp({ tier, choices: rollTraitChoices(traits, tier, userRole === "pitcher"), toLevel: newLevel });
+      setPendingLevelUp({ tier, choices: rollTraitChoices(traits, tier, false), toLevel: newLevel });
       setLevel(newLevel); levelRef.current = newLevel;
       pushLog(`레벨업! Lv.${newLevel}`);
     }
@@ -1847,109 +1926,166 @@ export default function BaseballSim() {
   // 커트 누적 페널티: 3회부터 타자가 조급해져 헛스윙 확률 상승(최대 +24%)
   const foulPressure = () => 1 + clamp((foulsThisPARef.current - 2) * 0.08, 0, 0.24);
   const OUTCOME_KO = { swingMiss: "헛스윙", strike: "스트라이크", ball: "볼", foul: "파울", out: "아웃", single: "안타", double: "2루타", triple: "3루타", homerun: "홈런" };
-  const applyOutcome = (outcome, zone, scoringTeam, fromAuto = false, contactPower = 0.5) => {
+
+  // ===== 인과 3줄 결과 배너 =====
+  // 1줄 = 판독 / 2줄 = 실행 / 3줄 = 야구 결과 + HP. 이 분리가 없으면
+  // "잘 읽었는데 못 쳤다"가 플레이어에게 존재하지 않는다. 오독은 크게 외치지 않고 실제 코스만 조용히 적는다.
+  const RESULT_BANNER_DELAY_MS = 900; // READ 배너와 스윙 연출이 먼저 끝난 뒤에 뜬다
+  const RESULT_BANNER_MS = 1200;
+  const READ_LINE_KO = {
+    DEEP_READ: "DEEP READ", READ: "READ 성공", COVERED: "넓게 커버 적중",
+    NEAR_READ: "가까스로 스침", MISREAD: "빗나감", CHASE: "유인구에 속음", TAKE: "지켜봄", CUT: "커트",
+  };
+  const buildResultBanner = (outcome, power, read, hpDelta) => {
+    const zoneTxt = read?.actualZone == null ? "" : read.actualZone === 9 ? "존 밖" : ZONE_LABELS[read.actualZone];
+    // 존 밖으로 빠져 스윙이 나가지 않은 공은 "속았다"가 아니라 "골라냈다"다.
+    const laidOff = read?.result === "CHASE" && outcome === "ball";
+    const missedRead = !laidOff && !!read && ["MISREAD", "NEAR_READ", "CHASE"].includes(read.result);
+    const line1 = laidOff
+      ? "존 밖 — 골라냄"
+      : `${READ_LINE_KO[read?.result] ?? "판독 없음"}${missedRead ? `  (실제: ${zoneTxt})` : ""}`;
+    const line2 = read?.result === "CUT" ? "파울로 끊음"
+      : read?.result === "TAKE" || outcome === "ball" || outcome === "strike" ? "스윙 안 함"
+      : outcome === "swingMiss" ? "헛스윙"
+      : outcome === "foul" ? "커트"
+      : outcome === "homerun" ? "완벽한 타구"
+      : (power ?? 0) >= 0.6 ? "좋은 타구"
+      : "빗맞음";
+    const tone = ["single", "double", "triple", "homerun"].includes(outcome) ? "good"
+      : ["out", "swingMiss", "strike"].includes(outcome) ? "bad"
+      : "neutral";
+    // 3줄은 야구 결과다. 헛스윙의 야구 결과는 스트라이크다(2줄과 같은 말을 반복하지 않는다).
+    const finalKo = outcome === "swingMiss" ? "스트라이크" : (OUTCOME_KO[outcome] ?? outcome);
+    return { line1, line2, line3: `${finalKo} · 투수 HP −${Math.round(hpDelta)}`, tone };
+  };
+  const showResultBanner = (banner) => {
+    if (resultBannerTimerRef.current) clearTimeout(resultBannerTimerRef.current);
+    resultBannerTimerRef.current = setTimeout(() => {
+      setResultBanner({ ...banner, id: Date.now() });
+      resultBannerTimerRef.current = setTimeout(() => {
+        resultBannerTimerRef.current = null;
+        setResultBanner(null);
+      }, RESULT_BANNER_MS);
+    }, RESULT_BANNER_DELAY_MS);
+  };
+  const skipResultBanner = () => {
+    if (resultBannerTimerRef.current) { clearTimeout(resultBannerTimerRef.current); resultBannerTimerRef.current = null; }
+    setResultBanner(null);
+  };
+  const HIT_OUTCOMES = ["single", "double", "triple", "homerun"];
+  // 런에서의 한 결과 처리. 이닝도 팀도 없다 - 내 타석 결과가 곧 투수 체력과 남은 아웃이다.
+  const applyOutcome = (outcome, zone, contactPower = 0.5, { forceDraw = false } = {}) => {
+    const zoneTxt = zone === 9 ? "존 밖" : ZONE_LABELS[zone] ?? "";
     {
-      const who = fromAuto ? (scoringTeam === "user" ? "동료" : "상대") : "나";
-      const zoneTxt = zone === 9 ? "존 밖" : ZONE_LABELS[zone] ?? "";
-      const tone = ["single", "double", "triple", "homerun"].includes(outcome) ? "good"
+      const tone = HIT_OUTCOMES.includes(outcome) ? "good"
         : ["out", "strikeout", "swingMiss", "strike"].includes(outcome) ? "bad" : "neutral";
-      setLastPlay({ text: `${who} · ${zoneTxt} · ${OUTCOME_KO[outcome] ?? outcome}`, tone, id: Date.now() });
+      setLastPlay({ text: `${zoneTxt} · ${OUTCOME_KO[outcome] ?? outcome}`, tone, id: Date.now() });
     }
-    const team = scoringTeam || battingTeam;
-    // 타순 로테이션 패치: PA(타석)가 실제로 끝날 때만 유저팀 타순 포인터 전진
-    const advanceOrderIfUser = () => {
-      pitchesThisPARef.current = 0; // 새 타석 시작
+
+    // 이 결과가 타석을 끝내는지, 주자가 몇 명 들어오는지를 먼저 확정한다.
+    const isHit = HIT_OUTCOMES.includes(outcome);
+    const willWalk = outcome === "ball" && count.balls + 1 >= 4;
+    const willStrikeout = (outcome === "strike" || outcome === "swingMiss") && count.strikes + 1 >= 3;
+    const scoring = isHit ? advanceRunners(bases, outcome) : willWalk ? advanceRunners(bases, "single") : null;
+    const runsScored = scoring?.runs ?? 0;
+    const isOut = outcome === "out" || willStrikeout;
+
+    const applied = applyRunOutcome(runRef.current, {
+      outcome: willWalk ? "walk" : outcome,
+      runsScored,
+      strikeoutEndsPa: isOut,
+    });
+    applyRun(applied.run);
+    if (applied.damage > 0) {
+      // 잔상 바(직전 HP)와 팝업 숫자로 "얼마나 깎였는지"를 눈으로 보여준다
+      const beforePct = clamp((runRef.current.hp / currentAct(runRef.current).hp) * 100, 0, 100);
+      setHpFlash({ delta: applied.damage, fromPct: beforePct, big: applied.damage >= 18, id: Date.now() });
+      setPitcherHurt(applied.damage >= 18 ? "big" : "small");
+      if (hurtTimerRef.current) clearTimeout(hurtTimerRef.current);
+      hurtTimerRef.current = setTimeout(() => setPitcherHurt(null), applied.damage >= 18 ? 520 : 300);
+      if (applied.damage >= 18) playSound("bigDamage");
+    }
+    showResultBanner(buildResultBanner(outcome, contactPower, lastReadRef.current, applied.damage));
+    lastReadRef.current = null;
+    const outsNow = applied.run.outs;
+
+    // 타석이 끝났을 때만: 손패 리필, PA 카운터 초기화
+    const endPlateAppearance = () => {
+      pitchesThisPARef.current = 0;
       foulsThisPARef.current = 0;
-      if (userRole === "pitcher" && !fromAuto) drawUpTo(); // 투수: 타자 하나 상대할 때마다 손패 리필
-      if (team === "user" && userRole === "batter") {
-        if (coreTestModeRef.current && !fromAuto) {
-          setCoreTestComplete(true);
-          setMessage("한 타석 완료 — 읽기 감각을 바로 기록해 주세요");
-          return;
-        }
-        userOrderIndexRef.current = (userOrderIndexRef.current + 1) % 9;
-        setUserOrderIndex(userOrderIndexRef.current);
-        drawUpTo(); // 타석 종료 -> 손패 리필
+      if (coreTestModeRef.current) {
+        setCoreTestComplete(true);
+        setMessage("한 타석 완료 — 읽기 감각을 바로 기록해 주세요");
+        return;
       }
-      if (userRole === "pitcher" && team === "ai") drawUpTo(); // 투수도 한 타자 끝날 때마다 리필
+      drawUpTo();
     };
-    if (!fromAuto) {
-      setBatterEventBuff((b) => (b ? (b.pitchesLeft <= 1 ? null : { ...b, pitchesLeft: b.pitchesLeft - 1 }) : b));
-      setPitcherEventBuff((b) => (b ? (b.pitchesLeft <= 1 ? null : { ...b, pitchesLeft: b.pitchesLeft - 1 }) : b));
-    }
-    if (team === "user" && !fromAuto) {
-      focusRef.current += 1;
-      setFocusPoints(focusRef.current);
-    }
+
+    setBatterEventBuff((b) => (b ? (b.pitchesLeft <= 1 ? null : { ...b, pitchesLeft: b.pitchesLeft - 1 }) : b));
+    focusRef.current += 1;
+    setFocusPoints(focusRef.current);
     setRecentTargets((t) => [...t, zone].slice(-4));
+    if (runsScored > 0) setScore((prev) => ({ ...prev, user: prev.user + runsScored })); // 득점 = 타점 표시용
+
     if (outcome === "ball") {
-      if (!fromAuto) playSound("ball");
-      const nb = count.balls + 1;
-      if (nb >= 4) {
-        setCount({ balls: 0, strikes: 0, outs: count.outs });
-        pushLog("볼넷 출루");
-        if (!fromAuto) showBanner("볼넷!", "good");
-        if (!fromAuto) triggerCutscene("good");
-        setBases(advanceRunners(bases, "single").nb);
-        if (!fromAuto && (userRole === "pitcher" ? team === "ai" : team === "user")) gainExp("walk");
-        {
-          const prevStreak = pitcherStreakRef.current;
-          pitcherStreakRef.current = Math.floor(prevStreak * ptEffects.resetKeepRatio);
-          if (userRole === "pitcher" && prevStreak > 0 && pitcherStreakRef.current === 0 && traits.some((tr) => tr.id === "iceInVeins")) {
-            setPitcherEventBuff({ controlDelta: -5, pitchesLeft: 1, label: "냉정한 승부사 반동: 리듬 깨짐" });
-          }
-        }
+      playSound("ball");
+      if (willWalk) {
+        setCount({ balls: 0, strikes: 0, outs: outsNow });
+        pushLog(`볼넷 출루 — 투수 HP -${applied.damage}`);
+        showBanner("볼넷!", "good");
+        triggerCutscene("good");
+        setBases(scoring.nb);
+        gainExp("walk");
+        const prevStreak = pitcherStreakRef.current;
+        pitcherStreakRef.current = Math.floor(prevStreak * ptEffects.resetKeepRatio);
         setPitcherStreak(pitcherStreakRef.current);
-        advanceOrderIfUser();
+        endPlateAppearance();
       } else {
-        setCount({ ...count, balls: nb });
+        setCount({ ...count, balls: count.balls + 1 });
       }
       setMessage("볼");
-      return;
+      return applied;
     }
+
     if (outcome === "strike" || outcome === "swingMiss") {
-      if (!fromAuto) playSound(outcome === "swingMiss" ? "whiff" : "strike");
-      if (!fromAuto && outcome === "swingMiss") setPoseBriefly("miss");
-      const ns = count.strikes + 1;
-      if (ns >= 3) {
-        setCount({ balls: 0, strikes: 0, outs: count.outs + 1 });
+      playSound(outcome === "swingMiss" ? "whiff" : "strike");
+      if (outcome === "swingMiss") setPoseBriefly("miss");
+      if (willStrikeout) {
+        setCount({ balls: 0, strikes: 0, outs: outsNow });
         pushLog("삼진 아웃");
-        if (!fromAuto) showBanner("삼진 아웃", "bad");
-        if (!fromAuto && userRole === "pitcher") setPitcherPoseBriefly("strikeout", 1200);
-        if (!fromAuto) triggerCutscene("strikeout", { whiff: outcome === "swingMiss", power: contactPower });
-        if (!fromAuto && (userRole === "pitcher" ? team === "ai" : team === "user")) gainExp("strikeout");
+        showBanner("삼진 아웃", "bad");
+        triggerCutscene("strikeout", { whiff: outcome === "swingMiss", power: contactPower });
+        gainExp("strikeout");
         pitcherStreakRef.current += 1;
         setPitcherStreak(pitcherStreakRef.current);
-        advanceOrderIfUser();
+        endPlateAppearance();
       } else {
-        setCount({ ...count, strikes: ns });
-        if (!fromAuto && outcome === "swingMiss") triggerCutscene("miss", { whiff: true, power: contactPower });
+        setCount({ ...count, strikes: count.strikes + 1 });
+        if (outcome === "swingMiss") triggerCutscene("miss", { whiff: true, power: contactPower });
       }
       setMessage(outcome === "swingMiss" ? "헛스윙" : "스트라이크");
-      return;
+      return applied;
     }
+
     if (outcome === "foul") {
-      if (!fromAuto) {
-        setPoseBriefly("swing", 650);
-        scheduleImpact(() => {
-          playSound("contact");
-          setHitSpark({ id: Date.now(), tone: "foul" });
-        }, 220);
-      }
+      setPoseBriefly("swing", 650);
+      scheduleImpact(() => {
+        playSound("contact");
+        setHitSpark({ id: Date.now(), tone: "foul" });
+      }, 220);
       setCount({ ...count, strikes: Math.min(2, count.strikes + 1) });
       foulsThisPARef.current += 1;
       // 커트 드로우는 타석당 2회까지 - 무한 커트로 손패를 계속 늘리는 걸 막고, 길어질수록 타자가 조급해짐
-      const canDrawOnFoul = foulsThisPARef.current <= 2;
-      // 커트는 투수에게도 이득: 승부가 안 났으니 소모한 체력 일부 환급(0.8) - 커트 유도 동기 부여
-      if (userRole === "pitcher") { staminaRef.current = Math.min(100, staminaRef.current + 0.8); setPitcherStamina(staminaRef.current); }
+      const canDrawOnFoul = forceDraw || foulsThisPARef.current <= 2;
       setMessage(canDrawOnFoul
-        ? "파울 — 집중 축적 + 카드 1장 드로우"
-        : `파울 — 커트 ${foulsThisPARef.current}회 · 조급해짐(헛스윙 +${Math.round((foulPressure() - 1) * 100)}%)`);
-      if (!fromAuto && team === "user" && userRole === "batter" && canDrawOnFoul) drawOne();
-      return;
+        ? `커트 — 투수 HP -${applied.damage} · 카드 1장 드로우`
+        : `커트 ${foulsThisPARef.current}회 — 조급해짐(헛스윙 +${Math.round((foulPressure() - 1) * 100)}%)`);
+      if (canDrawOnFoul) drawOne();
+      return applied;
     }
+
     if (outcome === "out") {
-      if (!fromAuto) {
+      {
         const resultText = swingReasonRef.current ? `아웃 (${swingReasonRef.current})` : "아웃";
         setPoseBriefly("swing");
         scheduleImpact(() => {
@@ -1959,26 +2095,23 @@ export default function BaseballSim() {
           triggerCutscene("out", { power: contactPower });
         }, 360);
       }
-      pushLog("타구 아웃");
-      setCount({ balls: 0, strikes: 0, outs: count.outs + 1 });
-      if (!fromAuto && (userRole === "pitcher" ? team === "ai" : team === "user")) gainExp("out");
+      pushLog(`타구 아웃 — 남은 아웃 ${Math.max(0, MAX_OUTS - outsNow)}`);
+      setCount({ balls: 0, strikes: 0, outs: outsNow });
+      gainExp("out");
       pitcherStreakRef.current += 1;
       setPitcherStreak(pitcherStreakRef.current);
       setMessage("아웃");
-      if (!fromAuto) swingReasonRef.current = "";
-      advanceOrderIfUser();
-      return;
+      swingReasonRef.current = "";
+      endPlateAppearance();
+      return applied;
     }
-    {
-      const { nb, runs } = advanceRunners(bases, outcome);
-      setBases(nb);
-      if (runs > 0) setScore(team === "user" ? { ...score, user: score.user + runs } : { ...score, ai: score.ai + runs });
-    }
-    if (!fromAuto && (userRole === "pitcher" ? team === "ai" : team === "user")) gainExp(outcome);
+
+    setBases(scoring.nb);
+    gainExp(outcome);
     const label = { single: "안타", double: "2루타", triple: "3루타", homerun: "홈런" }[outcome];
-    pushLog(`${label}!`);
+    pushLog(`${label}! — 투수 HP -${applied.damage}${runsScored > 0 ? ` (주자 ${runsScored}명 득점)` : ""}`);
     const tone = outcome === "homerun" ? "big" : outcome === "double" || outcome === "triple" ? "great" : "good";
-    if (!fromAuto) {
+    {
       const resultText = swingReasonRef.current ? `${label}! (${swingReasonRef.current})` : `${label}!`;
       const isHomerun = outcome === "homerun";
       setPoseBriefly(isHomerun ? "homerun" : "swing", isHomerun ? 1500 : 900);
@@ -1990,151 +2123,35 @@ export default function BaseballSim() {
       }, isHomerun ? 620 : 360);
     }
     setMessage(label);
-    setCount({ balls: 0, strikes: 0, outs: count.outs });
+    setCount({ balls: 0, strikes: 0, outs: outsNow });
     {
       const prevStreak = pitcherStreakRef.current;
       pitcherStreakRef.current = Math.floor(prevStreak * ptEffects.resetKeepRatio);
-      if (userRole === "pitcher" && prevStreak > 0 && pitcherStreakRef.current === 0 && traits.some((tr) => tr.id === "iceInVeins")) {
-        setPitcherEventBuff({ controlDelta: -5, pitchesLeft: 1, label: "냉정한 승부사 반동: 리듬 깨짐" });
-      }
+      setPitcherStreak(pitcherStreakRef.current);
     }
-    setPitcherStreak(pitcherStreakRef.current);
-    if (!fromAuto) swingReasonRef.current = "";
-    advanceOrderIfUser();
+    swingReasonRef.current = "";
+    endPlateAppearance();
+    return applied;
   };
 
   // 유저 = 투수: AI타자(effBatter 적용)가 반응
   // 실제 투구 결과 산출 (전략모드 직접호출/리얼타임모드 딜리버리미니게임 둘 다 여기로 수렴)
-  const executeThrow = (targetZone, pitch, effControl, forceWild) => {
-    const effPitch = ptEffects.stuffDelta ? { ...pitch, power: clamp(pitch.power + ptEffects.stuffDelta, 1, 99) } : pitch;
-    const wildOut = {};
-    const actualZone = forceWild
-      ? Math.floor(rand() * 10)
-      : rollActualZoneWithWildPitch(targetZone, effControl, effPitch.controlMod, WILD_PITCH_BASE + ptEffects.wildPitchDelta, wildOut);
-    const isWild = forceWild || wildOut.wild;
-    if (isWild) { pushLog("⚠ 실투! 공이 손에서 빠졌다"); showBanner("실투!", "bad"); }
-    {
-      const isW = actualZone === 9;
-      const pin = pitchMode === "pinpoint" && actualZone === targetZone && !isW;
-      showPitchMark({ zone: actualZone, pinpoint: pin, wild: isWild, targetZone });
-    }
-    const guess = aiGuessZone(recentTargets, effBatter.eye, favorZone, effBatter.zoneRating, count.balls, count.strikes);
-    const isWaste = actualZone === 9;
-    const pinpointSuccess = pitchMode === "pinpoint" && actualZone === targetZone && !isWaste;
-
-    let swings;
-    if (guess === actualZone && !isWaste) swings = true;
-    else if (!isWaste) swings = rand() < (count.strikes === 2 ? 0.7 : 0.4);
-    else {
-      const cardSM = pitchStyleRef.current === "stuff" ? 1.25 : pitchStyleRef.current === "control" ? 0.85 : 1;
-      const sf = clamp((PITCHER_PRESET.stuff + ptEffects.stuffDelta) * cardSM * staminaFactor() / 50, 0.5, 2);
-      let cc = chaseChance(effBatter.eye, count.balls, count.strikes, effPitch, sf, foulsThisPARef.current);
-      if (effBatter.wasteContactEnabled) cc += 0.2; // 배드볼히터는 더 따라나감
-      swings = rand() < cc;
-      if (swings) pushLog(`🎣 유인구에 방망이 나옴! (${Math.round(cc * 100)}%)`);
-    }
-
-    if (!swings) { applyOutcome(isWaste ? "ball" : "strike", actualZone); return; }
-    if (isWaste && !effBatter.wasteContactEnabled) { applyOutcome(rand() < 0.6 ? "swingMiss" : "foul", actualZone); return; }
-    const aiMode = guess === actualZone && !isWaste ? "guess" : "safe";
-    const extraDifficulty = pinpointSuccess && !ptEffects.noPinpointDifficulty ? 0.3 : 0;
-    {
-      // 구위(stuff) 반영: 리얼타임 삭제 전엔 딜리버리 마커 속도에만 쓰여서 지금은 죽어있던 스탯.
-      // 이제 전략모드에서도 "구위 높을수록 타자가 헛스윙하고 타구 질이 죽는다"로 작동시킴.
-      // 카드 성향(제구형/구위형)과 체력도 함께 반영해 최종 구위를 산출.
-      const cardStuffMult = pitchStyleRef.current === "stuff" ? 1.25 : pitchStyleRef.current === "control" ? 0.85 : 1;
-      const effStuff = clamp((PITCHER_PRESET.stuff + ptEffects.stuffDelta) * cardStuffMult * staminaFactor(), 1, 120);
-      const stuffMiss = 1 + (effStuff - 50) / 220;   // 구위 50=중립, 100이면 헛스윙 +23%
-      const stuffPower = 1 - (effStuff - 50) / 400;  // 구위 높을수록 타구 질(장타력) 억제
-      const effVsStuff = {
-        ...effBatter,
-        missMult: effBatter.missMult * clamp(stuffMiss, 0.75, 1.5) * foulPressure(),
-        hrMult: effBatter.hrMult * clamp(stuffPower, 0.7, 1.2),
-      };
-      // 정타 봉쇄: 구위/변화가 타자 컨택을 이기면 "맞아도 죽는 타구"로 만든다
-      const dec = deceptionRoll(effStuff, effPitch, 1, (effBatter.zoneRating[actualZone] ?? 50));
-      if (dec.hit && !isWaste) pushLog(`🌀 배트 중심을 비껴갔다! (빗맞힘 ${Math.round(dec.chance * 100)}%)`);
-      let { outcome: rcOutcome, power: rcPower } = resolveContact(effVsStuff, actualZone, effPitch, isWaste, aiMode, extraDifficulty, "strategy", 0.5, false, dec.hit && !isWaste ? 0.68 : 1);
-      applyOutcome(rcOutcome, actualZone, undefined, false, rcPower);
-    }
-  };
 
   // 전략모드: 미니게임 없이 제구 스탯 그대로 반영해서 바로 실행
-  const playPitchCard = (zone, style) => {
-    const idx = handRef.current.findIndex((cd) => cd.kind === "pitch" && cd.zone === zone && cd.style === style);
-    if (idx === -1) return false;
-    discardCardAt(idx);
-    return true;
-  };
-  const userThrow = (targetZone, style = "normal", ptype) => {
-    pitchStyleRef.current = style;
-    const st = PITCH_CARD_STYLES[style] || PITCH_CARD_STYLES.normal;
-    const base = PITCH_TYPES.find((p) => p.id === (ptype || selectedType)) || PITCH_TYPES[0];
-    const pitch = { ...base, power: clamp(base.power * st.stuffMult, 1, 99) };
-    const effControl = clamp(getPitcherControl(pitchMode === "pinpoint") * st.controlMult, 5, 99);
-    setPitcherPoseBriefly("release", 500);
-    executeThrow(targetZone, pitch, effControl, false);
-  };
 
   // 리얼타임모드: 딜리버리 타이밍 미니게임 시작 - 구위(마커속도) vs 제구(적중구간 폭) 트레이드오프
   const deliveryMarkerRef = useRef(0);
-  const startDelivery = (targetZone, ptype) => {
-    const pitch = PITCH_TYPES.find((p) => p.id === (ptype || selectedType)) || PITCH_TYPES[0];
-    const sweetWidth = clamp(getPitcherControl() * 0.6, 15, 70); // 제구 높을수록 적중구간 넓음
-    const periodMs = clamp(1400 - PITCHER_PRESET.stuff * 8, 400, 1400); // 구위 높을수록 마커 빠름(어려움)
-    setDeliveryPending({ targetZone, pitch, sweetWidth, periodMs });
-    startPitcherWindup(Math.min(900, periodMs));
-    const start = Date.now();
-    deliveryMarkerRef.current = 0;
-    const tick = () => {
-      if (!deliveryActiveRef.current) return;
-      const elapsed = Date.now() - start;
-      const t = (elapsed % periodMs) / periodMs;
-      const pos = t < 0.5 ? t * 2 * 100 : (1 - t) * 2 * 100;
-      deliveryMarkerRef.current = pos;
-      if (deliveryMarkerElRef.current) deliveryMarkerElRef.current.style.left = `${pos}%`;
-      requestAnimationFrame(tick);
-    };
-    deliveryActiveRef.current = true;
-    requestAnimationFrame(tick);
-  };
 
-  const releaseDelivery = (intent = "control") => {
-    if (!deliveryPending) return;
-    deliveryActiveRef.current = false;
-    const { targetZone, pitch, sweetWidth } = deliveryPending;
-    const pos = deliveryMarkerRef.current;
-    const dist = Math.abs(pos - 50); // 중앙(50)이 스윗스팟 중심
-    const quality = clamp(1 - dist / (sweetWidth / 2), 0, 1); // 1=완벽, 0=완전실패
-    const isPower = intent === "power";
-    const baseEffControl = getPitcherControl(pitchMode === "pinpoint");
-    // 전력투구: 구위 확 끌어올리는 대신 제구 흔들리고 폭투위험↑ / 컨트롤투구: 구위 낮추는 대신 제구 안정, 폭투위험↓
-    const controlAdj = isPower ? -8 : 8;
-    const powerAdj = isPower ? 14 : -10;
-    const effControlFinal = clamp(baseEffControl + (quality - 0.5) * 50 + controlAdj, 5, 99);
-    const wildThreshold = isPower ? 0.22 : 0.06; // 전력투구는 타이밍 살짝만 놓쳐도 폭투될 위험
-    const totalWhiff = quality < wildThreshold;
-    const boostedPitch = { ...pitch, power: clamp(pitch.power + powerAdj, 1, 99) };
-    setMessage(
-      quality > 0.85 ? `완벽한 릴리즈! (${isPower ? "전력투구" : "컨트롤투구"})`
-      : quality < 0.15 ? "타이밍 완전히 놓침!"
-      : isPower ? "전력투구!" : "컨트롤투구"
-    );
-    setDeliveryPending(null);
-    setPitcherPoseBriefly("release", 500);
-    executeThrow(targetZone, boostedPitch, effControlFinal, totalWhiff);
-  };
 
   const startAiPitch = useCallback(() => {
     // 구종숨기기 버프: 이번 투구는 AI가 내 약점존을 못 읽고 평탄하게(거의 무작위로) 던짐 (집중 2 소모)
     const hideBuffed = tacticalBuffRef.current === "hide" && focusRef.current >= 2;
     const pitchTargetBatter = hideBuffed ? { ...effBatter, zoneRating: effBatter.zoneRating.map(() => 55) } : effBatter;
-    const { targetZone, pitch, mode } = aiPickPitch(pitchTargetBatter, count.balls, count.strikes, { pitchesThisPA: pitchesThisPARef.current, stamina: staminaRef.current });
-    consumeStamina(mode === "pinpoint" ? 4 : 2.5); // 핀포인트는 더 많이 소모
+    const { targetZone, pitch, mode } = aiPickPitch(pitchTargetBatter, count.balls, count.strikes, { pitchesThisPA: pitchesThisPARef.current, stamina: pitcherHpPercent() });
     const effControl = getPitcherControl(mode === "pinpoint");
     const tiredPitch = { ...pitch, power: clamp(pitch.power * staminaFactor(), 1, 99) }; // 지치면 구위 저하
-    const publicIntent = computeDistribution(targetZone, effControl, pitch.controlMod);
-    const aiStage = halvesPlayed >= 4 ? "FOX" : halvesPlayed >= 2 ? "ADAPTER" : "ROOKIE";
+    const publicIntent = applyWasteBias(computeDistribution(targetZone, effControl, pitch.controlMod), actNow().wasteBias ?? 0);
+    const aiStage = actNow().aiStage;
     const dist = buildTrueIntent(publicIntent, {
       strikes: count.strikes,
       aiStage,
@@ -2254,6 +2271,11 @@ export default function BaseballSim() {
   const blindAimRef = useRef(null); // 조준(aiming) 단계에서 확률 공개 전 첫 블라인드 선택 기록
   // 손패 카드 클릭 = 조합에 넣거나 빼기(최대 2장)
   // 허용 조합: 존1 / 존2(인접) / 존+수식어
+  // 조합 거부는 메시지 + 짧은 진동으로 알린다(불연속 칸/상한 초과).
+  const rejectCombo = (reason) => {
+    setMessage(reason);
+    try { navigator.vibrate?.(12); } catch { /* 진동 미지원 기기는 무시 */ }
+  };
   const toggleCard = (idx) => {
     if (!pendingPitch) return;
     const hand = handRef.current;
@@ -2272,16 +2294,22 @@ export default function BaseballSim() {
     const zoneSel = sel.filter((i) => hand[i]?.kind === "zone");
     const modSel = sel.filter((i) => hand[i]?.kind === "mod");
 
+    if (card.kind === "mod" && MOD_DEFS[card.mod]?.solo) {
+      playCutCard(idx);
+      return;
+    }
     if (card.kind === "mod") {
-      if (modSel.length >= 1) { setMessage("수식어는 한 장만 붙일 수 있다"); return; }
-      if (sel.length >= 2) { setMessage("한 스윙에 최대 2장"); return; }
+      if (modSel.length >= 1) { rejectCombo("수식어는 한 장만 붙일 수 있다"); return; }
+      if (sel.length >= 2) { rejectCombo("한 스윙에 최대 2장"); return; }
       sel.push(idx);
     } else if (card.kind === "zone") {
-      if (zoneSel.length >= 2) { setMessage("존 카드는 두 장까지"); return; }
-      if (sel.length >= 2) { setMessage("한 스윙에 최대 2장"); return; }
+      const widthCap = effBatter.widthCap ?? 1;
+      if (zoneSel.length >= widthCap) { rejectCombo(`폭 상한 ${widthCap}칸`); return; }
+      if (sel.length >= 2) { rejectCombo("한 스윙에 최대 2장"); return; }
       if (zoneSel.length === 1) {
         const other = hand[zoneSel[0]];
-        if (zoneDistance(other.zone, card.zone) > 1.5) { setMessage("붙어있는 존끼리만 겹쳐 노릴 수 있다"); return; }
+        // 불연속 칸은 폭이 될 수 없다. 거부하고 짧은 진동으로 알린다.
+        if (zoneDistance(other.zone, card.zone) > 1.5) { rejectCombo("붙어있는 존끼리만 겹쳐 노릴 수 있다"); return; }
       }
       sel.push(idx);
     } else { // tactic 카드는 조합 대상 아님
@@ -2290,6 +2318,30 @@ export default function BaseballSim() {
     setSel(sel);
     const z = hand[sel.find((i) => hand[i]?.kind === "zone")]?.zone ?? null;
     setAimedZone(z); aimedZoneRef.current = z;
+  };
+
+  // 커트 카드: 존 카드에 붙이지 않는다. 단독으로 내면 이 공을 무조건 파울로 끊고 한 장 뽑는다.
+  // 승부를 끝내지 않고 투수 체력만 갉는 선택지 - 아웃을 내주지 않는 대신 카드 한 장을 태운다.
+  const playCutCard = (idx) => {
+    if (!pendingPitch || decidedRef.current) { setMessage("공이 온 뒤에 낼 수 있다"); return; }
+    decidedRef.current = true;
+    ballFlightActiveRef.current = false;
+    const { actualZone, isWaste, pinpointSuccess } = pendingPitch;
+    showPitchMark({ zone: actualZone, pinpoint: pinpointSuccess, wild: pendingPitch.wild, targetZone: pendingPitch.targetZone });
+    setPitchHistory((h) => [...h, {
+      zone: actualZone, pitchId: pendingPitch.pitch.id,
+      balls: count.balls, strikes: count.strikes, runners: bases.some(Boolean),
+    }].slice(-30));
+    setPendingPitch(null);
+    setPitchStage("idle");
+    setAimedZone(null);
+    aimedZoneRef.current = null;
+    setSel([]);
+    discardCardAt(idx);
+    lastReadRef.current = { result: "CUT", actualZone, isWaste, wide: false };
+    pushLog("✂ 커트 — 파울로 끊고 카드 1장");
+    playSound("contact");
+    applyOutcome("foul", actualZone, 0.5, { forceDraw: true });
   };
 
   // 조합 결과 요약(판정/표시 공용)
@@ -2325,12 +2377,20 @@ export default function BaseballSim() {
     ballFlightActiveRef.current = false;
     const { actualZone, isWaste, pinpointSuccess } = pendingPitch; // 투구 시작시 이미 확정된 실제 결과 (공 궤적이 향한 곳)
     showPitchMark({ zone: actualZone, pinpoint: pinpointSuccess, wild: pendingPitch.wild, targetZone: pendingPitch.targetZone });
-    setPitchHistory((h) => [...h, { zone: actualZone, pitchId: pendingPitch.pitch.id }].slice(-30));
+    // 히스토리 스트립 필터(전체/이 카운트/주자)용 문맥도 같이 남긴다. 내보내기 스키마는 zone/pitchId만 쓴다.
+    setPitchHistory((h) => [...h, {
+      zone: actualZone, pitchId: pendingPitch.pitch.id,
+      balls: count.balls, strikes: count.strikes, runners: bases.some(Boolean),
+    }].slice(-30));
     setPendingPitch(null);
     setPitchStage("idle");
     setAimedZone(null);
     setSel([]);
-    if (guessZone === "take") { applyOutcome(isWaste ? "ball" : "strike", actualZone); return; }
+    if (guessZone === "take") {
+      lastReadRef.current = { result: "TAKE", actualZone, isWaste, wide: false };
+      applyOutcome(isWaste ? "ball" : "strike", actualZone);
+      return;
+    }
 
     // ===== 조합 해석 =====
     const combo = comboRef.current || { zones: [], mod: null };
@@ -2339,9 +2399,8 @@ export default function BaseballSim() {
     const isWide = combo.zones.length >= 2;                 // 존 2장 = 넓게 커버
     const mod = combo.mod;
     // 밀어치기: 존 1장이어도 인접까지 커버
-    const covered = mod === "pushHit"
-      ? comboZones.flatMap((z) => [z, ...[0,1,2,3,4,5,6,7,8].filter((o) => zoneDistance(z, o) <= 1.5)])
-      : comboZones;
+    // 미리보기 시트와 실제 판정이 같은 커버 함수를 쓴다 - 근사식 분기 금지
+    const covered = coveredZones(comboZones, mod);
     const matched = covered.includes(actualZone);
     const publicP = Math.max(...comboZones.map((z) => pendingPitch.publicDist?.[z] || 0));
     const trueP = Math.max(...comboZones.map((z) => pendingPitch.trueDist?.[z] || 0));
@@ -2352,6 +2411,7 @@ export default function BaseballSim() {
       : Math.min(...comboZones.map((z) => zoneDistance(z, actualZone))) <= 1.5 ? "NEAR_READ"
       : "MISREAD";
     registerRead(readResult);
+    lastReadRef.current = { result: readResult, actualZone, isWaste, wide: isWide };
     setLastPlay({ text: readResult.replaceAll("_", " "), tone: readResult === "DEEP_READ" ? "good" : readResult === "MISREAD" ? "bad" : "neutral", id: Date.now() });
     // 조준한 zone과 실제 온 zone이 다를 때 - 집중을 소모해서 타격을 보정(완전한 헛스윙 대신 컨택 시도로 전환)
     const mismatchDist = matched ? 0 : Math.min(...comboZones.map((z) => zoneDistance(z, actualZone)));
@@ -2383,7 +2443,7 @@ export default function BaseballSim() {
         const st = CARD_STYLES[playedStyleRef.current] || CARD_STYLES.normal;
         const effWasteStyled = { ...effBatterWaste, hrMult: effBatterWaste.hrMult * st.hrMult, missMult: effBatterWaste.missMult * st.missMult };
         const { outcome: rcOutcome, power: rcPower } = resolveContact(effWasteStyled, actualZone, pendingPitch.pitch, true, swingMode, canCorrect ? mismatchDist * 0.4 : 0, speedMode, quality, false);
-        applyOutcome(rcOutcome, actualZone, undefined, false, rcPower);
+        applyOutcome(rcOutcome, actualZone, rcPower);
       }
       return;
     }
@@ -2424,21 +2484,19 @@ export default function BaseballSim() {
         missMult: effBatter.missMult * st2.missMult * wildBonus.miss * foulPressure() * wideMiss * smashMiss * pushMiss,
       };
       // AI 투수 구위도 같은 방식으로 정타를 봉쇄(대칭)
-      const aiDec = deceptionRoll(PITCHER_PRESET.stuff, pendingPitch.pitch, staminaFactor(), (effBatter.zoneRating[actualZone] ?? 50));
+      const aiDec = deceptionRoll(actNow().stuff, pendingPitch.pitch, staminaFactor(), (effBatter.zoneRating[actualZone] ?? 50));
       if (aiDec.hit) pushLog("🌀 빗맞았다 — 배트 중심을 벗어남");
       // 밸런스(정책봇 실측 기반): 인접 페널티 1.1 + 기본난이도 0.25 -> 선택지는 늘리고 각 선택에 트레이드오프
       const mastered = combo.zones.some((zoneCard) => zoneCard.zone === actualZone && zoneCard.mastered !== false && zoneCard.style !== "basic");
       let { outcome: rcOutcome, power: rcPower } = resolveShowdownContact({
         read: readResult, mastered,
-        modifier: mod === "smash" || playedStyleRef.current === "power" ? "smash" : mod === "cut" ? "cut" : playedStyleRef.current === "contact" ? "contact" : null,
+        // 읽기가 맞았는데 헛스윙으로 아무 일도 안 일어나는 박탈감을 없앤다 - 최소한 커트는 된다.
+        whiffBecomesFoul: true, cutsThisPa: foulsThisPARef.current,
+        modifier: mod === "smash" || playedStyleRef.current === "power" ? "smash" : playedStyleRef.current === "contact" ? "contact" : null,
         covered: isWide || mod === "pushHit", pitchPower: pendingPitch.pitch.power + (aiDec.hit ? 12 : 0),
       });
       if (mod === "smash" && !["swingMiss", "foul"].includes(rcOutcome)) playSound("powerContact");
-      if (mod === "cut" && (rcOutcome === "swingMiss" || rcOutcome === "out")) {
-        rcOutcome = "foul";
-        pushLog("✂ 커트로 잘라냈다 — 승부 계속");
-      }
-      applyOutcome(rcOutcome, actualZone, undefined, false, rcPower);
+      applyOutcome(rcOutcome, actualZone, rcPower);
     }
   };
 
@@ -2458,13 +2516,16 @@ export default function BaseballSim() {
   };
   userGuessRef.current = userGuess;
 
-  const startGame = (role) => {
-    setUserRole(role); userRoleRef.current = role;
+  const startGame = () => {
+    setUserRole("batter"); userRoleRef.current = "batter";
     setAppStage("game");
-    // 유저가 즉시 참여하도록: 배터면 유저팀이 먼저 공격, 투수면 상대팀이 먼저 공격(=유저가 바로 투구)
-    setBattingTeam(role === "batter" ? "user" : "ai");
-    setHalvesPlayed(0);
+    setBattingTeam("user");
     setGameOver(false);
+    applyRun(createRun());
+    setRunReward(null);
+    setRouteOptions(null);
+    setPendingRoute(null);
+    setShopOffers(null);
     setScore({ user: 0, ai: 0 });
     setBases([false, false, false]);
     setCount({ balls: 0, strikes: 0, outs: 0 });
@@ -2486,16 +2547,14 @@ export default function BaseballSim() {
     setPitcherPose("idle");
     pitcherStreakRef.current = 0;
     setPitcherStreak(0);
-    const initialOrderIndex = coreTestModeRef.current && role === "batter" ? USER_LINEUP_SLOT : 0;
-    userOrderIndexRef.current = initialOrderIndex;
-    resetDeck(role);
-    resetPitcherStamina();
-    setUserOrderIndex(initialOrderIndex);
-    setMessage(role === "pitcher" ? "존을 선택해 투구하세요" : coreTestModeRef.current ? "코어 테스트 — 한 타석에서 투수의 의도를 읽어 보세요" : "AI 투수 준비 중...");
-    // TURN GUARD: 시작 직후에는 1~3번 동료 타석을 먼저 처리한다.
+    resetDeck("batter");
+    setActBriefing(coreTestModeRef.current ? null : { actIndex: 0 });
+    setMessage(coreTestModeRef.current
+      ? "코어 테스트 — 한 타석에서 투수의 의도를 읽어 보세요"
+      : `${ACTS[0].league} · ${ACTS[0].tier} — 아웃 ${MAX_OUTS}개 안에 눕힌다`);
   };
 
-  const launchGame = (role, mode = false) => {
+  const launchGame = (mode = false) => {
     ensureAudio();
     const isCoreTest = mode === "core";
     coreTestModeRef.current = isCoreTest;
@@ -2507,11 +2566,12 @@ export default function BaseballSim() {
     setCoreTestSaveError("");
     practiceModeRef.current = mode;
     setPracticeMode(mode);
-    startGame(role);
-    if (isCoreTest) setTimeout(() => startAiPitchRef.current(), 250);
+    startGame();
+    if (isCoreTest) setTimeout(() => beginObserveRef.current(), 250);
   };
 
   const returnToRole = () => {
+    stopBgm();
     coreTestModeRef.current = false;
     setCoreTestMode(false);
     setCoreTestComplete(false);
@@ -2526,16 +2586,14 @@ export default function BaseballSim() {
   };
 
   // 타순 로테이션 패치: 유저=타자일 땐 자기 타순 슬롯일 때만 직접플레이(나머지 타순=자동시뮬), 유저=투수일 땐 매 타석 전부 직접
-  const isUserBattingNow = userRole === "batter" && battingTeam === "user" && userOrderIndexRef.current === USER_LINEUP_SLOT;
-  const isUserPitchingNow = userRole === "pitcher" && battingTeam === "ai";
-  const isUserTurnNow = isUserBattingNow || isUserPitchingNow;
+  // 런에는 동료 타석이 없다. 런이 진행중이면 언제나 내 타석이다.
+  const isUserBattingNow = appStage === "game" && !gameOver && run.status === "playing" && !runReward && !actBriefing;
+  const isUserTurnNow = isUserBattingNow;
   const wasUserTurnRef = useRef(false);
 
   React.useEffect(() => {
     if (!isUserBattingNow || coreTestModeRef.current || gameOver || pendingEvent || pendingLevelUpRef.current) return;
-    if (autoSimTimeoutRef.current) { clearTimeout(autoSimTimeoutRef.current); autoSimTimeoutRef.current = null; }
-    setAutoSimming(false);
-    if (!pendingPitch && !windingUp) setTimeout(() => startAiPitchRef.current(), 250);
+    if (!pendingPitch && !windingUp) beginObserveRef.current();
   }, [isUserBattingNow, gameOver]);
 
   // ===== 투구 단계 상태머신(파생값) =====
@@ -2543,16 +2601,204 @@ export default function BaseballSim() {
   // "지금 무슨 단계인지"를 매번 추론했음 -> 조건문이 길어지고 버그 잡기 어려웠음.
   // 아래 phase 하나만 보고 분기하도록 점진 전환 중.
   //   ready     : 투구 대기(다음투구 누르거나 카드 낼 수 있음)
-  //   delivery  : 투수 리얼타임 딜리버리 미니게임 진행중
   //   windup    : 와인드업 진행중(입력 불가)
   //   reveal    : 공 던져짐, 확률 공개 - 카드 선택/스윙확정 단계
   //   result    : 결과 연출(컷신/착탄) 재생중
-  const phase = deliveryPending ? "delivery"
-    : windingUp ? "windup"
+  const phase = windingUp ? "windup"
     : pendingPitch ? "reveal"
     : (cutscene || incomingBall) ? "result"
     : "ready";
   const canAct = phase === "ready" || phase === "reveal"; // 유저 입력을 받아도 되는 단계
+
+  // ===== 화면 설계서 v1: 화면 페이즈 단일 소스 =====
+  // 내부 투구 단계(phase)를 "지금 화면이 묻는 질문" 하나로 접는다. 새 화면 분기는 uiPhase만 본다.
+  //   OBSERVE : 투수를 본다 (그리드 잠금, 히스토리만 활성)
+  //   READ    : 코스를 고른다 (손패 활성)
+  //   BET     : 확정 전 미리보기 (바텀시트만 활성)
+  //   REVEAL  : 결과 연출 (입력 없음)
+  //   AUTO    : 동료/상대 타석 자동 진행 (입력 없음, 라벨은 반드시 뜬다)
+  const betZoneChosen = userRole === "batter" && selectedIdx.some((i) => hand[i]?.kind === "zone");
+  const uiPhase = resolveUiPhase({ isUserTurn: isUserTurnNow, role: userRole, pitchPhase: phase, zoneChosen: betZoneChosen });
+  const autoPhaseLabel = runReward
+    ? "보상을 고르세요"
+    : run.status === "victory" ? "런 클리어"
+    : run.status === "defeat" ? "런 종료"
+    : "다음 투수 준비 중…";
+  const phaseLabel = phaseInstruction(uiPhase, autoPhaseLabel);
+  const phaseInputTarget = resolvePhaseInputTarget(uiPhase);
+  // 폰 한 화면에 다 들어가야 하는 상태. 이때는 페이지 자체가 스크롤되지 않는다.
+  const compactPlay = appStage === "game" && userRole === "batter" && isUserTurnNow
+    && !gameOver && !coreTestComplete && !pendingLevelUp && !pendingEvent && !cardRewards && !runReward;
+  // 히스토리 스트립 필터. 오래된 기록에는 문맥이 없으므로 조건 필터에서 자연히 빠진다.
+  const filteredPitchHistory = pitchHistory.filter((entry) => (
+    historyFilter === "count" ? (entry.balls === count.balls && entry.strikes === count.strikes)
+      : historyFilter === "runners" ? !!entry.runners
+      : true
+  ));
+  // BET 시트 미리보기: 화면 숫자와 실제 판정이 같은 함수를 쓴다(별도 근사식 금지).
+  // READ 등급은 절대 계산하지 않는다 - 보여주면 정답을 알려주는 것.
+  const betSelection = selectedIdx.map((i) => hand[i]).filter(Boolean);
+  const betZoneCards = betSelection.filter((card) => card.kind === "zone");
+  const betMod = betSelection.find((card) => card.kind === "mod")?.mod ?? null;
+  const betDist = (betMod === "readMod" && pendingPitch?.trueDist) ? pendingPitch.trueDist : pendingPitch?.dist;
+  const betPreview = pendingPitch && betZoneCards.length > 0
+    ? previewBet({
+        publicDist: betDist || {},
+        zones: betZoneCards.map((card) => card.zone),
+        mod: betMod,
+        styleHrMult: (CARD_STYLES[betZoneCards[0]?.style] || CARD_STYLES.normal).hrMult,
+        zoneRating: effBatter.zoneRating,
+      })
+    : null;
+  const cancelBet = () => {
+    setSel([]);
+    setAimedZone(null);
+    aimedZoneRef.current = null;
+  };
+  const historyPatternHint = (() => {
+    if (filteredPitchHistory.length < 5) return "";
+    const zoneCounts = {};
+    const typeCounts = {};
+    filteredPitchHistory.forEach((entry) => {
+      zoneCounts[entry.zone] = (zoneCounts[entry.zone] || 0) + 1;
+      typeCounts[entry.pitchId] = (typeCounts[entry.pitchId] || 0) + 1;
+    });
+    const topZone = Object.entries(zoneCounts).sort((a, b) => b[1] - a[1])[0];
+    const topType = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])[0];
+    const hints = [];
+    const zonePct = Math.round((topZone[1] / filteredPitchHistory.length) * 100);
+    if (zonePct >= 30) hints.push(`${topZone[0] === "9" ? "유인구" : ZONE_LABELS[topZone[0]]} 쪽 ${zonePct}%`);
+    const typePct = Math.round((topType[1] / filteredPitchHistory.length) * 100);
+    if (typePct >= 40) hints.push(`${PITCH_TYPES.find((pt) => pt.id === topType[0])?.name ?? ""} 위주 ${typePct}%`);
+    return hints.join(" · ");
+  })();
+  isUserBattingRef.current = isUserBattingNow;
+  const phaseRef = useRef("ready");
+  phaseRef.current = phase;
+
+  // OBSERVE 게이트: 투구 전에 반드시 투수를 한 번 보게 만든다. 탭하면 즉시 스킵, 2.5초 후 자동 진행.
+  const OBSERVE_MS = 2500;
+  const commitObserve = () => {
+    if (observeTimerRef.current) { clearTimeout(observeTimerRef.current); observeTimerRef.current = null; }
+    setObserveReady(false);
+    // TURN GUARD: 예약 타이머는 내 타석에서만, 그리고 투구 대기 상태에서만 투구를 실행한다.
+    if (!isUserBattingRef.current && !coreTestModeRef.current) return;
+    if (phaseRef.current !== "ready") return;
+    startAiPitchRef.current();
+  };
+  const beginObserve = () => {
+    if (observeTimerRef.current) clearTimeout(observeTimerRef.current);
+    setObserveReady(true);
+    // 첫 경기 첫 투구는 강제 가이드를 먼저 재생하고, 끝난 뒤에 OBSERVE 타이머를 건다.
+    if (userRole === "batter" && !guideStartedRef.current && !guideSeen()) {
+      guideStartedRef.current = true;
+      advanceGuide(0);
+      return;
+    }
+    observeTimerRef.current = setTimeout(() => { observeTimerRef.current = null; commitObserve(); }, OBSERVE_MS);
+  };
+  const beginObserveRef = useRef(() => {});
+  beginObserveRef.current = beginObserve;
+  // ===== 첫 투구 가이드 (텍스트 1줄) =====
+  // 튜토리얼 슬라이드는 아무도 안 읽는다. 첫 타석 진입 직전에 화면 어디를 보는지만 6초 안에 훑는다.
+  const GUIDE_STEPS = [
+    { target: "history", ms: 800, caption: "" },
+    { target: "grid", ms: 1200, caption: "" },
+    { target: "hand", ms: 1000, caption: "" },
+    { target: "banner", ms: 2500, caption: "" },
+    { target: "none", ms: 500, caption: "이제 직접 해보세요" },
+  ];
+  const guideHistoryRef = useRef(null);
+  const guideGridRef = useRef(null);
+  const guideHandRef = useRef(null);
+  const guideBannerRef = useRef(null);
+  const guideTargetRef = (target) => ({
+    history: guideHistoryRef, grid: guideGridRef, hand: guideHandRef, banner: guideBannerRef,
+  }[target] ?? null);
+  const finishGuide = () => {
+    if (guideTimerRef.current) { clearTimeout(guideTimerRef.current); guideTimerRef.current = null; }
+    setGuideStep(null);
+    try { localStore()?.setItem(GUIDE_FLAG_KEY, "done"); } catch { /* 저장 못 해도 진행은 막지 않는다 */ }
+    beginObserveRef.current();
+  };
+  const advanceGuide = (index) => {
+    if (index >= GUIDE_STEPS.length) { finishGuide(); return; }
+    setGuideStep(index);
+    guideTimerRef.current = setTimeout(() => advanceGuide(index + 1), GUIDE_STEPS[index].ms);
+  };
+  const guideSeen = () => {
+    try { return localStore()?.getItem(GUIDE_FLAG_KEY) === "done"; } catch { return true; }
+  };
+
+  // ===== 문맥 힌트 (튜토리얼 대체) =====
+  // 새 요소가 처음 나올 때만 말풍선 1개. 각 1회, 누적 4개까지, 설정에서 끌 수 있다.
+  const HINT_TEXTS = {
+    focus: "집중으로 POWER를 쓸 수 있어요",
+    narrow: "좁을수록 데미지가 큽니다",
+    deepRead: "투수 습관을 읽었습니다",
+    hpHalf: "투수가 흔들립니다",
+  };
+  const HINT_LIMIT = 4;
+  const persistHints = (seen, enabled) => {
+    try { localStore()?.setItem(HINT_FLAG_KEY, JSON.stringify({ seen, enabled })); } catch { /* 저장 실패는 무시 */ }
+  };
+  const showHint = (id) => {
+    if (!hintsEnabled || !HINT_TEXTS[id]) return;
+    if (seenHintsRef.current.includes(id) || seenHintsRef.current.length >= HINT_LIMIT) return;
+    seenHintsRef.current = [...seenHintsRef.current, id];
+    persistHints(seenHintsRef.current, true);
+    setHintBubble({ id, text: HINT_TEXTS[id] });
+    if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
+    hintTimerRef.current = setTimeout(() => { hintTimerRef.current = null; setHintBubble(null); }, 2600);
+  };
+  const toggleHints = () => {
+    const next = !hintsEnabled;
+    setHintsEnabled(next);
+    if (!next) setHintBubble(null);
+    persistHints(seenHintsRef.current, next);
+  };
+  React.useEffect(() => {
+    try {
+      const raw = localStore()?.getItem(HINT_FLAG_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed?.seen)) seenHintsRef.current = parsed.seen.filter((id) => HINT_TEXTS[id]);
+      if (typeof parsed?.enabled === "boolean") setHintsEnabled(parsed.enabled);
+    } catch { /* 저장값이 깨졌으면 기본값으로 간다 */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  React.useEffect(() => {
+    if (userRole === "batter" && focusPoints >= 1) showHint("focus");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusPoints, userRole]);
+  React.useEffect(() => {
+    if (userRole === "batter" && betZoneCards.length === 1) showHint("narrow");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [betZoneCards.length, userRole]);
+  React.useEffect(() => {
+    if (readFlash?.result === "DEEP_READ") showHint("deepRead");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [readFlash]);
+  React.useEffect(() => {
+    if (userRole === "batter" && run.hp <= currentAct(run).hp * 0.5) showHint("hpHalf");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [run.hp, run.actIndex, userRole]);
+
+  // 결과 연출이 끝나 다시 투구 대기가 되면 자동으로 OBSERVE로 들어간다.
+  // "빈 화면에 아무 설명 없이 뭔가 돌아가는 상태"를 만들지 않기 위한 것이고, 실행은 항상 TURN GUARD를 지난다.
+  React.useEffect(() => {
+    if (userRole !== "batter" || !isUserBattingNow || gameOver) return;
+    if (coreTestComplete || pendingEvent || pendingLevelUp || cardRewards) return;
+    if (phase !== "ready" || observeReady) return;
+    beginObserveRef.current();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, isUserBattingNow, gameOver, coreTestComplete, pendingEvent, pendingLevelUp, cardRewards, observeReady, userRole]);
+  React.useEffect(() => () => {
+    if (observeTimerRef.current) clearTimeout(observeTimerRef.current);
+    if (resultBannerTimerRef.current) clearTimeout(resultBannerTimerRef.current);
+    if (guideTimerRef.current) clearTimeout(guideTimerRef.current);
+    if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
+  }, []);
 
   // 마운트시 저장된 커리어(레벨/경험치/특성) 불러오기 - window.storage 없는 환경(구형 브라우저 등)에서도 안 죽게 try/catch
   React.useEffect(() => {
@@ -2568,9 +2814,6 @@ export default function BaseballSim() {
           if (typeof saved.gamesPlayed === "number") setGamesPlayed(saved.gamesPlayed);
           if (Array.isArray(saved.careerDeck) && saved.careerDeck.length > 0) {
             setCareerDeck(saved.careerDeck); careerDeckRef.current = saved.careerDeck;
-          }
-          if (Array.isArray(saved.careerPitchDeck) && saved.careerPitchDeck.length > 0) {
-            setCareerPitchDeck(saved.careerPitchDeck); careerPitchDeckRef.current = saved.careerPitchDeck;
           }
         }
       } catch (e) {
@@ -2590,7 +2833,6 @@ export default function BaseballSim() {
       traits: overrides.traits ?? traits,
       gamesPlayed: overrides.gamesPlayed ?? gamesPlayed,
       careerDeck: overrides.careerDeck ?? careerDeckRef.current,
-      careerPitchDeck: overrides.careerPitchDeck ?? careerPitchDeckRef.current,
     };
     window.storage.set("career", JSON.stringify(payload), false).catch(() => {});
   };
@@ -2619,118 +2861,115 @@ export default function BaseballSim() {
     setPendingEvent(null);
   };
 
-  const inningNumber = Math.floor(halvesPlayed / 2) + 1;
-  const inningHalfLabel = halvesPlayed % 2 === 0 ? "초" : "말";
   pendingLevelUpRef.current = pendingLevelUp;
 
-  // 하프이닝 하나(최대 3아웃)를 AI vs AI로 자동 시뮬레이션 (유저 본인 타석 끝난 뒤 나머지 타순 + 상대팀 전체)
-  // ref로 재스케줄해야 매 tick마다 최신 count/bases/applyOutcome을 참조함 (그냥 재귀 self-reference면 최초 스케줄 시점 클로저에 고정됨)
-  const runAutoSimPitchRef = useRef(() => {});
-  // 내 차례가 아닌 타석은 "투구 단위"가 아니라 "타석 단위"로 한 번에 처리한다.
-  // 예전엔 투구마다 900ms씩 재생해서, 한 경기의 절반 이상이 그냥 구경하는 시간이었음.
-  const runAutoSimPitch = () => {
-    if (userRoleRef.current === "batter" && battingTeam === "user" && userOrderIndexRef.current === USER_LINEUP_SLOT) {
-      setAutoSimming(false);
-      autoSimTimeoutRef.current = null;
-      return;
-    }
-    if (pendingLevelUpRef.current) { autoSimTimeoutRef.current = setTimeout(() => runAutoSimPitchRef.current(), 400); return; }
-    if (count.outs >= 3) return; // 이미 종료됨, effect가 처리
-
-    let b = count.balls, s = count.strikes;
-    let finalOutcome = null, finalZone = 4, pitches = 0;
-    const seenZones = [];
-
-    // 한 타석을 내부에서 끝까지 굴린다(화면 갱신 없음)
-    while (finalOutcome === null && pitches < 14) {
-      pitches += 1;
-      const ctx = { balls: b, strikes: s, runnersOn: bases.some(Boolean) };
-      const effB = getEffectiveBatter(BATTER_BASE, traits, ctx);
-      const { targetZone, pitch, mode } = aiPickPitch(effB, b, s, { pitchesThisPA: pitches - 1, stamina: staminaRef.current });
-      const effControl = getPitcherControl(mode === "pinpoint");
-      const dist = computeDistribution(targetZone, effControl, pitch.controlMod);
-      const displayDist = applyReadNoise(dist, effB.eye);
-      const candidates = buildZoneCandidates(displayDist, zoneCandidateCount(effB.eye));
-      const topZone = candidates.reduce((a, x) => (displayDist[x] > displayDist[a] ? x : a), candidates[0]);
-      const actualZone = rollActualZoneWithWildPitch(targetZone, effControl, pitch.controlMod, WILD_PITCH_BASE);
-      const isWaste = actualZone === 9;
-      const matched = topZone === actualZone;
-      seenZones.push({ zone: actualZone, pitchId: pitch.id });
-
-      let oc;
-      if ((displayDist[9] || 0) >= 55) oc = isWaste ? "ball" : "strike";
-      else if (isWaste) {
-        if (!matched) oc = "ball";
-        else if (!effB.wasteContactEnabled) oc = rand() < 0.6 ? "swingMiss" : "foul";
-        else oc = resolveContact(effB, actualZone, pitch, true, "safe", 0, "strategy").outcome;
-      } else if (!matched) oc = rand() < 0.35 ? "swingMiss" : "foul";
-      else oc = resolveShowdownContact({ read: matched ? "READ" : "MISREAD", mastered: true, pitchPower: pitch.power }).outcome;
-
-      finalZone = actualZone;
-      if (oc === "ball") { b += 1; if (b >= 4) finalOutcome = "walk"; }
-      else if (oc === "strike" || oc === "swingMiss") { s += 1; if (s >= 3) finalOutcome = "strikeout"; }
-      else if (oc === "foul") { if (s < 2) s += 1; }
-      else finalOutcome = oc; // out / single / double / triple / homerun
-    }
-    if (finalOutcome === null) finalOutcome = "out"; // 방어
-
-    // 유저=타자일 때는 상대 투수 패턴 학습용 데이터만 축적
-    if (userRole === "batter") setPitchHistory((h) => [...h, ...seenZones].slice(-30));
-
-    // 카운트를 타석 종료 상태로 맞춘 뒤 결과 1회 적용
-    if (finalOutcome === "walk") { setCount({ balls: 3, strikes: s, outs: count.outs }); applyOutcome("ball", 9, battingTeam, true); }
-    else if (finalOutcome === "strikeout") { setCount({ balls: b, strikes: 2, outs: count.outs }); applyOutcome("strike", finalZone, battingTeam, true); }
-    else applyOutcome(finalOutcome, finalZone, battingTeam, true);
-
-    if (!(userRoleRef.current === "batter" && battingTeam === "user" && userOrderIndexRef.current === USER_LINEUP_SLOT)) {
-      autoSimTimeoutRef.current = setTimeout(() => runAutoSimPitchRef.current(), 620);
-    }
-  };
-  runAutoSimPitchRef.current = runAutoSimPitch;
-
-  // 3아웃 감지 -> 하프이닝 전환
+  // 막 클리어 / 런 종료 감지. 이닝 전환은 없다.
   React.useEffect(() => {
-    if (count.outs < 3 || battingTeam == null || gameOver) return;
-    if (autoSimTimeoutRef.current) { clearTimeout(autoSimTimeoutRef.current); autoSimTimeoutRef.current = null; }
-    setAutoSimming(false);
-    const nextHalves = halvesPlayed + 1;
-    pushLog(`${inningNumber}회 ${inningHalfLabel} 종료 (${battingTeam === "user" ? "유저팀" : "AI팀"} 공격)`);
-    if (nextHalves >= MAX_INNINGS * 2) {
+    if (appStage !== "game" || coreTestModeRef.current) return;
+    if (run.status === "actClear" && !runReward) {
+      setCutscene(null); // 격파 컷신이 경로 화면을 덮지 않게 정리한다
+      setRouteOptions(rollRoutes(runRef.current, rand));
+      setRunReward("choosing");
+      setMessage(`${currentAct(run).tier} 격파! 갈 길을 고르세요`);
+      pushLog(`🏆 ${currentAct(run).league} ${currentAct(run).tier} 격파`);
+      playSound("actClear");
+    }
+    if (run.status === "defeat" && !gameOver) {
       setGameOver(true);
-      setMessage("경기 종료!");
-      if (!practiceModeRef.current) rollCardRewards(userRole);
+      stopBgm();
+      setMessage(`런 종료 — ${currentAct(run).league}에서 3아웃`);
       if (!practiceModeRef.current) {
         const newGamesPlayed = gamesPlayed + 1;
         setGamesPlayed(newGamesPlayed);
         saveCareer({ gamesPlayed: newGamesPlayed });
       }
+    }
+    if (run.status === "victory" && !gameOver) {
+      setGameOver(true);
+      stopBgm();
+      setMessage("1부리그 보스 격파 — 런 클리어!");
+      pushLog("🏆 런 클리어");
+      if (!practiceModeRef.current) {
+        const newGamesPlayed = gamesPlayed + 1;
+        setGamesPlayed(newGamesPlayed);
+        saveCareer({ gamesPlayed: newGamesPlayed });
+        setCardRewardScope("career");
+        rollCardRewards("batter");
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [run.status, appStage]);
+
+  // 상점 매물: 존 카드 두 장 + 수식어 한 장. 값은 집중으로 치른다.
+  const rollShopOffers = () => {
+    const zonePool = [];
+    for (let z = 0; z < 9; z++) {
+      zonePool.push({ kind: "zone", zone: z, style: "contact" });
+      zonePool.push({ kind: "zone", zone: z, style: "power" });
+    }
+    const modPool = Object.keys(MOD_DEFS).map((mod) => ({ kind: "mod", mod }));
+    const take = (pool) => pool.splice(Math.floor(rand() * pool.length), 1)[0];
+    return [take(zonePool), take(zonePool), take(modPool)];
+  };
+  const buyShopCard = (index) => {
+    if (focusRef.current < SHOP_CARD_COST) { setMessage(`집중이 ${SHOP_CARD_COST} 필요하다`); return; }
+    const card = shopOffers?.[index];
+    if (!card) return;
+    focusRef.current -= SHOP_CARD_COST;
+    setFocusPoints(focusRef.current);
+    acquireRunCard(card);
+    setShopOffers((offers) => offers.map((offer, i) => (i === index ? null : offer)));
+  };
+  const removeRunCard = (card, where, index) => {
+    if (focusRef.current < SHOP_REMOVE_COST) { setMessage(`집중이 ${SHOP_REMOVE_COST} 필요하다`); return; }
+    focusRef.current -= SHOP_REMOVE_COST;
+    setFocusPoints(focusRef.current);
+    const list = where === "deck" ? deckRef : where === "hand" ? handRef : discardRef;
+    list.current = list.current.filter((_, i) => i !== index);
+    syncDeckState();
+    pushLog(`🗑 덱에서 뺐다: ${cardLabel(card)}`);
+  };
+
+  // 갈래 선택 -> 들를 곳 처리 -> 다음 막
+  const chooseRoute = (route) => {
+    if (runRef.current.status !== "actClear") return;
+    setPendingRoute(route);
+    if (route.node === "train") {
+      setCardRewardScope("run");
+      rollCardRewards("batter", { fromRunDeck: true });
+      setRunReward("train");
       return;
     }
-    setHalvesPlayed(nextHalves);
-    setBases([false, false, false]);
-    setCount({ balls: 0, strikes: 0, outs: 0 });
-    setBattingTeam((t) => (t === "user" ? "ai" : "user"));
-    setPendingPitch(null);
-    setPitchStage("idle");
-    setAimedZone(null);
-    setSel([]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [count.outs]);
-
-  // 유저팀 하프이닝 아닐 때만 자동시뮬 - 유저팀 공격중엔 3아웃까지 항상 직접 플레이
-  React.useEffect(() => {
-    if (battingTeam == null || gameOver || isUserTurnNow || phase !== "ready") return;
-    setAutoSimming(true);
-    if (battingTeam === "user" && userRole === "batter") {
-      const untilMe = (USER_LINEUP_SLOT - userOrderIndexRef.current + 9) % 9;
-      setMessage(`동료 타석 빠르게 진행중 — 내 타석까지 ${untilMe === 0 ? 9 : untilMe}명`);
-    } else {
-      setMessage(`${battingTeam === "user" ? "동료" : "상대"} 타석 빠르게 진행중...`);
+    if (route.node === "shop") {
+      setShopOffers(rollShopOffers());
+      setRunReward("shop");
+      return;
     }
-    autoSimTimeoutRef.current = setTimeout(() => runAutoSimPitchRef.current(), 900);
-    return () => { if (autoSimTimeoutRef.current) clearTimeout(autoSimTimeoutRef.current); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [battingTeam, isUserTurnNow, gameOver]);
+    finishActReward(route);
+  };
+  const finishActReward = (route) => {
+    const chosen = route || pendingRoute;
+    const next = takeRoute(runRef.current, chosen);
+    applyRun(next);
+    setRunReward(null);
+    setRouteOptions(null);
+    setPendingRoute(null);
+    setShopOffers(null);
+    setBases([false, false, false]);
+    setCount({ balls: 0, strikes: 0, outs: next.outs });
+    setPitchHistory([]);
+    setRecentTargets([]);
+    playerAimHistoryRef.current = [];
+    readComboRef.current = 0;
+    setReadCombo(0);
+    pitcherStreakRef.current = 0;
+    setPitcherStreak(0);
+    drawUpTo();
+    const act = currentAct(next);
+    setActBriefing({ actIndex: next.actIndex });
+    setMessage(`${act.pitcherName} 등판 — ${act.trait ? act.trait.tell : act.intro}`);
+    pushLog(`▶ ${act.act}막 ${act.league} — ${act.pitcherName}`);
+  };
 
   // ============ 피드백 저장/내보내기 ============
   const submitFeedback = async () => {
@@ -2879,7 +3118,7 @@ export default function BaseballSim() {
 
   return (
     <div
-      className={`min-h-screen font-sans flex flex-col items-center py-3 px-3 relative overflow-hidden game-root ${shake ? `screen-shake screen-shake-${shake}` : ""} ${readFlash?.result === "DEEP_READ" ? "deep-read-freeze" : ""}`}
+      className={`min-h-screen font-sans flex flex-col items-center py-3 px-3 relative overflow-hidden game-root ${compactPlay ? "is-play " : ""}${shake ? `screen-shake screen-shake-${shake}` : ""} ${readFlash?.result === "DEEP_READ" ? "deep-read-freeze" : ""}`}
       style={{
         background: "linear-gradient(180deg, #060d09 0%, #0d1f17 45%, #0f2419 75%, #16301f 100%)",
         color: "#e8e4d8",
@@ -2922,7 +3161,7 @@ export default function BaseballSim() {
                    background: "linear-gradient(180deg, rgba(61,122,95,0) 0%, rgba(30,58,42,0.35) 100%)" }} />
       </div>
 
-      <div className="relative w-full flex flex-col items-center" style={{ zIndex: 1, paddingTop: 36 }}>
+      <div className="relative w-full flex flex-col items-center game-content" style={{ zIndex: 1, paddingTop: 36 }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Space+Mono:wght@400;700&display=swap');
         .display { font-family: 'Oswald', sans-serif; letter-spacing: 0.04em; }
@@ -2974,6 +3213,197 @@ export default function BaseballSim() {
         }
         .pitcher-afterimage.sprite-afterimage-b { transform: translate3d(calc(-50% + 15px), 2px, 0) scale(0.985); }
         [data-motion="windup"] .sprite-afterimage { opacity: 0.065; }
+        /* ===== 막 브리핑 ===== */
+        .showdown-brief-act { font-size: 10px; font-weight: 900; color: #ffb000; letter-spacing: .1em; }
+        .showdown-brief-name { font-size: 20px; font-weight: 900; color: #fff3d0; margin-top: 2px; }
+        .showdown-brief-tell { font-size: 11px; color: #a8b8ac; margin-top: 4px; text-align: center; }
+        .showdown-brief-stats { display: flex; gap: 14px; margin-top: 10px; font-size: 10px; color: #7a8f7f; }
+        .showdown-brief-stats b { color: #e8e4d8; font-size: 12px; margin-left: 3px; }
+        .showdown-brief-rules { display: flex; flex-direction: column; gap: 6px; margin: 14px 0 4px; padding: 12px 14px; border: 1px solid #2a3a2e; border-radius: 6px; background: #0d1710; font-size: 11px; color: #a8b8ac; line-height: 1.45; list-style: decimal; list-style-position: inside; text-align: left; }
+        .showdown-brief-rules b { color: #ffb000; }
+        .showdown-brief-note { font-size: 10px; color: #7a8f7f; margin-top: 12px; }
+        .showdown-brief-start { margin-top: 14px; padding: 11px 26px; border: 2px solid #ffb000; border-radius: 6px; background: #3a2f14; color: #fff3d0; font-size: 15px; font-weight: 900; }
+
+        /* ===== 타격감 ===== */
+        .showdown-hp-track.is-critical { animation: hpCritical 900ms ease-in-out infinite; }
+        @keyframes hpCritical { 0%,100% { box-shadow: 0 0 0 rgba(199,62,62,0); } 50% { box-shadow: 0 0 10px rgba(199,62,62,.75); } }
+        /* 직전 체력이 남았다가 빠지는 잔상 - 얼마나 깎였는지가 눈에 남는다 */
+        .showdown-hp-ghost { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: #ff8080; opacity: .55; animation: hpGhost 620ms ease-out forwards; }
+        @keyframes hpGhost { 0% { opacity: .75; } 60% { opacity: .5; } 100% { opacity: 0; } }
+        .showdown-hp-pop.is-big { font-size: 16px; color: #fff3d0; text-shadow: 0 0 10px rgba(255,176,0,.9); animation: hpPopBig 900ms ease-out forwards; }
+        @keyframes hpPopBig { 0% { opacity: 0; transform: translateY(8px) scale(.7); } 18% { opacity: 1; transform: translateY(-2px) scale(1.35); } 60% { transform: translateY(-6px) scale(1.1); } 100% { opacity: 0; transform: translateY(-16px) scale(1); } }
+        .combat-pitcher-stage.is-hurt-small { animation: hurtSmall 300ms ease-out; }
+        .combat-pitcher-stage.is-hurt-big { animation: hurtBig 520ms cubic-bezier(.2,.9,.3,1); }
+        @keyframes hurtSmall { 0% { transform: translateX(0); filter: none; } 30% { transform: translateX(-4px); filter: brightness(1.8) saturate(.4); } 100% { transform: translateX(0); filter: none; } }
+        @keyframes hurtBig { 0% { transform: translate(0,0) scale(1); filter: none; } 18% { transform: translate(-9px,3px) scale(.95); filter: brightness(2.4) saturate(.2); } 45% { transform: translate(6px,-2px) scale(1.02); filter: brightness(1.3); } 100% { transform: translate(0,0) scale(1); filter: none; } }
+
+        /* ===== 경로 선택 / 상점 ===== */
+        .showdown-route-options { display: flex; gap: 8px; width: 100%; }
+        .showdown-route-card { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 8px; border: 1px solid #3a4a3e; border-radius: 8px; background: #101a14; color: #e8e4d8; text-align: center; }
+        .showdown-route-card:hover { border-color: #ffb000; }
+        .showdown-route-stop { display: flex; flex-direction: column; gap: 1px; font-size: 12px; font-weight: 900; color: #7fe0b0; }
+        .showdown-route-stop-sub { font-size: 8.5px; font-weight: 400; color: #7a8f7f; }
+        .showdown-route-arrow { font-size: 9px; color: #3a4a3e; }
+        .showdown-route-pitcher { display: flex; flex-direction: column; gap: 2px; }
+        .showdown-route-trait { font-size: 9px; font-weight: 900; color: #ffb000; letter-spacing: .06em; }
+        .showdown-route-name { font-size: 11px; font-weight: 800; }
+        .showdown-route-tell { font-size: 9px; color: #a8b8ac; line-height: 1.3; }
+        .showdown-route-stat { font-size: 8.5px; color: #7a8f7f; margin-top: 2px; }
+        .showdown-phase-tell { display: block; font-size: 8.5px; color: #7a8f7f; font-weight: 400; }
+
+        .showdown-shop-row { display: flex; gap: 8px; width: 100%; justify-content: center; }
+        .showdown-shop-card { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px; border: 1px solid #3a4a3e; border-radius: 6px; background: #16211a; color: #e8e4d8; }
+        .showdown-shop-kind { font-size: 8px; color: #7a8f7f; }
+        .showdown-shop-name { font-size: 11px; font-weight: 800; }
+        .showdown-shop-cost { font-size: 9px; color: #ffb000; font-weight: 800; }
+        .showdown-shop-sold { flex: 1; text-align: center; font-size: 10px; color: #4a5a4e; align-self: center; }
+        .showdown-shop-deck { display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; max-height: 92px; overflow-y: auto; width: 100%; }
+        .showdown-shop-remove { font-size: 9px; padding: 2px 6px; border: 1px solid #3a4a3e; border-radius: 4px; color: #a8b8ac; background: #16211a; }
+        .showdown-shop-remove:hover { border-color: #c73e3e; color: #ff8080; }
+        .showdown-shop-leave { margin-top: 12px; padding: 8px 18px; border: 1px solid #ffb000; border-radius: 6px; background: #3a2f14; color: #fff3d0; font-size: 12px; font-weight: 800; }
+
+        /* ===== 폰 한 화면 모드 =====
+           내 타석 동안에는 페이지가 스크롤되지 않는다. 모든 영역이 뷰포트 높이 안에서 나눠 갖는다. */
+        .game-root.is-play { height: 100dvh; min-height: 0; overflow: hidden; padding: 0; justify-content: flex-start; }
+        .game-root.is-play .game-content { flex: 1 1 0; min-height: 0; padding-top: 0 !important; }
+        /* 남는 높이는 한 곳에 몰지 않고 구획 사이로 고르게 나눈다 */
+        .game-root.is-play .combat-shell { flex: 1 1 0; min-height: 0; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 2px; padding: 4px 6px 6px; overflow: hidden; border: 0; }
+        /* 상단 고정 대신 흐름 안에 둔다 - 스크롤이 없으니 fixed가 필요 없다 */
+        .game-root.is-play .showdown-topbar { position: static; padding: 0 0 4px; border-bottom: 1px solid #22321f; flex: 0 0 auto; width: 100%; max-width: 320px; }
+        .game-root.is-play .corner-admin { display: none; }
+        .game-root.is-play .corner-feedback { display: none; }
+
+        /* 한 화면에 들어가려면 빠져야 하는 것들 */
+        .game-root.is-play .combat-read,
+        .game-root.is-play .combat-eye,
+        .game-root.is-play .combat-last,
+        .game-root.is-play .combat-log,
+        .game-root.is-play .combat-plate,
+        .game-root.is-play .combat-swingmode,
+        .game-root.is-play .combat-windup-text,
+        .game-root.is-play .combat-focus,
+        .game-root.is-play .combat-deck-head,
+        .game-root.is-play .combat-combo-hint,
+        .game-root.is-play .combat-combo-sum { display: none; }
+
+        .game-root.is-play .combat-message { font-size: 10px; min-height: 0; margin: 0 0 1px; line-height: 1.25; }
+        .game-root.is-play .combat-pitchinfo { margin: 0 0 2px; font-size: 9px; }
+        .game-root.is-play .showdown-history { margin: 0 0 3px; flex: 0 0 auto; }
+        .game-root.is-play .showdown-history-dots { min-height: 14px; max-height: 30px; overflow: hidden; }
+
+        /* 무대: 남는 높이를 전부 가져가고, 그리드는 엄지로 누를 수 있게 키운다 */
+        .game-root.is-play .combat-pitcher-stage { flex: 0 1 auto; margin-bottom: 0; }
+        .game-root.is-play .combat-pitcher-stage .combat-character-sprite,
+        .game-root.is-play .combat-pitcher-stage .sprite-afterimage { height: 76px !important; }
+        /* 무대는 남는 높이를 가져가되 내용을 가운데 둔다 - 위아래로 벌어지지 않게 */
+        .game-root.is-play .combat-stage { flex: 0 1 auto; min-height: 0; align-items: center; justify-content: center; margin-bottom: 2px; }
+        .game-root.is-play .combat-stage .combat-character-sprite,
+        .game-root.is-play .combat-stage .sprite-afterimage { height: 108px !important; }
+        .game-root.is-play .combat-zone-grid { width: min(52vw, 190px) !important; height: min(52vw, 190px) !important; }
+        .game-root.is-play .showdown-count { margin: 0 0 3px; gap: 9px; }
+
+        /* 손패는 카드가 두 줄까지만 보이게 */
+        .game-root.is-play .combat-deck { flex: 0 0 auto; padding: 4px 5px !important; margin-bottom: 3px; max-height: 132px; overflow: hidden; }
+        .game-root.is-play .combat-card { width: 44px !important; height: 56px !important; }
+        .game-root.is-play .combat-actions { flex: 0 0 auto; margin-bottom: 0; width: 100%; max-width: 320px; }
+        .game-root.is-play .combat-actions button { padding-top: 6px; padding-bottom: 6px; }
+
+        /* 카운트 줄에 붙는 주자·집중 */
+        .showdown-count-bases { display: inline-flex; gap: 3px; align-items: center; margin-left: 2px; }
+        .showdown-base { width: 7px; height: 7px; border: 1px solid #4a5a4e; transform: rotate(45deg); display: inline-block; }
+        .showdown-base.is-on { background: #ffb000; border-color: #fff3d0; }
+        .showdown-count-focus { font-size: 9px; font-weight: 800; color: #ffb000; }
+
+        /* BET 시트의 스윙 방식 */
+        .showdown-sheet-swing { display: flex; gap: 6px; margin-bottom: 8px; }
+        .showdown-sheet-swingbtn { flex: 1; display: flex; flex-direction: column; align-items: center; font-size: 11px; font-weight: 800; padding: 4px 0; border: 1px solid #2a3a2e; border-radius: 5px; background: #16211a; color: #a8b8ac; }
+        .showdown-sheet-swingbtn.is-on { border-color: #ffb000; background: #3a2f14; color: #fff3d0; }
+
+        /* ===== 런 구조 ===== */
+        .showdown-acts { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+        .showdown-act-card { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 7px 10px; border: 1px solid #2a3a2e; border-radius: 6px; background: #111a14; min-width: 88px; }
+        .showdown-act-no { font-size: 9px; font-weight: 900; color: #ffb000; letter-spacing: .06em; }
+        .showdown-act-league { font-size: 12px; font-weight: 800; color: #e8e4d8; }
+        .showdown-act-tier { font-size: 9px; color: #7a8f7f; }
+        .showdown-act-hp { font-size: 9px; color: #c73e3e; font-weight: 800; margin-top: 2px; }
+
+        /* ===== 화면 설계서 v1 ===== */
+        /* 상단 고정. game-root가 overflow:hidden이라 sticky가 듣지 않으므로 fixed + 루트 패딩으로 자리를 만든다. */
+        .showdown-topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 30; padding: 5px 10px 6px; background: rgba(8,19,13,.96); border-bottom: 1px solid #22321f; }
+        .game-root.has-fixed-topbar { padding-top: 64px; }
+        /* 내 타석 동안에는 상단 고정 영역이 최상단을 차지한다. 개발용 토글은 숨기고 피드백만 아래로 옮긴다. */
+        .game-root.has-fixed-topbar .corner-admin { display: none; }
+        .game-root.has-fixed-topbar .corner-feedback { top: auto; bottom: 10px; right: 10px; opacity: .8; }
+        .showdown-hp { width: 100%; max-width: 288px; margin: 0 auto 4px; }
+        .showdown-hp-track { position: relative; height: 10px; border-radius: 5px; background: #16211a; border: 1px solid #2a3a2e; overflow: visible; }
+        .showdown-hp-fill { height: 100%; border-radius: 4px; transition: width .4s ease, background-color .4s ease; }
+        .showdown-hp-pop { position: absolute; right: 0; top: -14px; font-family: inherit; font-size: 11px; font-weight: 900; color: #ff8080; animation: hpPop 800ms ease-out forwards; }
+        @keyframes hpPop { 0% { opacity: 0; transform: translateY(6px); } 20% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-10px); } }
+        .showdown-hp-meta { display: flex; justify-content: space-between; font-size: 9px; color: #7a8f7f; margin-top: 2px; }
+
+        .showdown-phase { width: 100%; max-width: 288px; margin: 0 auto 5px; padding: 5px 8px; border: 1px solid #2a3a2e; border-radius: 6px; background: #111a14; }
+        .showdown-phase-auto { margin-bottom: 0; }
+        .showdown-phase-top { display: flex; align-items: center; gap: 6px; font-size: 9px; color: #7a8f7f; }
+        .showdown-phase-tag { font-weight: 900; color: #ffb000; letter-spacing: .08em; }
+        .showdown-phase-who { flex: 1; color: #a8b8ac; font-weight: 700; }
+        .showdown-hint-toggle { font-size: 8px; color: #7a8f7f; border: 1px solid #2a3a2e; border-radius: 3px; padding: 0 4px; }
+        .showdown-phase-label { font-size: 12px; font-weight: 800; color: #e8e4d8; margin-top: 2px; }
+
+        .showdown-history { width: 100%; max-width: 288px; margin: 0 auto 5px; padding: 4px 6px; border: 1px solid #2a3a2e; border-radius: 6px; background: #101a13; opacity: .62; transition: opacity .2s, border-color .2s; }
+        .showdown-history.is-active { opacity: 1; border-color: #ffb000; box-shadow: 0 0 14px rgba(255,176,0,.18); }
+        .showdown-history-tabs { display: flex; align-items: center; gap: 4px; margin-bottom: 3px; }
+        .showdown-history-tab { font-size: 9px; padding: 1px 6px; border-radius: 3px; border: 1px solid #2a3a2e; color: #7a8f7f; }
+        .showdown-history-tab.is-on { border-color: #ffb000; color: #ffb000; background: #3a2f14; font-weight: 800; }
+        .showdown-history-count { margin-left: auto; font-size: 9px; color: #4a5a4e; }
+        .showdown-history-dots { display: flex; flex-wrap: wrap; gap: 3px; min-height: 16px; align-items: center; }
+        .showdown-history-empty { font-size: 9px; color: #4a5a4e; }
+        .showdown-history-chip { font-size: 9px; padding: 0 4px; border-radius: 3px; border: 1px solid #2a3a2e; color: #a8b8ac; background: #16211a; }
+        .showdown-history-chip.is-waste { color: #c73e3e; border-color: #4a2a2a; }
+        .showdown-history-mark { margin-right: 2px; opacity: .8; }
+        .showdown-history-hint { font-size: 9px; color: #ffb000; margin-top: 3px; }
+
+        .combat-zone-grid.is-locked { opacity: .4; filter: grayscale(.35); }
+        .combat-deck.is-dimmed { opacity: .38; pointer-events: none; }
+
+        .showdown-count { display: flex; gap: 12px; align-items: center; justify-content: center; margin: 2px 0 6px; }
+        .showdown-count-group { display: inline-flex; align-items: center; gap: 3px; }
+        .showdown-count-key { font-size: 9px; font-weight: 900; color: #7a8f7f; margin-right: 1px; }
+        .showdown-dot { width: 7px; height: 7px; border-radius: 50%; border: 1px solid #2a3a2e; background: #16211a; display: inline-block; }
+        .showdown-dot.is-on.is-new { animation: countDotBlink 520ms ease-out 2; }
+        @keyframes countDotBlink { 0%,100% { transform: scale(1); } 50% { transform: scale(1.5); } }
+
+        .showdown-sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 46; max-height: 45vh; overflow-y: auto; padding: 10px 12px 12px; background: #111a14; border-top: 2px solid #ffb000; border-radius: 12px 12px 0 0; box-shadow: 0 -10px 30px rgba(0,0,0,.55); }
+        .showdown-sheet-head { display: flex; gap: 8px; align-items: baseline; font-size: 10px; color: #7a8f7f; margin-bottom: 6px; }
+        .showdown-sheet-head strong { font-size: 13px; color: #fff3d0; font-weight: 900; }
+        .showdown-sheet-rows { display: flex; flex-direction: column; gap: 3px; margin-bottom: 8px; }
+        .showdown-sheet-rows > div { display: flex; justify-content: space-between; font-size: 11px; color: #a8b8ac; }
+        .showdown-sheet-rows b { color: #e8e4d8; font-weight: 900; }
+        .showdown-sheet-rows .is-warn, .showdown-sheet-rows .is-warn b { color: #ffb000; }
+        .showdown-sheet-mods { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
+        .showdown-sheet-mod { display: flex; flex-direction: column; align-items: center; font-size: 10px; font-weight: 800; padding: 3px 7px; border: 1px solid #2a3a2e; border-radius: 5px; background: #16211a; }
+        .showdown-sheet-mod.is-on { border-color: #ffb000; background: #3a2f14; }
+        .showdown-sheet-mod:disabled { opacity: .55; }
+        .showdown-sheet-mod-sub { font-size: 7.5px; font-weight: 400; color: #7a8f7f; }
+        .showdown-sheet-actions { display: flex; gap: 8px; }
+        .showdown-sheet-cancel { flex: 1; padding: 9px 0; border-radius: 6px; border: 1px solid #3a4a3e; color: #a8b8ac; font-size: 12px; }
+        .showdown-sheet-commit { flex: 2; padding: 9px 0; border-radius: 6px; border: 1px solid #ffb000; background: #3a2f14; color: #fff3d0; font-size: 13px; font-weight: 900; }
+
+        .showdown-result { position: fixed; left: 50%; top: 34%; transform: translateX(-50%); z-index: 48; min-width: 200px; padding: 10px 18px; text-align: center; border-radius: 8px; border: 2px solid #3a4a3e; background: rgba(13,31,23,.94); box-shadow: 0 10px 30px rgba(0,0,0,.6); animation: resultBannerIn 220ms ease-out; }
+        .showdown-result.is-good { border-color: #3d7a5f; }
+        .showdown-result.is-bad { border-color: #c73e3e; }
+        .showdown-result-read { font-size: 13px; font-weight: 900; color: #ffb000; letter-spacing: .04em; }
+        .showdown-result-exec { font-size: 12px; font-weight: 700; color: #e8e4d8; margin-top: 3px; }
+        .showdown-result-final { font-size: 11px; color: #a8b8ac; margin-top: 3px; }
+        @keyframes resultBannerIn { 0% { opacity: 0; transform: translateX(-50%) translateY(8px); } 100% { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+        .showdown-hint { position: fixed; left: 50%; top: 72px; transform: translateX(-50%); z-index: 47; font-size: 11px; font-weight: 700; color: #0d1f17; background: #ffb000; padding: 5px 12px; border-radius: 14px; box-shadow: 0 6px 16px rgba(0,0,0,.45); animation: resultBannerIn 200ms ease-out; }
+
+        .showdown-guide { position: fixed; inset: 0; z-index: 60; background: rgba(6,12,9,.78); }
+        .showdown-guide-ring { position: fixed; border: 2px solid #ffb000; border-radius: 8px; box-shadow: 0 0 0 9999px rgba(6,12,9,.55), 0 0 18px rgba(255,176,0,.7); }
+        .showdown-guide-finger { position: absolute; right: -10px; bottom: -18px; font-size: 20px; color: #fff3d0; animation: countDotBlink 900ms ease-in-out infinite; }
+        .showdown-guide-caption { position: fixed; left: 50%; top: 50%; transform: translate(-50%,-50%); font-size: 15px; font-weight: 900; color: #fff3d0; }
+        .showdown-guide-skip { position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%); font-size: 10px; color: #7a8f7f; }
+
         @keyframes spriteTrailFade {
           0%, 100% { visibility: visible; }
           50% { visibility: hidden; }
@@ -3349,7 +3779,7 @@ export default function BaseballSim() {
           }}
         >
           {(() => {
-            const focusPitcher = userRole === "pitcher" && (cutscene.tier === "strikeout" || cutscene.tier === "out");
+            const focusPitcher = false; // 투수 역할이 없으므로 컷신은 항상 타자 시점
             return (
               <CinematicImpactScene
                 tier={cutscene.tier}
@@ -3428,6 +3858,7 @@ export default function BaseballSim() {
       ) : (
         <>
 
+      {!compactPlay && (
       <div className="w-full max-w-md mb-2">
         <div className="flex items-center justify-between mono" style={{ fontSize: 10, color: "#7a8f7f", marginBottom: 4 }}>
           <span>9ZONE SHOWDOWN <span style={{ color: "#ffb000" }}>· DECK</span></span>
@@ -3439,9 +3870,8 @@ export default function BaseballSim() {
                 backgroundRepeat: "no-repeat", imageRendering: "pixelated",
                 padding: "6px 22px", minWidth: 200,
               }}>
-                {inningNumber}회{inningHalfLabel} · {battingTeam === "user" ? "유저팀" : "AI팀"} 공격중
+                {currentAct(run).act}막 · {currentAct(run).league} · {currentAct(run).tier}
               </span>
-              <TeamEmblem team={battingTeam} size={16} />
             </span>
           )}
         </div>
@@ -3459,12 +3889,12 @@ export default function BaseballSim() {
             backgroundRepeat: "no-repeat", imageRendering: "pixelated",
           }}>
             <div className="flex justify-between mono text-xs">
-              <span>SCORE <span style={{ color: "#ffb000" }}>{score.user}</span>:<span style={{ color: "#c73e3e" }}>{score.ai}</span></span>
-              <span>OUT {count.outs}</span>
+              <span>{currentAct(run).act}막 <span style={{ color: "#ffb000" }}>{currentAct(run).league}</span></span>
+              <span>OUT {run.outs}/{MAX_OUTS}</span>
               <span>B{count.balls}-S{count.strikes}</span>
             </div>
             <div className="flex justify-between mono" style={{ fontSize: 10, color: "#a8b8ac", marginTop: 3 }}>
-              <span>Lv.{level} EXP {exp}/{expToNext(level)}</span>
+              <span>Lv.{level} · 타점 {score.user}</span>
               <span>
                 {["무사", "1사", "2사"][count.outs] || `${count.outs}사`}{" "}
                 {(() => {
@@ -3513,6 +3943,7 @@ export default function BaseballSim() {
           </div>
         )}
       </div>
+      )}
 
       {appStage === "role" && (
         <div className="flex flex-col items-center gap-4 relative role-shell">
@@ -3530,8 +3961,7 @@ export default function BaseballSim() {
                   if (!window.confirm("커리어(레벨/특성/경기수/덱)를 전부 초기화할까요? 되돌릴 수 없습니다.")) return;
                   setLevel(1); levelRef.current = 1; setExp(0); setTraits([]); setGamesPlayed(0);
                   setCareerDeck([]); careerDeckRef.current = [];
-                  setCareerPitchDeck([]); careerPitchDeckRef.current = [];
-                  saveCareer({ level: 1, exp: 0, traits: [], gamesPlayed: 0, careerDeck: [], careerPitchDeck: [] });
+                  saveCareer({ level: 1, exp: 0, traits: [], gamesPlayed: 0, careerDeck: [] });
                 }}
                 className="mono ml-2 underline"
                 style={{ fontSize: 10, color: "#c73e3e" }}
@@ -3540,64 +3970,40 @@ export default function BaseballSim() {
               </button>
             </div>
           )}
-          <div className="flex items-center gap-6">
-            <div className="flex flex-col items-center gap-1">
-              <TeamEmblem team="user" size={64} />
-              <span className="mono" style={{ fontSize: 9, color: "#7a8f7f" }}>VS</span>
-            </div>
-            <TeamEmblem team="ai" size={64} />
-          </div>
-          <div className="flex gap-4">
-            <button onClick={() => launchGame("pitcher")}
-              className="display rounded transition-transform hover:-translate-y-1 flex flex-col items-center gap-1 role-choice"
-              style={{ padding: 6, border: "2px solid #a8623a", backgroundColor: "#1a1210" }}>
-              <img src={IMG_SELECT_PITCHER} alt="" style={{ height: 104, imageRendering: "pixelated", display: "block" }} />
-              <span style={{ fontWeight: 800, fontSize: 13 }}>투수로 시작</span>
-            </button>
-            <button onClick={() => launchGame("batter")}
-              className="display rounded transition-transform hover:-translate-y-1 flex flex-col items-center gap-1 role-choice"
-              style={{ padding: 6, border: "2px solid #3d7a5f", backgroundColor: "#101a14" }}>
-              <img src={IMG_SELECT_BATTER} alt="" style={{ height: 104, imageRendering: "pixelated", display: "block" }} />
-              <span style={{ fontWeight: 800, fontSize: 13 }}>타자로 시작</span>
-            </button>
-          </div>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="mono" style={{ fontSize: 10, color: "#7a8f7f" }}>경기 길이</span>
-            {[3, 5, 9].map((n) => (
-              <button
-                key={n}
-                onClick={() => setMaxInnings(n)}
-                className="mono"
-                style={{
-                  fontSize: 11, padding: "3px 10px", borderRadius: 4,
-                  border: `1px solid ${maxInnings === n ? "#ffb000" : "#3a4a3e"}`,
-                  backgroundColor: maxInnings === n ? "#3a2f14" : "transparent",
-                  color: maxInnings === n ? "#ffb000" : "#a8b8ac",
-                  fontWeight: maxInnings === n ? 800 : 400,
-                }}
-              >
-                {n}이닝{n === 3 ? " (빠름)" : n === 9 ? " (정식)" : ""}
-              </button>
+          {/* 런 시작 — 이닝도 팀도 없다. 아웃 3개로 세 리그를 뚫는다. */}
+          <div className="showdown-acts mono">
+            {ACTS.map((act) => (
+              <div key={act.act} className="showdown-act-card">
+                <span className="showdown-act-no">{act.act}막</span>
+                <span className="showdown-act-league">{act.league}</span>
+                <span className="showdown-act-tier">{act.tier}</span>
+                <span className="showdown-act-hp">HP {act.hp}</span>
+              </div>
             ))}
           </div>
+          <div className="mono text-center" style={{ fontSize: 11, color: "#a8b8ac", maxWidth: 320 }}>
+            아웃 <span style={{ color: "#c73e3e", fontWeight: 900 }}>{MAX_OUTS}개</span>가 목숨이다.
+            안타·장타·커트·볼넷으로 투수 체력을 깎아 세 명을 차례로 눕힌다.
+          </div>
+          <button
+            onClick={() => launchGame()}
+            className="display rounded transition-transform hover:-translate-y-1"
+            style={{ padding: "14px 28px", border: "2px solid #ffb000", backgroundColor: "#2a2110", color: "#fff3d0", fontWeight: 900, fontSize: 17 }}
+          >
+            런 시작
+          </button>
 
           <div className="flex gap-3 mt-1">
             <button
-              onClick={() => launchGame("pitcher", "pitcher")}
-              className="mono text-[10px] px-3 py-1.5 rounded border border-[#3a4a3e] text-[#7a8f7f] hover:border-[#c17849] hover:text-[#c17849]"
-            >
-              🎓 투수 가이드 연습
-            </button>
-            <button
-              onClick={() => launchGame("batter", "batter")}
+              onClick={() => launchGame("batter")}
               className="mono text-[10px] px-3 py-1.5 rounded border border-[#3a4a3e] text-[#7a8f7f] hover:border-[#3d7a5f] hover:text-[#3d7a5f]"
             >
-              🎓 타자 가이드 연습
+              🎓 가이드 연습 (성장 없음)
             </button>
           </div>
           <div className="w-full max-w-sm mt-2 pt-4" style={{ borderTop: "1px solid #2a3a2e" }}>
             <button
-              onClick={() => launchGame("batter", "core")}
+              onClick={() => launchGame("core")}
               className="display w-full rounded transition-transform hover:-translate-y-0.5"
               style={{ padding: "12px 16px", border: "2px solid #ffb000", backgroundColor: "#2a2110", color: "#fff3d0" }}
             >
@@ -3627,65 +4033,56 @@ export default function BaseballSim() {
         </div>
       )}
 
-      {userRole && !pendingLevelUp && !pendingEvent && !cardRewards && !gameOver && !isUserTurnNow && (
-        <div className="w-64 flex flex-col items-center gap-3 py-8">
-          <div className="mono text-sm text-[#ffb000] animate-pulse">{message}</div>
-          {lastPlay && (
-            <div
-              key={lastPlay.id}
-              className="mono w-full text-center"
-              style={{
-                fontSize: 15, fontWeight: 900, padding: "8px 6px", borderRadius: 6,
-                border: `2px solid ${lastPlay.tone === "good" ? "#3d7a5f" : lastPlay.tone === "bad" ? "#c73e3e" : "#3a4a3e"}`,
-                backgroundColor: lastPlay.tone === "good" ? "#12291f" : lastPlay.tone === "bad" ? "#2a1414" : "#16211a",
-                color: lastPlay.tone === "good" ? "#7fe0b0" : lastPlay.tone === "bad" ? "#ff8080" : "#e8e4d8",
-              }}
-            >
-              {lastPlay.text}
-            </div>
-          )}
-          <div className="mono text-[10px] text-[#7a8f7f]">B{count.balls}-S{count.strikes} · OUT {count.outs}</div>
-          <button
-            onClick={() => { if (autoSimTimeoutRef.current) clearTimeout(autoSimTimeoutRef.current); runAutoSimPitchRef.current(); }}
-            className="mono"
-            style={{ fontSize: 10, padding: "3px 12px", borderRadius: 4, border: "1px solid #3a4a3e", color: "#a8b8ac", marginTop: 4 }}
-          >
-            ⏩ 다음 타석으로
-          </button>
-          <div className="mono text-xs text-[#a8b8ac] w-full space-y-0.5 mt-2">
-            {log.map((l, i) => (<div key={i} className={i === 0 ? "text-[#e8e4d8]" : ""}>{l}</div>))}
-          </div>
-        </div>
-      )}
-
       {userRole && !pendingLevelUp && !pendingEvent && !cardRewards && !gameOver && isUserTurnNow && !coreTestComplete && (
         <div className="combat-shell">
-          {/* 진행 단계 표시 - 지금 무슨 단계인지 한눈에 */}
-          <div className="flex items-center gap-1 mb-1 combat-header">
-            {[
-              { key: "ready", label: "① 카드 선택" },
-              { key: "windup", label: "② 투구" },
-              { key: "reveal", label: "③ 판단" },
-              { key: "result", label: "④ 결과" },
-            ].map((st) => {
-              const active = phase === st.key || (st.key === "windup" && phase === "delivery");
-              return (
-                <span
-                  key={st.key}
-                  className="mono"
+          {/* ①② 상단 고정 영역: 투수 HP + 페이즈 라벨 */}
+          <div className="showdown-topbar">
+          {/* ① 투수 HP 바 — 목표까지 거리. 최상단 고정, 감소할 때만 움직인다. */}
+          {userRole === "batter" && (
+            <div className="showdown-hp" ref={guideBannerRef}>
+              <div className={`showdown-hp-track${run.hp <= currentAct(run).hp * 0.3 ? " is-critical" : ""}`}>
+                {hpFlash && (
+                  <div
+                    key={`ghost-${hpFlash.id}`}
+                    className="showdown-hp-ghost"
+                    style={{ width: `${clamp(hpFlash.fromPct ?? 0, 0, 100)}%` }}
+                  />
+                )}
+                <div
+                  className="showdown-hp-fill"
                   style={{
-                    fontSize: 8.5, padding: "2px 6px", borderRadius: 3,
-                    border: `1px solid ${active ? "#ffb000" : "#2a3a2e"}`,
-                    backgroundColor: active ? "#3a2f14" : "transparent",
-                    color: active ? "#ffb000" : "#4a5a4e",
-                    fontWeight: active ? 800 : 400,
+                    width: `${clamp((run.hp / currentAct(run).hp) * 100, 0, 100)}%`,
+                    backgroundColor: run.hp > currentAct(run).hp * 0.6 ? "#3d7a5f" : run.hp > currentAct(run).hp * 0.3 ? "#ffb000" : "#c73e3e",
                   }}
-                >
-                  {st.label}
-                </span>
-              );
-            })}
+                />
+                {hpFlash && <span key={hpFlash.id} className={`showdown-hp-pop${hpFlash.big ? " is-big" : ""}`}>−{Math.round(hpFlash.delta)}</span>}
+              </div>
+              <div className="mono showdown-hp-meta">
+                <span>{currentAct(run).tier} HP</span>
+                <span>{Math.round(run.hp)}/{currentAct(run).hp}</span>
+              </div>
+            </div>
+          )}
+
+          {/* ② 투수 카드 + 페이즈 라벨 — 라벨은 어떤 상태에서도 비지 않는다 */}
+          <div className="showdown-phase">
+            <div className="showdown-phase-top mono">
+              <span className="showdown-phase-tag">{uiPhase}</span>
+              <span className="showdown-phase-who">
+                {`${currentAct(run).act}막 ${currentAct(run).league} · ${currentAct(run).pitcherName}`}
+                {currentAct(run).trait && <span className="showdown-phase-tell">{currentAct(run).trait.tell}</span>}
+              </span>
+              <button type="button" onClick={toggleBgm} className="mono showdown-hint-toggle" aria-label="배경음악">
+                ♪ {bgmEnabled ? "ON" : "OFF"}
+              </button>
+              <button type="button" onClick={toggleHints} className="mono showdown-hint-toggle">
+                힌트 {hintsEnabled ? "ON" : "OFF"}
+              </button>
+            </div>
+            <div className="mono showdown-phase-label">▸ {phaseLabel}</div>
           </div>
+          </div>
+
           {/* 읽기 콤보 게이지 - 지금 몇 연속인지, 다음에 걸린 배율이 얼마인지 */}
           {userRole === "batter" && (
             <div className="flex items-center gap-1.5 mb-1 combat-read">
@@ -3720,22 +4117,9 @@ export default function BaseballSim() {
           )}
 
           {/* 배틀 스테이지: 위=상대, 아래=나, 가운데=존 그리드(축소) */}
-          {userRole === "pitcher" && (
-            <div ref={batterMotionRef} className="relative flex flex-col items-center combat-pitcher sprite-motion-stage" style={{ marginBottom: 2 }}>
-              {characterPose !== "idle" && <img src={getBatterSpriteSrc()} alt="" className="sprite-afterimage sprite-afterimage-a" style={{ height: 128 }} />}
-              {characterPose !== "idle" && <img src={getBatterSpriteSrc()} alt="" className="sprite-afterimage sprite-afterimage-b" style={{ height: 128 }} />}
-              <img
-                src={getBatterSpriteSrc()}
-                alt="상대 타자"
-                className="combat-character-sprite"
-                style={{ height: 128, imageRendering: "pixelated", filter: "drop-shadow(0 12px 18px rgba(0,0,0,0.75))", display: "block" }}
-              />
-              <span className="mono" style={{ fontSize: 9, color: "#7a8f7f", marginTop: -2 }}>상대 타자</span>
-            </div>
-          )}
 
           {userRole === "batter" && (
-            <div ref={pitcherMotionRef} className="relative flex flex-col items-center sprite-motion-stage" style={{ marginBottom: 2 }}>
+            <div ref={pitcherMotionRef} className={`relative flex flex-col items-center sprite-motion-stage combat-pitcher-stage${pitcherHurt ? ` is-hurt-${pitcherHurt}` : ""}`} style={{ marginBottom: 2 }}>
               {pitcherPose !== "idle" && <img src={getPitcherSpriteSrc()} alt="" className="sprite-afterimage sprite-afterimage-a pitcher-afterimage" style={{ height: 116 }} />}
               {pitcherPose !== "idle" && <img src={getPitcherSpriteSrc()} alt="" className="sprite-afterimage sprite-afterimage-b pitcher-afterimage" style={{ height: 116 }} />}
               <img
@@ -3745,23 +4129,45 @@ export default function BaseballSim() {
                 style={{ height: 116, imageRendering: "pixelated", filter: "drop-shadow(0 8px 12px rgba(0,0,0,0.68))", display: "block" }}
               />
               <span className="mono" style={{ fontSize: 9, color: "#7a8f7f", marginTop: -2 }}>
-                {pitcherIdx === 0 ? "선발 투수" : (RELIEVER_NAMES[Math.min(pitcherIdx, RELIEVER_NAMES.length) - 1] ?? "불펜")}
+                {currentAct(run).pitcherName}
               </span>
-              <div style={{ width: 96, marginTop: 3 }}>
-                <div style={{ height: 6, borderRadius: 3, backgroundColor: "#16211a", border: "1px solid #2a3a2e", overflow: "hidden" }}>
-                  <div
-                    style={{
-                      height: "100%", width: `${pitcherStamina}%`,
-                      backgroundColor: pitcherStamina > 60 ? "#3d7a5f" : pitcherStamina > 30 ? "#ffb000" : "#c73e3e",
-                      transition: "width 0.3s, background-color 0.3s",
-                    }}
-                  />
-                </div>
-                <div className="mono flex justify-between" style={{ fontSize: 8, color: "#7a8f7f", marginTop: 1 }}>
-                  <span><img src={IMG_ICON_STAMINA} alt="" style={{ width: 10, height: 10, imageRendering: "pixelated", display: "inline-block", verticalAlign: "middle", marginRight: 2 }} />체력</span>
-                  <span>{Math.round(pitcherStamina)}{pitcherStamina <= 30 ? " · 지침" : ""}</span>
-                </div>
+            </div>
+          )}
+
+          {/* ③ 히스토리 스트립 — OBSERVE에서 유일하게 살아 있는 영역 */}
+          {userRole === "batter" && (
+            <div ref={guideHistoryRef} className={`showdown-history${phaseInputTarget === "history" ? " is-active" : ""}`}>
+              <div className="showdown-history-tabs">
+                {[{ id: "all", label: "전체" }, { id: "count", label: "이 카운트" }, { id: "runners", label: "주자" }].map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setHistoryFilter(tab.id)}
+                    className={`mono showdown-history-tab${historyFilter === tab.id ? " is-on" : ""}`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+                <span className="mono showdown-history-count">{filteredPitchHistory.length}구</span>
               </div>
+              <div className="showdown-history-dots">
+                {filteredPitchHistory.length === 0 && (
+                  <span className="mono showdown-history-empty">
+                    {historyFilter === "all" ? "아직 기록 없음 — 첫 공부터 쌓인다" : "이 조건의 기록은 아직 없다"}
+                  </span>
+                )}
+                {filteredPitchHistory.slice(-16).map((entry, index) => (
+                  <span
+                    key={index}
+                    className={`mono showdown-history-chip${entry.zone === 9 ? " is-waste" : ""}`}
+                    title={PITCH_TYPES.find((pt) => pt.id === entry.pitchId)?.name ?? ""}
+                  >
+                    <span className="showdown-history-mark">{entry.zone === 9 ? "◇" : "◆"}</span>
+                    {entry.zone === 9 ? "볼" : ZONE_LABELS[entry.zone]}
+                  </span>
+                ))}
+              </div>
+              {historyPatternHint && <div className="mono showdown-history-hint">💡 {historyPatternHint}</div>}
             </div>
           )}
 
@@ -3773,8 +4179,15 @@ export default function BaseballSim() {
               <>진할수록 <span style={{ color: "#ffb000", fontWeight: 700 }}>공이 올 확률 높음</span></>
             )}
           </div>
-          <div className="flex flex-row-reverse items-end justify-center gap-3 mb-1 combat-stage">
-          <div className="relative grid grid-cols-3 gap-1 combat-zone-grid" style={{ width: 96, height: 96 }}>
+          <div
+            className="flex flex-row-reverse items-end justify-center gap-3 mb-1 combat-stage"
+            onClick={userRole === "batter" && observeReady ? commitObserve : undefined}
+          >
+          <div
+            ref={guideGridRef}
+            className={`relative grid grid-cols-3 gap-1 combat-zone-grid${userRole === "batter" && (uiPhase === "OBSERVE" || uiPhase === "AUTO") ? " is-locked" : ""}`}
+            style={{ width: 96, height: 96 }}
+          >
             {ZONE_LABELS.map((label, i) => {
               // 노림(readMod) 수식어를 붙이면 확률 노이즈가 걷힌 진짜 분포를 보여준다
               const readModOn = userRole === "batter" && selectedIdx.some((si) => hand[si]?.kind === "mod" && hand[si]?.mod === "readMod");
@@ -3949,44 +4362,44 @@ export default function BaseballSim() {
               )}
             </div>
           )}
-          {userRole === "pitcher" && (
-            <div ref={pitcherMotionRef} className="relative flex flex-col items-center sprite-motion-stage">
-              {pitcherPose !== "idle" && <img src={getPitcherSpriteSrc()} alt="" className="sprite-afterimage sprite-afterimage-a pitcher-afterimage" style={{ height: 122 }} />}
-              {pitcherPose !== "idle" && <img src={getPitcherSpriteSrc()} alt="" className="sprite-afterimage sprite-afterimage-b pitcher-afterimage" style={{ height: 122 }} />}
-              <img
-                src={getPitcherSpriteSrc()}
-                alt="투수"
-                className="combat-character-sprite"
-                style={{ height: 122, imageRendering: "pixelated", filter: "drop-shadow(0 8px 12px rgba(0,0,0,0.7))", display: "block" }}
-              />
-              <div style={{ width: 84, marginTop: 3 }}>
-                <div style={{ height: 6, borderRadius: 3, backgroundColor: "#16211a", border: "1px solid #2a3a2e", overflow: "hidden" }}>
-                  <div style={{ height: "100%", width: `${pitcherStamina}%`, backgroundColor: pitcherStamina > 60 ? "#3d7a5f" : pitcherStamina > 30 ? "#ffb000" : "#c73e3e", transition: "width 0.3s" }} />
-                </div>
-                <div className="mono flex justify-between" style={{ fontSize: 8, color: "#7a8f7f", marginTop: 1 }}>
-                  <span><img src={IMG_ICON_STAMINA} alt="" style={{ width: 10, height: 10, imageRendering: "pixelated", display: "inline-block", verticalAlign: "middle", marginRight: 2 }} />내 체력</span><span>{Math.round(pitcherStamina)}</span>
-                </div>
-              </div>
+          </div>
+
+          {/* ⑤ 카운트 · 아웃 — HP는 바, 카운트는 점. 형태부터 다르게 해서 혼동을 막는다. */}
+          {userRole === "batter" && (
+            <div className="mono showdown-count">
+              {[
+                { key: "B", value: count.balls, total: 4, tone: "#3d7a5f" },
+                { key: "S", value: count.strikes, total: 3, tone: "#ffb000" },
+                { key: "OUT", value: count.outs, total: 3, tone: "#c73e3e" },
+              ].map((group) => (
+                <span key={group.key} className="showdown-count-group">
+                  <span className="showdown-count-key">{group.key}</span>
+                  {Array.from({ length: group.total }, (_, i) => (
+                    <span
+                      key={`${group.key}-${i}-${group.value}`}
+                      className={`showdown-dot${i < group.value ? " is-on" : ""}${i === group.value - 1 ? " is-new" : ""}`}
+                      style={i < group.value ? { backgroundColor: group.tone, borderColor: group.tone } : undefined}
+                    />
+                  ))}
+                </span>
+              ))}
+              <span className="showdown-count-bases" aria-label="주자">
+                {[1, 2, 0].map((key) => (
+                  <span key={key} className={`showdown-base${bases[key] ? " is-on" : ""}`} />
+                ))}
+              </span>
+              <span className="showdown-count-focus">✨{focusPoints}</span>
             </div>
           )}
-          </div>
 
           {userRole === "batter" && (
             <div
+              className="combat-plate"
               style={{
                 width: 40, height: 30, marginBottom: 10, marginTop: -2,
                 background: "linear-gradient(180deg, #e8e4d8 0%, #cfc9b8 100%)",
                 clipPath: "polygon(0% 0%, 100% 0%, 100% 55%, 50% 100%, 0% 55%)",
                 opacity: 0.85, boxShadow: "0 2px 6px rgba(0,0,0,0.4)",
-              }}
-            />
-          )}
-          {userRole === "pitcher" && (
-            <div
-              style={{
-                width: 56, height: 14, marginBottom: 10, marginTop: -2,
-                background: "linear-gradient(180deg, #e8e4d8 0%, #cfc9b8 100%)",
-                borderRadius: 3, opacity: 0.8, boxShadow: "0 2px 6px rgba(0,0,0,0.4)",
               }}
             />
           )}
@@ -3998,7 +4411,7 @@ export default function BaseballSim() {
           {userRole === "batter" && (
             <div
               ref={windingUp ? windupTextRef : null}
-              className="mono text-[10px] mb-1 text-center"
+              className="mono text-[10px] mb-1 text-center combat-windup-text"
               style={{
                 color: windingUp ? "#ffb000"
                   : pitchStage === "aiming" ? "#3d7a5f"
@@ -4016,7 +4429,7 @@ export default function BaseballSim() {
           )}
 
           {userRole === "batter" && (
-            <div className="flex gap-1.5 mb-1.5">
+            <div className="flex gap-1.5 mb-1.5 combat-swingmode">
               <button
                 onClick={() => setSwingMode("safe")}
                 className={`mono flex-1 py-1 rounded border transition-colors flex items-center justify-center gap-1 ${swingMode === "safe" ? "bg-[#2f5f4a] border-[#3d7a5f] font-bold" : "border-[#3a4a3e]"}`}
@@ -4034,14 +4447,9 @@ export default function BaseballSim() {
             </div>
           )}
 
-          {userRole === "pitcher" && (
-            <div className="mono text-[10px] text-[#7a8f7f] mb-1 text-center">
-              🎯 실효제구 {Math.round(getPitcherControl(pitchMode === "pinpoint"))}
-            </div>
-          )}
 
           {userRole === "batter" && pitchStage === "reacting" && pendingPitch && (
-            <div className="mono text-[10px] text-[#a8b8ac] mb-1.5 flex gap-1.5 items-center flex-wrap justify-center">
+            <div className="mono text-[10px] text-[#a8b8ac] mb-1.5 flex gap-1.5 items-center flex-wrap justify-center combat-pitchinfo">
               {pendingPitch.wild && (
                 <span style={{ color: "#ffb000", fontWeight: 800, border: "1px solid #ffb000", borderRadius: 3, padding: "0 4px" }}>⚠ 실투</span>
               )}
@@ -4056,14 +4464,15 @@ export default function BaseballSim() {
             </div>
           )}
 
-          {(userRole === "batter" || userRole === "pitcher") && (
-            <div className="w-64 mb-1.5 combat-deck" style={{ backgroundColor: "#141d16", border: "2px solid #ffb000", borderRadius: 8, padding: "7px 8px", boxShadow: "0 0 24px rgba(255,176,0,0.2), 0 14px 34px rgba(0,0,0,0.36)" }}>
-              <div className="flex items-center justify-between mono mb-1.5" style={{ fontSize: 10, color: "#7a8f7f" }}>
+          {userRole === "batter" && (
+            <div
+              ref={guideHandRef}
+              className={`w-64 mb-1.5 combat-deck${userRole === "batter" && uiPhase === "BET" ? " is-dimmed" : ""}`}
+              style={{ backgroundColor: "#141d16", border: "2px solid #ffb000", borderRadius: 8, padding: "7px 8px", boxShadow: "0 0 24px rgba(255,176,0,0.2), 0 14px 34px rgba(0,0,0,0.36)" }}
+            >
+              <div className="flex items-center justify-between mono mb-1.5 combat-deck-head" style={{ fontSize: 10, color: "#7a8f7f" }}>
                 <span style={{ color: "#ffb000", fontWeight: 800 }}>
                   <img src={IMG_ICON_CARD} alt="" style={{ width: 12, height: 12, imageRendering: "pixelated", display: "inline-block", verticalAlign: "middle", marginRight: 3 }} />카드 탭으로 조합 (최대 2장) → 다시 탭 = {userRole === "pitcher" ? "투구" : "스윙"} ({hand.length}/{handSizeFor(level, userRole)})
-                  {userRole === "pitcher" && pitcherStamina < 60 && (
-                    <span style={{ color: "#c73e3e", marginLeft: 4 }}>· 지쳐서 손패 -{pitcherStamina < 30 ? 2 : 1}</span>
-                  )}
                 </span>
                 <span className="flex items-center gap-2">
                   <span>덱 {deck.length} · 버림 {discard.length}</span>
@@ -4079,7 +4488,7 @@ export default function BaseballSim() {
               </div>
               {/* 현재 조합 표시 */}
               {userRole === "batter" && (
-                <div className="mono mb-1.5 text-center" style={{
+                <div className="mono mb-1.5 text-center combat-combo-hint" style={{
                   fontSize: 9, padding: "3px 6px", borderRadius: 4,
                   border: `1px solid ${selectedIdx.length ? "#ffb000" : "#2a3a2e"}`,
                   backgroundColor: selectedIdx.length ? "rgba(58,47,20,0.6)" : "transparent",
@@ -4104,7 +4513,7 @@ export default function BaseballSim() {
                 const md = sel.find((cd) => cd.kind === "mod");
                 const wide = zs.length >= 2;
                 return (
-                  <div className="mono mb-1.5" style={{
+                  <div className="mono mb-1.5 combat-combo-sum" style={{
                     fontSize: 9, padding: "3px 8px", borderRadius: 4,
                     border: "1px solid #ffb000", backgroundColor: "rgba(58,47,20,0.6)", color: "#fff3d0",
                   }}>
@@ -4114,7 +4523,6 @@ export default function BaseballSim() {
                     {wide ? "넓게 커버 (명중↑ 장타↓)"
                       : md === "smash" ? "강타 (장타↑ 헛스윙↑)"
                       : md === "pushHit" ? "인접까지 커버 (장타↓)"
-                      : md === "cut" ? "나쁜 결과는 파울로"
                       : md === "focusMod" ? "크게 빗나가도 컨택 시도"
                       : md === "readMod" ? "확률 노이즈 제거"
                       : "정확히 이 코스만"}
@@ -4146,9 +4554,11 @@ export default function BaseballSim() {
                           boxShadow: on ? "0 0 16px rgba(255,176,0,0.85)" : "0 2px 4px rgba(0,0,0,0.4)",
                         }}
                       >
-                        <span style={{ fontSize: 7, opacity: 0.8 }}>수식어</span>
+                        <span style={{ fontSize: 7, opacity: 0.8 }}>{def.solo ? "즉시" : "수식어"}</span>
                         <span style={{ fontSize: 10, fontWeight: 800, lineHeight: 1.1, textAlign: "center" }}>{def.label}</span>
-                        {on && <span style={{ fontSize: 7, fontWeight: 900, color: "#ffb000" }}>붙임</span>}
+                        {def.solo
+                          ? <span style={{ fontSize: 7, fontWeight: 900, color: "#7fe0b0" }}>파울+1장</span>
+                          : on && <span style={{ fontSize: 7, fontWeight: 900, color: "#ffb000" }}>붙임</span>}
                       </button>
                     );
                   }
@@ -4182,52 +4592,6 @@ export default function BaseballSim() {
                       </button>
                     );
                   }
-                  if (card.kind === "pitch") {
-                    const pst = PITCH_CARD_STYLES[card.style] || PITCH_CARD_STYLES.normal;
-                    const isWasteCard = card.zone === 9;
-                    return (
-                      <button
-                        key={`p-${card.zone}-${card.style}-${idx}`}
-                        disabled={phase !== "ready"}
-                        title={pst.hint}
-                        onClick={() => {
-                          if (!playPitchCard(card.zone, card.style)) return;
-                          drawOne(); // 투수는 매 투구마다 카드 소모 -> 즉시 1장 보충
-                          if (pitcherSpeedMode === "realtime") startDelivery(card.zone, card.ptype);
-                          else userThrow(card.zone, card.style, card.ptype);
-                        }}
-                        className="mono transition-transform disabled:opacity-30 disabled:cursor-not-allowed hover:-translate-y-1 combat-card"
-                        style={{
-                          width: 52, height: 68, borderRadius: 6, padding: "4px 2px",
-                          backgroundImage: `url(${isWasteCard ? IMG_CARD_FRAME_TACTIC : IMG_CARD_FRAME_PITCH})`,
-                          backgroundSize: "100% 100%", backgroundRepeat: "no-repeat",
-                          border: "0",
-                          backgroundColor: isWasteCard ? "rgba(30,24,48,0.5)" : "rgba(22,33,26,0.5)",
-                          color: "#e8e4d8",
-                          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2,
-                          boxShadow: "0 2px 4px rgba(0,0,0,0.4)",
-                        }}
-                      >
-                        <span style={{ fontSize: 10, fontWeight: 800 }}>{isWasteCard ? "유인구" : ZONE_LABELS[card.zone]}</span>
-                        {isWasteCard ? (
-                          <span style={{ fontSize: 8, fontWeight: 900, color: count.strikes === 2 ? "#3d7a5f" : "#a8b8ac" }}>
-                            유인 {Math.round(chaseChance(effBatter.eye, count.balls, count.strikes, PITCH_TYPES.find((pt) => pt.id === card.ptype), 1, foulsThisPARef.current) * 100)}%
-                          </span>
-                        ) : (
-                          <span style={{ fontSize: 8, fontWeight: 900, color: "#8fb0d0" }}>
-                            빗맞 {Math.round(deceptionRoll(
-                              (PITCHER_PRESET.stuff + ptEffects.stuffDelta) * (card.style === "stuff" ? 1.25 : card.style === "control" ? 0.85 : 1),
-                              PITCH_TYPES.find((pt) => pt.id === card.ptype),
-                              staminaFactor(),
-                              effBatter.zoneRating[card.zone] ?? 50
-                            ).chance * 100)}%
-                          </span>
-                        )}
-                        <span style={{ fontSize: 8, color: "#a8b8ac" }}>{(PITCH_TYPES.find((pt) => pt.id === card.ptype) || {}).name ?? ""}</span>
-                        <span style={{ fontSize: 8, fontWeight: 800, color: pst.color }}>{pst.label}</span>
-                      </button>
-                    );
-                  }
                   const z = card.zone;
                   const isCand = pendingPitch?.zoneCandidates?.includes(z) && pitchStage === "reacting";
                   const pct = isCand ? Math.round(pendingPitch.dist[z] || 0) : null;
@@ -4235,6 +4599,7 @@ export default function BaseballSim() {
                   return (
                     <button
                       key={`z-${z}-${idx}`}
+                      aria-label={`${ZONE_LABELS[z]} 존 카드`}
                       disabled={!pendingPitch}
                       onClick={() => {
                         // 이미 고른 카드를 다시 누르면 스윙 확정, 아니면 조합에 추가
@@ -4274,7 +4639,7 @@ export default function BaseballSim() {
                         {(CARD_STYLES[card.style] || CARD_STYLES.normal).label}
                       </span>
                       {pct != null && <span style={{ fontSize: 8, fontWeight: 900, color: "#ffb000" }}>{probLabel(pct, effBatter.eye)}</span>}
-                      {active && <span style={{ fontSize: 8, fontWeight: 900, backgroundColor: "#ffb000", color: "#0d1f17", borderRadius: 3, padding: "0 4px" }}>다시 탭=스윙</span>}
+                      {active && <span style={{ fontSize: 8, fontWeight: 900, backgroundColor: "#ffb000", color: "#0d1f17", borderRadius: 3, padding: "0 4px" }}>아래에서 확인</span>}
                     </button>
                   );
                 })}
@@ -4283,147 +4648,138 @@ export default function BaseballSim() {
           )}
 
           {userRole === "batter" && (
-            <div className="mono mb-1.5" style={{ fontSize: 10, color: "#ffb000" }}>
+            <div className="mono mb-1.5 combat-focus" style={{ fontSize: 10, color: "#ffb000" }}>
               <img src={IMG_ICON_FOCUS} alt="" style={{ width: 12, height: 12, imageRendering: "pixelated", display: "inline-block", verticalAlign: "middle", marginRight: 3 }} />집중 {focusPoints}{tacticalBuff ? ` · ${TACTIC_DEFS[tacticalBuff]?.label ?? tacticalBuff} 예약중` : ""}
             </div>
           )}
 
-          {userRole === "batter" && pitchHistory.length > 0 && (
-            <div className="w-64 mb-1.5">
-              <div className="flex items-center justify-between mb-1">
-                <span className="mono" style={{ fontSize: 10, color: "#7a8f7f" }}>📊 투구 기록</span>
-                <button onClick={() => setShowPitchHistory((s) => !s)} className="mono" style={{ fontSize: 9, color: "#7a8f7f" }}>
-                  {showPitchHistory ? "접기 ▲" : "펼치기 ▼"}
-                </button>
-              </div>
-              {showPitchHistory && (
-                <div className="flex flex-wrap gap-1 mb-1.5">
-                  {pitchHistory.slice(-15).map((p, i) => (
-                    <span
-                      key={i}
-                      className="mono text-[9px] px-1.5 py-0.5 rounded"
-                      style={{ backgroundColor: "#16211a", border: "1px solid #3a4a3e", color: p.zone === 9 ? "#c73e3e" : "#a8b8ac" }}
-                    >
-                      {p.zone === 9 ? "볼" : ZONE_LABELS[p.zone]}
-                    </span>
-                  ))}
-                </div>
-              )}
-              {(() => {
-                const zoneCounts = {};
-                const typeCounts = {};
-                pitchHistory.forEach((p) => {
-                  zoneCounts[p.zone] = (zoneCounts[p.zone] || 0) + 1;
-                  typeCounts[p.pitchId] = (typeCounts[p.pitchId] || 0) + 1;
-                });
-                const topZoneEntry = Object.entries(zoneCounts).sort((a, b) => b[1] - a[1])[0];
-                const topTypeEntry = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])[0];
-                const topZonePct = Math.round((topZoneEntry[1] / pitchHistory.length) * 100);
-                const topTypeName = PITCH_TYPES.find((p) => p.id === topTypeEntry[0])?.name;
-                const hints = [];
-                if (pitchHistory.length >= 5 && topZonePct >= 30) {
-                  hints.push(`${topZoneEntry[0] === "9" ? "유인구" : ZONE_LABELS[topZoneEntry[0]]} 쪽을 즐겨 던짐`);
-                }
-                if (pitchHistory.length >= 5) {
-                  const typePct = Math.round((topTypeEntry[1] / pitchHistory.length) * 100);
-                  if (typePct >= 40) hints.push(`${topTypeName} 위주 (${typePct}%)`);
-                }
-                return hints.length > 0 ? (
-                  <div className="mono" style={{ fontSize: 10, color: "#ffb000" }}>💡 {hints.join(" · ")}</div>
-                ) : null;
-              })()}
-            </div>
-          )}
 
-          {userRole === "pitcher" && deliveryPending && (
-            <div className="w-64 mb-1.5">
-              <div className="mono text-[10px] text-[#ffb000] mb-1 text-center">릴리즈 타이밍을 맞춰라!</div>
-              <div
-                className="relative w-full h-8 rounded overflow-hidden"
-                style={{ backgroundColor: "#16211a", border: "2px solid #3a4a3e" }}
-              >
-                <div
-                  className="absolute top-0 bottom-0"
-                  style={{
-                    left: `calc(50% - ${deliveryPending.sweetWidth / 2}%)`,
-                    width: `${deliveryPending.sweetWidth}%`,
-                    backgroundColor: "#3d7a5f",
-                  }}
-                />
-                <div
-                  ref={deliveryMarkerElRef}
-                  className="absolute top-0 bottom-0"
-                  style={{ left: "0%", width: 4, marginLeft: -2, backgroundColor: "#ff4444", boxShadow: "0 0 6px rgba(255,68,68,0.8)" }}
-                />
-              </div>
-              <div className="flex gap-1.5 mt-2">
-                <button
-                  onClick={() => releaseDelivery("power")}
-                  className="mono text-xs flex-1 px-3 py-2 rounded font-bold"
-                  style={{ border: "1px solid #c73e3e", backgroundColor: "#2a1414", color: "#ff8080" }}
-                >
-                  전력투구!
-                </button>
-                <button
-                  onClick={() => releaseDelivery("control")}
-                  className="mono text-xs flex-1 px-3 py-2 rounded font-bold"
-                  style={{ border: "1px solid #3d7a5f", backgroundColor: "#16281f", color: "#7fd9a8" }}
-                >
-                  컨트롤!
-                </button>
-              </div>
-              <div className="mono text-[10px] text-[#7a8f7f] mt-1 text-center">
-                초록 구간 = 적중존(제구 반영) · 빨간 막대 = 지금 위치 (구위가 높을수록 빠르게 움직임)<br />
-                전력투구=구위↑/제구·폭투위험 (빗나가면 크게 흔들림) · 컨트롤=안정적이지만 구위↓
-              </div>
-            </div>
-          )}
 
-          {userRole === "pitcher" && !gameOver && isUserTurnNow && (
-            <div className="w-64 mb-1.5" style={{ backgroundColor: "#111a14", border: "1px solid #2a3a2e", borderRadius: 6, padding: "8px 10px" }}>
-              <div className="mono text-[10px] text-[#a8b8ac] flex justify-between mb-1">
-                <span>연속 아웃: {pitcherStreak}</span>
-                <span style={{ color: pitcherStreak >= 6 ? "#ffb000" : pitcherStreak >= 3 ? "#3d7a5f" : "#7a8f7f" }}>
-                  {pitcherStreak >= 6 ? "🔥 완전몰입 (제구+15)" : pitcherStreak >= 3 ? "✓ 리듬 탄다 (제구+8)" : `몰입까지 ${3 - pitcherStreak}아웃`}
-                </span>
-              </div>
-              <div className="h-1.5 rounded overflow-hidden" style={{ backgroundColor: "#0d1f17" }}>
-                <div
-                  className="h-full"
-                  style={{
-                    width: `${clamp((pitcherStreak / 6) * 100, 0, 100)}%`,
-                    backgroundColor: pitcherStreak >= 6 ? "#ffb000" : "#3d7a5f",
-                    transition: "width 0.2s",
-                  }}
-                />
-              </div>
-            </div>
-          )}
 
-          {userRole === "pitcher" && !deliveryPending && (
-            <div className="flex gap-2 mb-1.5">
-              <button
-                onClick={() => setPitchMode("zone")}
-                className={`mono text-[11px] px-3 py-1.5 rounded border transition-colors flex items-center justify-center gap-1 ${pitchMode === "zone" ? "bg-[#2f5f4a] border-[#3d7a5f] font-bold" : "border-[#3a4a3e] hover:border-[#3d7a5f]"}`}
-              >
-                <IconZoneSafe size={12} color={pitchMode === "zone" ? "#e8e4d8" : "#3d7a5f"} /> 존 피칭 (안정/제구 그대로)
-              </button>
-              <button
-                onClick={() => setPitchMode("pinpoint")}
-                className={`mono text-[11px] px-3 py-1.5 rounded border transition-colors flex items-center justify-center gap-1 ${pitchMode === "pinpoint" ? "bg-[#a8623a] border-[#c17849] font-bold" : "border-[#3a4a3e] hover:border-[#c17849]"}`}
-              >
-                <IconPinpoint size={12} color={pitchMode === "pinpoint" ? "#e8e4d8" : "#c73e3e"} /> 핀포인트 (성공시 극악 난이도/실투 위험↑)
-              </button>
-            </div>
-          )}
-
+          {/* ⑥ 액션 바 — 확정은 BET 시트에서만 한다(두 영역이 동시에 입력을 기다리지 않게) */}
           {userRole === "batter" && (
             <div className="flex gap-1.5 mb-2 combat-actions">
-              <button onClick={() => userGuess("take")} disabled={!pendingPitch} className="mono flex-1 py-1.5 rounded border border-[#3a4a3e] disabled:opacity-30" style={{ fontSize: 11 }}>지켜보기</button>
-              {pitchStage === "reacting" && speedMode === "strategy" && (
-                <button onClick={commitSwing} className="mono flex-1 py-1.5 rounded border border-[#ffb000] bg-[#3a2f14] font-bold" style={{ fontSize: 11 }}>스윙확정!</button>
+              <button
+                onClick={() => userGuess("take")}
+                disabled={!pendingPitch || uiPhase === "BET"}
+                className="mono flex-1 py-1.5 rounded border border-[#3a4a3e] disabled:opacity-30"
+                style={{ fontSize: 11 }}
+              >
+                지켜보기
+              </button>
+              <button
+                onClick={() => (observeReady ? commitObserve() : startAiPitch())}
+                disabled={phase !== "ready"}
+                className="mono flex-1 py-1.5 rounded border border-[#3a4a3e] disabled:opacity-30"
+                style={{ fontSize: 11 }}
+              >
+                다음투구
+              </button>
+            </div>
+          )}
+
+          {/* PHASE 3 — BET: 확정 전에 결과를 미리 본다. 모달이 아니라 바텀시트. */}
+          {userRole === "batter" && uiPhase === "BET" && betPreview && (
+            <div className="showdown-sheet" role="group" aria-label="승부 확인">
+              <div className="mono showdown-sheet-head">
+                <span>선택</span>
+                <strong>
+                  {betZoneCards.map((card) => ZONE_LABELS[card.zone]).join(" · ")} {betPreview.width}칸
+                  {betMod ? ` + ${MOD_DEFS[betMod].label}` : ""}
+                </strong>
+              </div>
+              <div className="mono showdown-sheet-rows">
+                <div><span>적중 예상</span><b>{betPreview.hitPct}%</b></div>
+                <div><span>데미지 배율</span><b>×{betPreview.damageMult.toFixed(2)}</b></div>
+                {betPreview.weakZones.length > 0 && (
+                  <div className="is-warn">
+                    <span>약점 존 포함</span>
+                    <b>⚠ {ZONE_LABELS[betPreview.weakZones[0].zone]} {betPreview.weakZones[0].mult.toFixed(2)}</b>
+                  </div>
+                )}
+              </div>
+              <div className="showdown-sheet-swing">
+                <button
+                  type="button"
+                  onClick={() => setSwingMode("safe")}
+                  className={`mono showdown-sheet-swingbtn${swingMode === "safe" ? " is-on" : ""}`}
+                >
+                  존스윙<span className="showdown-sheet-mod-sub">안정</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSwingMode("guess")}
+                  className={`mono showdown-sheet-swingbtn${swingMode === "guess" ? " is-on" : ""}`}
+                >
+                  게스히팅<span className="showdown-sheet-mod-sub">한방</span>
+                </button>
+              </div>
+              <div className="showdown-sheet-mods">
+                {Object.entries(MOD_DEFS).filter(([, def]) => !def.solo).map(([modId, def]) => {
+                  const on = betMod === modId;
+                  const handIdx = on
+                    ? selectedIdx.find((i) => hand[i]?.kind === "mod" && hand[i]?.mod === modId)
+                    : hand.findIndex((card) => card.kind === "mod" && card.mod === modId);
+                  const owned = handIdx != null && handIdx >= 0;
+                  return (
+                    <button
+                      key={modId}
+                      type="button"
+                      disabled={!owned}
+                      title={def.hint}
+                      onClick={() => toggleCard(handIdx)}
+                      className={`mono showdown-sheet-mod${on ? " is-on" : ""}`}
+                      style={{ color: owned ? def.color : "#4a5a4e" }}
+                    >
+                      {def.label}
+                      <span className="showdown-sheet-mod-sub">{owned ? (on ? "적용중" : "손패 1") : "손패 없음"}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="showdown-sheet-actions">
+                <button type="button" onClick={cancelBet} className="mono showdown-sheet-cancel">취소</button>
+                <button type="button" onClick={commitSwing} className="mono showdown-sheet-commit">승부!</button>
+              </div>
+            </div>
+          )}
+
+          {/* PHASE 4 — REVEAL: 인과 3줄. 판독 → 실행 → 야구 결과 순서를 지킨다. */}
+          {resultBanner && (
+            <div
+              key={resultBanner.id}
+              className={`showdown-result is-${resultBanner.tone}`}
+              role="status"
+              onClick={skipResultBanner}
+            >
+              <div className="mono showdown-result-read">{resultBanner.line1}</div>
+              <div className="mono showdown-result-exec">{resultBanner.line2}</div>
+              <div className="mono showdown-result-final">{resultBanner.line3}</div>
+            </div>
+          )}
+
+          {/* 문맥 힌트 — 새 요소가 처음 나올 때 한 번만 */}
+          {hintBubble && <div className="mono showdown-hint" role="status">{hintBubble.text}</div>}
+
+          {/* 첫 투구 가이드 — 텍스트는 마지막 한 줄뿐 */}
+          {guideStep != null && GUIDE_STEPS[guideStep] && (
+            <div className="showdown-guide" onClick={finishGuide} role="presentation">
+              {(() => {
+                const rect = guideTargetRef(GUIDE_STEPS[guideStep].target)?.current?.getBoundingClientRect?.();
+                if (!rect || (!rect.width && !rect.height)) return null;
+                return (
+                  <span
+                    className="showdown-guide-ring"
+                    style={{ left: rect.left - 6, top: rect.top - 6, width: rect.width + 12, height: rect.height + 12 }}
+                  >
+                    <span className="showdown-guide-finger">☞</span>
+                  </span>
+                );
+              })()}
+              {GUIDE_STEPS[guideStep].caption && (
+                <div className="mono showdown-guide-caption">{GUIDE_STEPS[guideStep].caption}</div>
               )}
-              <button onClick={startAiPitch} disabled={phase !== "ready"} className="mono flex-1 py-1.5 rounded border border-[#3a4a3e] disabled:opacity-30" style={{ fontSize: 11 }}>다음투구</button>
+              <div className="mono showdown-guide-skip">탭하면 건너뜁니다</div>
             </div>
           )}
 
@@ -4465,41 +4821,164 @@ export default function BaseballSim() {
       )}
 
       {/* 카드 보상 - 레벨업/경기종료 공통 모달 */}
+      {actBriefing && !gameOver && (() => {
+        const act = currentAct(runRef.current);
+        const first = actBriefing.actIndex === 0;
+        return (
+          <div className="modal-animate w-full max-w-md flex flex-col items-center showdown-brief" style={{ backgroundColor: "#111a14", border: "2px solid #ffb000", borderRadius: 8, padding: 18 }}>
+            <div className="mono showdown-brief-act">{act.act}막 · {act.league}</div>
+            <div className="display showdown-brief-name">{act.pitcherName}</div>
+            <div className="mono showdown-brief-tell">“{act.trait ? act.trait.tell : act.intro}”</div>
+            <div className="showdown-brief-stats mono">
+              <span>체력 <b>{act.hp}</b></span>
+              <span>제구 <b>{act.control}</b></span>
+              <span>구위 <b>{act.stuff}</b></span>
+            </div>
+            {first && (
+              <ol className="mono showdown-brief-rules">
+                <li><b>아웃 {MAX_OUTS}개</b>가 런 전체의 목숨이다. 막이 넘어가도 회복되지 않는다.</li>
+                <li>안타·장타·<b>커트</b>·볼넷·득점이 투수 체력을 깎는다. 0으로 만들면 돌파.</li>
+                <li>공마다 <b>관찰 → 코스 예측 → 확인 후 승부</b> 순서로 묻는다. 확정은 아래 시트에서.</li>
+                <li>막을 깨면 갈래를 고른다. 다음 상대의 <b>특성이 미리 보인다</b>.</li>
+              </ol>
+            )}
+            {!first && (
+              <div className="mono showdown-brief-note">
+                남은 아웃 {Math.max(0, MAX_OUTS - runRef.current.outs)} · 집중 {focusPoints} · 손패 {hand.length}장
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={() => { setActBriefing(null); startBgm(runRef.current.actIndex); }}
+              className="display showdown-brief-start"
+            >
+              {first ? "타석에 선다" : "다음 상대로"}
+            </button>
+          </div>
+        );
+      })()}
+
+      {runReward === "choosing" && routeOptions && !cardRewards && (
+        <div className="modal-animate w-full max-w-md flex flex-col items-center showdown-route" style={{ backgroundColor: "#111a14", border: "2px solid #ffb000", borderRadius: 8, padding: 16 }}>
+          <div className="display text-lg font-bold text-[#ffb000]" style={{ marginBottom: 2 }}>
+            {currentAct(run).act}막 돌파
+          </div>
+          <div className="mono" style={{ fontSize: 11, color: "#a8b8ac", marginBottom: 12 }}>
+            남은 아웃 {Math.max(0, MAX_OUTS - run.outs)} · 집중 {focusPoints} — 갈 길을 고르세요
+          </div>
+          <div className="showdown-route-options">
+            {routeOptions.map((route, index) => (
+              <button
+                key={index}
+                type="button"
+                onClick={() => chooseRoute(route)}
+                className="mono showdown-route-card"
+              >
+                <span className="showdown-route-stop">
+                  {ROUTE_NODES[route.node].name}
+                  <span className="showdown-route-stop-sub">{ROUTE_NODES[route.node].detail}</span>
+                </span>
+                <span className="showdown-route-arrow">▼</span>
+                <span className="showdown-route-pitcher">
+                  <span className="showdown-route-trait">{route.act.trait.name}</span>
+                  <span className="showdown-route-name">{route.act.pitcherName}</span>
+                  <span className="showdown-route-tell">“{route.act.trait.tell}”</span>
+                  <span className="showdown-route-stat">
+                    HP {route.act.hp} · 제구 {route.act.control} · 구위 {route.act.stuff}
+                    {route.act.wasteBias ? ` · 유인구 +${route.act.wasteBias}` : ""}
+                  </span>
+                </span>
+              </button>
+            ))}
+          </div>
+          <div className="mono" style={{ fontSize: 9, color: "#4a5a4e", marginTop: 10 }}>
+            {ACTS[Math.min(ACTS.length - 1, run.actIndex + 1)].league} — 어느 쪽으로 가든 상대는 한 명이다
+          </div>
+        </div>
+      )}
+
+      {runReward === "shop" && (
+        <div className="modal-animate w-full max-w-md flex flex-col items-center" style={{ backgroundColor: "#111a14", border: "2px solid #ffb000", borderRadius: 8, padding: 16 }}>
+          <div className="display text-lg font-bold text-[#ffb000]" style={{ marginBottom: 2 }}>상점</div>
+          <div className="mono" style={{ fontSize: 11, color: "#ffb000", marginBottom: 10 }}>집중 {focusPoints}</div>
+          <div className="showdown-shop-row">
+            {(shopOffers || []).map((card, index) => (
+              card ? (
+                <button
+                  key={index}
+                  type="button"
+                  disabled={focusPoints < SHOP_CARD_COST}
+                  onClick={() => buyShopCard(index)}
+                  className="mono showdown-shop-card disabled:opacity-40"
+                >
+                  <span className="showdown-shop-kind">{card.kind === "mod" ? "수식어" : "존"}</span>
+                  <span className="showdown-shop-name">{cardLabel(card)}</span>
+                  <span className="showdown-shop-cost">✨{SHOP_CARD_COST}</span>
+                </button>
+              ) : (
+                <span key={index} className="mono showdown-shop-sold">품절</span>
+              )
+            ))}
+          </div>
+          <div className="mono" style={{ fontSize: 10, color: "#a8b8ac", margin: "10px 0 4px" }}>
+            덱에서 카드 빼기 (✨{SHOP_REMOVE_COST}) — 얇은 덱이 원하는 카드를 부른다
+          </div>
+          <div className="showdown-shop-deck">
+            {[["hand", hand], ["deck", deck], ["discard", discard]].flatMap(([where, list]) =>
+              list.map((card, index) => (
+                <button
+                  key={`${where}-${index}`}
+                  type="button"
+                  disabled={focusPoints < SHOP_REMOVE_COST}
+                  onClick={() => removeRunCard(card, where, index)}
+                  className="mono showdown-shop-remove disabled:opacity-40"
+                >
+                  {cardLabel(card)}
+                </button>
+              )),
+            )}
+          </div>
+          <button type="button" onClick={() => finishActReward()} className="mono showdown-shop-leave">
+            나가기 — {ACTS[Math.min(ACTS.length - 1, run.actIndex + 1)].league}로
+          </button>
+        </div>
+      )}
+
       {cardRewards && (
         <div className="modal-animate w-full max-w-md flex flex-col items-center" style={{ backgroundColor: "#111a14", border: "1px solid #2a3a2e", borderRadius: 8, padding: 16 }}>
             <div className="w-full mb-4 flex flex-col items-center">
               <div className="display text-sm font-bold text-[#ffb000] mb-1">카드 획득 — 1장 선택</div>
-              <div className="mono text-[10px] text-[#7a8f7f] mb-3">고른 카드는 다음 경기부터 내 덱에 영구히 들어갑니다</div>
+              <div className="mono text-[10px] text-[#7a8f7f] mb-3">{cardRewardScope === "run" ? "이번 런에만 남는 카드입니다" : "고른 카드는 다음 런부터 내 덱에 영구히 들어갑니다"}</div>
               <div className="flex gap-3 justify-center">
                 {cardRewards.map((card, i) => {
                   const isTactic = card.kind === "tactic";
-                  const isPitch = card.kind === "pitch";
                   const def = isTactic ? TACTIC_DEFS[card.type] : null;
-                  const styleSet = isPitch ? PITCH_CARD_STYLES : CARD_STYLES;
-                  const sd = styleSet[card.style] || styleSet.normal;
+                  const sd = CARD_STYLES[card.style] || CARD_STYLES.normal;
                   return (
                     <button
                       key={i}
-                      onClick={() => (card.__upgrade ? upgradeCard(card) : acquireCard(card))}
+                      onClick={() => {
+                        if (cardRewardScope === "run") {
+                          if (card.__upgrade) upgradeRunCard(card); else acquireRunCard(card);
+                          finishActReward("card");
+                        } else if (card.__upgrade) upgradeCard(card); else acquireCard(card);
+                      }}
                       className="mono transition-transform hover:-translate-y-1.5"
                       style={{
                         width: 76, height: 104, borderRadius: 8, padding: 6,
-                        border: `2px solid ${isTactic ? "#6a4aa0" : isPitch ? "#a8623a" : "#3a4a3e"}`,
-                        backgroundColor: isTactic ? "#1e1830" : isPitch ? "#241812" : "#16211a",
+                        border: `2px solid ${isTactic ? "#6a4aa0" : "#3a4a3e"}`,
+                        backgroundColor: isTactic ? "#1e1830" : "#16211a",
                         color: isTactic ? "#d8c8ff" : "#e8e4d8",
                         display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4,
                         boxShadow: "0 4px 10px rgba(0,0,0,0.5)",
                       }}
                     >
                       <span style={{ fontSize: 8, opacity: 0.7, color: card.__upgrade ? "#ffb000" : undefined, fontWeight: card.__upgrade ? 900 : 400 }}>
-                        {card.__upgrade ? `⭐ 강화 → ★${(card.tier || 1) + 1}` : isTactic ? "전술" : isPitch ? "투구" : "존"}
+                        {card.__upgrade ? `⭐ 강화 → ★${(card.tier || 1) + 1}` : isTactic ? "전술" : "존"}
                       </span>
                       <span style={{ fontSize: 12, fontWeight: 800, lineHeight: 1.15, textAlign: "center" }}>
                         {isTactic ? def.label : cardLabel(card)}
                       </span>
-                      {isPitch && (
-                        <span style={{ fontSize: 8, color: "#a8b8ac" }}>{(PITCH_TYPES.find((pt) => pt.id === card.ptype) || {}).name ?? ""}</span>
-                      )}
                       {!isTactic && (
                         <span style={{ fontSize: 9, fontWeight: 800, color: sd.color }}>{sd.label}</span>
                       )}
@@ -4512,7 +4991,7 @@ export default function BaseballSim() {
                 })}
               </div>
               <button
-                onClick={() => setCardRewards(null)}
+                onClick={() => { setCardRewards(null); if (cardRewardScope === "run") finishActReward("card"); }}
                 className="mono mt-3 text-[10px] text-[#7a8f7f] underline"
               >
                 건너뛰기 (덱 슬림하게 유지)
@@ -4561,7 +5040,7 @@ export default function BaseballSim() {
               <div className="display text-lg font-bold text-[#7fe0b0] mb-2">기록 완료</div>
               <div className="mono text-xs text-[#a8b8ac] mb-4">이 기기의 코어 테스트 {coreTestResultCount}/3</div>
               <div className="flex gap-2">
-                <button onClick={() => launchGame("batter", "core")} className="mono text-xs px-4 py-2 rounded border border-[#3a4a3e] flex-1 hover:border-[#ffb000]">다음 플레이어</button>
+                <button onClick={() => launchGame("core")} className="mono text-xs px-4 py-2 rounded border border-[#3a4a3e] flex-1 hover:border-[#ffb000]">다음 플레이어</button>
                 <button onClick={returnToRole} className="display text-sm font-bold px-4 py-2 rounded bg-[#a8623a] flex-1 hover:bg-[#c17849]">역할 선택으로</button>
               </div>
             </div>
@@ -4623,30 +5102,50 @@ export default function BaseballSim() {
 
       {gameOver && !coreTestMode && (
         <div className="w-full max-w-md flex flex-col items-center">
-          <div className="display text-2xl font-bold text-[#ffb000] mb-2">경기 종료!</div>
+          <div className="display text-2xl font-bold text-[#ffb000] mb-2">
+            {run.status === "victory" ? "런 클리어!" : "런 종료"}
+          </div>
           <div className="mono text-sm mb-4">
-            {score.user === score.ai ? "무승부" : score.user > score.ai ? "유저팀 승리!" : "AI팀 승리"}
+            {run.status === "victory"
+              ? "1부리그 보스까지 눕혔다"
+              : `${currentAct(run).league} ${currentAct(run).tier}에서 아웃 ${MAX_OUTS}개`}
           </div>
           <img
-            src={score.user > score.ai ? IMG_RESULT_WIN : score.user < score.ai ? IMG_RESULT_LOSE : IMG_MVP_BADGE}
+            src={run.status === "victory" ? IMG_RESULT_WIN : IMG_RESULT_LOSE}
             alt=""
-            style={{ width: score.user === score.ai ? 80 : 190, imageRendering: "pixelated", display: "block", margin: "0 auto 8px",
-                     filter: score.user > score.ai ? "drop-shadow(0 0 14px rgba(255,176,0,0.6))" : "none" }}
+            style={{ width: 190, imageRendering: "pixelated", display: "block", margin: "0 auto 8px",
+                     filter: run.status === "victory" ? "drop-shadow(0 0 14px rgba(255,176,0,0.6))" : "none" }}
           />
           <div className="mono text-xs bg-[#111a14] border border-[#2a3a2e] rounded-md px-4 py-3 mb-4 w-full text-center">
-            최종 스코어 <span className="text-[#ffb000]">{score.user}</span> : <span className="text-[#c73e3e]">{score.ai}</span> ({maxInnings}이닝)
+            <div>돌파한 막 <span className="text-[#ffb000]">{run.actsCleared}</span> / {ACTS.length}</div>
+            <div style={{ marginTop: 4 }}>누적 데미지 <span className="text-[#ffb000]">{run.damageDealt}</span> · 타점 {score.user}</div>
+            <div className="flex justify-center gap-1" style={{ marginTop: 6 }}>
+              {ACTS.map((act, index) => (
+                <span
+                  key={act.act}
+                  className="mono"
+                  style={{
+                    fontSize: 9, padding: "1px 6px", borderRadius: 3,
+                    border: `1px solid ${index < run.actsCleared ? "#3d7a5f" : "#3a4a3e"}`,
+                    color: index < run.actsCleared ? "#7fe0b0" : "#4a5a4e",
+                  }}
+                >
+                  {act.league}{index < run.actsCleared ? " ✓" : ""}
+                </span>
+              ))}
+            </div>
           </div>
 
-          {!cardRewards && (careerDeck.length > 0 || careerPitchDeck.length > 0) && (
+          {!cardRewards && careerDeck.length > 0 && (
             <div className="mono text-[10px] text-[#7a8f7f] mb-3">
-              {userRole === "pitcher" ? `내 투구덱 ${careerPitchDeck.length}장` : `내 타격덱 ${careerDeck.length}장`}
+              {`내 타격덱 ${careerDeck.length}장`}
             </div>
           )}
           <button
             onClick={returnToRole}
             className="display text-sm font-bold px-6 py-3 rounded bg-[#a8623a] hover:bg-[#c17849]"
           >
-            새 게임
+            새 런
           </button>
         </div>
       )}
@@ -4657,7 +5156,7 @@ export default function BaseballSim() {
       {appStage !== "tutorial" && (
         <button
           onClick={() => { setFeedbackSubmitError(""); setShowFeedback(true); }}
-          className="fixed top-3 right-3 mono text-[10px] px-3 py-1.5 rounded border border-[#ffb000] bg-[#111a14] hover:bg-[#1a2a1a] text-[#ffb000] z-40"
+          className="corner-fixed-btn corner-feedback fixed top-3 right-3 mono text-[10px] px-3 py-1.5 rounded border border-[#ffb000] bg-[#111a14] hover:bg-[#1a2a1a] text-[#ffb000] z-40"
         >
           💬 피드백
         </button>
@@ -4666,7 +5165,7 @@ export default function BaseballSim() {
       {appStage !== "tutorial" && (
         <button
           onClick={() => { setExportDownloadError(""); setShowExport(true); loadAllFeedback(); }}
-          className="fixed top-3 left-3 mono text-[9px] px-2 py-1 rounded border border-[#3a4a3e] bg-[#111a14] hover:bg-[#1a2a1a] text-[#7a8f7f] z-40"
+          className="corner-fixed-btn corner-admin fixed top-3 left-3 mono text-[9px] px-2 py-1 rounded border border-[#3a4a3e] bg-[#111a14] hover:bg-[#1a2a1a] text-[#7a8f7f] z-40"
         >
           내보내기(관리자)
         </button>
@@ -4675,7 +5174,7 @@ export default function BaseballSim() {
       {appStage === "game" && (
         <button
           onClick={() => { cutsceneEnabledRef.current = !cutsceneEnabledRef.current; setCutsceneEnabled(cutsceneEnabledRef.current); if (!cutsceneEnabledRef.current) setCutscene(null); }}
-          className="fixed top-11 left-3 mono text-[9px] px-2 py-1 rounded border border-[#3a4a3e] bg-[#111a14] hover:bg-[#1a2a1a] text-[#7a8f7f] z-40"
+          className="corner-fixed-btn corner-admin fixed top-11 left-3 mono text-[9px] px-2 py-1 rounded border border-[#3a4a3e] bg-[#111a14] hover:bg-[#1a2a1a] text-[#7a8f7f] z-40"
         >
           🎬 연출 {cutsceneEnabled ? "ON" : "OFF"}
         </button>

@@ -4,10 +4,15 @@
 
 import React from "react";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import BaseballSim from "../BaseballSim-deck-5.jsx";
 
 vi.mock("tone", () => ({}));
+
+beforeEach(() => {
+  // 첫 투구 가이드는 최초 1회 연출이다. 흐름 회귀 검사에서는 이미 본 상태로 둔다.
+  window.localStorage.setItem("9zone-first-pitch-guide-v1", "done");
+});
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -35,14 +40,21 @@ const storedCoreTestResult = {
   pitchesSeen: [{ zone: 7, pitchId: "fastball" }],
 };
 
+// OBSERVE는 탭하면 즉시 끝난다. 테스트는 2.5초를 기다리지 않고 바로 건너뛴다.
+const skipObserve = () => {
+  const nextPitch = screen.queryByRole("button", { name: "다음투구" });
+  if (nextPitch && !nextPitch.disabled) fireEvent.click(nextPitch);
+};
+
 const takeNextPitch = async () => {
+  skipObserve();
   const takeButton = await waitFor(
     () => {
       const button = screen.getByRole("button", { name: "지켜보기" });
       expect(button.disabled).toBe(false);
       return button;
     },
-    { timeout: 2_500 },
+    { timeout: 8_000 },
   );
   fireEvent.click(takeButton);
 };
@@ -54,7 +66,7 @@ const startNextPitch = async () => {
       expect(nextPitch.disabled).toBe(false);
       return nextPitch;
     },
-    { timeout: 2_500 },
+    { timeout: 8_000 },
   );
   fireEvent.click(button);
 };
@@ -228,6 +240,71 @@ describe("CORE TEST UI", () => {
     expect(screen.getByText("이 기기에 저장된 테스트 1/3")).toBeTruthy();
   });
 
+  it("previews the bet before the swing and only commits from the sheet", async () => {
+    render(<BaseballSim />);
+    enterCoreTest();
+
+    // READ: 존 카드를 고르기 전까지는 코스를 묻는다.
+    skipObserve();
+    await waitFor(
+      () => expect(screen.getByRole("button", { name: "지켜보기" }).disabled).toBe(false),
+      { timeout: 8_000 },
+    );
+    expect(screen.getByText("▸ 코스를 예측하세요")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "승부!" })).toBeNull();
+
+    // BET: 확정 전에 미리보기 숫자를 보여준다.
+    const zoneCard = screen.getAllByRole("button", { name: /존 카드$/ })[0];
+    fireEvent.click(zoneCard);
+
+    expect(screen.getByText("▸ 확인 후 승부하세요")).toBeTruthy();
+    expect(screen.getByText("적중 예상")).toBeTruthy();
+    expect(screen.getByText("데미지 배율")).toBeTruthy();
+    // READ 등급은 미리보기에 절대 노출하지 않는다.
+    expect(screen.queryByText(/DEEP READ/)).toBeNull();
+    // 확정 전에는 지켜보기가 잠긴다 - 한 페이즈에 활성 영역은 하나뿐이다.
+    expect(screen.getByRole("button", { name: "지켜보기" }).disabled).toBe(true);
+
+    fireEvent.click(screen.getByRole("button", { name: "취소" }));
+    expect(screen.queryByRole("button", { name: "승부!" })).toBeNull();
+    expect(screen.getByText("▸ 코스를 예측하세요")).toBeTruthy();
+
+    fireEvent.click(screen.getAllByRole("button", { name: /존 카드$/ })[0]);
+    fireEvent.click(screen.getByRole("button", { name: "승부!" }));
+
+    await waitFor(() => expect(screen.queryByRole("button", { name: "승부!" })).toBeNull());
+  });
+
+  it("offers a three-act run instead of an inning game", () => {
+    // 타석 시작 시 28% 확률로 뜨는 돌발 상황이 화면을 가리면 검사가 흔들린다. 뜨지 않는 쪽으로 고정한다.
+    vi.spyOn(Math, "random").mockReturnValue(0.9);
+    render(<BaseballSim />);
+    fireEvent.click(screen.getByRole("button", { name: "건너뛰기" }));
+
+    // 시작 화면은 세 리그를 보여주고, 투수 역할과 이닝 선택은 사라졌다.
+    expect(screen.getAllByText("독립리그").length).toBeGreaterThan(0);
+    expect(screen.getByText("퓨처스리그")).toBeTruthy();
+    expect(screen.getByText("1부리그")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /투수로 시작/ })).toBeNull();
+    expect(screen.queryByText(/9이닝/)).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "런 시작" }));
+
+    // 첫 타석 전에 규칙과 상대를 먼저 알려준다.
+    expect(screen.getByText("1막 · 독립리그")).toBeTruthy();
+    expect(screen.getByText("무명 좌완")).toBeTruthy();
+    expect(screen.getByText(/런 전체의 목숨/)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "타석에 선다" }));
+
+    // 타석 화면은 폰 한 화면에 들어가야 하므로 페이지가 스크롤되지 않는다.
+    expect(document.querySelector(".game-root.is-play")).toBeTruthy();
+    // 체력 바는 1막 투수의 것이고, 상단바가 지금 상대를 말한다.
+    expect(screen.getByText("일반 투수 HP")).toBeTruthy();
+    expect(screen.getByText("50/50")).toBeTruthy();
+    expect(screen.getByText("1막 독립리그 · 무명 좌완")).toBeTruthy();
+    expect(screen.getByText("▸ 투수를 관찰하세요")).toBeTruthy();
+  });
+
   it("enters the player at-bat directly from role selection", () => {
     render(<BaseballSim />);
 
@@ -240,7 +317,9 @@ describe("CORE TEST UI", () => {
 
     expect(screen.getByText("코어 테스트 — 한 타석에서 투수의 의도를 읽어 보세요")).toBeTruthy();
     expect(screen.getByAltText("상대 투수")).toBeTruthy();
-    expect(screen.getByText("① 카드 선택")).toBeTruthy();
+    // 페이즈 라벨은 어떤 상태에서도 지금 할 일을 명령형 한 줄로 말한다.
+    expect(screen.getByText("OBSERVE")).toBeTruthy();
+    expect(screen.getByText("▸ 투수를 관찰하세요")).toBeTruthy();
   });
 
   it("reports a failed save, retries, restarts for the next player, and downloads JSON", async () => {

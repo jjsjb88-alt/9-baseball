@@ -33,6 +33,13 @@ export function computeDistribution(targetZone, control, pitchControlMod) {
   return dist;
 }
 
+// 기만형 투수는 존 밖으로 더 자주 뺀다. 분포에 그 성향을 얹고 다시 정규화한다.
+export function applyWasteBias(dist, bias = 0) {
+  if (!bias) return dist;
+  const next = { ...dist, 9: Math.max(0, (dist[9] || 0) + bias) };
+  return normalizeDistribution(next);
+}
+
 // 실제 게임의 ROOKIE tell과 ADAPTER/FOX 역이용을 한곳에서 관리한다.
 export function buildTrueIntent(publicIntent, { strikes, aiStage, recentAims = [] }) {
   const trueIntent = { ...publicIntent };
