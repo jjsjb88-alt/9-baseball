@@ -73,13 +73,14 @@ export function createRun() {
     outs: 0,
     damageDealt: 0,
     actsCleared: 0,
+    trait: null, // 지금 상대의 특성. 1막은 특성 없이 시작한다.
     // "playing" | "actClear" | "victory" | "defeat"
     status: "playing",
   };
 }
 
 export function currentAct(run) {
-  return actAt(run.actIndex);
+  return actWithTrait(run.actIndex, run.trait);
 }
 
 export function damageFor(outcome, runsScored = 0) {
@@ -113,14 +114,70 @@ export function applyRunOutcome(run, { outcome, runsScored = 0, strikeoutEndsPa 
   return { run: next, damage, actCleared: false, runOver: false };
 }
 
-export const REWARDS = ["card", "heal"];
+// ===== 투수 특성 =====
+// 다음 상대가 어떤 투수인지 경로 선택 화면에서 미리 드러난다. 고르는 순간 각오가 정해진다.
+export const PITCHER_TRAITS = {
+  control: { id: "control", name: "제구파", tell: "존 구석만 집요하게 노린다", control: 10, stuff: -8, waste: 0, hp: 0 },
+  power: { id: "power", name: "파워형", tell: "구위로 찍어누른다", control: -8, stuff: 14, waste: 0, hp: 0 },
+  deceive: { id: "deceive", name: "기만형", tell: "유인구가 유난히 많다", control: -4, stuff: -2, waste: 14, hp: -6 },
+  grinder: { id: "grinder", name: "완급형", tell: "맞춰 잡고 오래 버틴다", control: 4, stuff: 2, waste: 0, hp: 16 },
+};
+export const TRAIT_IDS = Object.keys(PITCHER_TRAITS);
 
-// 막 보상을 고르고 다음 막으로 넘어간다. "heal"은 아웃 1개를 되돌린다.
+// 특성이 붙은 막. 화면과 시뮬레이터가 이 함수 하나로 실제 상대 수치를 얻는다.
+export function actWithTrait(index, traitId) {
+  const act = actAt(index);
+  const trait = PITCHER_TRAITS[traitId];
+  if (!trait) return { ...act, trait: null };
+  return {
+    ...act,
+    trait,
+    pitcherName: `${trait.name} ${act.pitcherName}`,
+    control: Math.max(20, act.control + trait.control),
+    stuff: Math.max(20, act.stuff + trait.stuff),
+    wasteBias: trait.waste,
+    hp: Math.max(20, act.hp + trait.hp),
+  };
+}
+
+// ===== 경로 =====
+// 막을 깰 때마다 두 갈래 중 하나를 고른다. 각 갈래에는 들를 곳 하나와 다음 상대가 붙어 있다.
+export const ROUTE_NODES = {
+  train: { id: "train", name: "훈련소", detail: "카드 3장 중 1장" },
+  rest: { id: "rest", name: "휴식처", detail: "아웃 1개 회복" },
+  shop: { id: "shop", name: "상점", detail: "집중으로 카드 사고 덱 다듬기" },
+};
+export const ROUTE_NODE_IDS = Object.keys(ROUTE_NODES);
+
+// 두 갈래는 서로 다른 들를 곳과 서로 다른 투수 특성을 갖는다 - 선택이 성립하려면 달라야 한다.
+export function rollRoutes(run, random = Math.random) {
+  const nextIndex = Math.min(ACTS.length - 1, run.actIndex + 1);
+  const pick = (pool) => pool[Math.floor(random() * pool.length) % pool.length];
+  const firstNode = pick(ROUTE_NODE_IDS);
+  const secondNode = pick(ROUTE_NODE_IDS.filter((id) => id !== firstNode));
+  const firstTrait = pick(TRAIT_IDS);
+  const secondTrait = pick(TRAIT_IDS.filter((id) => id !== firstTrait));
+  return [
+    { node: firstNode, trait: firstTrait, act: actWithTrait(nextIndex, firstTrait) },
+    { node: secondNode, trait: secondTrait, act: actWithTrait(nextIndex, secondTrait) },
+  ];
+}
+
+// 고른 갈래로 넘어간다. 들를 곳의 효과(휴식)는 여기서 바로 적용하고, 카드·상점은 화면이 처리한다.
+export function takeRoute(run, route) {
+  if (run.status !== "actClear" || !route) return run;
+  const outs = route.node === "rest" ? Math.max(0, run.outs - 1) : run.outs;
+  const actIndex = Math.min(ACTS.length - 1, run.actIndex + 1);
+  const act = actWithTrait(actIndex, route.trait);
+  return { ...run, actIndex, trait: route.trait, hp: act.hp, outs, status: "playing" };
+}
+
+// 옛 보상 화면 경로. 런 시뮬레이터가 아직 쓴다(카드·상점 가치는 봇이 모델링하지 못한다).
 export function takeRewardAndAdvance(run, reward) {
   if (run.status !== "actClear") return run;
   const outs = reward === "heal" ? Math.max(0, run.outs - 1) : run.outs;
   const actIndex = Math.min(ACTS.length - 1, run.actIndex + 1);
-  return { ...run, actIndex, hp: ACTS[actIndex].hp, outs, status: "playing" };
+  return { ...run, actIndex, trait: null, hp: ACTS[actIndex].hp, outs, status: "playing" };
 }
 
 export function runSummary(run) {

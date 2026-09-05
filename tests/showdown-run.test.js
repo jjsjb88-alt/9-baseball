@@ -2,6 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   ACTS,
   MAX_OUTS,
+  PITCHER_TRAITS,
+  actWithTrait,
+  rollRoutes,
+  takeRoute,
   applyRunOutcome,
   createRun,
   currentAct,
@@ -9,6 +13,15 @@ import {
   runSummary,
   takeRewardAndAdvance,
 } from "../src/game/showdown-run.js";
+
+// 결정적 난수: 시드마다 다른 순열을 만들되 테스트가 흔들리지 않게 한다.
+const seededRandom = (seed = 1) => {
+  let state = (seed + 1) * 2654435761 % 4294967296;
+  return () => {
+    state = (state * 1664525 + 1013904223) % 4294967296;
+    return state / 4294967296;
+  };
+};
 
 describe("run structure", () => {
   it("starts in the independent league with a full pitcher and three outs", () => {
@@ -97,5 +110,48 @@ describe("run structure", () => {
     expect(ACTS.map((act) => act.tier)).toEqual(["일반 투수", "엘리트 투수", "보스 투수"]);
     expect(ACTS.map((act) => act.hp)).toEqual([...ACTS.map((act) => act.hp)].sort((a, b) => a - b));
     expect(ACTS.map((act) => act.aiStage)).toEqual(["ROOKIE", "ADAPTER", "FOX"]);
+  });
+});
+
+describe("pitcher traits and routes", () => {
+  it("shows the next pitcher's trait in every route option", () => {
+    const run = { ...createRun(), status: "actClear" };
+    const routes = rollRoutes(run, seededRandom());
+    expect(routes).toHaveLength(2);
+    routes.forEach((route) => {
+      expect(PITCHER_TRAITS[route.trait]).toBeTruthy();
+      expect(route.act.trait.tell.length).toBeGreaterThan(0);
+      expect(route.act.pitcherName).toContain(PITCHER_TRAITS[route.trait].name);
+    });
+  });
+
+  it("never offers the same stop or the same pitcher twice", () => {
+    for (let seed = 0; seed < 40; seed += 1) {
+      const routes = rollRoutes({ ...createRun(), status: "actClear" }, seededRandom(seed));
+      expect(routes[0].node).not.toBe(routes[1].node);
+      expect(routes[0].trait).not.toBe(routes[1].trait);
+    }
+  });
+
+  it("applies the trait to the pitcher the run actually faces", () => {
+    const run = { ...createRun(), status: "actClear" };
+    const powerRoute = { node: "train", trait: "power", act: actWithTrait(1, "power") };
+    const next = takeRoute(run, powerRoute);
+    expect(next.trait).toBe("power");
+    expect(currentAct(next).stuff).toBe(ACTS[1].stuff + PITCHER_TRAITS.power.stuff);
+    expect(currentAct(next).control).toBe(ACTS[1].control + PITCHER_TRAITS.power.control);
+    expect(next.hp).toBe(currentAct(next).hp);
+  });
+
+  it("heals one out only on the rest stop", () => {
+    const run = { ...createRun(), outs: 2, status: "actClear" };
+    expect(takeRoute(run, { node: "rest", trait: "control" }).outs).toBe(1);
+    expect(takeRoute(run, { node: "shop", trait: "control" }).outs).toBe(2);
+    expect(takeRoute(run, { node: "train", trait: "control" }).outs).toBe(2);
+  });
+
+  it("ignores a route when the act is not cleared", () => {
+    const run = createRun();
+    expect(takeRoute(run, { node: "rest", trait: "power" })).toBe(run);
   });
 });

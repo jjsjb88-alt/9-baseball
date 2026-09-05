@@ -12,6 +12,7 @@ import * as Tone from "tone";
 import STADIUM_COMBAT_BG from "./assets/stadium-combat-bg-v1.png";
 import { resolveShowdownContact } from "./src/game/showdown-engine.js";
 import {
+  applyWasteBias,
   buildTrueIntent,
   computeDistribution,
   sampleDistribution,
@@ -19,10 +20,12 @@ import {
 import {
   ACTS,
   MAX_OUTS,
+  ROUTE_NODES,
   applyRunOutcome,
   createRun,
   currentAct,
-  takeRewardAndAdvance,
+  rollRoutes,
+  takeRoute,
 } from "./src/game/showdown-run.js";
 import {
   phaseInputTarget as resolvePhaseInputTarget,
@@ -1106,7 +1109,12 @@ export default function BaseballSim() {
   const [run, setRun] = useState(() => createRun());
   const runRef = useRef(run);
   const applyRun = (next) => { runRef.current = next; setRun(next); };
-  const [runReward, setRunReward] = useState(null); // "choosing" | "card" | null
+  const [runReward, setRunReward] = useState(null); // "choosing" | "train" | "shop" | null
+  const [routeOptions, setRouteOptions] = useState(null); // 갈래 두 개
+  const [pendingRoute, setPendingRoute] = useState(null); // 고른 갈래(들를 곳 처리 후 이동)
+  const [shopOffers, setShopOffers] = useState(null); // 상점 매물
+  const SHOP_CARD_COST = 3;
+  const SHOP_REMOVE_COST = 2;
   const [gameOver, setGameOver] = useState(false);
   const pendingLevelUpRef = useRef(null);
   // 경기 길이 선택: 로그라이크는 한 판이 짧아야 반복이 성립함(기본 5이닝)
@@ -2038,7 +2046,7 @@ export default function BaseballSim() {
     const { targetZone, pitch, mode } = aiPickPitch(pitchTargetBatter, count.balls, count.strikes, { pitchesThisPA: pitchesThisPARef.current, stamina: pitcherHpPercent() });
     const effControl = getPitcherControl(mode === "pinpoint");
     const tiredPitch = { ...pitch, power: clamp(pitch.power * staminaFactor(), 1, 99) }; // 지치면 구위 저하
-    const publicIntent = computeDistribution(targetZone, effControl, pitch.controlMod);
+    const publicIntent = applyWasteBias(computeDistribution(targetZone, effControl, pitch.controlMod), actNow().wasteBias ?? 0);
     const aiStage = actNow().aiStage;
     const dist = buildTrueIntent(publicIntent, {
       strikes: count.strikes,
@@ -2411,6 +2419,9 @@ export default function BaseballSim() {
     setGameOver(false);
     applyRun(createRun());
     setRunReward(null);
+    setRouteOptions(null);
+    setPendingRoute(null);
+    setShopOffers(null);
     setScore({ user: 0, ai: 0 });
     setBases([false, false, false]);
     setCount({ balls: 0, strikes: 0, outs: 0 });
@@ -2750,8 +2761,10 @@ export default function BaseballSim() {
   React.useEffect(() => {
     if (appStage !== "game" || coreTestModeRef.current) return;
     if (run.status === "actClear" && !runReward) {
+      setCutscene(null); // 격파 컷신이 경로 화면을 덮지 않게 정리한다
+      setRouteOptions(rollRoutes(runRef.current, rand));
       setRunReward("choosing");
-      setMessage(`${currentAct(run).tier} 격파! 보상을 고르세요`);
+      setMessage(`${currentAct(run).tier} 격파! 갈 길을 고르세요`);
       pushLog(`🏆 ${currentAct(run).league} ${currentAct(run).tier} 격파`);
       playSound("levelup");
     }
@@ -2779,21 +2792,61 @@ export default function BaseballSim() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [run.status, appStage]);
 
-  // 막 보상 선택 -> 다음 막으로
-  const takeActReward = (reward) => {
+  // 상점 매물: 존 카드 두 장 + 수식어 한 장. 값은 집중으로 치른다.
+  const rollShopOffers = () => {
+    const zonePool = [];
+    for (let z = 0; z < 9; z++) {
+      zonePool.push({ kind: "zone", zone: z, style: "contact" });
+      zonePool.push({ kind: "zone", zone: z, style: "power" });
+    }
+    const modPool = Object.keys(MOD_DEFS).map((mod) => ({ kind: "mod", mod }));
+    const take = (pool) => pool.splice(Math.floor(rand() * pool.length), 1)[0];
+    return [take(zonePool), take(zonePool), take(modPool)];
+  };
+  const buyShopCard = (index) => {
+    if (focusRef.current < SHOP_CARD_COST) { setMessage(`집중이 ${SHOP_CARD_COST} 필요하다`); return; }
+    const card = shopOffers?.[index];
+    if (!card) return;
+    focusRef.current -= SHOP_CARD_COST;
+    setFocusPoints(focusRef.current);
+    acquireRunCard(card);
+    setShopOffers((offers) => offers.map((offer, i) => (i === index ? null : offer)));
+  };
+  const removeRunCard = (card, where, index) => {
+    if (focusRef.current < SHOP_REMOVE_COST) { setMessage(`집중이 ${SHOP_REMOVE_COST} 필요하다`); return; }
+    focusRef.current -= SHOP_REMOVE_COST;
+    setFocusPoints(focusRef.current);
+    const list = where === "deck" ? deckRef : where === "hand" ? handRef : discardRef;
+    list.current = list.current.filter((_, i) => i !== index);
+    syncDeckState();
+    pushLog(`🗑 덱에서 뺐다: ${cardLabel(card)}`);
+  };
+
+  // 갈래 선택 -> 들를 곳 처리 -> 다음 막
+  const chooseRoute = (route) => {
     if (runRef.current.status !== "actClear") return;
-    if (reward === "card") {
+    setPendingRoute(route);
+    if (route.node === "train") {
       setCardRewardScope("run");
       rollCardRewards("batter", { fromRunDeck: true });
-      setRunReward("card");
+      setRunReward("train");
       return;
     }
-    finishActReward("heal");
+    if (route.node === "shop") {
+      setShopOffers(rollShopOffers());
+      setRunReward("shop");
+      return;
+    }
+    finishActReward(route);
   };
-  const finishActReward = (reward) => {
-    const next = takeRewardAndAdvance(runRef.current, reward);
+  const finishActReward = (route) => {
+    const chosen = route || pendingRoute;
+    const next = takeRoute(runRef.current, chosen);
     applyRun(next);
     setRunReward(null);
+    setRouteOptions(null);
+    setPendingRoute(null);
+    setShopOffers(null);
     setBases([false, false, false]);
     setCount({ balls: 0, strikes: 0, outs: next.outs });
     setPitchHistory([]);
@@ -2805,7 +2858,7 @@ export default function BaseballSim() {
     setPitcherStreak(0);
     drawUpTo();
     const act = currentAct(next);
-    setMessage(`${act.league} · ${act.tier} 등판 — ${act.intro}`);
+    setMessage(`${act.pitcherName} 등판 — ${act.trait ? act.trait.tell : act.intro}`);
     pushLog(`▶ ${act.act}막 ${act.league} — ${act.pitcherName}`);
   };
 
@@ -3051,6 +3104,31 @@ export default function BaseballSim() {
         }
         .pitcher-afterimage.sprite-afterimage-b { transform: translate3d(calc(-50% + 15px), 2px, 0) scale(0.985); }
         [data-motion="windup"] .sprite-afterimage { opacity: 0.065; }
+        /* ===== 경로 선택 / 상점 ===== */
+        .showdown-route-options { display: flex; gap: 8px; width: 100%; }
+        .showdown-route-card { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 8px; border: 1px solid #3a4a3e; border-radius: 8px; background: #101a14; color: #e8e4d8; text-align: center; }
+        .showdown-route-card:hover { border-color: #ffb000; }
+        .showdown-route-stop { display: flex; flex-direction: column; gap: 1px; font-size: 12px; font-weight: 900; color: #7fe0b0; }
+        .showdown-route-stop-sub { font-size: 8.5px; font-weight: 400; color: #7a8f7f; }
+        .showdown-route-arrow { font-size: 9px; color: #3a4a3e; }
+        .showdown-route-pitcher { display: flex; flex-direction: column; gap: 2px; }
+        .showdown-route-trait { font-size: 9px; font-weight: 900; color: #ffb000; letter-spacing: .06em; }
+        .showdown-route-name { font-size: 11px; font-weight: 800; }
+        .showdown-route-tell { font-size: 9px; color: #a8b8ac; line-height: 1.3; }
+        .showdown-route-stat { font-size: 8.5px; color: #7a8f7f; margin-top: 2px; }
+        .showdown-phase-tell { display: block; font-size: 8.5px; color: #7a8f7f; font-weight: 400; }
+
+        .showdown-shop-row { display: flex; gap: 8px; width: 100%; justify-content: center; }
+        .showdown-shop-card { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px; border: 1px solid #3a4a3e; border-radius: 6px; background: #16211a; color: #e8e4d8; }
+        .showdown-shop-kind { font-size: 8px; color: #7a8f7f; }
+        .showdown-shop-name { font-size: 11px; font-weight: 800; }
+        .showdown-shop-cost { font-size: 9px; color: #ffb000; font-weight: 800; }
+        .showdown-shop-sold { flex: 1; text-align: center; font-size: 10px; color: #4a5a4e; align-self: center; }
+        .showdown-shop-deck { display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; max-height: 92px; overflow-y: auto; width: 100%; }
+        .showdown-shop-remove { font-size: 9px; padding: 2px 6px; border: 1px solid #3a4a3e; border-radius: 4px; color: #a8b8ac; background: #16211a; }
+        .showdown-shop-remove:hover { border-color: #c73e3e; color: #ff8080; }
+        .showdown-shop-leave { margin-top: 12px; padding: 8px 18px; border: 1px solid #ffb000; border-radius: 6px; background: #3a2f14; color: #fff3d0; font-size: 12px; font-weight: 800; }
+
         /* ===== 폰 한 화면 모드 =====
            내 타석 동안에는 페이지가 스크롤되지 않는다. 모든 영역이 뷰포트 높이 안에서 나눠 갖는다. */
         .game-root.is-play { height: 100dvh; min-height: 0; overflow: hidden; padding: 0; justify-content: flex-start; }
@@ -3852,6 +3930,7 @@ export default function BaseballSim() {
               <span className="showdown-phase-tag">{uiPhase}</span>
               <span className="showdown-phase-who">
                 {`${currentAct(run).act}막 ${currentAct(run).league} · ${currentAct(run).pitcherName}`}
+                {currentAct(run).trait && <span className="showdown-phase-tell">{currentAct(run).trait.tell}</span>}
               </span>
               <button type="button" onClick={toggleHints} className="mono showdown-hint-toggle">
                 힌트 {hintsEnabled ? "ON" : "OFF"}
@@ -4599,38 +4678,89 @@ export default function BaseballSim() {
       )}
 
       {/* 카드 보상 - 레벨업/경기종료 공통 모달 */}
-      {runReward === "choosing" && !cardRewards && (
-        <div className="modal-animate w-full max-w-md flex flex-col items-center" style={{ backgroundColor: "#111a14", border: "2px solid #ffb000", borderRadius: 8, padding: 18 }}>
+      {runReward === "choosing" && routeOptions && !cardRewards && (
+        <div className="modal-animate w-full max-w-md flex flex-col items-center showdown-route" style={{ backgroundColor: "#111a14", border: "2px solid #ffb000", borderRadius: 8, padding: 16 }}>
           <div className="display text-lg font-bold text-[#ffb000]" style={{ marginBottom: 2 }}>
             {currentAct(run).act}막 돌파
           </div>
-          <div className="mono" style={{ fontSize: 11, color: "#a8b8ac", marginBottom: 14 }}>
-            {currentAct(run).league} {currentAct(run).pitcherName}를 눕혔다 · 남은 아웃 {Math.max(0, MAX_OUTS - run.outs)}
+          <div className="mono" style={{ fontSize: 11, color: "#a8b8ac", marginBottom: 12 }}>
+            남은 아웃 {Math.max(0, MAX_OUTS - run.outs)} · 집중 {focusPoints} — 갈 길을 고르세요
           </div>
-          <div className="flex gap-3 w-full">
-            <button
-              onClick={() => takeActReward("card")}
-              className="mono flex-1 rounded"
-              style={{ padding: "14px 8px", border: "2px solid #3d7a5f", backgroundColor: "#101a14", color: "#e8e4d8" }}
-            >
-              <span style={{ display: "block", fontWeight: 900, fontSize: 13 }}>카드 획득</span>
-              <span style={{ display: "block", marginTop: 4, fontSize: 9, color: "#7a8f7f" }}>3장 중 1택 · 이번 런에만</span>
-            </button>
-            <button
-              onClick={() => takeActReward("heal")}
-              disabled={run.outs <= 0}
-              className="mono flex-1 rounded disabled:opacity-40"
-              style={{ padding: "14px 8px", border: "2px solid #c73e3e", backgroundColor: "#1a1010", color: "#e8e4d8" }}
-            >
-              <span style={{ display: "block", fontWeight: 900, fontSize: 13 }}>아웃 1개 회복</span>
-              <span style={{ display: "block", marginTop: 4, fontSize: 9, color: "#7a8f7f" }}>
-                {run.outs <= 0 ? "회복할 아웃 없음" : `남은 아웃 ${MAX_OUTS - run.outs} → ${MAX_OUTS - run.outs + 1}`}
-              </span>
-            </button>
+          <div className="showdown-route-options">
+            {routeOptions.map((route, index) => (
+              <button
+                key={index}
+                type="button"
+                onClick={() => chooseRoute(route)}
+                className="mono showdown-route-card"
+              >
+                <span className="showdown-route-stop">
+                  {ROUTE_NODES[route.node].name}
+                  <span className="showdown-route-stop-sub">{ROUTE_NODES[route.node].detail}</span>
+                </span>
+                <span className="showdown-route-arrow">▼</span>
+                <span className="showdown-route-pitcher">
+                  <span className="showdown-route-trait">{route.act.trait.name}</span>
+                  <span className="showdown-route-name">{route.act.pitcherName}</span>
+                  <span className="showdown-route-tell">“{route.act.trait.tell}”</span>
+                  <span className="showdown-route-stat">
+                    HP {route.act.hp} · 제구 {route.act.control} · 구위 {route.act.stuff}
+                    {route.act.wasteBias ? ` · 유인구 +${route.act.wasteBias}` : ""}
+                  </span>
+                </span>
+              </button>
+            ))}
           </div>
-          <div className="mono" style={{ fontSize: 9, color: "#4a5a4e", marginTop: 12 }}>
-            다음 상대: {ACTS[Math.min(ACTS.length - 1, run.actIndex + 1)].league} · {ACTS[Math.min(ACTS.length - 1, run.actIndex + 1)].tier}
+          <div className="mono" style={{ fontSize: 9, color: "#4a5a4e", marginTop: 10 }}>
+            {ACTS[Math.min(ACTS.length - 1, run.actIndex + 1)].league} — 어느 쪽으로 가든 상대는 한 명이다
           </div>
+        </div>
+      )}
+
+      {runReward === "shop" && (
+        <div className="modal-animate w-full max-w-md flex flex-col items-center" style={{ backgroundColor: "#111a14", border: "2px solid #ffb000", borderRadius: 8, padding: 16 }}>
+          <div className="display text-lg font-bold text-[#ffb000]" style={{ marginBottom: 2 }}>상점</div>
+          <div className="mono" style={{ fontSize: 11, color: "#ffb000", marginBottom: 10 }}>집중 {focusPoints}</div>
+          <div className="showdown-shop-row">
+            {(shopOffers || []).map((card, index) => (
+              card ? (
+                <button
+                  key={index}
+                  type="button"
+                  disabled={focusPoints < SHOP_CARD_COST}
+                  onClick={() => buyShopCard(index)}
+                  className="mono showdown-shop-card disabled:opacity-40"
+                >
+                  <span className="showdown-shop-kind">{card.kind === "mod" ? "수식어" : "존"}</span>
+                  <span className="showdown-shop-name">{cardLabel(card)}</span>
+                  <span className="showdown-shop-cost">✨{SHOP_CARD_COST}</span>
+                </button>
+              ) : (
+                <span key={index} className="mono showdown-shop-sold">품절</span>
+              )
+            ))}
+          </div>
+          <div className="mono" style={{ fontSize: 10, color: "#a8b8ac", margin: "10px 0 4px" }}>
+            덱에서 카드 빼기 (✨{SHOP_REMOVE_COST}) — 얇은 덱이 원하는 카드를 부른다
+          </div>
+          <div className="showdown-shop-deck">
+            {[["hand", hand], ["deck", deck], ["discard", discard]].flatMap(([where, list]) =>
+              list.map((card, index) => (
+                <button
+                  key={`${where}-${index}`}
+                  type="button"
+                  disabled={focusPoints < SHOP_REMOVE_COST}
+                  onClick={() => removeRunCard(card, where, index)}
+                  className="mono showdown-shop-remove disabled:opacity-40"
+                >
+                  {cardLabel(card)}
+                </button>
+              )),
+            )}
+          </div>
+          <button type="button" onClick={() => finishActReward()} className="mono showdown-shop-leave">
+            나가기 — {ACTS[Math.min(ACTS.length - 1, run.actIndex + 1)].league}로
+          </button>
         </div>
       )}
 
