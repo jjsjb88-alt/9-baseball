@@ -1113,6 +1113,7 @@ export default function BaseballSim() {
   const [routeOptions, setRouteOptions] = useState(null); // 갈래 두 개
   const [pendingRoute, setPendingRoute] = useState(null); // 고른 갈래(들를 곳 처리 후 이동)
   const [shopOffers, setShopOffers] = useState(null); // 상점 매물
+  const [actBriefing, setActBriefing] = useState(null); // 막 시작 브리핑(첫 투구 전에 규칙과 상대를 알려준다)
   const SHOP_CARD_COST = 3;
   const SHOP_REMOVE_COST = 2;
   const [gameOver, setGameOver] = useState(false);
@@ -1296,6 +1297,89 @@ export default function BaseballSim() {
   const soundReadyRef = useRef(false);
   const synthsRef = useRef(null);
 
+  const bgmRef = useRef(null);
+  const bgmEnabledRef = useRef(true);
+  const [bgmEnabled, setBgmEnabled] = useState(true);
+  const BGM_FLAG_KEY = "9zone-bgm-v1";
+
+  // 막마다 다른 루프. 리그가 올라갈수록 빨라지고 어두워진다.
+  const BGM_TRACKS = [
+    { bpm: 88, bass: ["C2", "C2", "G1", "A1", "F1", "F1", "G1", "G1"], lead: ["E4", null, "G4", null, "C5", null, "G4", null] },
+    { bpm: 100, bass: ["A1", "A1", "E2", "E2", "F1", "F1", "G1", "G1"], lead: ["C5", null, "B4", null, "E5", null, "A4", null] },
+    { bpm: 116, bass: ["D2", "D2", "A1", "A1", "Bb1", "Bb1", "C2", "C2"], lead: ["F4", "A4", null, "D5", null, "C5", "A4", null] },
+  ];
+
+  const stopBgm = () => {
+    const bgm = bgmRef.current;
+    bgmRef.current = null;
+    if (!bgm) return;
+    try {
+      bgm.sequence.stop();
+      bgm.sequence.dispose();
+      Tone.Transport.stop();
+      bgm.bass.dispose();
+      bgm.lead.dispose();
+      bgm.hat.dispose();
+    } catch (e) {
+      // 정리 실패는 무시 - 소리가 남더라도 게임은 계속된다
+    }
+  };
+
+  const startBgm = (actIndex = 0) => {
+    if (!soundReadyRef.current || !bgmEnabledRef.current) return;
+    stopBgm();
+    try {
+      const track = BGM_TRACKS[Math.min(BGM_TRACKS.length - 1, actIndex)];
+      const bass = new Tone.MonoSynth({
+        oscillator: { type: "square" },
+        envelope: { attack: 0.01, decay: 0.24, sustain: 0.05, release: 0.2 },
+        filterEnvelope: { attack: 0.01, decay: 0.2, sustain: 0.2, baseFrequency: 120, octaves: 2 },
+      }).toDestination();
+      bass.volume.value = -24;
+      const lead = new Tone.Synth({
+        oscillator: { type: "triangle" },
+        envelope: { attack: 0.01, decay: 0.18, sustain: 0, release: 0.2 },
+      }).toDestination();
+      lead.volume.value = -30;
+      const hat = new Tone.NoiseSynth({
+        noise: { type: "white" },
+        envelope: { attack: 0.001, decay: 0.03, sustain: 0 },
+      }).toDestination();
+      hat.volume.value = -38;
+      Tone.Transport.bpm.value = track.bpm;
+      const sequence = new Tone.Sequence((time, step) => {
+        const bassNote = track.bass[step % track.bass.length];
+        if (bassNote) bass.triggerAttackRelease(bassNote, "8n", time);
+        const leadNote = track.lead[step % track.lead.length];
+        if (leadNote) lead.triggerAttackRelease(leadNote, "16n", time + 0.02);
+        if (step % 2 === 1) hat.triggerAttackRelease("32n", time);
+      }, [0, 1, 2, 3, 4, 5, 6, 7], "8n");
+      sequence.start(0);
+      Tone.Transport.start();
+      bgmRef.current = { sequence, bass, lead, hat };
+    } catch (e) {
+      // Tone이 없는 환경(테스트 등)에서는 무음으로 진행
+    }
+  };
+
+  const toggleBgm = () => {
+    const next = !bgmEnabledRef.current;
+    bgmEnabledRef.current = next;
+    setBgmEnabled(next);
+    try { window.localStorage?.setItem(BGM_FLAG_KEY, next ? "on" : "off"); } catch (e) { /* 저장 실패 무시 */ }
+    if (next) startBgm(runRef.current.actIndex);
+    else stopBgm();
+  };
+
+  React.useEffect(() => {
+    try {
+      const saved = window.localStorage?.getItem(BGM_FLAG_KEY);
+      if (saved === "off") { bgmEnabledRef.current = false; setBgmEnabled(false); }
+    } catch (e) { /* 읽기 실패 무시 */ }
+    return () => stopBgm();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const ensureAudio = useCallback(async () => {
     if (soundReadyRef.current) return;
     try {
@@ -1332,6 +1416,16 @@ export default function BaseballSim() {
       else if (type === "deepRead") {
         s.read.triggerAttackRelease("D2", "8n", now, 0.8);
         s.read.triggerAttackRelease("A2", "8n", now + 0.08, 0.65);
+      }
+      else if (type === "bigDamage") {
+        s.strike.triggerAttackRelease("C1", "8n", now, 1);
+        s.contact.triggerAttackRelease("C3", "16n", now + 0.02, 0.9);
+        s.cheer.triggerAttackRelease(["G3", "C4"], "16n", now + 0.05, 0.5);
+      }
+      else if (type === "actClear") {
+        s.cheer.triggerAttackRelease(["C4", "E4", "G4"], "8n", now);
+        s.cheer.triggerAttackRelease(["E4", "G4", "C5"], "8n", now + 0.14);
+        s.cheer.triggerAttackRelease(["G4", "C5", "E5"], "4n", now + 0.3);
       }
       else if (type === "powerContact") {
         s.strike.triggerAttackRelease("C1", "8n", now, 0.9);
@@ -1463,7 +1557,9 @@ export default function BaseballSim() {
   const [resultBanner, setResultBanner] = useState(null); // {read, exec, result, id} - 인과 3줄
   const resultBannerTimerRef = useRef(null);
   const [historyFilter, setHistoryFilter] = useState("all"); // all | count | runners
-  const [hpFlash, setHpFlash] = useState(null); // {delta, id} - HP 감소 팝업
+  const [hpFlash, setHpFlash] = useState(null); // {delta, fromPct, big, id} - HP 감소 팝업 + 잔상
+  const [pitcherHurt, setPitcherHurt] = useState(null); // "small" | "big" - 투수 피격 반응
+  const hurtTimerRef = useRef(null);
   const [guideStep, setGuideStep] = useState(null); // 첫 투구 강제 가이드 0~4
   const guideTimerRef = useRef(null);
   const guideStartedRef = useRef(false); // 이 세션에서 이미 재생했는지
@@ -1900,7 +1996,15 @@ export default function BaseballSim() {
       strikeoutEndsPa: isOut,
     });
     applyRun(applied.run);
-    if (applied.damage > 0) setHpFlash({ delta: applied.damage, id: Date.now() });
+    if (applied.damage > 0) {
+      // 잔상 바(직전 HP)와 팝업 숫자로 "얼마나 깎였는지"를 눈으로 보여준다
+      const beforePct = clamp((runRef.current.hp / currentAct(runRef.current).hp) * 100, 0, 100);
+      setHpFlash({ delta: applied.damage, fromPct: beforePct, big: applied.damage >= 18, id: Date.now() });
+      setPitcherHurt(applied.damage >= 18 ? "big" : "small");
+      if (hurtTimerRef.current) clearTimeout(hurtTimerRef.current);
+      hurtTimerRef.current = setTimeout(() => setPitcherHurt(null), applied.damage >= 18 ? 520 : 300);
+      if (applied.damage >= 18) playSound("bigDamage");
+    }
     showResultBanner(buildResultBanner(outcome, contactPower, lastReadRef.current, applied.damage));
     lastReadRef.current = null;
     const outsNow = applied.run.outs;
@@ -2444,6 +2548,7 @@ export default function BaseballSim() {
     pitcherStreakRef.current = 0;
     setPitcherStreak(0);
     resetDeck("batter");
+    setActBriefing(coreTestModeRef.current ? null : { actIndex: 0 });
     setMessage(coreTestModeRef.current
       ? "코어 테스트 — 한 타석에서 투수의 의도를 읽어 보세요"
       : `${ACTS[0].league} · ${ACTS[0].tier} — 아웃 ${MAX_OUTS}개 안에 눕힌다`);
@@ -2466,6 +2571,7 @@ export default function BaseballSim() {
   };
 
   const returnToRole = () => {
+    stopBgm();
     coreTestModeRef.current = false;
     setCoreTestMode(false);
     setCoreTestComplete(false);
@@ -2481,7 +2587,7 @@ export default function BaseballSim() {
 
   // 타순 로테이션 패치: 유저=타자일 땐 자기 타순 슬롯일 때만 직접플레이(나머지 타순=자동시뮬), 유저=투수일 땐 매 타석 전부 직접
   // 런에는 동료 타석이 없다. 런이 진행중이면 언제나 내 타석이다.
-  const isUserBattingNow = appStage === "game" && !gameOver && run.status === "playing" && !runReward;
+  const isUserBattingNow = appStage === "game" && !gameOver && run.status === "playing" && !runReward && !actBriefing;
   const isUserTurnNow = isUserBattingNow;
   const wasUserTurnRef = useRef(false);
 
@@ -2766,10 +2872,11 @@ export default function BaseballSim() {
       setRunReward("choosing");
       setMessage(`${currentAct(run).tier} 격파! 갈 길을 고르세요`);
       pushLog(`🏆 ${currentAct(run).league} ${currentAct(run).tier} 격파`);
-      playSound("levelup");
+      playSound("actClear");
     }
     if (run.status === "defeat" && !gameOver) {
       setGameOver(true);
+      stopBgm();
       setMessage(`런 종료 — ${currentAct(run).league}에서 3아웃`);
       if (!practiceModeRef.current) {
         const newGamesPlayed = gamesPlayed + 1;
@@ -2779,6 +2886,7 @@ export default function BaseballSim() {
     }
     if (run.status === "victory" && !gameOver) {
       setGameOver(true);
+      stopBgm();
       setMessage("1부리그 보스 격파 — 런 클리어!");
       pushLog("🏆 런 클리어");
       if (!practiceModeRef.current) {
@@ -2858,6 +2966,7 @@ export default function BaseballSim() {
     setPitcherStreak(0);
     drawUpTo();
     const act = currentAct(next);
+    setActBriefing({ actIndex: next.actIndex });
     setMessage(`${act.pitcherName} 등판 — ${act.trait ? act.trait.tell : act.intro}`);
     pushLog(`▶ ${act.act}막 ${act.league} — ${act.pitcherName}`);
   };
@@ -3104,6 +3213,30 @@ export default function BaseballSim() {
         }
         .pitcher-afterimage.sprite-afterimage-b { transform: translate3d(calc(-50% + 15px), 2px, 0) scale(0.985); }
         [data-motion="windup"] .sprite-afterimage { opacity: 0.065; }
+        /* ===== 막 브리핑 ===== */
+        .showdown-brief-act { font-size: 10px; font-weight: 900; color: #ffb000; letter-spacing: .1em; }
+        .showdown-brief-name { font-size: 20px; font-weight: 900; color: #fff3d0; margin-top: 2px; }
+        .showdown-brief-tell { font-size: 11px; color: #a8b8ac; margin-top: 4px; text-align: center; }
+        .showdown-brief-stats { display: flex; gap: 14px; margin-top: 10px; font-size: 10px; color: #7a8f7f; }
+        .showdown-brief-stats b { color: #e8e4d8; font-size: 12px; margin-left: 3px; }
+        .showdown-brief-rules { display: flex; flex-direction: column; gap: 6px; margin: 14px 0 4px; padding: 12px 14px; border: 1px solid #2a3a2e; border-radius: 6px; background: #0d1710; font-size: 11px; color: #a8b8ac; line-height: 1.45; list-style: decimal; list-style-position: inside; text-align: left; }
+        .showdown-brief-rules b { color: #ffb000; }
+        .showdown-brief-note { font-size: 10px; color: #7a8f7f; margin-top: 12px; }
+        .showdown-brief-start { margin-top: 14px; padding: 11px 26px; border: 2px solid #ffb000; border-radius: 6px; background: #3a2f14; color: #fff3d0; font-size: 15px; font-weight: 900; }
+
+        /* ===== 타격감 ===== */
+        .showdown-hp-track.is-critical { animation: hpCritical 900ms ease-in-out infinite; }
+        @keyframes hpCritical { 0%,100% { box-shadow: 0 0 0 rgba(199,62,62,0); } 50% { box-shadow: 0 0 10px rgba(199,62,62,.75); } }
+        /* 직전 체력이 남았다가 빠지는 잔상 - 얼마나 깎였는지가 눈에 남는다 */
+        .showdown-hp-ghost { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: #ff8080; opacity: .55; animation: hpGhost 620ms ease-out forwards; }
+        @keyframes hpGhost { 0% { opacity: .75; } 60% { opacity: .5; } 100% { opacity: 0; } }
+        .showdown-hp-pop.is-big { font-size: 16px; color: #fff3d0; text-shadow: 0 0 10px rgba(255,176,0,.9); animation: hpPopBig 900ms ease-out forwards; }
+        @keyframes hpPopBig { 0% { opacity: 0; transform: translateY(8px) scale(.7); } 18% { opacity: 1; transform: translateY(-2px) scale(1.35); } 60% { transform: translateY(-6px) scale(1.1); } 100% { opacity: 0; transform: translateY(-16px) scale(1); } }
+        .combat-pitcher-stage.is-hurt-small { animation: hurtSmall 300ms ease-out; }
+        .combat-pitcher-stage.is-hurt-big { animation: hurtBig 520ms cubic-bezier(.2,.9,.3,1); }
+        @keyframes hurtSmall { 0% { transform: translateX(0); filter: none; } 30% { transform: translateX(-4px); filter: brightness(1.8) saturate(.4); } 100% { transform: translateX(0); filter: none; } }
+        @keyframes hurtBig { 0% { transform: translate(0,0) scale(1); filter: none; } 18% { transform: translate(-9px,3px) scale(.95); filter: brightness(2.4) saturate(.2); } 45% { transform: translate(6px,-2px) scale(1.02); filter: brightness(1.3); } 100% { transform: translate(0,0) scale(1); filter: none; } }
+
         /* ===== 경로 선택 / 상점 ===== */
         .showdown-route-options { display: flex; gap: 8px; width: 100%; }
         .showdown-route-card { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 8px; border: 1px solid #3a4a3e; border-radius: 8px; background: #101a14; color: #e8e4d8; text-align: center; }
@@ -3907,7 +4040,14 @@ export default function BaseballSim() {
           {/* ① 투수 HP 바 — 목표까지 거리. 최상단 고정, 감소할 때만 움직인다. */}
           {userRole === "batter" && (
             <div className="showdown-hp" ref={guideBannerRef}>
-              <div className="showdown-hp-track">
+              <div className={`showdown-hp-track${run.hp <= currentAct(run).hp * 0.3 ? " is-critical" : ""}`}>
+                {hpFlash && (
+                  <div
+                    key={`ghost-${hpFlash.id}`}
+                    className="showdown-hp-ghost"
+                    style={{ width: `${clamp(hpFlash.fromPct ?? 0, 0, 100)}%` }}
+                  />
+                )}
                 <div
                   className="showdown-hp-fill"
                   style={{
@@ -3915,7 +4055,7 @@ export default function BaseballSim() {
                     backgroundColor: run.hp > currentAct(run).hp * 0.6 ? "#3d7a5f" : run.hp > currentAct(run).hp * 0.3 ? "#ffb000" : "#c73e3e",
                   }}
                 />
-                {hpFlash && <span key={hpFlash.id} className="showdown-hp-pop">−{Math.round(hpFlash.delta)}</span>}
+                {hpFlash && <span key={hpFlash.id} className={`showdown-hp-pop${hpFlash.big ? " is-big" : ""}`}>−{Math.round(hpFlash.delta)}</span>}
               </div>
               <div className="mono showdown-hp-meta">
                 <span>{currentAct(run).tier} HP</span>
@@ -3932,6 +4072,9 @@ export default function BaseballSim() {
                 {`${currentAct(run).act}막 ${currentAct(run).league} · ${currentAct(run).pitcherName}`}
                 {currentAct(run).trait && <span className="showdown-phase-tell">{currentAct(run).trait.tell}</span>}
               </span>
+              <button type="button" onClick={toggleBgm} className="mono showdown-hint-toggle" aria-label="배경음악">
+                ♪ {bgmEnabled ? "ON" : "OFF"}
+              </button>
               <button type="button" onClick={toggleHints} className="mono showdown-hint-toggle">
                 힌트 {hintsEnabled ? "ON" : "OFF"}
               </button>
@@ -3976,7 +4119,7 @@ export default function BaseballSim() {
           {/* 배틀 스테이지: 위=상대, 아래=나, 가운데=존 그리드(축소) */}
 
           {userRole === "batter" && (
-            <div ref={pitcherMotionRef} className="relative flex flex-col items-center sprite-motion-stage combat-pitcher-stage" style={{ marginBottom: 2 }}>
+            <div ref={pitcherMotionRef} className={`relative flex flex-col items-center sprite-motion-stage combat-pitcher-stage${pitcherHurt ? ` is-hurt-${pitcherHurt}` : ""}`} style={{ marginBottom: 2 }}>
               {pitcherPose !== "idle" && <img src={getPitcherSpriteSrc()} alt="" className="sprite-afterimage sprite-afterimage-a pitcher-afterimage" style={{ height: 116 }} />}
               {pitcherPose !== "idle" && <img src={getPitcherSpriteSrc()} alt="" className="sprite-afterimage sprite-afterimage-b pitcher-afterimage" style={{ height: 116 }} />}
               <img
@@ -4678,6 +4821,43 @@ export default function BaseballSim() {
       )}
 
       {/* 카드 보상 - 레벨업/경기종료 공통 모달 */}
+      {actBriefing && !gameOver && (() => {
+        const act = currentAct(runRef.current);
+        const first = actBriefing.actIndex === 0;
+        return (
+          <div className="modal-animate w-full max-w-md flex flex-col items-center showdown-brief" style={{ backgroundColor: "#111a14", border: "2px solid #ffb000", borderRadius: 8, padding: 18 }}>
+            <div className="mono showdown-brief-act">{act.act}막 · {act.league}</div>
+            <div className="display showdown-brief-name">{act.pitcherName}</div>
+            <div className="mono showdown-brief-tell">“{act.trait ? act.trait.tell : act.intro}”</div>
+            <div className="showdown-brief-stats mono">
+              <span>체력 <b>{act.hp}</b></span>
+              <span>제구 <b>{act.control}</b></span>
+              <span>구위 <b>{act.stuff}</b></span>
+            </div>
+            {first && (
+              <ol className="mono showdown-brief-rules">
+                <li><b>아웃 {MAX_OUTS}개</b>가 런 전체의 목숨이다. 막이 넘어가도 회복되지 않는다.</li>
+                <li>안타·장타·<b>커트</b>·볼넷·득점이 투수 체력을 깎는다. 0으로 만들면 돌파.</li>
+                <li>공마다 <b>관찰 → 코스 예측 → 확인 후 승부</b> 순서로 묻는다. 확정은 아래 시트에서.</li>
+                <li>막을 깨면 갈래를 고른다. 다음 상대의 <b>특성이 미리 보인다</b>.</li>
+              </ol>
+            )}
+            {!first && (
+              <div className="mono showdown-brief-note">
+                남은 아웃 {Math.max(0, MAX_OUTS - runRef.current.outs)} · 집중 {focusPoints} · 손패 {hand.length}장
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={() => { setActBriefing(null); startBgm(runRef.current.actIndex); }}
+              className="display showdown-brief-start"
+            >
+              {first ? "타석에 선다" : "다음 상대로"}
+            </button>
+          </div>
+        );
+      })()}
+
       {runReward === "choosing" && routeOptions && !cardRewards && (
         <div className="modal-animate w-full max-w-md flex flex-col items-center showdown-route" style={{ backgroundColor: "#111a14", border: "2px solid #ffb000", borderRadius: 8, padding: 16 }}>
           <div className="display text-lg font-bold text-[#ffb000]" style={{ marginBottom: 2 }}>

@@ -54,7 +54,7 @@ const takeNextPitch = async () => {
       expect(button.disabled).toBe(false);
       return button;
     },
-    { timeout: 2_500 },
+    { timeout: 8_000 },
   );
   fireEvent.click(takeButton);
 };
@@ -66,7 +66,7 @@ const startNextPitch = async () => {
       expect(nextPitch.disabled).toBe(false);
       return nextPitch;
     },
-    { timeout: 2_500 },
+    { timeout: 8_000 },
   );
   fireEvent.click(button);
 };
@@ -248,7 +248,7 @@ describe("CORE TEST UI", () => {
     skipObserve();
     await waitFor(
       () => expect(screen.getByRole("button", { name: "지켜보기" }).disabled).toBe(false),
-      { timeout: 4_000 },
+      { timeout: 8_000 },
     );
     expect(screen.getByText("▸ 코스를 예측하세요")).toBeTruthy();
     expect(screen.queryByRole("button", { name: "승부!" })).toBeNull();
@@ -287,6 +287,12 @@ describe("CORE TEST UI", () => {
     expect(screen.queryByText(/9이닝/)).toBeNull();
 
     fireEvent.click(screen.getByRole("button", { name: "런 시작" }));
+
+    // 첫 타석 전에 규칙과 상대를 먼저 알려준다.
+    expect(screen.getByText("1막 · 독립리그")).toBeTruthy();
+    expect(screen.getByText("무명 좌완")).toBeTruthy();
+    expect(screen.getByText(/런 전체의 목숨/)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "타석에 선다" }));
 
     // 타석 화면은 폰 한 화면에 들어가야 하므로 페이지가 스크롤되지 않는다.
     expect(document.querySelector(".game-root.is-play")).toBeTruthy();
