@@ -11,6 +11,8 @@ import React, { useState, useMemo, useCallback, useRef } from "react";
 import * as Tone from "tone";
 import STADIUM_COMBAT_BG from "./assets/stadium-combat-bg-v1.png";
 import { resolveShowdownContact } from "./src/game/showdown-engine.js";
+import RunJourney from "./src/game/RunJourney.jsx";
+import { RUN_SAVE_KEY, RUN_STAGES, createRun, enterRunStage, recordRunPitch, continueRun, chooseRunReward, readSavedRun } from "./src/game/run-session.js";
 import {
   buildTrueIntent,
   computeDistribution,
@@ -1105,6 +1107,20 @@ export default function BaseballSim() {
   const [userRole, setUserRole] = useState(null);
   const userRoleRef = useRef(null);
   const [appStage, setAppStage] = useState("tutorial"); // "tutorial" | "role" | "game"
+  const [run, setRun] = useState(null);
+  const runRef = useRef(null);
+  const [savedRun, setSavedRun] = useState(null);
+  const [runSaveError, setRunSaveError] = useState("");
+  const [runImpact, setRunImpact] = useState(false);
+  const runClockRef = useRef(null);
+  const pitchEpochRef = useRef(0);
+  const pitchStartingRef = useRef(false);
+  const runReadRef = useRef(null);
+  const runSaveOkRef = useRef(true);
+  React.useEffect(() => {
+    try { setSavedRun(readSavedRun(window.localStorage)); }
+    catch { setRunSaveError("저장된 런을 읽지 못했습니다. 새 런을 시작할 수 있습니다."); }
+  }, []);
   const [tutorialStep, setTutorialStep] = useState(0);
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedbackRating, setFeedbackRating] = useState(0);
@@ -1434,6 +1450,7 @@ export default function BaseballSim() {
     return 0.6 + s * 0.0083;
   };
   const consumeStamina = (amount) => {
+    if (runRef.current) return; // 라운드마다 고정된 상대. 중간 불펜 교체 없음.
     staminaRef.current = Math.max(0, staminaRef.current - amount);
     setPitcherStamina(staminaRef.current);
     if (staminaRef.current <= 0) swapPitcher();
@@ -1454,6 +1471,7 @@ export default function BaseballSim() {
   };
 
   const getPitcherControl = (pinpoint) => {
+    if (runRef.current) return clamp(PITCHER_PRESET.control * (pinpoint ? 0.7 : 1), 5, 99);
     let v = PITCHER_PRESET.control
       + pitcherControlBonus(pitcherStreakRef.current, ptEffects.streakThresholdBonus, ptEffects.streakMultiplier)
       + ptEffects.controlDelta
@@ -1556,7 +1574,7 @@ export default function BaseballSim() {
     readMod: { label: "노림",   color: "#8fb0d0", hint: "이번 투구 확률 노이즈 제거" },
   };
   const TACTIC_DEFS = {
-    compress: { label: "노림수압축", cost: 2, hint: "이번 투구 확률 그대로 노출" },
+    compress: { label: "노림수압축", cost: 2, hint: "관찰 노이즈 없는 PUBLIC 확률" },
     hide: { label: "구종숨기기", cost: 2, hint: "상대가 약점존 못 읽음" },
     chase: { label: "유인구특화", cost: 4, hint: "유인구도 컨택 시도 가능" },
     timeout: { label: "타임요청", cost: 3, hint: "상대 투수 흐름 끊기(즉시)" },
@@ -1689,7 +1707,7 @@ export default function BaseballSim() {
   const deckRef = useRef([]); const handRef = useRef([]); const discardRef = useRef([]);
   const syncDeckState = () => { setDeck([...deckRef.current]); setHand([...handRef.current]); setDiscard([...discardRef.current]); };
   const drawUpTo = (n) => {
-    let target = n ?? handSizeFor(levelRef.current || 1);
+    let target = n ?? (runRef.current ? 5 : handSizeFor(levelRef.current || 1));
     // 투수가 지치면 던질 수 있는 코스가 줄어든다(선택의 여지가 사라지는 압박)
     if (userRoleRef.current === "pitcher") {
       if (staminaRef.current < 30) target = Math.max(1, target - 2);
@@ -1726,7 +1744,7 @@ export default function BaseballSim() {
       handRef.current = []; discardRef.current = [];
       drawUpTo(); return;
     }
-    const base = careerDeckRef.current.length > 0 ? [...careerDeckRef.current] : buildStartingDeck();
+    const base = runRef.current ? runRef.current.deck.map(c => ({ ...c })) : careerDeckRef.current.length > 0 ? [...careerDeckRef.current] : buildStartingDeck();
     for (let i = base.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [base[i], base[j]] = [base[j], base[i]]; }
     deckRef.current = base;
     handRef.current = [];
@@ -1781,14 +1799,14 @@ export default function BaseballSim() {
 
   const ctx = { balls: count.balls, strikes: count.strikes, runnersOn: bases.some(Boolean) };
   const effBatter = useMemo(() => {
-    const base = getEffectiveBatter(BATTER_BASE, traits, ctx);
+    const base = getEffectiveBatter(BATTER_BASE, run ? [] : traits, ctx);
     if (!batterEventBuff) return base;
     return {
       ...base,
       zoneRating: base.zoneRating.map((v) => clamp(v * (batterEventBuff.contactMult ?? 1), 0, 100)),
       missMult: base.missMult * (batterEventBuff.missMult ?? 1),
     };
-  }, [traits, count.balls, count.strikes, bases, batterEventBuff]);
+  }, [traits, count.balls, count.strikes, bases, batterEventBuff, !!run]);
   const aiDist = useMemo(
     () => (userRole === "pitcher" ? aiGuessDistribution(recentTargets, effBatter.eye, favorZone, effBatter.zoneRating, count.balls, count.strikes) : null),
     [userRole, recentTargets, effBatter.eye, favorZone]
@@ -1848,6 +1866,40 @@ export default function BaseballSim() {
   const foulPressure = () => 1 + clamp((foulsThisPARef.current - 2) * 0.08, 0, 0.24);
   const OUTCOME_KO = { swingMiss: "헛스윙", strike: "스트라이크", ball: "볼", foul: "파울", out: "아웃", single: "안타", double: "2루타", triple: "3루타", homerun: "홈런" };
   const applyOutcome = (outcome, zone, scoringTeam, fromAuto = false, contactPower = 0.5) => {
+    if (runRef.current) {
+      if (fromAuto || runRef.current.status !== 'playing') return;
+      const next = recordRunPitch(runRef.current, outcome, { zone, read: runReadRef.current, pitchId: pendingPitch?.pitch.id || 'fastball' });
+      next.aims = [...playerAimHistoryRef.current];
+      runReadRef.current = null;
+      setCount({ balls: next.balls, strikes: next.strikes, outs: 0 });
+      setScore({ user: next.points, ai: RUN_STAGES[next.stage].target });
+      focusRef.current += 1; setFocusPoints(focusRef.current);
+      if (next.status === 'atbat') { pitchesThisPARef.current = 0; foulsThisPARef.current = 0; drawUpTo(); }
+      else if (outcome === 'foul') { foulsThisPARef.current += 1; if (foulsThisPARef.current <= 2) drawOne(); }
+      persistRun(next);
+      const hit = ['single', 'double', 'triple', 'homerun'].includes(outcome);
+      const text = next.lastOutcome === 'walk' ? '볼넷 · 1루 획득' : next.lastOutcome === 'strikeout' ? '삼진 아웃' : OUTCOME_KO[outcome];
+      setLastPlay({ text, tone: hit ? 'good' : 'neutral', id: Date.now() });
+      setMessage(text); pushLog(text);
+      if (hit || outcome === 'out' || outcome === 'foul') {
+        setPoseBriefly(outcome === 'homerun' ? 'homerun' : 'swing', outcome === 'homerun' ? 1500 : 900);
+        scheduleImpact(() => {
+          playSound(outcome === 'homerun' ? 'homerun' : hit ? 'hit' : outcome === 'foul' ? 'contact' : 'out');
+          setHitSpark({ id: Date.now(), tone: hit ? 'hit' : outcome });
+          showBanner(text, hit ? 'good' : 'neutral');
+          triggerCutscene(outcome === 'homerun' ? 'homerun' : hit ? 'good' : 'out', { power: contactPower });
+        }, outcome === 'homerun' ? 620 : 360);
+      } else {
+        playSound(outcome === 'swingMiss' ? 'whiff' : outcome === 'ball' ? 'ball' : 'strike');
+        if (outcome === 'swingMiss') setPoseBriefly('miss');
+        if (next.status === 'atbat') showBanner(text, 'neutral');
+      }
+      if (next.status === 'atbat') {
+        setRunImpact(true);
+        scheduleImpact(() => { setRunImpact(false); setCutscene(null); }, outcome === 'homerun' ? 2400 : 1400);
+      }
+      return;
+    }
     {
       const who = fromAuto ? (scoringTeam === "user" ? "동료" : "상대") : "나";
       const zoneTxt = zone === 9 ? "존 밖" : ZONE_LABELS[zone] ?? "";
@@ -2126,29 +2178,35 @@ export default function BaseballSim() {
   };
 
   const startAiPitch = useCallback(() => {
+    if (userRoleRef.current !== 'batter') return;
+    if (runRef.current && (runRef.current.status !== 'playing' || userRoleRef.current !== 'batter')) return;
+    if (pitchStartingRef.current || pendingPitch || windingUp) return;
+    pitchStartingRef.current = true;
+    const epoch = pitchEpochRef.current;
+    runReadRef.current = null;
     // 구종숨기기 버프: 이번 투구는 AI가 내 약점존을 못 읽고 평탄하게(거의 무작위로) 던짐 (집중 2 소모)
     const hideBuffed = tacticalBuffRef.current === "hide" && focusRef.current >= 2;
     const pitchTargetBatter = hideBuffed ? { ...effBatter, zoneRating: effBatter.zoneRating.map(() => 55) } : effBatter;
     const { targetZone, pitch, mode } = aiPickPitch(pitchTargetBatter, count.balls, count.strikes, { pitchesThisPA: pitchesThisPARef.current, stamina: staminaRef.current });
     consumeStamina(mode === "pinpoint" ? 4 : 2.5); // 핀포인트는 더 많이 소모
     const effControl = getPitcherControl(mode === "pinpoint");
-    const tiredPitch = { ...pitch, power: clamp(pitch.power * staminaFactor(), 1, 99) }; // 지치면 구위 저하
+    const tiredPitch = { ...pitch, power: runRef.current ? RUN_STAGES[runRef.current.stage].power : clamp(pitch.power * staminaFactor(), 1, 99) };
     const publicIntent = computeDistribution(targetZone, effControl, pitch.controlMod);
-    const aiStage = halvesPlayed >= 4 ? "FOX" : halvesPlayed >= 2 ? "ADAPTER" : "ROOKIE";
+    const aiStage = runRef.current ? RUN_STAGES[runRef.current.stage].ai : halvesPlayed >= 4 ? "FOX" : halvesPlayed >= 2 ? "ADAPTER" : "ROOKIE";
     const dist = buildTrueIntent(publicIntent, {
       strikes: count.strikes,
       aiStage,
       recentAims: playerAimHistoryRef.current,
     });
-    // 노림수압축 버프: 이번 투구는 화면에 노이즈 없는 진짜 확률 그대로 보임 (집중 2 소모)
+    // 노림수압축은 PUBLIC 관찰 노이즈만 제거한다. TRUE INTENT는 노출하지 않는다.
     const compressBuffed = tacticalBuffRef.current === "compress" && focusRef.current >= 2;
-    const displayDist = compressBuffed ? dist : applyReadNoise(publicIntent, effBatter.eye);
+    const displayDist = compressBuffed ? publicIntent : applyReadNoise(publicIntent, effBatter.eye);
     if (hideBuffed || compressBuffed) {
       const cost = (hideBuffed ? 2 : 0) + (compressBuffed ? 2 : 0);
       focusRef.current -= cost;
       setFocusPoints(focusRef.current);
       if (hideBuffed) pushLog("🙈 구종숨기기 발동! 상대가 내 약점을 못 읽음");
-      if (compressBuffed) pushLog("🔍 노림수압축 발동! 이번 투구 확률 그대로 노출");
+      if (compressBuffed) pushLog("🔍 노림수압축 발동! 관찰 노이즈 없는 PUBLIC 확률 표시");
       tacticalBuffRef.current = null;
       setTacticalBuff(null);
     }
@@ -2181,6 +2239,7 @@ export default function BaseballSim() {
 
     const windupStart = Date.now();
     const windupTick = () => {
+      if (epoch !== pitchEpochRef.current) return;
       const elapsed = Date.now() - windupStart;
       const pct = Math.min(1, elapsed / WINDUP_MS);
       if (windupCircleRef.current) {
@@ -2191,6 +2250,7 @@ export default function BaseballSim() {
         windupTextRef.current.textContent = `${pct > 0.8 ? "⚡ 곧 릴리즈!" : "투수 와인드업 중..."} (${Math.round(pct * 100)}%)`;
       }
       if (elapsed >= WINDUP_MS) {
+        pitchStartingRef.current = false;
         setWindingUp(false);
         setPitcherPoseBriefly("release", 700);
         const pitchId = Date.now();
@@ -2244,9 +2304,16 @@ export default function BaseballSim() {
       requestAnimationFrame(windupTick);
     };
     requestAnimationFrame(windupTick);
-  }, [count.balls, count.strikes, effBatter, speedMode]);
+  }, [count.balls, count.strikes, effBatter, speedMode, pendingPitch, windingUp, halvesPlayed]);
   const startAiPitchRef = useRef(() => {});
   startAiPitchRef.current = startAiPitch;
+  const scheduleAiPitch = (delay) => {
+    const epoch = pitchEpochRef.current;
+    setTimeout(() => {
+      if (epoch === pitchEpochRef.current) startAiPitchRef.current();
+    }, delay);
+  };
+  React.useEffect(() => () => { pitchEpochRef.current += 1; }, []);
 
   // 조준(aiming) 단계에서 zone 클릭 -> 여기서부터 진짜 반응 타이머(eye기반) 시작
   const aimedZoneRef = useRef(null);
@@ -2295,6 +2362,7 @@ export default function BaseballSim() {
   // 조합 결과 요약(판정/표시 공용)
   // 선택한 조합으로 스윙 확정: 스냅샷 저장 -> 카드 전부 소모 -> 판정
   const commitSwing = () => {
+    if (!pendingPitch || decidedRef.current) return;
     const hand = handRef.current;
     const sel = [...selectedIdxRef.current];
     if (!sel.length) { setMessage("손패에서 카드를 골라야 한다"); return; }
@@ -2320,6 +2388,7 @@ export default function BaseballSim() {
 ;
 
   const userGuess = (guessZone, quality = 0.5) => {
+    if (runRef.current && runRef.current.status !== 'playing') return;
     if (!pendingPitch || decidedRef.current) return;
     decidedRef.current = true;
     ballFlightActiveRef.current = false;
@@ -2352,6 +2421,7 @@ export default function BaseballSim() {
       : Math.min(...comboZones.map((z) => zoneDistance(z, actualZone))) <= 1.5 ? "NEAR_READ"
       : "MISREAD";
     registerRead(readResult);
+    runReadRef.current = readResult;
     setLastPlay({ text: readResult.replaceAll("_", " "), tone: readResult === "DEEP_READ" ? "good" : readResult === "MISREAD" ? "bad" : "neutral", id: Date.now() });
     // 조준한 zone과 실제 온 zone이 다를 때 - 집중을 소모해서 타격을 보정(완전한 헛스윙 대신 컨택 시도로 전환)
     const mismatchDist = matched ? 0 : Math.min(...comboZones.map((z) => zoneDistance(z, actualZone)));
@@ -2365,6 +2435,14 @@ export default function BaseballSim() {
       pushLog(`⚡ 집중으로 타격 보정! (거리 ${mismatchDist.toFixed(1)}, 집중 -${correctionCost})`);
     }
     const qualityForBanner = speedMode === "realtime" ? quality : null;
+    if (runRef.current) {
+      const mastered = combo.zones.some(c => c.zone === actualZone && c.mastered !== false && c.style !== 'basic');
+      const result = resolveShowdownContact({ read: readResult, mastered,
+        modifier: mod === 'smash' || playedStyleRef.current === 'power' ? 'smash' : mod === 'cut' ? 'cut' : playedStyleRef.current === 'contact' ? 'contact' : null,
+        covered: isWide || mod === 'pushHit', pitchPower: pendingPitch.pitch.power, cardTier: playedTierRef.current });
+      applyOutcome(result.outcome, actualZone, undefined, false, result.power);
+      return;
+    }
     if (isWaste) {
       if (!matched && !canCorrect) { applyOutcome("ball", actualZone); return; }
       // 유인구특화 버프: 원래 배드볼히터 특성 없어도 이번 유인구는 컨택 시도 가능 (집중 4 소모)
@@ -2458,7 +2536,86 @@ export default function BaseballSim() {
   };
   userGuessRef.current = userGuess;
 
+  const clearRunPitch = () => {
+    pitchEpochRef.current += 1;
+    pitchStartingRef.current = false;
+    decidedRef.current = true;
+    ballFlightActiveRef.current = false;
+    if (autoSimTimeoutRef.current) clearTimeout(autoSimTimeoutRef.current);
+    impactTimersRef.current.forEach(clearTimeout); impactTimersRef.current = [];
+    if (incomingTimeoutRef.current) clearTimeout(incomingTimeoutRef.current);
+    if (pitchMarkTimeoutRef.current) clearTimeout(pitchMarkTimeoutRef.current);
+    setPendingPitch(null); setWindingUp(false); setPitchStage('idle');
+    setCutscene(null); setIncomingBall(null); setPitchMark(null); setBanner(null);
+    setRunImpact(false); setSel([]); setAimedZone(null);
+    comboRef.current = null; playedTierRef.current = 1; playedStyleRef.current = 'normal';
+  };
+  const persistRun = (next, preserveCheckpoint = false) => {
+    const now = Date.now();
+    const updated = { ...next, elapsedMs: next.elapsedMs + (runClockRef.current == null ? 0 : Math.max(0, now - runClockRef.current)),
+      checkpoint: preserveCheckpoint && next.checkpoint ? next.checkpoint : { hand: [...handRef.current], deck: [...deckRef.current], discard: [...discardRef.current], focus: focusRef.current } };
+    runClockRef.current = now;
+    runRef.current = updated; setRun(updated); setSavedRun(updated);
+    try { window.localStorage.setItem(RUN_SAVE_KEY, JSON.stringify(updated)); setRunSaveError(''); runSaveOkRef.current = true; }
+    catch { runSaveOkRef.current = false; setRunSaveError('런 저장 실패. 이 창을 닫기 전에 저장을 다시 시도하세요.'); }
+    return updated;
+  };
+  const beginRun = (resume = null) => {
+    ensureAudio();
+    const next = resume || createRun(buildStartingDeck());
+    runRef.current = next; setRun(next); runClockRef.current = Date.now();
+    coreTestModeRef.current = false; setCoreTestMode(false); setCoreTestComplete(false);
+    practiceModeRef.current = false; setPracticeMode(false);
+    setPendingLevelUp(null); pendingLevelUpRef.current = null; setCardRewards(null);
+    playerAimHistoryRef.current = [...next.aims];
+    startGame('batter');
+    setCount({ balls: next.balls, strikes: next.strikes, outs: 0 });
+    setScore({ user: next.points, ai: RUN_STAGES[next.stage].target });
+    setPitchHistory(next.history); setLog([]);
+    if (resume?.checkpoint) {
+      handRef.current = [...resume.checkpoint.hand]; deckRef.current = [...resume.checkpoint.deck]; discardRef.current = [...resume.checkpoint.discard];
+      focusRef.current = resume.checkpoint.focus; setFocusPoints(focusRef.current); syncDeckState();
+    }
+    pitchesThisPARef.current = next.paPitches;
+    persistRun(next);
+    if (next.status === 'playing') scheduleAiPitch(250);
+  };
+  const startRunStage = () => {
+    if (runRef.current?.status !== 'intro') return;
+    clearRunPitch();
+    resetDeck('batter'); resetPitcherStamina();
+    focusRef.current = runRef.current.startFocus || 0; setFocusPoints(focusRef.current);
+    setCount({ balls: 0, strikes: 0, outs: 0 });
+    pitchesThisPARef.current = 0; foulsThisPARef.current = 0;
+    setScore({ user: 0, ai: RUN_STAGES[runRef.current.stage].target });
+    persistRun(enterRunStage(runRef.current));
+    scheduleAiPitch(100);
+  };
+  const advanceRun = () => {
+    if (runRef.current?.status !== 'atbat' || runImpact) return;
+    clearRunPitch();
+    const next = persistRun(continueRun(runRef.current));
+    if (next.status === 'playing') scheduleAiPitch(100);
+  };
+  const rewardRun = (id) => {
+    if (runRef.current?.status !== 'reward') return;
+    const next = chooseRunReward(runRef.current, id);
+    if (next === runRef.current) return;
+    runRef.current = next;
+    resetDeck('batter');
+    persistRun(next);
+  };
+  const exitRun = () => {
+    if (!runRef.current || runImpact) return;
+    // A pitch being considered is uncommitted. Store the last resolved pitch's
+    // hand so toggling tactics then leaving cannot duplicate consumed cards.
+    persistRun(runRef.current, true);
+    if (!runSaveOkRef.current) return;
+    returnToRole();
+  };
+
   const startGame = (role) => {
+    clearRunPitch();
     setUserRole(role); userRoleRef.current = role;
     setAppStage("game");
     // 유저가 즉시 참여하도록: 배터면 유저팀이 먼저 공격, 투수면 상대팀이 먼저 공격(=유저가 바로 투구)
@@ -2486,7 +2643,7 @@ export default function BaseballSim() {
     setPitcherPose("idle");
     pitcherStreakRef.current = 0;
     setPitcherStreak(0);
-    const initialOrderIndex = coreTestModeRef.current && role === "batter" ? USER_LINEUP_SLOT : 0;
+    const initialOrderIndex = (coreTestModeRef.current || runRef.current) && role === "batter" ? USER_LINEUP_SLOT : 0;
     userOrderIndexRef.current = initialOrderIndex;
     resetDeck(role);
     resetPitcherStamina();
@@ -2496,6 +2653,7 @@ export default function BaseballSim() {
   };
 
   const launchGame = (role, mode = false) => {
+    runRef.current = null; setRun(null); runClockRef.current = null;
     ensureAudio();
     const isCoreTest = mode === "core";
     coreTestModeRef.current = isCoreTest;
@@ -2508,10 +2666,12 @@ export default function BaseballSim() {
     practiceModeRef.current = mode;
     setPracticeMode(mode);
     startGame(role);
-    if (isCoreTest) setTimeout(() => startAiPitchRef.current(), 250);
+    if (isCoreTest) scheduleAiPitch(250);
   };
 
   const returnToRole = () => {
+    clearRunPitch();
+    runRef.current = null; setRun(null); runClockRef.current = null;
     coreTestModeRef.current = false;
     setCoreTestMode(false);
     setCoreTestComplete(false);
@@ -2532,10 +2692,10 @@ export default function BaseballSim() {
   const wasUserTurnRef = useRef(false);
 
   React.useEffect(() => {
-    if (!isUserBattingNow || coreTestModeRef.current || gameOver || pendingEvent || pendingLevelUpRef.current) return;
+    if (!isUserBattingNow || runRef.current || coreTestModeRef.current || gameOver || pendingEvent || pendingLevelUpRef.current) return;
     if (autoSimTimeoutRef.current) { clearTimeout(autoSimTimeoutRef.current); autoSimTimeoutRef.current = null; }
     setAutoSimming(false);
-    if (!pendingPitch && !windingUp) setTimeout(() => startAiPitchRef.current(), 250);
+    if (!pendingPitch && !windingUp) scheduleAiPitch(250);
   }, [isUserBattingNow, gameOver]);
 
   // ===== 투구 단계 상태머신(파생값) =====
@@ -2598,7 +2758,7 @@ export default function BaseballSim() {
 
   // 유저 턴이 새로 시작될 때(false->true) 확률적으로 랜덤 이벤트 발생
   React.useEffect(() => {
-    if (isUserTurnNow && !wasUserTurnRef.current && !gameOver && !coreTestModeRef.current) {
+    if (isUserTurnNow && !wasUserTurnRef.current && !gameOver && !coreTestModeRef.current && !runRef.current) {
       const pool = userRole === "batter" ? BATTER_EVENTS : PITCHER_EVENTS;
       if (pool.length > 0 && Math.random() < 0.28) {
         setPendingEvent(pool[Math.floor(Math.random() * pool.length)]);
@@ -2629,6 +2789,7 @@ export default function BaseballSim() {
   // 내 차례가 아닌 타석은 "투구 단위"가 아니라 "타석 단위"로 한 번에 처리한다.
   // 예전엔 투구마다 900ms씩 재생해서, 한 경기의 절반 이상이 그냥 구경하는 시간이었음.
   const runAutoSimPitch = () => {
+    if (runRef.current) return;
     if (userRoleRef.current === "batter" && battingTeam === "user" && userOrderIndexRef.current === USER_LINEUP_SLOT) {
       setAutoSimming(false);
       autoSimTimeoutRef.current = null;
@@ -2690,7 +2851,7 @@ export default function BaseballSim() {
 
   // 3아웃 감지 -> 하프이닝 전환
   React.useEffect(() => {
-    if (count.outs < 3 || battingTeam == null || gameOver) return;
+    if (runRef.current || count.outs < 3 || battingTeam == null || gameOver) return;
     if (autoSimTimeoutRef.current) { clearTimeout(autoSimTimeoutRef.current); autoSimTimeoutRef.current = null; }
     setAutoSimming(false);
     const nextHalves = halvesPlayed + 1;
@@ -2719,7 +2880,7 @@ export default function BaseballSim() {
 
   // 유저팀 하프이닝 아닐 때만 자동시뮬 - 유저팀 공격중엔 3아웃까지 항상 직접 플레이
   React.useEffect(() => {
-    if (battingTeam == null || gameOver || isUserTurnNow || phase !== "ready") return;
+    if (runRef.current || battingTeam == null || gameOver || isUserTurnNow || phase !== "ready") return;
     setAutoSimming(true);
     if (battingTeam === "user" && userRole === "batter") {
       const untilMe = (USER_LINEUP_SLOT - userOrderIndexRef.current + 9) % 9;
@@ -2879,7 +3040,7 @@ export default function BaseballSim() {
 
   return (
     <div
-      className={`min-h-screen font-sans flex flex-col items-center py-3 px-3 relative overflow-hidden game-root ${shake ? `screen-shake screen-shake-${shake}` : ""} ${readFlash?.result === "DEEP_READ" ? "deep-read-freeze" : ""}`}
+      className={`min-h-screen font-sans flex flex-col items-center py-3 px-3 relative overflow-hidden game-root ${run && (run.status === 'playing' || runImpact) ? 'run-active' : ''} ${shake ? `screen-shake screen-shake-${shake}` : ""} ${readFlash?.result === "DEEP_READ" ? "deep-read-freeze" : ""}`}
       style={{
         background: "linear-gradient(180deg, #060d09 0%, #0d1f17 45%, #0f2419 75%, #16301f 100%)",
         color: "#e8e4d8",
@@ -3428,7 +3589,7 @@ export default function BaseballSim() {
       ) : (
         <>
 
-      <div className="w-full max-w-md mb-2">
+      {!run && appStage === 'game' && <div className="w-full max-w-md mb-2">
         <div className="flex items-center justify-between mono" style={{ fontSize: 10, color: "#7a8f7f", marginBottom: 4 }}>
           <span>9ZONE SHOWDOWN <span style={{ color: "#ffb000" }}>· DECK</span></span>
           {battingTeam && !gameOver && (
@@ -3514,6 +3675,11 @@ export default function BaseballSim() {
         )}
       </div>
 
+      }
+      {run && <RunJourney run={runImpact ? { ...run, status: 'playing' } : run} error={runSaveError}
+        onStart={startRunStage} onContinue={advanceRun} onReward={rewardRun} onExit={exitRun}
+        onRetrySave={() => persistRun(runRef.current, true)} onRestart={() => beginRun()} />}
+
       {appStage === "role" && (
         <div className="flex flex-col items-center gap-4 relative role-shell">
           <img src={IMG_TITLE_BACKDROP} alt="" aria-hidden
@@ -3522,6 +3688,9 @@ export default function BaseballSim() {
                      maskImage: "linear-gradient(180deg, #000 40%, transparent 100%)",
                      WebkitMaskImage: "linear-gradient(180deg, #000 40%, transparent 100%)" }} />
           <img src={GAME_LOGO} alt="9ZONE SHOWDOWN" style={{ width: "100%", maxWidth: 380, imageRendering: "pixelated", filter: "drop-shadow(0 10px 24px rgba(0,0,0,0.75))" }} />
+          <RunJourney onNew={() => beginRun()} />
+          {savedRun && !['won','lost'].includes(savedRun.status) && <button className="run-resume" onClick={() => beginRun(savedRun)}>저장된 런 이어하기 · {savedRun.stage + 1}/6 라운드 · {savedRun.pa}/8 타석</button>}
+          {runSaveError && <p role="alert" className="run-error">{runSaveError}</p>}
           {careerLoaded && (level > 1 || gamesPlayed > 0) && (
             <div className="mono text-center" style={{ fontSize: 11, color: "#7a8f7f" }}>
               <span style={{ color: "#ffb000" }}>Lv.{level}</span> 커리어 이어감 · {gamesPlayed}경기 · 특성 {traits.length}개
@@ -3658,7 +3827,7 @@ export default function BaseballSim() {
         </div>
       )}
 
-      {userRole && !pendingLevelUp && !pendingEvent && !cardRewards && !gameOver && isUserTurnNow && !coreTestComplete && (
+      {userRole && !pendingLevelUp && !pendingEvent && !cardRewards && !gameOver && isUserTurnNow && !coreTestComplete && (!run || run.status === 'playing' || runImpact) && (
         <div className="combat-shell">
           {/* 진행 단계 표시 - 지금 무슨 단계인지 한눈에 */}
           <div className="flex items-center gap-1 mb-1 combat-header">
@@ -3745,7 +3914,7 @@ export default function BaseballSim() {
                 style={{ height: 116, imageRendering: "pixelated", filter: "drop-shadow(0 8px 12px rgba(0,0,0,0.68))", display: "block" }}
               />
               <span className="mono" style={{ fontSize: 9, color: "#7a8f7f", marginTop: -2 }}>
-                {pitcherIdx === 0 ? "선발 투수" : (RELIEVER_NAMES[Math.min(pitcherIdx, RELIEVER_NAMES.length) - 1] ?? "불펜")}
+                {run ? RUN_STAGES[run.stage].pitcher : pitcherIdx === 0 ? "선발 투수" : (RELIEVER_NAMES[Math.min(pitcherIdx, RELIEVER_NAMES.length) - 1] ?? "불펜")}
               </span>
               <div style={{ width: 96, marginTop: 3 }}>
                 <div style={{ height: 6, borderRadius: 3, backgroundColor: "#16211a", border: "1px solid #2a3a2e", overflow: "hidden" }}>
@@ -3801,17 +3970,19 @@ export default function BaseballSim() {
               return (
                 <button
                   key={i}
+                  aria-label={`${label}${userRole === 'batter' && !inHand ? ' BASIC SWING' : ' 존'}`}
+                  disabled={userRole !== 'batter' || !pendingPitch || windingUp || inHand || pitchStage !== 'reacting' || (run && run.status !== 'playing')}
                   onClick={() => {
                     if (userRole !== "batter" || !pendingPitch || inHand) return;
                     comboRef.current = { zones: [{ kind: "zone", zone: i, style: "basic", mastered: false }], mod: null };
-                    playedStyleRef.current = "basic";
+                    playedStyleRef.current = "basic"; playedTierRef.current = 1;
                     userGuessRef.current(i);
                   }}
                   className={`relative mono border-2 rounded transition-colors ${
                     isAimed ? "z-10 scale-105" : ""
                   } ${userRole === "batter" && windingUp && !heat ? "windup-flash" : ""}`}
                   style={{
-                    pointerEvents: "none",
+                    cursor: userRole === 'batter' && !inHand ? 'pointer' : 'default',
                     opacity: userRole === "batter" && !inHand ? 0.45 : 1,
                     backgroundColor: isAimed
                       ? "#c73e3e"
@@ -4060,7 +4231,7 @@ export default function BaseballSim() {
             <div className="w-64 mb-1.5 combat-deck" style={{ backgroundColor: "#141d16", border: "2px solid #ffb000", borderRadius: 8, padding: "7px 8px", boxShadow: "0 0 24px rgba(255,176,0,0.2), 0 14px 34px rgba(0,0,0,0.36)" }}>
               <div className="flex items-center justify-between mono mb-1.5" style={{ fontSize: 10, color: "#7a8f7f" }}>
                 <span style={{ color: "#ffb000", fontWeight: 800 }}>
-                  <img src={IMG_ICON_CARD} alt="" style={{ width: 12, height: 12, imageRendering: "pixelated", display: "inline-block", verticalAlign: "middle", marginRight: 3 }} />카드 탭으로 조합 (최대 2장) → 다시 탭 = {userRole === "pitcher" ? "투구" : "스윙"} ({hand.length}/{handSizeFor(level, userRole)})
+                  <img src={IMG_ICON_CARD} alt="" style={{ width: 12, height: 12, imageRendering: "pixelated", display: "inline-block", verticalAlign: "middle", marginRight: 3 }} />카드 탭으로 조합 (최대 2장) → 다시 탭 = {userRole === "pitcher" ? "투구" : "스윙"} ({hand.length}/{run ? 5 : handSizeFor(level, userRole)})
                   {userRole === "pitcher" && pitcherStamina < 60 && (
                     <span style={{ color: "#c73e3e", marginLeft: 4 }}>· 지쳐서 손패 -{pitcherStamina < 30 ? 2 : 1}</span>
                   )}

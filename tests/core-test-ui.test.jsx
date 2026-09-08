@@ -213,8 +213,12 @@ describe("CORE TEST UI", () => {
 
   it("reports a failed initial result load and restores the count on retry", () => {
     window.localStorage.setItem("9zone-core-test-results-v1", JSON.stringify([storedCoreTestResult]));
-    vi.spyOn(window.localStorage, "getItem")
-      .mockImplementationOnce(() => { throw new Error("storage blocked"); });
+    const getItem = window.localStorage.getItem.bind(window.localStorage);
+    let failCoreLoad = true;
+    vi.spyOn(window.localStorage, "getItem").mockImplementation(key => {
+      if (key === '9zone-core-test-results-v1' && failCoreLoad) { failCoreLoad = false; throw new Error('storage blocked'); }
+      return getItem(key);
+    });
 
     render(<BaseballSim />);
     fireEvent.click(screen.getByRole("button", { name: "건너뛰기" }));

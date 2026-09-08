@@ -8,11 +8,13 @@ export function resolveShowdownContact({
   modifier = null,
   covered = false,
   pitchPower = 60,
+  cardTier = 1,
   variance = Math.random,
 }) {
   const preciseRead = read === "DEEP_READ" || read === "READ";
   const readCQ = { DEEP_READ: 30, READ: 24, COVERED: 12, NEAR_READ: 9, MISREAD: -24, CHASE: -38 }[read] ?? -24;
-  const masteryCQ = mastered ? 12 : -13;
+  const upgrade = mastered ? clamp(cardTier - 1, 0, 2) : 0;
+  const masteryCQ = mastered ? 12 + upgrade * 3 : -13;
   const modifierCQ = modifier === "smash" ? (preciseRead ? -18 : -30) : modifier === "contact" ? 18 : modifier === "cut" ? 4 : 0;
   const cq = clamp(50 + readCQ + masteryCQ + modifierCQ + (covered ? 8 : 0) + (variance() - 0.5) * 28 - pitchPower * 0.08, 0, 100);
   const missChance = clamp(0.64 - cq * 0.0062, 0.05, 0.68);
@@ -27,7 +29,7 @@ export function resolveShowdownContact({
   const readPQ = read === "DEEP_READ" ? 24 : read === "READ" ? 16 : read === "COVERED" ? -10 : read === "NEAR_READ" ? -5 : -18;
   // POWER는 읽기 자체를 대신하지 않는다. 정확히 읽었을 때만 큰 PQ를 얻는다.
   const modifierPQ = modifier === "smash" && preciseRead ? 20 : modifier === "contact" ? -24 : 0;
-  const pq = clamp(46 + readPQ + modifierPQ + (mastered ? 8 : -8) + (covered ? -18 : 0) + (variance() - 0.5) * 30, 0, 110);
+  const pq = clamp(46 + readPQ + modifierPQ + (mastered ? 8 + upgrade * 2 : -8) + (covered ? -18 : 0) + (variance() - 0.5) * 30, 0, 110);
 
   if (variance() < clamp(0.50 - cq * 0.003, 0.16, 0.48)) return { outcome: "out", cq, pq, power: pq / 100 };
   if (pq >= 82 && variance() < clamp((pq - 70) / 165, 0.03, 0.25)) return { outcome: "homerun", cq, pq, power: pq / 100 };
