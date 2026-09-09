@@ -1,5 +1,9 @@
 # 9ZONE SHOWDOWN — Codex 인수인계
 
+## 최우선: DUGOUT 카드 덱빌딩 ACT 0
+
+아래 LAST LIGHT 지침보다 [docs/DUEL.md](./docs/DUEL.md)가 우선한다. 현행 진입점은 src/main.jsx → src/duel/App.jsx. 공개 확정 의도를 행동력 3과 여러 카드 연계로 해결한다. 투수 1명/12카드/4전투/3보상, 새 도트 구장/캐릭터. 코스 격자와 접촉 확률은 없다. 최신 변경은 src/duel에 통합하고 이전 구조로 되돌리지 않는다. 아래는 역사 기록이다.
+
 ## 최우선: LAST LIGHT 제로베이스 재설계
 
 사용자가 기존 버전 개선을 거절하고 처음부터 다시 만들도록 요청했다. **현행 진입점은 `src/main.jsx → src/reboot/App.jsx`이고 상세 인수인계는 `docs/REBOOT.md`다.** 아래 NIGHT RUN·CORE TEST 절은 역사 자료이며 현재 앱의 구현 지시로 사용하지 않는다.

@@ -1,4 +1,18 @@
-# 9ZONE — LAST LIGHT
+# 9ZONE — DUGOUT
+
+## 최신 기본 게임: DUGOUT / ACT 0
+
+현행 진입점은 `src/duel/App.jsx`. 최신 설계·검증·다음 작업은 **[docs/DUEL.md](./docs/DUEL.md)**. 아래 LAST LIGHT/NIGHT RUN 절은 역사 자료다.
+
+공개된 투수 의도를 보고 행동력 3으로 여러 카드를 연계한다. 새 런 → 승부 시작 → 카드 선택 → 다시 클릭 또는 ‘카드 사용’ → 턴 종료. 첫 보상에서 직구 유도를 골라 ‘볼 골라내기 → 직구 유도 → 풀스윙’을 시도할 수 있다.
+
+투수 1명 / 카드 12종 / 전투 4회 / 카드 보상 3회 / 자동 저장·이어하기. 새 도트 구장과 캐릭터 각 3포즈, 상단 ♪ OFF로 효과음 켜기. **30분 완성 게임이나 120고유 프레임이 아닌 카드 전투 검증판**이다. 기존 앱·자산·저장은 보존했다.
+
+실행: `npm install` → `npm run dev`. 검사: `npm test`, `npm run build`. 전체 51개 테스트 통과. 새 생성 자산과 프롬프트는 [assets/duel/README.md](./assets/duel/README.md).
+
+GitHub Pages: main에 올리면 기존 워크플로가 검사·빌드·배포한다. 저장소 Settings → Pages → Source가 GitHub Actions여야 한다. 배포 성공 후 주소는 https://jjsjb88-alt.github.io/9-baseball/ . 단순 소스 업로드만으로 배포 완료가 되는 것은 아니므로 Actions 결과를 확인한다.
+
+## 보존 기록 — LAST LIGHT (현재 기본 앱이 아님)
 
 ## 현재 버전: 제로베이스 재설계 (2026-09-09)
 
