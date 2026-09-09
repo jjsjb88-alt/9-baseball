@@ -53,7 +53,7 @@ describe('named batter entry and plate appearance gate',()=>{
 
   it('shows a named runner, removes attack controls, and explicitly introduces number two',()=>{
     begin();clickCard('setup');clickCard('slug');expect(screen.getByLabelText('베이스 주자').textContent).toContain('강한결');expect(screen.getByText('1번 강한결 · 타석 종료')).toBeTruthy();expect(screen.queryByRole('button',{name:'담장 넘기기',exact:true})).toBeNull();expect(screen.queryByRole('button',{name:'카드 사용'})).toBeNull();
-    fireEvent.click(screen.getByRole('button',{name:'다음 타자 입장 · 2번 이민준'}));expect(readDuel(localStorage).battle.batterIndex).toBe(1);expect(screen.getByText('2번 이민준')).toBeTruthy();expect(screen.getByRole('button',{name:'준비하기'})).toBeTruthy();
+    fireEvent.click(screen.getByRole('button',{name:'다음 타자 입장 · 2번 이민준'}));expect(readDuel(localStorage).battle.batterIndex).toBe(1);expect(screen.getByText('2번 이민준 타석 입장')).toBeTruthy();expect(screen.getByRole('button',{name:'준비하기'})).toBeTruthy();
   });
 
   it('reload at the result does not skip the batter-entry gate',()=>{
