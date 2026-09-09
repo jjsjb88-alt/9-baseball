@@ -1,50 +1,54 @@
 import {describe,it,expect} from 'vitest';
-import {createDuel,startBattle,playCard,endTurn,chooseCard,previewCard,readDuel,saveDuel,cardProblem} from '../src/duel/engine.js';
+import {createDuel,startBattle,playCard,endTurn,chooseCard,previewCard,readDuel,saveDuel,cardProblem,baseIntent} from '../src/duel/engine.js';
 import {planTurn} from '../src/duel/policy.js';
 import {SAVE_KEY} from '../src/duel/cards.js';
-const memory=()=>{const data={};return {setItem:(k,v)=>data[k]=v,getItem:k=>data[k]??null}};
-function fixture(kinds){const s=startBattle(createDuel(17));s.deck=kinds.map((kind,i)=>({id:`c${i}`,kind}));s.battle.hand=s.deck.map(c=>c.id);s.battle.draw=[];s.battle.enemyHp=100;return s;}
-describe('DUGOUT deterministic card combat',()=>{
-  it('watch → lure → slug changes intent and deals exactly 25 for 3 energy',()=>{
-    let s=fixture(['watch','lure','slug']);const original=structuredClone(s);
-    expect(cardProblem(s,'c1')).toContain('카운트');
-    s=playCard(s,'c0');expect(s.battle.count).toBe(1);expect(s.battle.block).toBe(5);
-    s=playCard(s,'c1');expect(s.battle.intent.kind).toBe('fastball');expect(s.battle.intent.attack).toBe(4);
-    const preview=previewCard(s,'c2');s=playCard(s,'c2');expect(s.last.damage).toBe(25);expect(preview.damage).toBe(25);expect(s.battle.energy).toBe(0);
-    expect(original.battle.enemyHp).toBe(100);expect(playCard(original,'c2').last.damage).toBe(12);
+const memory=()=>{const d={};return {setItem:(k,v)=>d[k]=v,getItem:k=>d[k]??null}};
+function fixture(kinds=[]){const s=startBattle(createDuel(1));kinds.forEach((kind,i)=>s.deck[i].kind=kind);s.battle.hand=s.deck.slice(0,7).map(c=>c.id);s.battle.draw=s.deck.slice(7).map(c=>c.id);return s;}
+function runner(s,id,base){for(const k of ['hand','draw','discard','bench'])s.battle[k]=s.battle[k].filter(x=>x!==id);s.battle.bases[base]=id;s.battle.intent=baseIntent(s);return s;}
+function roundtrip(s){const store=memory();saveDuel(store,s);expect(readDuel(store)).toEqual(s);const b=s.battle;if(b){const ids=[...b.hand,...b.draw,...b.discard,...b.bench,...b.bases.filter(Boolean)];expect(new Set(ids).size).toBe(s.deck.length);expect(ids.length).toBe(s.deck.length);}}
+describe('HOMEBOUND: the diamond is part of the deck',()=>{
+  it('a single removes its card from circulation and provokes a double-play trap',()=>{
+    const s=startBattle(createDuel(1)),next=playCard(s,'c0');expect(next.battle.bases[0]).toBe('c0');expect(next.battle.hand).not.toContain('c0');expect(next.battle.discard).not.toContain('c0');expect(next.battle.intent.kind).toBe('sinker');expect(s.battle.bases).toEqual([null,null,null]);roundtrip(next);
   });
-  it('card order, aim, multi hit and finisher matter',()=>{
-    let s=fixture(['setup','rally']);s=playCard(s,'c0');s=playCard(s,'c1');expect(s.last.damage).toBe(18);expect(s.battle.aim).toBe(0);
-    s=fixture(['defend','scout','finisher']);s=playCard(s,'c0');s=playCard(s,'c1');s=playCard(s,'c2');expect(s.last.damage).toBe(19);
+  it('a strong double is locked at second; pinch runner returns it without scoring',()=>{
+    let s=startBattle(createDuel(1));s=playCard(s,'c2');s=playCard(s,'c1');expect(s.battle.bases[1]).toBe('c1');expect(s.battle.runs).toBe(0);
+    s=playCard(s,'c4');expect(s.battle.bases[1]).toBe('c4');expect(s.battle.hand).toContain('c1');expect(s.battle.runs).toBe(0);expect(s.battle.strikes).toBe(1);roundtrip(s);
   });
-  it('flow requires two skills, powers exhaust and refresh block',()=>{
-    let s=fixture(['flow','defend','setup','calm']);expect(cardProblem(s,'c0')).toContain('2장');
-    s=playCard(s,'c1');s=playCard(s,'c2');s=playCard(s,'c0');expect(s.battle.energy).toBe(2);expect(s.battle.exhaust).toContain('c0');
-    s=playCard(s,'c3');s=endTurn(s);expect(s.battle.block).toBe(3);expect(s.battle.exhaust).toContain('c3');
+  it('the SAME bunt scores and returns a card with one out, but loses with two outs',()=>{
+    let s=runner(fixture(['bunt','slug']),'c1',2);s.battle.outs=1;
+    const p=previewCard(s,'c0'),next=playCard(s,'c0');expect(p.runs).toBe(1);expect(next.battle.runs).toBe(1);expect(next.battle.hand).toContain('c1');expect(next.battle.bench).toContain('c0');expect(next.battle.outs).toBe(2);roundtrip(next);
+    s.battle.outs=2;const loss=playCard(s,'c0');expect(loss.phase).toBe('lost');expect(loss.battle.runs).toBe(0);expect(loss.battle.bases[2]).toBe('c1');expect(previewCard(s,'c0').label).toContain('득점 무효');roundtrip(loss);
   });
-  it('announced attack always resolves exactly, no hit roll',()=>{
-    let s=fixture(['defend']);s.battle.block=2;const hp=s.hp;s=endTurn(s);expect(s.hp).toBe(hp-4);expect(s.last.blocked).toBe(2);expect(s.battle.energy).toBe(3);
-    s.hp=1;s.battle.block=0;s=endTurn(s);expect(s.phase).toBe('lost');expect(s.hp).toBe(0);expect(endTurn(s)).toBe(s);
+  it('double play costs two real outs and locks both cards on the bench',()=>{
+    const s=runner(fixture(['strike','slug']),'c1',0),next=playCard(s,'c0');expect(next.battle.outs).toBe(2);expect(next.battle.bases[0]).toBe(null);expect(next.battle.bench).toEqual(['c0','c1']);roundtrip(next);
   });
-  it('rejects illegal actions without mutation and preserves seeded replay',()=>{
-    const s=createDuel(99);expect(playCard(s,'c0')).toBe(s);expect(endTurn(s)).toBe(s);
-    const a=startBattle(s),b=startBattle(s);expect(a).toEqual(b);a.battle.energy=0;const id=a.battle.hand[0];expect(playCard(a,id)).toBe(a);expect(startBattle(a)).toBe(a);
+  it('intent reacts to count, but a committed lure protects a prepared swing',()=>{
+    let s=fixture(['lure','setup','slug']);s=playCard(s,'c0');s=playCard(s,'c1');expect(s.battle.strikes).toBe(2);expect(s.battle.intent.kind).toBe('fastball');expect(cardProblem(s,'c3')).toContain('2스트라이크');expect(previewCard(s,'c2').label).toBe('2루타');
+    const plain=endTurn(endTurn(fixture(['slug'])));expect(plain.battle.intent.need).toBe(4);expect(previewCard(plain,'c0').label).toBe('타자 아웃');
   });
-  it('saves every phase, conserves cards through three rewards, completes a full run',()=>{
-    let s=createDuel(42);const store=memory();let guard=0;
-    while(!['won','lost'].includes(s.phase)&&guard++<160){
-      if(s.phase==='map')s=startBattle(s);
-      else if(s.phase==='reward')s=chooseCard(s,['lure','scout','slug'][s.stage]);
-      else {const path=planTurn(s);for(const id of path)s=playCard(s,id);if(s.phase==='battle')s=endTurn(s);}
-      saveDuel(store,s);expect(readDuel(store)).toEqual(s);
-      if(s.battle&&s.phase!=='map'){const ids=['hand','draw','discard','exhaust'].flatMap(k=>s.battle[k]);expect(new Set(ids).size).toBe(s.deck.length);}
-    }
-    expect(s.phase).toBe('won');expect(s.rewards).toHaveLength(3);expect(s.deck).toHaveLength(13);expect(s.victories).toBe(4);
+  it('bases give rally its strength and returning cards go into the actual hand',()=>{
+    const s=runner(runner(fixture(['rally','slug','strike']),'c1',1),'c2',2),p=previewCard(s,'c0');expect(p.contact).toBe(4);expect(p.runs).toBe(2);
+    const next=playCard(s,'c0');expect(next.phase).toBe('reward');expect(next.battle.bases).toEqual(['c0',null,null]);expect(next.battle.hand).toEqual(expect.arrayContaining(['c1','c2']));roundtrip(next);
   });
-  it('rejects corrupted cards, duplicate piles and non-numeric combat data',()=>{
-    for(const corrupt of [s=>s.deck[0].kind='evil',s=>s.battle.hand.push(s.battle.hand[0]),s=>s.battle.intent.attack='6']){
-      const s=startBattle(createDuel(1)),store=memory();corrupt(s);saveDuel(store,s);expect(()=>readDuel(store)).toThrow();
-    }
-    const store=memory();store.setItem(SAVE_KEY,'{');expect(()=>readDuel(store)).toThrow();
+  it('steal scores without a hit; the utility card returns as the runner',()=>{
+    const s=runner(fixture(['flow','calm']),'c1',2),next=playCard(s,'c0');expect(next.battle.runs).toBe(1);expect(next.battle.hand).toContain('c1');expect(next.battle.strikes).toBe(1);expect(next.battle.turn).toBe(1);roundtrip(next);
+  });
+  it('deep defense changes the same strong swing from homer to single',()=>{
+    const s=runner(fixture(['slug','strike']),'c1',2);s.battle.aim=4;expect(previewCard(s,'c0').label).toBe('홈런');s.stage=2;s.battle.intent=baseIntent(s);expect(previewCard(s,'c0').label).toBe('단타');
+  });
+  it('homecoming respects the hand cap and never duplicates a card',()=>{
+    const s=runner(fixture(['rally','strike','slug','calm']),'c1',2);s.battle.hand.push(...s.battle.draw.splice(0,3));expect(s.battle.hand).toHaveLength(9);const next=playCard(s,'c0');expect(next.battle.hand).toHaveLength(9);roundtrip(next);
+  });
+  it('a third called strike ends the inning and illegal actions keep identity',()=>{
+    let s=startBattle(createDuel(1));for(let i=0;i<9;i++)s=endTurn(s);expect(s.phase).toBe('lost');expect(s.battle.outs).toBe(3);expect(playCard(s,'c0')).toBe(s);expect(endTurn(s)).toBe(s);roundtrip(s);
+  });
+  it('completes all innings with rewards, conserving cards at EVERY action',()=>{
+    let s=createDuel(1),guard=0;
+    while(!['won','lost'].includes(s.phase)&&guard++<160){if(s.phase==='map')s=startBattle(s);else if(s.phase==='reward')s=chooseCard(s,['flow','lure','finisher'][s.stage]);else {const id=planTurn(s)[0];s=id?playCard(s,id):endTurn(s);}roundtrip(s);}
+    expect(s.phase).toBe('won');expect(s.rewards).toHaveLength(3);expect(s.deck).toHaveLength(15);expect(s.victories).toBe(4);
+  });
+  it('rejects duplicate base cards, foreign cards, malformed saves',()=>{
+    const store=memory();for(const corrupt of [s=>s.battle.bases[0]=s.battle.hand[0],s=>s.deck[0].kind='unknown',s=>s.battle.strikes=-1]){const s=startBattle(createDuel(1));corrupt(s);saveDuel(store,s);expect(()=>readDuel(store)).toThrow();}
+    store.setItem(SAVE_KEY,'{');expect(()=>readDuel(store)).toThrow();
   });
 });

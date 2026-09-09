@@ -1,23 +1,12 @@
-import {playCard,cardProblem} from './engine.js';
-// Bounded, deterministic QA policy. Uses the real engine; not a fun predictor.
+import {playCard,endTurn,cardProblem} from './engine.js';
+// Functional reachability only. Search sees future draws; it does not model human fun or skill.
 export function planTurn(state){
   if(state.phase!=='battle')return [];
-  const start=state.battle;
-  const score=s=>s.phase==='reward'||s.phase==='won'?10000+s.hp:
-    (start.enemyHp-s.battle.enemyHp)+Math.min(start.enemyBlock,s.battle.enemyBlock===0?start.enemyBlock:0)*.25
-    -Math.max(0,s.battle.intent.attack-s.battle.block)*1.25+s.battle.aim*1.1+s.battle.count*.5+s.battle.calm*4;
-  let best={s:state,path:[],score:score(state)},beam=[best];
-  for(let depth=0;depth<8;depth++){
-    const next=[];
-    for(const node of beam){if(node.s.phase!=='battle')continue;
-      const seen=new Set();
-      for(const id of node.s.battle.hand){const kind=node.s.deck.find(c=>c.id===id).kind;
-        if(seen.has(kind)||cardProblem(node.s,id))continue;seen.add(kind);
-        const s=playCard(node.s,id),item={s,path:[...node.path,id],score:score(s)};next.push(item);
-        if(item.score>best.score)best=item;
-      }
-    }
-    beam=next.sort((a,b)=>b.score-a.score).slice(0,20);if(!beam.length)break;
+  const score=s=>(s.phase==='reward'||s.phase==='won'?10000:0)+(s.battle.runs-state.battle.runs)*100-(s.battle.outs-state.battle.outs)*40+s.battle.bases.reduce((v,id,i)=>v+(id?8+i*6:0),0)+(s.battle.hand.length-state.battle.hand.length)*.2;
+  let best={s:state,path:[],score:-Infinity},beam=[{s:state,path:[]}];
+  for(let d=0;d<5;d++){const next=[];for(const n of beam){if(n.s.phase!=='battle')continue;
+    for(const id of [...n.s.battle.hand.filter(id=>!cardProblem(n.s,id)),null]){const s=id?playCard(n.s,id):endTurn(n.s),item={s,path:[...n.path,id],score:score(s)};next.push(item);if(item.score>best.score)best=item;}}
+    beam=next.sort((a,b)=>b.score-a.score).slice(0,24);
   }
-  return best.path;
+  return best.path.slice(0,1);
 }
