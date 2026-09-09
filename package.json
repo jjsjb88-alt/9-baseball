@@ -1,7 +1,7 @@
 {
   "name": "9zone-showdown",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:policy": "node scripts/policy-bot-report.js",
+    "report:last-light": "node scripts/last-light-report.js 300",
     "report:core-test": "node scripts/core-test-report.js"
   },
   "dependencies": {

@@ -1,10 +1,9 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import BaseballSim from "../BaseballSim-deck-5.jsx";
-import "./styles.css";
+import LastLight from "./reboot/App.jsx";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <BaseballSim />
+    <LastLight />
   </React.StrictMode>,
 );
