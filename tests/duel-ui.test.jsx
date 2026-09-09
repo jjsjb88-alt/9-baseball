@@ -8,11 +8,30 @@ import {planTurn} from '../src/duel/policy.js';
 import {CARDS} from '../src/duel/cards.js';
 beforeEach(()=>{localStorage.clear();vi.useFakeTimers()});afterEach(()=>{cleanup();vi.useRealTimers()});
 const finish=()=>act(()=>vi.runAllTimers());
-function clickCard(kind){fireEvent.click(screen.getAllByRole('button',{name:CARDS[kind].name,exact:true})[0]);fireEvent.click(screen.getByRole('button',{name:'카드 사용'}));finish();}
+function clickCard(kind){
+  const action=CARDS[kind].type==='skill'?/준비하기/:/스윙하기/;
+  fireEvent.click(screen.getByRole('button',{name:action}));
+  fireEvent.click(screen.getAllByRole('button',{name:CARDS[kind].name,exact:true})[0]);
+  fireEvent.click(screen.getByRole('button',{name:'카드 사용'}));
+  finish();
+}
 function begin(){saveDuel(localStorage,createDuel(1));render(<Duel/>);fireEvent.click(screen.getByRole('button',{name:'이어하기'}));fireEvent.click(screen.getByRole('button',{name:'승부 시작'}));}
 describe('named batter entry and plate appearance gate',()=>{
+  it('starts from baseball context and reveals only the requested card family',()=>{
+    begin();
+    expect(screen.getByLabelText('야구 전광판')).toBeTruthy();
+    expect(screen.getByLabelText('이번 타석 행동 선택')).toBeTruthy();
+    expect(screen.queryByRole('button',{name:'타이밍 맞추기',exact:true})).toBeNull();
+    fireEvent.click(screen.getByRole('button',{name:/준비하기/}));
+    expect(screen.getByRole('button',{name:'타이밍 맞추기',exact:true})).toBeTruthy();
+    expect(screen.queryByRole('button',{name:'밀어치기',exact:true})).toBeNull();
+    fireEvent.click(screen.getByRole('button',{name:'← 상황으로'}));
+    fireEvent.click(screen.getByRole('button',{name:/스윙하기/}));
+    expect(screen.getByRole('button',{name:'밀어치기',exact:true})).toBeTruthy();
+    expect(screen.queryByRole('button',{name:'타이밍 맞추기',exact:true})).toBeNull();
+  });
   it('shows a named runner, removes attack controls, and explicitly introduces number two',()=>{
-    begin();clickCard('setup');clickCard('slug');expect(screen.getByLabelText('베이스 주자').textContent).toContain('강한결');expect(screen.getByText('1번 강한결 · 타석 종료')).toBeTruthy();expect(screen.queryByRole('button',{name:'밀어치기',exact:true})).toBeNull();expect(screen.getByRole('button',{name:/한 구 지켜보기/}).disabled).toBe(true);
+    begin();clickCard('setup');clickCard('slug');expect(screen.getByLabelText('베이스 주자').textContent).toContain('강한결');expect(screen.getByText('1번 강한결 · 타석 종료')).toBeTruthy();expect(screen.queryByRole('button',{name:'밀어치기',exact:true})).toBeNull();expect(screen.queryByRole('button',{name:/한 구 지켜보기/})).toBeNull();
     fireEvent.click(screen.getByRole('button',{name:'다음 타자 입장 · 2번 이민준'}));expect(readDuel(localStorage).battle.batterIndex).toBe(1);expect(screen.getByText('2번 이민준 타석 입장')).toBeTruthy();
   });
   it('reload at the result does not skip the batter-entry gate',()=>{
