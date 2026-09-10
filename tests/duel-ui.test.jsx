@@ -20,22 +20,40 @@ function clickCard(kind){
   finish();
 }
 function begin(){saveDuel(localStorage,createDuel(1));render(<Duel/>);fireEvent.click(screen.getByRole('button',{name:'이어하기'}));fireEvent.click(screen.getByRole('button',{name:'승부 시작'}));dismissTour();}
+function spotlightTarget(){return document.querySelector('.tour-spotlight')?.dataset.tourTarget;}
 
 describe('named batter entry and plate appearance gate',()=>{
-  it('shows a welcome guide on the first battle and remembers dismissal',()=>{
+  it('spotlights each welcome target in sequence and remembers dismissal',()=>{
     saveDuel(localStorage,createDuel(1));render(<Duel/>);
     fireEvent.click(screen.getByRole('button',{name:'이어하기'}));
     fireEvent.click(screen.getByRole('button',{name:'승부 시작'}));
     expect(screen.getByRole('dialog',{name:'온보딩 가이드'})).toBeTruthy();
     expect(screen.getByText('먼저 전광판을 봅니다')).toBeTruthy();
+    expect(spotlightTarget()).toBe('scoreboard');
+
     fireEvent.click(screen.getByRole('button',{name:'다음 설명'}));
-    expect(screen.getByText('가운데는 투수와 주자 상황입니다')).toBeTruthy();
+    expect(screen.getByText('가운데는 승부 상황입니다')).toBeTruthy();
+    expect(spotlightTarget()).toBe('arena');
+
     fireEvent.click(screen.getByRole('button',{name:'다음 설명'}));
-    expect(screen.getByText('행동은 세 가지만 기억하면 됩니다')).toBeTruthy();
+    expect(screen.getByText('첫 번째 행동 · 준비하기')).toBeTruthy();
+    expect(spotlightTarget()).toBe('prepare');
+
     fireEvent.click(screen.getByRole('button',{name:'다음 설명'}));
-    expect(screen.getByText('마지막은 결과 확인과 다음 타자입니다')).toBeTruthy();
+    expect(screen.getByText('두 번째 행동 · 스윙하기')).toBeTruthy();
+    expect(spotlightTarget()).toBe('swing');
+
+    fireEvent.click(screen.getByRole('button',{name:'다음 설명'}));
+    expect(screen.getByText('세 번째 행동 · 한 구 지켜보기')).toBeTruthy();
+    expect(spotlightTarget()).toBe('watch');
+
+    fireEvent.click(screen.getByRole('button',{name:'다음 설명'}));
+    expect(screen.getByText('마지막은 결과를 확인합니다')).toBeTruthy();
+    expect(spotlightTarget()).toBe('events');
+
     fireEvent.click(screen.getByRole('button',{name:'바로 플레이 시작'}));
     expect(screen.getByRole('button',{name:'준비하기'})).toBeTruthy();
+    expect(document.querySelector('.tour-spotlight')).toBeNull();
     cleanup();render(<Duel/>);fireEvent.click(screen.getByRole('button',{name:'이어하기'}));
     expect(screen.queryByRole('dialog',{name:'온보딩 가이드'})).toBeNull();
   });
