@@ -1,53 +1,113 @@
 import {describe,it,expect} from 'vitest';
-import {createDuel,startBattle,playCard,endTurn,chooseCard,previewCard,readDuel,saveDuel,cardProblem,baseIntent,advanceBatter,currentBatter} from '../src/duel/engine.js';
-import {planTurn} from '../src/duel/policy.js';
-import {SAVE_KEY,LINEUP} from '../src/duel/cards.js';
+import {createDuel,startBattle,playCard,endTurn,chooseCard,previewCard,readDuel,saveDuel,cardProblem,baseIntent,advanceBatter,currentBatter,advancePitch,setAimZone,coverage,swingOdds,hitProfile,publicProbabilities,setGrowthMode} from '../src/duel/engine.js';
+import {planAction} from '../src/duel/policy.js';
+import {SAVE_KEY,LINEUP,CARDS,BUILDS} from '../src/duel/cards.js';
 const memory=()=>{const d={};return {setItem:(k,v)=>d[k]=v,getItem:k=>d[k]??null}};
-function fixture(kinds=[]){const s=startBattle(createDuel(1));kinds.forEach((kind,i)=>s.deck[i].kind=kind);s.battle.hand=s.deck.slice(0,7).map(c=>c.id);s.battle.draw=s.deck.slice(7).map(c=>c.id);return s;}
-function runner(s,id,base){s.battle.bases[base]=id;s.battle.intent=baseIntent(s);return s;}
+function fixture(kind='strike',build='away'){const s=startBattle(createDuel(1,build));s.deck[0].kind=kind;return s;}
+function pitch(s,zone,roll=.5,powerRoll=.95){s.battle.pending={zone,roll,powerRoll};return s;}
 function roundtrip(s){const store=memory();saveDuel(store,s);expect(readDuel(store)).toEqual(s);if(s.battle){const b=s.battle,ids=[...b.hand,...b.draw,...b.discard];expect(ids).toHaveLength(s.deck.length);expect(new Set(ids).size).toBe(s.deck.length);expect(b.bases.filter(Boolean).every(id=>LINEUP.some(p=>p.id===id))).toBe(true);}}
-describe('one player, one plate appearance; cards are actions',()=>{
-  it('a hit puts the named batter on base and the action card in discard',()=>{
-    const s=startBattle(createDuel(1)),next=playCard(s,'c0');expect(next.battle.bases[0]).toBe('p1');expect(next.battle.discard).toContain('c0');expect(next.phase).toBe('between');expect(next.battle.turn).toBe(1);expect(currentBatter(next).name).toBe('강한결');roundtrip(next);
+describe('9-zone read success is guaranteed; stats only choose hit type',()=>{
+  it('every covered zone, swing, build and random roll is a hit, including BASIC',()=>{
+    for(const build of Object.keys(BUILDS))for(const kind of ['basic',...Object.keys(CARDS).filter(k=>CARDS[k].type==='attack'&&k!=='bunt')]){
+      let s=fixture(kind==='basic'?'strike':kind,build);const id=kind==='basic'?'basic':'c0';
+      for(let aim=0;aim<9;aim++){s=setAimZone(s,aim);for(const z of coverage(s,id))for(const roll of [0,.25,.6,.999999]){
+        const n=playCard(pitch(s,z,roll),'basic'===kind?'basic':'c0');expect(n.stats.hits).toBe(1);expect(n.stats.outs).toBe(0);expect(n.stats.appearances).toBe(1);
+      }}
+    }
   });
-  it('rejects every action after ONE swing until explicit next batter entry',()=>{
-    const s=playCard(startBattle(createDuel(1)),'c0'),before=structuredClone(s);expect(playCard(s,'c1')).toBe(s);expect(endTurn(s)).toBe(s);expect(cardProblem(s,'c1')).toContain('타석이 끝났습니다');expect(s).toEqual(before);
-    const next=advanceBatter(s);expect(currentBatter(next).id).toBe('p2');expect(next.battle.turn).toBe(2);expect(next.phase).toBe('battle');expect(advanceBatter(next)).toBe(next);roundtrip(next);
+  it('a named batter reaches base; used card is discarded and no second swing is allowed',()=>{
+    const s=playCard(pitch(fixture(),5),'c0');expect(s.battle.bases[0]).toBe('p1');expect(s.battle.discard).toContain('c0');expect(s.phase).toBe('between');
+    expect(playCard(s,'c1')).toBe(s);expect(endTurn(s)).toBe(s);expect(advancePitch(s)).toBe(s);roundtrip(s);
+    const n=advanceBatter(s);expect(currentBatter(n).id).toBe('p2');expect(n.battle.balls).toBe(0);expect(advanceBatter(n)).toBe(n);roundtrip(n);
   });
-  it('two preparation cards are not two pitches or swings',()=>{
-    let s=fixture(['setup','scout','slug']);s=playCard(s,'c0');s=playCard(s,'c1');expect(s.battle.preparations).toBe(2);expect(s.battle.strikes).toBe(0);expect(s.stats.pitches).toBe(0);expect(cardProblem(s,'c3')).toContain('준비 2회');
-    s=playCard(s,'c2');expect(s.stats.pitches).toBe(1);expect(s.stats.appearances).toBe(1);expect(s.battle.runs).toBe(1);expect(s.battle.discard).toContain('c2');expect(s.battle.bases).toEqual([null,null,null]);roundtrip(s);
+  it('power and technique change hit mix, not hit guarantee',()=>{
+    const s=setAimZone(fixture('slug','pull'),3),profile=hitProfile(s,'c0',3);
+    expect(profile.reduce((a,t)=>a+t.p,0)).toBeCloseTo(1);
+    const weak=structuredClone(s);weak.build='contact';
+    expect(profile[0].p).toBeGreaterThan(hitProfile(weak,'c0',3)[0].p);
+    const strongerPitcher=structuredClone(s);strongerPitcher.stage=3;
+    expect(profile[0].p).toBeGreaterThan(hitProfile(strongerPitcher,'c0',3)[0].p);
+    const labels=new Set();
+    let offset=0;for(const t of profile){if(t.p>0){const n=playCard(pitch(s,3,.999,offset+t.p/2),'c0');labels.add(n.battle.revealed.label);expect(n.stats.hits).toBe(1);}offset+=t.p;}
+    expect(labels).toContain('홈런');expect(labels).toContain('땅볼 안타');expect(labels).toContain('중전안타');expect(labels).toContain('바가지 안타 · 행운의 단타');
   });
-  it('a double is a player at second, not a locked attack card',()=>{
-    let s=startBattle(createDuel(1));s=playCard(s,'c2');s=playCard(s,'c1');expect(s.battle.bases[1]).toBe('p1');expect(s.battle.discard).toContain('c1');expect(s.battle.bases).not.toContain('c1');expect(s.battle.runs).toBe(0);roundtrip(s);
+  it('expanded coverage guarantees hits but reduces extra-base power',()=>{
+    const s=setAimZone(fixture('slug','pull'),3);const normal=hitProfile(s,'c0',3)[0].p;
+    s.battle.expanded=true;expect(coverage(s,'c0').length).toBeGreaterThan(1);expect(hitProfile(s,'c0',3)[0].p).toBeLessThan(normal);
+    for(const z of coverage(s,'c0'))expect(playCard(pitch(s,z,.99),'c0').stats.hits).toBe(1);
   });
-  it('the same sacrifice scores at one out but never on the third out',()=>{
-    const s=runner(fixture(['bunt']),'p8',2);s.battle.outs=1;const next=playCard(s,'c0');expect(next.battle.runs).toBe(1);expect(next.phase).toBe('between');expect(next.battle.discard).toContain('c0');expect(next.battle.hand).not.toContain('p8');roundtrip(next);
-    s.battle.outs=2;const lost=playCard(s,'c0');expect(lost.phase).toBe('lost');expect(lost.battle.runs).toBe(0);expect(lost.battle.bases[2]).toBe('p8');roundtrip(lost);
+  it('preview uses public odds, cannot reveal hidden pitch or consume random numbers',()=>{
+    const s=fixture(),before=structuredClone(s),a=previewCard(s,'c0');pitch(s,0,0,0);const b=previewCard(s,'c0');expect(a).toEqual(b);
+    expect(s.seed).toBe(before.seed);expect(s.pitchSeed).toBe(before.pitchSeed);expect(a.hit).toBeCloseTo(coverage(s,'c0').reduce((v,z)=>v+s.battle.intent.probabilities[z],0));expect(a.bases).toBeUndefined();
   });
-  it('double play removes a real runner without deleting action cards',()=>{
-    const s=runner(fixture(['strike']),'p8',0),next=playCard(s,'c0');expect(next.battle.outs).toBe(2);expect(next.battle.bases[0]).toBe(null);expect(next.battle.discard).toContain('c0');expect(next.last.events.join(' ')).toContain('오하준');roundtrip(next);
+  it('same seed starts all builds against same pitcher; choosing aim or drawing cannot reroll',()=>{
+    const starts=Object.keys(BUILDS).map(k=>startBattle(createDuel(37,k)));
+    expect(starts[0].battle.pending).toEqual(starts[1].battle.pending);expect(starts[1].battle.pending).toEqual(starts[2].battle.pending);
+    let s=fixture('watch');const pending=structuredClone(s.battle.pending);s=setAimZone(s,8);s=playCard(s,'c0');expect(s.battle.pending).toEqual(pending);expect(s.stats.pitches).toBe(0);roundtrip(s);
   });
-  it('hit-and-run signs do not move a player before a pitch is resolved',()=>{
-    let s=runner(fixture(['flow','rally']),'p8',0);s=playCard(s,'c0');expect(s.battle.bases[0]).toBe('p8');expect(s.stats.pitches).toBe(0);expect(s.battle.runSignal).toBe(true);s=playCard(s,'c1');expect(s.battle.runs).toBe(1);expect(s.battle.bases[0]).toBe('p1');roundtrip(s);
+  it('scouting reveals only height/ball and conditions public probabilities',()=>{
+    const s=pitch(fixture('scout'),8),n=playCard(s,'c0');const p=publicProbabilities(n);
+    expect(p.slice(0,6)).toEqual([0,0,0,0,0,0]);expect(p[9]).toBe(0);expect(p[6]).toBeGreaterThan(0);expect(p[7]).toBeGreaterThan(0);expect(p[8]).toBeGreaterThan(0);expect(p.reduce((a,v)=>a+v,0)).toBeCloseTo(1);roundtrip(n);
   });
-  it('scoring returns a person to the dugout, not a card to the hand',()=>{
-    const s=runner(runner(fixture(['rally']),'p8',1),'p9',2),next=playCard(s,'c0');expect(next.phase).toBe('reward');expect(next.battle.runs).toBe(2);expect(next.battle.bases).toEqual(['p1',null,null]);expect(next.battle.hand).not.toContain('p8');roundtrip(next);
+  it('two preparations do not consume pitches, and a third is rejected even at two strikes',()=>{
+    let s=fixture('setup');s.deck[1].kind='calm';s.deck[2].kind='watch';s.battle.strikes=2;
+    s=playCard(s,'c0');s=playCard(s,'c1');expect(s.battle.preparations).toBe(2);expect(s.stats.pitches).toBe(0);expect(cardProblem(s,'c2')).toContain('준비 2회');roundtrip(s);
   });
-  it('third called strike also waits for the next batter and resets only on entry',()=>{
-    let s=startBattle(createDuel(1));for(let i=0;i<3;i++)s=endTurn(s);expect(s.phase).toBe('between');expect(s.battle.strikes).toBe(3);expect(currentBatter(s).id).toBe('p1');expect(endTurn(s)).toBe(s);roundtrip(s);s=advanceBatter(s);expect(s.battle.strikes).toBe(0);expect(currentBatter(s).id).toBe('p2');roundtrip(s);
+  it('whiff continues same batter with persisted reveal gate',()=>{
+    const s=playCard(pitch(fixture('slug'),0,.99),'c0');expect(s.phase).toBe('pitch');expect(s.battle.strikes).toBe(1);expect(s.stats.appearances).toBe(0);
+    expect(playCard(s,'basic')).toBe(s);expect(setAimZone(s,0)).toBe(s);roundtrip(s);
+    const n=advancePitch(s);expect(currentBatter(n).id).toBe('p1');expect(n.phase).toBe('battle');expect(n.battle.pending).not.toBeNull();expect(n.battle.revealed).toBeNull();roundtrip(n);
   });
-  it('same swing kind on successive appearances belongs to different players',()=>{
-    let s=fixture(['strike','strike','setup']);s=playCard(s,'c0');expect(s.battle.bases[0]).toBe('p1');s=advanceBatter(s);s=playCard(s,'c2');s=playCard(s,'c1');expect(s.battle.bases).toEqual(['p2','p1',null]);expect(s.battle.results.map(r=>r.batterId)).toEqual(['p1','p2']);roundtrip(s);
+  it('ordinary two-strike foul survives, bunt two-strike foul strikes out',()=>{
+    const s=pitch(fixture('slug'),0,0);s.battle.strikes=2;const n=playCard(s,'c0');expect(n.battle.strikes).toBe(2);expect(n.phase).toBe('pitch');expect(n.stats.fouls).toBe(1);roundtrip(n);
+    const bunt=pitch(fixture('bunt'),4,0);bunt.battle.strikes=2;const out=playCard(bunt,'c0');expect(out.phase).toBe('between');expect(out.battle.outs).toBe(1);expect(out.battle.revealed.label).toBe('번트 파울 삼진');roundtrip(out);
   });
-  it('lineup wraps from ninth to first instead of inventing a tenth batter',()=>{
-    const s=fixture(['strike']);s.battle.batterIndex=8;s.battle.turn=9;const hit=playCard(s,'c0');expect(hit.battle.bases[0]).toBe('p9');const next=advanceBatter(hit);expect(currentBatter(next).id).toBe('p1');expect(next.battle.turn).toBe(10);roundtrip(next);
+  it('three called strikes end one PA; all balls count as balls',()=>{
+    let s=fixture();for(let i=0;i<3;i++){s=endTurn(pitch(s,4));if(i<2)s=advancePitch(s);}
+    expect(s.battle.strikes).toBe(3);expect(s.battle.outs).toBe(1);expect(s.stats.appearances).toBe(1);expect(s.phase).toBe('between');roundtrip(s);
+    const ball=endTurn(pitch(fixture(),9));expect(ball.battle.balls).toBe(1);expect(ball.battle.strikes).toBe(0);roundtrip(ball);
   });
-  it('all innings, transitions and rewards conserve separate cards and players',()=>{
-    let s=createDuel(1),guard=0;while(!['won','lost'].includes(s.phase)&&guard++<200){if(s.phase==='map')s=startBattle(s);else if(s.phase==='between')s=advanceBatter(s);else if(s.phase==='reward')s=chooseCard(s,['flow','lure','finisher'][s.stage]);else {const id=planTurn(s)[0];s=id?playCard(s,id):endTurn(s);}roundtrip(s);}
-    expect(s.phase).toBe('won');expect(s.rewards).toHaveLength(3);expect(s.stats.appearances).toBeGreaterThan(4);
+  it('walk forces only connected runners, and bases-loaded walk scores exactly one',()=>{
+    for(const bases of [[null,'p8','p9'],['p7',null,'p9'],['p7','p8','p9']]){
+      let s=fixture();s.battle.bases=[...bases];for(let i=0;i<4;i++){s=endTurn(pitch(s,9));if(i<3)s=advancePitch(s);}
+      expect(s.stats.walks).toBe(1);expect(s.battle.bases[0]).toBe('p1');expect(s.battle.runs).toBe(bases.every(Boolean)?1:0);expect(s.battle.bases[2]).toBe(bases.every(Boolean)?'p8':'p9');roundtrip(s);
+    }
   });
-  it('rejects mixed card/player zones, duplicate players, and v2 data',()=>{
-    const store=memory();for(const corrupt of [s=>s.battle.bases[0]='c0',s=>s.battle.hand.push('p1'),s=>s.battle.bases=['p8','p8',null],s=>s.version=2]){const s=startBattle(createDuel(1));corrupt(s);saveDuel(store,s);expect(()=>readDuel(store)).toThrow();}store.setItem(SAVE_KEY,'{');expect(()=>readDuel(store)).toThrow();
+  it('third-out sacrifice never advances runners or scores',()=>{
+    const s=pitch(fixture('bunt'),4,.5);s.battle.outs=2;s.battle.bases[2]='p9';
+    const n=playCard(s,'c0');expect(n.phase).toBe('lost');expect(n.stats.runs).toBe(0);expect(n.battle.bases[2]).toBe('p9');roundtrip(n);
+  });
+  it('BASIC works with empty hand and guarantees single on the selected zone',()=>{
+    const s=fixture();s.battle.discard.push(...s.battle.hand);s.battle.hand=[];
+    const n=playCard(pitch(s,s.battle.aimZone),'basic');expect(n.battle.bases[0]).toBe('p1');expect(n.stats.cards).toBe(0);expect(n.stats.hits).toBe(1);roundtrip(n);
+  });
+  it('hit and run moves players only on the subsequent hit',()=>{
+    let s=fixture('flow');s.deck[1].kind='rally';s.battle.bases[0]='p8';s=playCard(s,'c0');expect(s.battle.bases[0]).toBe('p8');
+    s=playCard(pitch(s,s.battle.aimZone),'c1');expect(s.battle.runs).toBe(1);expect(s.battle.bases[0]).toBe('p1');roundtrip(s);
+  });
+  it('ninth batter wraps to first after confirmed PA',()=>{
+    const s=fixture();s.battle.batterIndex=8;s.battle.turn=9;const hit=playCard(pitch(s,5),'c0');expect(hit.battle.bases[0]).toBe('p9');const next=advanceBatter(hit);expect(currentBatter(next).id).toBe('p1');expect(next.battle.turn).toBe(10);roundtrip(next);
+  });
+  it('public bot cannot see hidden pitches; entire runs conserve players/cards and terminate',()=>{
+    const a=fixture(),b=structuredClone(a);pitch(a,0,.1);pitch(b,8,.99);expect(planAction(a)).toEqual(planAction(b));
+    const phases=new Set();let won=0;
+    for(const build of Object.keys(BUILDS))for(let seed=1;seed<=10;seed++){
+      let s=createDuel(seed,build),guard=0;
+      while(!['won','lost'].includes(s.phase)&&guard++<1000){
+        phases.add(s.phase);
+        if(s.phase==='map')s=startBattle(s);else if(s.phase==='between')s=advanceBatter(s);else if(s.phase==='pitch')s=advancePitch(s);else if(s.phase==='reward')s=chooseCard(s,['flow','lure','finisher'][s.stage],['patience','relay','fortune'][s.stage]);
+        else{const a=planAction(s);s=setGrowthMode(setAimZone(s,a.zone),a.mode);s=a.id?playCard(s,a.id):endTurn(s);}
+        roundtrip(s);
+      }
+      expect(guard).toBeLessThan(1000);if(s.phase==='won')won++;
+    }
+    expect(won).toBeGreaterThan(0);expect([...phases]).toEqual(expect.arrayContaining(['map','battle','pitch','between','reward']));
+  });
+  it('saves preserve pending pitch and reject old, mixed, and corrupt state',()=>{
+    roundtrip(fixture());const store=memory();
+    for(const corrupt of [s=>s.battle.bases[0]='c0',s=>s.battle.hand.push('p1'),s=>s.battle.bases=['p8','p8',null],s=>s.version=3,s=>s.battle.pending.zone=10,s=>s.battle.pending.roll=NaN,s=>s.battle.balls=4]){
+      const s=fixture();corrupt(s);saveDuel(store,s);expect(()=>readDuel(store)).toThrow();
+    }
+    store.setItem(SAVE_KEY,'{');expect(()=>readDuel(store)).toThrow();
   });
 });
