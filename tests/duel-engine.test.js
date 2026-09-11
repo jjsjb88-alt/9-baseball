@@ -102,7 +102,9 @@ describe('9-zone read success is guaranteed; stats only choose hit type',()=>{
       expect(guard).toBeLessThan(1000);if(s.phase==='won')won++;
     }
     expect(won).toBeGreaterThan(0);expect([...phases]).toEqual(expect.arrayContaining(['map','battle','pitch','between','reward']));
-  });
+  // Thirty full runs with per-action save validation need headroom on shared CI runners.
+  // Keep every seed, invariant, and the per-run termination guard intact.
+  },30000);
   it('saves preserve pending pitch and reject old, mixed, and corrupt state',()=>{
     roundtrip(fixture());const store=memory();
     for(const corrupt of [s=>s.battle.bases[0]='c0',s=>s.battle.hand.push('p1'),s=>s.battle.bases=['p8','p8',null],s=>s.version=3,s=>s.battle.pending.zone=10,s=>s.battle.pending.roll=NaN,s=>s.battle.balls=4]){
