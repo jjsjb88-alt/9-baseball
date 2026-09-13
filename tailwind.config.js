@@ -1,5 +1,5 @@
 export default {
-  content: ["./index.html", "./src/**/*.{js,jsx}", "./BaseballSim-deck-5.jsx"],
+  content: ["./index.html", "./src/**/*.{js,jsx}"],
   theme: { extend: {} },
   plugins: [],
 };
