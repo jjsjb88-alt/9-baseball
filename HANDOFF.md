@@ -1,6 +1,28 @@
 # 9ZONE SHOWDOWN — Codex 인수인계
 
-## 최우선 인수인계: v8.8 · 2026-09-13
+## 최우선 인수인계: v8.9 · 2026-09-13
+
+읽는 순서: `docs/feedback/INBOX.md` 전체 → `docs/STATUS.md` v8.9 절. 아래 v8.8 절은
+직전 이력이고, v8.7 이하는 아카이브에 있다.
+
+INBOX 5번의 문서 아카이브를 완료했다. `HANDOFF.md`는 최신 인수인계 2개,
+`README.md`는 최신 제품 안내 2개만 남겼다. 이전 내용은 각각
+[`docs/history/HANDOFF-archive.md`](./docs/history/HANDOFF-archive.md)와
+[`docs/history/README-archive.md`](./docs/history/README-archive.md)로 옮겼다.
+
+본문 축소와 아카이브 생성은 `734a99f`에 체크포인트로 남겼다. 이동한 본문을 Git 원문과
+대조했고 새 위치 기준 상대 링크가 모두 존재함을 확인했다. 본문 H2는 각각 2개이며
+`git diff --check`가 통과했다. 현재 환경에는 브라우저가 없어 Markdown 렌더링 화면은
+확인하지 못했고, 본문 전체와 아카이브 시작·끝을 직접 읽어 경계를 확인했다.
+
+다음 세션은 INBOX 6번의 접근성 점검 한 건만 진행한다. 고칠 수 있는 발견만 구현하고,
+나머지는 `docs/STATUS.md`에 미검증 또는 후속 작업으로 남긴다.
+
+`deckbuilding-v8` 브랜치에 있으며 **push·배포하지 않았다.** `loop/PROMPT.md`가 푸시를 금지한다.
+
+---
+
+## 과거 v8.8 인수인계 · 2026-09-13
 
 읽는 순서: `docs/feedback/INBOX.md` 전체 → `docs/STATUS.md` v8.8 절. 아래 v8.7 절과 그
 이하는 역사다.
@@ -22,27 +44,4 @@ ignore 규칙을 `4bfb400`에서 제거했다. Git 이력으로 복구 가능하
 
 ---
 
-## 과거 v8.7 인수인계 · 2026-09-13
-
-읽는 순서: `docs/feedback/INBOX.md` 전체 → `docs/STATUS.md` v8.7 절. 아래 v8.6 절과 그
-이하는 역사다.
-
-INBOX 4번 중 `BaseballSim-deck-5.jsx` 단일 파일 세대를 완료했다. 삭제 전 `src/main.jsx`에서
-시작한 현행 그래프가 `src/duel` 내부와 `assets/duel`로만 이어지는 것을 다시 확인했다. 단일 파일과
-이를 직접 렌더링하던 UI 검사 2개, 전용 경기장 이미지·36개 프레임, Tailwind 경로, `tone` 의존성을
-`2850d35`에서 제거했다. Git 이력으로 복구 가능하며 `src/game` 로직과 단위 검사는 건드리지 않았다.
-
-삭제 후 현행 코드·검사·설정의 관련 참조는 0건이다. 설치된 Vitest 직접 실행 10파일·107개,
-설치된 Vite 직접 빌드, `git diff --check`가 통과했다. `pnpm test`는 코드 실행 전에 기존
-`node_modules`와 현재 pnpm 저장소 위치가 다르다며 비대화형 재설치를 중단해 재시도하지 않았다.
-Chrome 1440×1000 실제 시작 화면을 직접 읽어 배경·타자·세 시작 덱·시드 입력·시작 버튼이
-정상 렌더링되고 잘리거나 로드에 실패한 요소가 없음을 확인했다. 화면 자체는 바꾸지 않았다.
-
-다음 세션도 INBOX 4번의 마지막 `src/game` 세대만 진행한다. 삭제 전에 현행 import 그래프를
-다시 확인하고, NIGHT RUN / CORE TEST 로직·단위 검사·리포트·package 명령을 함께 정리한다.
-
-`deckbuilding-v8` 브랜치에 있으며 **push·배포하지 않았다.** `loop/PROMPT.md`가 푸시를 금지한다.
-
----
-
-> v8.6 이하의 이전 인수인계는 [인수인계 아카이브](./docs/history/HANDOFF-archive.md)에 보존한다.
+> v8.7 이하의 이전 인수인계는 [인수인계 아카이브](./docs/history/HANDOFF-archive.md)에 보존한다.
