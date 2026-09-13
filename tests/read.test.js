@@ -3,7 +3,7 @@ import {createDuel,startBattle,playCard,chooseReward,saveDuel,readDuel,baseInten
   repertoire,repertoireWidth,readLevel,advanceBatter,endTurn,advancePitch} from '../src/duel/engine.js';
 import {rewardProblem} from '../src/duel/deck.js';
 import {perceivedProbabilities,planAction} from '../src/duel/policy.js';
-import {STAGES,ZONE_ORDER,WIDEN_EVERY,PUTAWAY_REACH,RELICS,RELIC_OFFERS,READ_THRESHOLDS,
+import {STAGES,ZONES,ZONE_ORDER,WIDEN_EVERY,PUTAWAY_REACH,RELICS,RELIC_OFFERS,READ_THRESHOLDS,
   observeScore,bandFor,rangeFor,shadeFor,shadeNameFor} from '../src/duel/cards.js';
 
 const pitch=(s,zone=s.battle.aimZone,roll=.5,powerRoll=.99)=>{s.battle.pending={zone,roll,powerRoll};return s;};
@@ -34,6 +34,16 @@ describe('a pitcher opens narrow and widens',()=>{
     expect(widthAt(1+WIDEN_EVERY)).toBe(STAGES[0].zoneOpen+1);
     expect(widthAt(1+WIDEN_EVERY*2)).toBe(STAGES[0].zoneOpen+2);
     expect(widthAt(99)).toBe(STAGES[0].zoneMax);
+  });
+  it('announces a permanent expansion at the next batter and records it in the log',()=>{
+    let s=startBattle(createDuel(1));s=advanceBatter(playCard(pitch(s),'basic'));s=playCard(pitch(s),'basic');
+    const before=repertoireWidth(s),zone=ZONE_ORDER[STAGES[s.stage].style][before];
+    s=advanceBatter(s);
+    const event=`투수 레퍼토리 확장 · ${before}→${before+1}존 · ${ZONES[zone]} 추가`;
+    expect(s.last).toMatchObject({kind:'repertoire',events:[event]});
+    expect(s.battle.log.slice(0,2)).toEqual(['3번 박도윤 타석 입장',event]);
+    s=advanceBatter(playCard(pitch(s),'basic'));
+    expect(s.last).toMatchObject({kind:'entry',events:[]});
   });
   it('later pitchers open wider than earlier ones',()=>{
     const opens=STAGES.map(st=>st.zoneOpen),caps=STAGES.map(st=>st.zoneMax);

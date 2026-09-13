@@ -261,13 +261,19 @@ export function advancePitch(state){
   s.last={kind:'entry',text:currentBatter(s).name+' · 다음 공을 읽으세요.',events:[],runs:0,outs:0};return s;
 }
 export function advanceBatter(state){
-  if(state.phase!=='between')return state;const s=clone(state),b=s.battle,index=(b.batterIndex+1)%9;
+  if(state.phase!=='between')return state;const s=clone(state),b=s.battle,index=(b.batterIndex+1)%9,widthBefore=repertoireWidth(s);
   if(b.bases.includes(LINEUP[index].id))return state;
   b.batterIndex=index;b.turn++;b.strikes=0;b.balls=0;b.aim=0;b.preparations=0;b.runSignal=false;b.expanded=false;b.patient=false;
   b.expandedPlus=false;b.scoutPlus=false;b.runSignalPlus=false;
   b.waitCharge=0;b.growthMode='normal';b.relayActive=b.relayPending;b.relayPending=0;
   s.phase='battle';draw(s,Math.max(0,5-b.hand.length));dealPitch(s);
-  s.last={kind:'entry',text:(index+1)+'번 '+currentBatter(s).name+' 타석 입장',events:[],runs:0,outs:0};return s;
+  const widthAfter=repertoireWidth(s),entry=(index+1)+'번 '+currentBatter(s).name+' 타석 입장',events=[];
+  if(widthAfter>widthBefore){
+    const opened=ZONE_ORDER[STAGES[s.stage].style].slice(widthBefore,widthAfter).map(z=>ZONES[z]).join(' · ');
+    events.push('투수 레퍼토리 확장 · '+widthBefore+'→'+widthAfter+'존 · '+opened+' 추가');
+  }
+  s.last={kind:events.length?'repertoire':'entry',text:entry,events,runs:0,outs:0};
+  b.log=[entry,...events,...b.log].slice(0,12);return s;
 }
 // One reward = one growth rank + one deck action. Adding, removing, upgrading and skipping compete.
 export function chooseReward(state,action,growthKey){

@@ -3,7 +3,7 @@ import React from 'react';
 import {render,screen,fireEvent,cleanup,act} from '@testing-library/react';
 import {afterEach,beforeEach,describe,it,expect,vi} from 'vitest';
 import Duel from '../src/duel/App.jsx';
-import {createDuel,startBattle,readDuel,saveDuel} from '../src/duel/engine.js';
+import {createDuel,startBattle,playCard,advanceBatter,readDuel,saveDuel} from '../src/duel/engine.js';
 import {planAction} from '../src/duel/policy.js';
 import {CARDS,ZONES} from '../src/duel/cards.js';
 beforeEach(()=>{localStorage.clear();vi.useFakeTimers()});
@@ -62,6 +62,16 @@ describe('9-zone strategic UI',()=>{
     begin(0,.99);useCard('strike');expect(screen.getByRole('region',{name:'투구 결과'})).toBeTruthy();expect(readDuel(localStorage).battle.strikes).toBe(1);
     expect(screen.queryByRole('button',{name:/다음 타자 입장/})).toBeNull();
     fireEvent.click(screen.getByRole('button',{name:'다음 공 · 같은 타자'}));expect(readDuel(localStorage).battle.batterIndex).toBe(0);expect(screen.getByRole('button',{name:'스윙하기',exact:true})).toBeTruthy();
+  });
+  it('shows a repertoire expansion as a distinct live event when the next batter enters',()=>{
+    let s=startBattle(createDuel(1));s.battle.pending={zone:s.battle.aimZone,roll:.5,powerRoll:.95};
+    s=advanceBatter(playCard(s,'basic'));s.battle.pending={zone:s.battle.aimZone,roll:.5,powerRoll:.95};s=playCard(s,'basic');
+    saveDuel(localStorage,s);render(<Duel/>);fireEvent.click(screen.getByRole('button',{name:'이어하기'}));
+    fireEvent.click(screen.getByRole('button',{name:'다음 타자 입장 · 3번 박도윤'}));
+    const status=screen.getByRole('status');
+    expect(status.textContent).toContain('투수 레퍼토리 확장 · 4→5존 · 가운데 높음 추가');
+    expect(status.classList.contains('repertoire-event')).toBe(true);
+    expect(readDuel(localStorage).battle.log[1]).toContain('레퍼토리 확장');
   });
   it('BASIC is always selectable and reveal cannot be double-triggered',()=>{
     begin(5);fireEvent.click(screen.getByRole('button',{name:'스윙하기',exact:true}));fireEvent.click(screen.getByRole('button',{name:'BASIC SWING',exact:true}));
