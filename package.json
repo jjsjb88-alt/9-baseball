@@ -11,7 +11,6 @@
     "test:policy": "node scripts/policy-bot-report.js",
     "report:zones": "node scripts/zone-report.js 100",
     "report:growth": "node scripts/growth-report.js 30",
-    "report:last-light": "node scripts/last-light-report.js 300",
     "report:core-test": "node scripts/core-test-report.js"
   },
   "dependencies": {
