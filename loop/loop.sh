@@ -25,6 +25,7 @@ if [[ ! -x "$CODEX_BIN" ]]; then
 fi
 
 round=0
+fast_failures=0
 while :; do
   if [[ -f "$STOP_FILE" ]]; then
     printf 'STOP exists; no new round will start.\n'
@@ -64,6 +65,9 @@ EOF
 )
   fi
 
+  round_out="$LOG_DIR/.round-current"
+  round_began=$(date '+%s')
+
   set +e
   "$TIMEOUT_BIN" --signal=TERM --kill-after=30s "${LOOP_SESSION_TIMEOUT_SECONDS}s" \
     "$CODEX_BIN" exec \
@@ -75,9 +79,10 @@ EOF
       --model "$LOOP_MODEL" \
       --config "model_reasoning_effort=\"$LOOP_REASONING_EFFORT\"" \
       --output-last-message "$last_message" \
-      "$run_instruction" 2>&1 | tee -a "$log_file"
+      "$run_instruction" 2>&1 | tee -a "$log_file" "$round_out"
   codex_status=${PIPESTATUS[0]}
   set -e
+  round_seconds=$(( $(date '+%s') - round_began ))
 
   ended_at="$(date '+%Y-%m-%dT%H:%M:%S%z')"
   {
@@ -94,10 +99,38 @@ EOF
     exit 0
   fi
 
+  # A provider quota is not a transient error. Retrying it on the normal timer accomplishes nothing:
+  # on 2026-09-13 this produced 187 identical five-second failures over two hours.
+  if grep -qiE 'usage limit|rate limit|quota exceeded|insufficient_quota' "$round_out" 2>/dev/null; then
+    {
+      printf 'Round %04d stopped the loop: the provider reported a usage limit.\n' "$round"
+      grep -oiE 'try again at [^"\\]*' "$round_out" | head -1
+      printf 'Re-run bash loop/loop.sh once the limit resets.\n'
+    } | tee -a "$log_file"
+    exit 4
+  fi
+
   if (( codex_status == 124 || codex_status == 137 )); then
     printf 'Round %04d hit the session timeout; the next round will start fresh.\n' "$round" | tee -a "$log_file"
+    fast_failures=0
   elif (( codex_status != 0 )); then
-    printf 'Round %04d failed; the next round will start fresh.\n' "$round" | tee -a "$log_file"
+    if (( round_seconds < LOOP_MIN_HEALTHY_SECONDS )); then
+      fast_failures=$((fast_failures + 1))
+      printf 'Round %04d failed after %ss (%s in a row under %ss).\n' \
+        "$round" "$round_seconds" "$fast_failures" "$LOOP_MIN_HEALTHY_SECONDS" | tee -a "$log_file"
+    else
+      fast_failures=0
+      printf 'Round %04d failed; the next round will start fresh.\n' "$round" | tee -a "$log_file"
+    fi
+  else
+    fast_failures=0
+  fi
+
+  # Repeated failures that return in seconds mean the environment is broken, not the task.
+  if (( fast_failures >= LOOP_MAX_FAST_FAILURES )); then
+    printf 'Stopping after %s consecutive failures faster than %ss. Fix the cause, then re-run.\n' \
+      "$fast_failures" "$LOOP_MIN_HEALTHY_SECONDS" | tee -a "$log_file"
+    exit 5
   fi
 
   sleep "$LOOP_WAIT_SECONDS"

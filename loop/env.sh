@@ -12,6 +12,11 @@ export LOOP_MAX_ROUNDS="${LOOP_MAX_ROUNDS:-0}" # 0 means no round limit.
 export LOOP_SESSION_TIMEOUT_SECONDS="${LOOP_SESSION_TIMEOUT_SECONDS:-3600}"
 export LOOP_SMOKE_TEST="${LOOP_SMOKE_TEST:-0}"
 
+# A round that fails in seconds did not do any work. Retrying it on a 30s timer just burns the day:
+# on 2026-09-13 a provider usage limit produced 187 identical failures over two hours.
+export LOOP_MIN_HEALTHY_SECONDS="${LOOP_MIN_HEALTHY_SECONDS:-30}"
+export LOOP_MAX_FAST_FAILURES="${LOOP_MAX_FAST_FAILURES:-3}"
+
 # Resolve the Codex install from the environment rather than hard-coding one machine's paths.
 # Codex puts its executables in a hash-named directory that changes on every upgrade; a pinned path
 # here silently breaks the loop with exit 3, which is exactly what happened between 09-10 and 09-13.
