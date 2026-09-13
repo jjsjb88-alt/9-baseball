@@ -19,11 +19,10 @@
 
 ## 미처리 지시
 
-### 4. 죽은 코드 두 세대를 정리한다
+### 4. 죽은 코드 마지막 세대를 정리한다
 
 현행 진입점은 `src/duel` 하나인데 저장소에는 폐기된 세대가 남아 매 배포마다 검사가 돈다.
 
-- `BaseballSim-deck-5.jsx` (486KB 단일 파일)
 - `src/game/` (NIGHT RUN / CORE TEST)
 - 그에 딸린 `tests/run-*`, `tests/core-test-*`, `tests/showdown-*`
 - `scripts/core-test-report.js`
@@ -69,6 +68,7 @@ git 이력이 보존하므로 복구 가능하다. `package.json`의 관련 스�
 
 ## 처리 완료
 
+- (2026-09-13) 현행 import 그래프와 분리된 `BaseballSim-deck-5.jsx` 세대·UI 검사·전용 런타임 자산 제거 — `2850d35`
 - (2026-09-13) 현행 import 그래프와 분리된 LAST LIGHT 세대·검사·리포트·2.4MB 자산 제거 — `ed1d2dd`
 - (2026-09-13) 레퍼토리 확장 순간을 사건·로그·강조로 표시하고 Chrome 1440×1000 화면 확인 — `5966572`
 - (2026-09-13) `docs/DUEL.md`를 v8 현행 계약으로 갱신하고 v6 이하를 과거로 표시 — `e36f645`
