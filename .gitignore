@@ -8,7 +8,6 @@ work/
 loop/STOP
 loop/*.pid
 loop/.state/
-.core-test-report-*.json
 
 # 루프가 화면 QA에 쓰는 임시 산출물 (크롬 프로파일·스크린샷·스크립트)
 .qa-*

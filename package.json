@@ -8,10 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:policy": "node scripts/policy-bot-report.js",
     "report:zones": "node scripts/zone-report.js 100",
-    "report:growth": "node scripts/growth-report.js 30",
-    "report:core-test": "node scripts/core-test-report.js"
+    "report:growth": "node scripts/growth-report.js 30"
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",
