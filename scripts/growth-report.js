@@ -1,6 +1,6 @@
-import {createDuel,startBattle,playCard,endTurn,chooseCard,advancePitch,advanceBatter,setAimZone,setGrowthMode,readDuel,saveDuel} from '../src/duel/engine.js';
+import {createDuel,startBattle,playCard,endTurn,chooseReward,advancePitch,advanceBatter,setAimZone,setGrowthMode,readDuel,saveDuel} from '../src/duel/engine.js';
 import {planAction} from '../src/duel/policy.js';
-import {BUILDS,GROWTHS} from '../src/duel/cards.js';
+import {BUILDS,GROWTHS,AFFINITY_CARDS,rewardChoices} from '../src/duel/cards.js';
 const count=Number(process.argv[2]||30);
 if(!Number.isInteger(count)||count<1||count>500)throw Error('Use 1–500 seeds');
 const rows=[];
@@ -13,7 +13,8 @@ for(const build of Object.keys(BUILDS))for(const growth of Object.keys(GROWTHS))
       if(s.phase==='map')s=startBattle(s);
       else if(s.phase==='between')s=advanceBatter(s);
       else if(s.phase==='pitch')s=advancePitch(s);
-      else if(s.phase==='reward')s=chooseCard(s,GROWTHS[growth].signature,growth);
+      else if(s.phase==='reward'){const pool=rewardChoices(s.stage,growth);
+        s=chooseReward(s,{type:'add',kind:(AFFINITY_CARDS[growth]||[]).find(k=>pool.includes(k))||pool[0]},growth);}
       else {const a=planAction(s);s=setGrowthMode(setAimZone(s,a.zone),a.mode);s=a.id?playCard(s,a.id):endTurn(s);}
       saveDuel(storage,s);readDuel(storage); // Every transitional state must remain resumable.
     }
@@ -23,4 +24,4 @@ for(const build of Object.keys(BUILDS))for(const growth of Object.keys(GROWTHS))
   }
   rows.push(row);
 }
-console.log(JSON.stringify({scope:'Four battles, same seeds, public heuristic, fixed signature-card rewards. Activation/termination smoke test, NOT human fun or balance proof.',rows},null,2));
+console.log(JSON.stringify({scope:'Four battles, same seeds, public heuristic. The bot reads exact zone probabilities regardless of readLevel, so these numbers are the CEILING for a fully-informed player, not the felt difficulty of a level-0 run that only sees shading. The bot also always ADDS the first affinity card and never removes, upgrades or takes a relic, so deck editing and relics are NOT exercised here. Activation/termination smoke test, NOT human fun or balance proof.',rows},null,2));

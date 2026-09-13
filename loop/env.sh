@@ -12,9 +12,20 @@ export LOOP_MAX_ROUNDS="${LOOP_MAX_ROUNDS:-0}" # 0 means no round limit.
 export LOOP_SESSION_TIMEOUT_SECONDS="${LOOP_SESSION_TIMEOUT_SECONDS:-3600}"
 export LOOP_SMOKE_TEST="${LOOP_SMOKE_TEST:-0}"
 
-# Scheduled tasks do not inherit the interactive shell PATH. Keep every runtime
-# used by the loop explicit here. Update CODEX_BIN after a Codex app upgrade if
-# the versioned executable directory changes.
-export CODEX_HOME="${CODEX_HOME:-/c/Users/정현아/.codex}"
-export CODEX_BIN="${CODEX_BIN:-/c/Users/정현아/AppData/Local/OpenAI/Codex/bin/b99306303521e97e/codex.exe}"
-export PATH="/c/Users/정현아/AppData/Local/OpenAI/Codex/bin/b99306303521e97e:/c/Users/정현아/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:/c/Users/정현아/.cache/codex-runtimes/codex-primary-runtime/dependencies/bin/fallback:/c/Program Files/Git/usr/bin:/c/Program Files/Git/bin:/c/Program Files/Git/cmd:/c/Windows/System32:/c/Windows/System32/WindowsPowerShell/v1.0:/usr/bin:/bin:${PATH:-}"
+# Resolve the Codex install from the environment rather than hard-coding one machine's paths.
+# Codex puts its executables in a hash-named directory that changes on every upgrade; a pinned path
+# here silently breaks the loop with exit 3, which is exactly what happened between 09-10 and 09-13.
+loop_local="${LOCALAPPDATA:-$HOME/AppData/Local}"
+if command -v cygpath >/dev/null 2>&1; then loop_local="$(cygpath -u "$loop_local")"; fi
+
+export CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
+if [[ -z "${CODEX_BIN:-}" || ! -x "${CODEX_BIN:-}" ]]; then
+  CODEX_BIN="$(ls -t "$loop_local"/OpenAI/Codex/bin/*/codex.exe 2>/dev/null | head -1 || true)"
+fi
+export CODEX_BIN
+
+# Scheduled tasks do not inherit the interactive shell PATH, so every runtime the loop uses is explicit.
+loop_runtime="$HOME/.cache/codex-runtimes/codex-primary-runtime/dependencies"
+loop_codex_dir="."
+if [[ -n "${CODEX_BIN:-}" ]]; then loop_codex_dir="$(dirname "$CODEX_BIN")"; fi
+export PATH="$loop_codex_dir:$loop_runtime/node/bin:$loop_runtime/bin/fallback:/c/Program Files/Git/usr/bin:/c/Program Files/Git/bin:/c/Program Files/Git/cmd:/c/Windows/System32:/c/Windows/System32/WindowsPowerShell/v1.0:/usr/bin:/bin:${PATH:-}"

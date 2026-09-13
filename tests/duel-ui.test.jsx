@@ -71,7 +71,10 @@ describe('9-zone strategic UI',()=>{
       if(s.phase==='map'){fireEvent.click(screen.getByRole('button',{name:'승부 시작'}));dismiss();}
       else if(s.phase==='pitch')fireEvent.click(screen.getByRole('button',{name:'다음 공 · 같은 타자'}));
       else if(s.phase==='between')fireEvent.click(screen.getByRole('button',{name:/다음 타자 입장/}));
-      else if(s.phase==='reward'){fireEvent.click(screen.getByRole('button',{name:'이상하게 풀리는 날',exact:true}));fireEvent.click(screen.getByRole('button',{name:CARDS[['flow','lure','finisher'][s.stage]].name,exact:true}));fireEvent.click(screen.getByRole('button',{name:'성장과 카드 확정'}));}
+      else if(s.phase==='reward'){fireEvent.click(screen.getByRole('button',{name:'이상하게 풀리는 날',exact:true}));
+        fireEvent.click(screen.getByRole('button',{name:'카드 추가'}));
+        fireEvent.click(screen.getByRole('button',{name:CARDS[['flow','lure','finisher'][s.stage]].name,exact:true}));
+        fireEvent.click(screen.getByRole('button',{name:'행운 Lv.'+(s.growth.fortune+1)+' · 이 덱으로 확정'}));}
       else {const a=planAction(s);fireEvent.click(screen.getByRole('button',{name:ZONES[a.zone],exact:true}));
         if(a.mode!==s.battle.growthMode)fireEvent.click(screen.getByRole('button',{name:a.mode==='normal'?'성장 사용 해제':a.mode==='fortune'?'행운 예약':'기다린 공 승부',exact:true}));
         if(!a.id){fireEvent.click(screen.getByRole('button',{name:'한 구 지켜보기',exact:true}));finish();}

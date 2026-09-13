@@ -1,5 +1,5 @@
 import {describe,it,expect} from 'vitest';
-import {createDuel,startBattle,playCard,endTurn,chooseCard,previewCard,readDuel,saveDuel,cardProblem,baseIntent,advanceBatter,currentBatter,advancePitch,setAimZone,coverage,swingOdds,hitProfile,publicProbabilities,setGrowthMode} from '../src/duel/engine.js';
+import {createDuel,startBattle,playCard,endTurn,chooseReward,previewCard,readDuel,saveDuel,cardProblem,baseIntent,advanceBatter,currentBatter,advancePitch,setAimZone,coverage,swingOdds,hitProfile,publicProbabilities,setGrowthMode} from '../src/duel/engine.js';
 import {planAction} from '../src/duel/policy.js';
 import {SAVE_KEY,LINEUP,CARDS,BUILDS} from '../src/duel/cards.js';
 const memory=()=>{const d={};return {setItem:(k,v)=>d[k]=v,getItem:k=>d[k]??null}};
@@ -47,7 +47,10 @@ describe('9-zone read success is guaranteed; stats only choose hit type',()=>{
   });
   it('scouting reveals only height/ball and conditions public probabilities',()=>{
     const s=pitch(fixture('scout'),8),n=playCard(s,'c0');const p=publicProbabilities(n);
-    expect(p.slice(0,6)).toEqual([0,0,0,0,0,0]);expect(p[9]).toBe(0);expect(p[6]).toBeGreaterThan(0);expect(p[7]).toBeGreaterThan(0);expect(p[8]).toBeGreaterThan(0);expect(p.reduce((a,v)=>a+v,0)).toBeCloseTo(1);roundtrip(n);
+    expect(p.slice(0,6)).toEqual([0,0,0,0,0,0]);expect(p[9]).toBe(0);
+    // The rookie opens with 4 zones and only one of them is low, so a scouted low pitch is pinned to it.
+    expect(p[6]).toBe(0);expect(p[7]).toBe(0);expect(p[8]).toBe(1);
+    expect(p.reduce((a,v)=>a+v,0)).toBeCloseTo(1);roundtrip(n);
   });
   it('two preparations do not consume pitches, and a third is rejected even at two strikes',()=>{
     let s=fixture('setup');s.deck[1].kind='calm';s.deck[2].kind='watch';s.battle.strikes=2;
@@ -95,7 +98,7 @@ describe('9-zone read success is guaranteed; stats only choose hit type',()=>{
       let s=createDuel(seed,build),guard=0;
       while(!['won','lost'].includes(s.phase)&&guard++<1000){
         phases.add(s.phase);
-        if(s.phase==='map')s=startBattle(s);else if(s.phase==='between')s=advanceBatter(s);else if(s.phase==='pitch')s=advancePitch(s);else if(s.phase==='reward')s=chooseCard(s,['flow','lure','finisher'][s.stage],['patience','relay','fortune'][s.stage]);
+        if(s.phase==='map')s=startBattle(s);else if(s.phase==='between')s=advanceBatter(s);else if(s.phase==='pitch')s=advancePitch(s);else if(s.phase==='reward')s=chooseReward(s,{type:'add',kind:['flow','lure','finisher'][s.stage]},['patience','relay','fortune'][s.stage]);
         else{const a=planAction(s);s=setGrowthMode(setAimZone(s,a.zone),a.mode);s=a.id?playCard(s,a.id):endTurn(s);}
         roundtrip(s);
       }

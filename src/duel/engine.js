@@ -1,4 +1,6 @@
-import {CARDS,REWARDS,SAVE_KEY,STAGES,LINEUP,BUILDS,ZONES,GROWTHS,growthCost,rewardChoices} from './cards.js';
+import {CARDS,SAVE_KEY,STAGES,LINEUP,BUILDS,ZONES,GROWTHS,growthCost,rewardChoices,cardPower,DECK_MIN,DECK_MAX,
+  ZONE_ORDER,WIDEN_EVERY,PUTAWAY_REACH,READ_THRESHOLDS,observeScore,RELICS,RELIC_OFFERS} from './cards.js';
+import {applyRewardToDeck,rewardProblem} from './deck.js';
 const clone=s=>JSON.parse(JSON.stringify(s));
 const card=(s,id)=>s.deck.find(c=>c.id===id);
 const unit=(s,key)=>{s[key]=(Math.imul(s[key],1664525)+1013904223)>>>0;return s[key]/4294967296;};
@@ -9,6 +11,19 @@ function shuffle(s,a){for(let i=a.length-1;i>0;i--){const j=Math.floor(unit(s,'s
 function draw(s,n){const b=s.battle;while(n-->0&&b.hand.length<9){if(!b.draw.length)b.draw=shuffle(s,b.discard.splice(0));if(!b.draw.length)break;b.hand.push(b.draw.pop());}}
 
 // PUBLIC is the actual sampling distribution. No false odds, no input-dependent reroll.
+// A pitcher's live zones. Opens narrow, widens every WIDEN_EVERY plate appearances, reaches wider at two strikes.
+export const repertoireWidth=s=>Math.min(STAGES[s.stage].zoneMax,
+  STAGES[s.stage].zoneOpen+Math.floor((s.battle.turn-1)/WIDEN_EVERY));
+export function repertoire(s){
+  const count=Math.min(9,repertoireWidth(s)+(s.battle.strikes===2?PUTAWAY_REACH:0));
+  return ZONE_ORDER[STAGES[s.stage].style].slice(0,count).sort((a,z)=>a-z);
+}
+// Information is earned. A lower level hides digits; it never shows a false number.
+export function readLevel(s){
+  const score=observeScore(s.deck);
+  const base=score>=READ_THRESHOLDS[1]?2:score>=READ_THRESHOLDS[0]?1:0;
+  return Math.min(2,base+((s.relics||[]).includes('scope')?1:0));
+}
 export function baseIntent(s){
   const b=s.battle,style=STAGES[s.stage].style;
   let weights=[5,6,10,7,8,15,5,7,12,25],name='바깥쪽 승부',detail='루키는 바깥쪽을 선호합니다. 2스트라이크에서는 몸쪽 비중이 높아집니다.';
@@ -21,19 +36,25 @@ export function baseIntent(s){
     name='이전 노림의 반대편';detail='마무리는 이전 스윙 위치의 반대 열을 선호합니다. 지금 고르는 존에는 반응하지 않습니다.';
   }
   if(b.balls===3){weights[9]*=.4;detail+=' 3볼에서는 스트라이크 비중이 높아집니다.';}
+  // Zones outside the repertoire are not thrown at all. This is what makes the first pitcher readable.
+  const live=repertoire(s),width=repertoireWidth(s);
+  for(let z=0;z<9;z++)if(!live.includes(z))weights[z]=0;
+  detail+=` 지금은 ${live.length}존만 씁니다`+(b.strikes===2&&live.length>width?` (2스트라이크로 ${live.length-width}존 확장)`:'')
+    +(width<STAGES[s.stage].zoneMax?` · ${WIDEN_EVERY}타석마다 넓어집니다.`:' · 더 넓어지지 않습니다.');
   const total=weights.reduce((a,x)=>a+x,0);
-  return {kind:style==='sinker'?'sinker':style==='deep'?'deep':b.strikes===2?'putaway':'fastball',name,detail,probabilities:weights.map(x=>x/total)};
+  return {kind:style==='sinker'?'sinker':style==='deep'?'deep':b.strikes===2?'putaway':'fastball',name,detail,
+    repertoire:live,width,maxWidth:STAGES[s.stage].zoneMax,probabilities:weights.map(x=>x/total)};
 }
 function dealPitch(s){
   const b=s.battle;b.intent=baseIntent(s);let r=unit(s,'pitchSeed'),zone=9;
   for(let i=0;i<10;i++){r-=b.intent.probabilities[i];if(r<0){zone=i;break;}}
   b.pending={zone,roll:unit(s,'pitchSeed'),powerRoll:unit(s,'pitchSeed')};
-  b.scouted=false;b.revealed=null;
+  b.scouted=false;b.scoutPlus=false;b.revealed=null;
 }
 export function createDuel(seed=Date.now()>>>0,build='away'){
   if(!Object.hasOwn(BUILDS,build))build='away';
-  return {version:6,seed:seed>>>0,pitchSeed:(seed^0x9e3779b9)>>>0,initialSeed:seed>>>0,build,phase:'map',stage:0,
-    growth:{patience:0,relay:0,fortune:0},growthHistory:[],fortune:0,
+  return {version:8,seed:seed>>>0,pitchSeed:(seed^0x9e3779b9)>>>0,initialSeed:seed>>>0,build,phase:'map',stage:0,
+    growth:{patience:0,relay:0,fortune:0},growthHistory:[],fortune:0,relics:[],
     growthStats:{waitStrikes:0,patienceSwings:0,relayCreated:0,relayHits:0,fortuneEarned:0,fortuneUses:0},
     deck:BUILDS[build].cards.map((kind,i)=>({id:'c'+i,kind})),nextId:12,rewards:[],victories:0,battle:null,last:null,
     stats:{cards:0,pitches:0,runs:0,outs:0,appearances:0,hits:0,walks:0,fouls:0,whiffs:0,totalBases:0}};
@@ -42,8 +63,13 @@ export function startBattle(state){
   if(state.phase!=='map')return state;const s=clone(state);s.phase='battle';
   s.battle={turn:1,batterIndex:0,preparations:0,runSignal:false,results:[],history:[],outs:0,runs:0,strikes:0,balls:0,
     aim:0,aimZone:s.build==='pull'?3:s.build==='away'?5:4,expanded:false,patient:false,scouted:false,
+    expandedPlus:false,scoutPlus:false,runSignalPlus:false,
     waitCharge:0,relayPending:0,relayActive:0,growthMode:'normal',
     bases:[null,null,null],hand:[],draw:shuffle(s,s.deck.map(c=>c.id)),discard:[],log:[],intent:null,pending:null,revealed:null};
+  // The opening aim must sit inside the pitcher's repertoire, or the batter starts pointed at a zone never thrown.
+  const live=repertoire(s);
+  if(!live.includes(s.battle.aimZone))
+    s.battle.aimZone=live.reduce((best,z)=>Math.abs(z-s.battle.aimZone)<Math.abs(best-s.battle.aimZone)?z:best,live[0]);
   if(s.stage===0){s.battle.hand=['c0','c1','c2','c3','c4'];s.battle.draw=s.battle.draw.filter(id=>!s.battle.hand.includes(id));}else draw(s,5);
   dealPitch(s);s.last={kind:'start',text:'1번 강한결 입장 · 경향을 읽고 노릴 존과 스윙을 고르세요.',events:[],runs:0,outs:0};return s;
 }
@@ -88,8 +114,11 @@ export function publicProbabilities(s){
   return visible.map(v=>v/sum);
 }
 export function pitchClue(s){
-  if(!s.battle.scouted||!s.battle.pending)return null;
-  return s.battle.pending.zone===9?'존 밖 볼 확인':['높은 공 확인','중간 높이 확인','낮은 공 확인'][Math.floor(s.battle.pending.zone/3)];
+  const b=s.battle;if(!b.scouted||!b.pending)return null;
+  if(b.pending.zone===9)return '존 밖 볼 확인';
+  const row=['높은 공','중간 높이','낮은 공'][Math.floor(b.pending.zone/3)];
+  // Upgraded scout also names the column, the only way a `column` card can be handed information.
+  return b.scoutPlus?row+' · '+['몸쪽','가운데','바깥'][b.pending.zone%3]+' 확인':row+' 확인';
 }
 export function matchup(s,id='basic',zone=s.battle.aimZone){
   const b=s.battle,k=id==='basic'?'basic':card(s,id)?.kind;
@@ -102,7 +131,7 @@ export function matchup(s,id='basic',zone=s.battle.aimZone){
   const growthPower=b.growthMode==='patience'&&s.growth.patience?(12+12*s.growth.patience)*b.waitCharge:0;
   return {hitter,pitcher,familiarity,widthPenalty,growthPower,
     quality:hitter.technique+familiarity+(k==='strike'&&zone%3===2?12:0)-pitcher.movement,
-    powerEdge:hitter.power+(CARDS[k]?.power||0)*18+familiarity-widthPenalty-pitcher.stuff+growthPower,
+    powerEdge:hitter.power+(id==='basic'?0:cardPower(card(s,id)))*18+familiarity-widthPenalty-pitcher.stuff+growthPower,
     luckEdge:hitter.luck-pitcher.command};
 }
 // Conditional hit types. Stats NEVER revoke a successful zone read.
@@ -179,7 +208,7 @@ function resolve(state,id){
     if(fortunate){s.fortune-=growthCost(s.growth.fortune);s.growthStats.fortuneUses++;growthEvents.push('행운 해방 · 수비 혼선으로 타자·주자 추가 1베이스');}
     const relaySteps=b.relayActive?(b.relayActive>=3?2:1):0;
     if(relaySteps){s.growthStats.relayHits++;growthEvents.push('연결 사인 실현 · 기존 주자 추가 '+relaySteps+'베이스');}
-    advance(s,Math.max(result.bases,k==='rally'?2:0)+(b.runSignal?1:0)+relaySteps+(fortunate?1:0),events);
+    advance(s,Math.max(result.bases,k==='rally'?2:0)+(b.runSignal?(b.runSignalPlus?2:1):0)+relaySteps+(fortunate?1:0),events);
     const destination=result.bases+(fortunate?1:0);
     if(destination>=4)home(s,currentBatter(s).id,events);else b.bases[destination-1]=currentBatter(s).id;
     if(s.growth.fortune&&!fortunate&&['땅볼 안타','바가지 안타 · 행운의 단타'].includes(result.label)){
@@ -207,7 +236,9 @@ function resolve(state,id){
   if(id&&!(mode==='fortune'&&result.kind!=='hit'))b.growthMode='normal';
   b.revealed={zone:pending.zone,label:result.label,kind:result.kind,coverage:usedCoverage,action:k||'take',growthEvents};
   b.history.push({zone:pending.zone,label:result.label,aimZone:id?b.aimZone:null,turn:b.turn,...countBefore});
-  b.history=b.history.slice(-18);b.pending=null;b.scouted=false;if(id)b.expanded=false;
+  b.history=b.history.slice(-18);b.pending=null;b.scouted=false;b.scoutPlus=false;
+  // Upgraded 코스 조정 survives the swing and lasts the rest of the plate appearance.
+  if(id&&!b.expandedPlus)b.expanded=false;
   events.unshift('실제 코스: '+(result.zone===9?'존 밖 볼':ZONES[result.zone]));
   if(s.phase==='pitch')events.push('같은 타자 · 다음 공에서 승부가 이어집니다.');
   return finalize(s,before,result.kind==='hit'?'hit':['out','sacrifice'].includes(result.kind)?'out':'pitch',currentBatter(s).name+' · '+result.label,events,growthEvents);
@@ -215,13 +246,14 @@ function resolve(state,id){
 export function playCard(state,id){
   if(cardProblem(state,id))return state;
   if(id==='basic'||CARDS[card(state,id).kind].type==='attack')return resolve(state,id);
-  const s=clone(state),b=s.battle,k=card(s,id).kind,before={runs:b.runs,outs:b.outs},events=[];
+  const s=clone(state),entry=card(s,id),k=entry.kind,plus=!!entry.plus,b=s.battle,before={runs:b.runs,outs:b.outs},events=[];
   b.hand.splice(b.hand.indexOf(id),1);b.discard.push(id);s.stats.cards++;b.preparations++;
-  if(k==='setup')b.aim++;if(k==='watch')draw(s,2);
-  if(k==='scout'){b.scouted=true;draw(s,1);events.push(pitchClue(s));}
-  if(k==='lure')b.expanded=true;if(k==='flow')b.runSignal=true;
-  if(k==='calm'){b.patient=true;draw(s,1);}
-  return finalize(s,before,'skill',CARDS[k].name+' · 준비 '+b.preparations+'/2',events);
+  if(k==='setup')b.aim=Math.min(4,b.aim+(plus?2:1));if(k==='watch')draw(s,plus?3:2);
+  if(k==='scout'){b.scouted=true;if(plus)b.scoutPlus=true;draw(s,1);events.push(pitchClue(s));}
+  if(k==='lure'){b.expanded=true;if(plus)b.expandedPlus=true;}
+  if(k==='flow'){b.runSignal=true;if(plus)b.runSignalPlus=true;}
+  if(k==='calm'){b.patient=true;draw(s,plus?2:1);}
+  return finalize(s,before,'skill',CARDS[k].name+(plus?'+':'')+' · 준비 '+b.preparations+'/2',events);
 }
 export const endTurn=state=>state.phase==='battle'?resolve(state,null):state;
 export function advancePitch(state){
@@ -232,23 +264,46 @@ export function advanceBatter(state){
   if(state.phase!=='between')return state;const s=clone(state),b=s.battle,index=(b.batterIndex+1)%9;
   if(b.bases.includes(LINEUP[index].id))return state;
   b.batterIndex=index;b.turn++;b.strikes=0;b.balls=0;b.aim=0;b.preparations=0;b.runSignal=false;b.expanded=false;b.patient=false;
+  b.expandedPlus=false;b.scoutPlus=false;b.runSignalPlus=false;
   b.waitCharge=0;b.growthMode='normal';b.relayActive=b.relayPending;b.relayPending=0;
   s.phase='battle';draw(s,Math.max(0,5-b.hand.length));dealPitch(s);
   s.last={kind:'entry',text:(index+1)+'번 '+currentBatter(s).name+' 타석 입장',events:[],runs:0,outs:0};return s;
 }
-export function chooseCard(state,kind,growthKey){
-  if(state.phase!=='reward'||(kind!=='skip'&&!rewardChoices(state.stage,growthKey).includes(kind))||!Object.hasOwn(GROWTHS,growthKey)||state.growth[growthKey]>=3)return state;
-  const s=clone(state);if(kind!=='skip')s.deck.push({id:'c'+s.nextId++,kind});
-  s.growth[growthKey]++;s.growthHistory.push(growthKey);s.rewards.push(kind);s.stage++;s.phase='map';s.battle=null;s.last=null;return s;
+// One reward = one growth rank + one deck action. Adding, removing, upgrading and skipping compete.
+export function chooseReward(state,action,growthKey){
+  if(state.phase!=='reward'||!Object.hasOwn(GROWTHS,growthKey)||state.growth[growthKey]>=3)return state;
+  if(rewardProblem(state.deck,action,state.stage,growthKey,state.relics))return state;
+  const s=clone(state),moved=applyRewardToDeck(s.deck,action,s.nextId);
+  s.deck=moved.deck;s.nextId=moved.nextId;
+  if(action.type==='relic')s.relics=[...s.relics,action.kind];
+  s.growth[growthKey]++;s.growthHistory.push(growthKey);
+  s.rewards.push(['add','relic'].includes(action.type)?{type:action.type,kind:action.kind}
+    :action.type==='skip'?{type:'skip'}:{type:action.type,id:action.id});
+  s.stage++;s.phase='map';s.battle=null;s.last=null;return s;
 }
 export function saveDuel(storage,s){storage.setItem(SAVE_KEY,JSON.stringify(s));}
 export function readDuel(storage){
   const raw=storage.getItem(SAVE_KEY);if(!raw)return null;
   const s=JSON.parse(raw),int=(v,a,z)=>Number.isInteger(v)&&v>=a&&v<=z,fail=()=>{throw new Error('9존 저장 기록이 손상됐습니다.');};
-  if(!s||s.version!==6||!Object.hasOwn(BUILDS,s.build)||!['seed','pitchSeed','initialSeed'].every(k=>int(s[k],0,0xffffffff))
+  const adds=Array.isArray(s?.rewards)?s.rewards.filter(r=>r?.type==='add').length:0;
+  const drops=Array.isArray(s?.rewards)?s.rewards.filter(r=>r?.type==='remove').length:0;
+  const ups=Array.isArray(s?.rewards)?s.rewards.filter(r=>r?.type==='upgrade').length:0;
+  // v7 deck ids stay unique but no longer stay contiguous — removal makes c0..cN impossible to hold.
+  if(!s||s.version!==8||!Object.hasOwn(BUILDS,s.build)||!['seed','pitchSeed','initialSeed'].every(k=>int(s[k],0,0xffffffff))
+    ||!Array.isArray(s.relics)||s.relics.some(k=>!Object.hasOwn(RELICS,k))||new Set(s.relics).size!==s.relics.length
     ||!int(s.stage,0,3)||!['map','battle','pitch','between','reward','won','lost'].includes(s.phase)
-    ||!Array.isArray(s.deck)||!int(s.deck.length,12,15)||s.deck.some((c,i)=>!c||c.id!=='c'+i||!Object.hasOwn(CARDS,c.kind))
-    ||s.nextId!==s.deck.length||!Array.isArray(s.rewards)||s.rewards.length!==s.stage||!s.rewards.every((k,i)=>k==='skip'||rewardChoices(i,s.growthHistory?.[i]).includes(k))
+    ||!Array.isArray(s.deck)||!int(s.deck.length,DECK_MIN,DECK_MAX)
+    ||s.deck.some(c=>!c||typeof c.id!=='string'||!/^c\d+$/.test(c.id)||!Object.hasOwn(CARDS,c.kind)||!['boolean','undefined'].includes(typeof c.plus))
+    ||new Set(s.deck.map(c=>c.id)).size!==s.deck.length
+    ||!Array.isArray(s.rewards)||s.rewards.length!==s.stage
+    ||!s.rewards.every((r,i)=>r&&['add','remove','upgrade','relic','skip'].includes(r.type)
+      &&(r.type!=='add'||rewardChoices(i,s.growthHistory?.[i]).includes(r.kind))
+      &&(r.type!=='relic'||(RELIC_OFFERS[i]||[]).includes(r.kind))
+      &&(!['remove','upgrade'].includes(r.type)||typeof r.id==='string'))
+    ||s.relics.length!==s.rewards.filter(r=>r.type==='relic').length
+    ||!s.relics.every(k=>s.rewards.some(r=>r.type==='relic'&&r.kind===k))
+    ||s.nextId!==12+adds||s.deck.length!==12+adds-drops||s.deck.filter(c=>c.plus).length>ups
+    ||s.deck.some(c=>Number(c.id.slice(1))>=s.nextId)
     ||!s.stats||!['cards','pitches','runs','outs','appearances','hits','walks','fouls','whiffs','totalBases'].every(k=>int(s.stats[k],0,100000)))fail();
   if(s.victories!==(s.phase==='won'?4:s.phase==='reward'?s.stage+1:s.stage)||s.phase==='won'&&s.stage!==3||s.phase==='reward'&&s.stage===3)fail();
   if(!s.growth||!Object.keys(GROWTHS).every(k=>int(s.growth[k],0,3))||!Array.isArray(s.growthHistory)||s.growthHistory.length!==s.stage
@@ -256,11 +311,11 @@ export function readDuel(storage){
     ||!int(s.fortune,0,6)||!s.growthStats||!['waitStrikes','patienceSwings','relayCreated','relayHits','fortuneEarned','fortuneUses'].every(k=>int(s.growthStats[k],0,100000)))fail();
   const b=s.battle;if(!b){if(s.phase!=='map')fail();return s;}
   if(!['hand','draw','discard','results','history','log'].every(k=>Array.isArray(b[k]))||!Array.isArray(b.bases)||b.bases.length!==3
-    ||!int(b.outs,0,3)||!int(b.strikes,0,3)||!int(b.balls,0,4)||!int(b.runs,0,100)||!int(b.aim,0,2)||!int(b.aimZone,0,8)
+    ||!int(b.outs,0,3)||!int(b.strikes,0,3)||!int(b.balls,0,4)||!int(b.runs,0,100)||!int(b.aim,0,4)||!int(b.aimZone,0,8)
     ||!int(b.turn,1,100000)||!int(b.batterIndex,0,8)||b.batterIndex!==(b.turn-1)%9||!int(b.preparations,0,2)
     ||!int(b.waitCharge,0,2)||!int(b.relayPending,0,s.growth.relay)||!int(b.relayActive,0,s.growth.relay)||!['normal','patience','fortune'].includes(b.growthMode)
     ||b.growthMode==='patience'&&(!s.growth.patience||!b.waitCharge)||b.growthMode==='fortune'&&(!s.growth.fortune||s.fortune<growthCost(s.growth.fortune))
-    ||!['runSignal','expanded','patient','scouted'].every(k=>typeof b[k]==='boolean')
+    ||!['runSignal','expanded','patient','scouted','expandedPlus','scoutPlus','runSignalPlus'].every(k=>typeof b[k]==='boolean')
     ||!b.log.every(t=>typeof t==='string')||!b.results.every(r=>r&&LINEUP.some(p=>p.id===r.batterId)&&typeof r.label==='string'&&int(r.turn,1,100000))
     ||!b.history.every(h=>h&&int(h.zone,0,9)&&typeof h.label==='string'&&(h.aimZone===null||int(h.aimZone,0,8))&&int(h.turn,1,b.turn)&&int(h.balls,0,3)&&int(h.strikes,0,2)))fail();
   const players=b.bases.filter(x=>x!==null),ids=[...b.hand,...b.draw,...b.discard];

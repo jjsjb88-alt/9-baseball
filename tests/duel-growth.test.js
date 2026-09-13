@@ -1,25 +1,31 @@
 import {describe,it,expect} from 'vitest';
-import {createDuel,startBattle,playCard,endTurn,chooseCard,advanceBatter,advancePitch,setAimZone,coverage,hitProfile,previewCard,setGrowthMode,growthProblem,saveDuel,readDuel,matchup} from '../src/duel/engine.js';
-import {GROWTHS,STAGES,rewardChoices} from '../src/duel/cards.js';
+import {createDuel,startBattle,playCard,endTurn,chooseReward,advanceBatter,advancePitch,setAimZone,coverage,hitProfile,previewCard,setGrowthMode,growthProblem,saveDuel,readDuel,matchup} from '../src/duel/engine.js';
+import {GROWTHS,STAGES,rewardChoices,AFFINITY_CARDS} from '../src/duel/cards.js';
 function pitch(s,zone=s.battle.aimZone,roll=.5,powerRoll=.99){s.battle.pending={zone,roll,powerRoll};return s;}
 function hand(s,kind='strike'){s.deck[0].kind=kind;const all=[...s.battle.hand,...s.battle.draw,...s.battle.discard];s.battle.hand=['c0'];s.battle.draw=all.filter(x=>x!=='c0');s.battle.discard=[];return s;}
 function reward(s=startBattle(createDuel(1))){s=hand(s);s.battle.runs=STAGES[s.stage].target-1;s.battle.bases=[null,null,'p8'];s.battle.pending={zone:s.battle.aimZone,roll:.5,powerRoll:.99};return playCard(s,'c0');}
 function grown(key,rank=1){
-  let s=reward();for(let i=0;i<rank;i++){s=chooseCard(s,'skip',key);s=startBattle(s);if(i<rank-1){s.battle.runs=2;s.battle.bases=[null,null,'p8'];s=playCard(pitch(hand(s)),'c0');}}
+  let s=reward();for(let i=0;i<rank;i++){s=chooseReward(s,{type:'skip'},key);s=startBattle(s);if(i<rank-1){s.battle.runs=2;s.battle.bases=[null,null,'p8'];s=playCard(pitch(hand(s)),'c0');}}
   return hand(s);
 }
 function kindPitch(s,label){let offset=0;for(const t of hitProfile(s,'c0',s.battle.aimZone)){if(t.label===label){expect(t.p).toBeGreaterThan(0);return pitch(s,s.battle.aimZone,.5,offset+t.p/2);}offset+=t.p;}throw Error('missing hit type');}
 function roundtrip(s){const m=new Map(),storage={getItem:k=>m.get(k)||null,setItem:(k,v)=>m.set(k,v)};saveDuel(storage,s);expect(readDuel(storage)).toEqual(s);}
 describe('growth changes choices while preserving zone-hit guarantee',()=>{
   it('requires one valid growth and commits card + growth exactly once',()=>{
-    const s=reward(),before=structuredClone(s);expect(chooseCard(s,'rally')).toBe(s);expect(chooseCard(s,'rally','unknown')).toBe(s);
-    expect(chooseCard(s,'slug','relay')).toBe(s);expect(s).toEqual(before);
-    const n=chooseCard(s,'bunt','relay');expect(n.growth.relay).toBe(1);expect(n.deck.at(-1).kind).toBe('bunt');expect(n.growthHistory).toEqual(['relay']);expect(n.phase).toBe('map');
-    expect(chooseCard(n,'bunt','relay')).toBe(n);roundtrip(n);roundtrip(startBattle(n));
+    const s=reward(),before=structuredClone(s);expect(chooseReward(s,{type:'add',kind:'rally'})).toBe(s);expect(chooseReward(s,{type:'add',kind:'rally'},'unknown')).toBe(s);
+    expect(chooseReward(s,{type:'add',kind:'slug'},'relay')).toBe(s);
+    // v6 force-fed 희생 번트 to 연결 as its signature and that path won 5 of 270 runs. It is no longer a 연결 candidate.
+    expect(chooseReward(s,{type:'add',kind:'bunt'},'relay')).toBe(s);expect(s).toEqual(before);
+    const n=chooseReward(s,{type:'add',kind:'rally'},'relay');expect(n.growth.relay).toBe(1);expect(n.deck.at(-1).kind).toBe('rally');expect(n.growthHistory).toEqual(['relay']);expect(n.phase).toBe('map');
+    expect(chooseReward(n,{type:'add',kind:'rally'},'relay')).toBe(n);roundtrip(n);roundtrip(startBattle(n));
   });
-  it('supports rank-three growth and mixed acquisition, preserving signature rewards',()=>{
-    for(const key of Object.keys(GROWTHS)){const s=grown(key,3);expect(s.growth[key]).toBe(3);expect(s.growthHistory).toEqual([key,key,key]);expect(rewardChoices(0,key)).toContain(GROWTHS[key].signature);roundtrip(s);}
-    let s=chooseCard(reward(),'skip','patience');s=startBattle(s);s.battle.runs=1;s=chooseCard(reward(s),'skip','fortune');expect(s.growth).toEqual({patience:1,relay:0,fortune:1});roundtrip(s);
+  it('offers the whole affinity pool per growth and never forces one signature card',()=>{
+    for(const key of Object.keys(GROWTHS)){const s=grown(key,3);expect(s.growth[key]).toBe(3);expect(s.growthHistory).toEqual([key,key,key]);
+      for(const kind of AFFINITY_CARDS[key])expect(rewardChoices(0,key)).toContain(kind);
+      expect(AFFINITY_CARDS[key].length).toBeGreaterThanOrEqual(3);roundtrip(s);}
+    expect(rewardChoices(0,'relay')).not.toContain('bunt');
+    expect(AFFINITY_CARDS.patience[0]).toBe('scout'); // 기다림 is charged by WATCHED strikes; without information it collapses.
+    let s=chooseReward(reward(),{type:'skip'},'patience');s=startBattle(s);s.battle.runs=1;s=chooseReward(reward(s),{type:'skip'},'fortune');expect(s.growth).toEqual({patience:1,relay:0,fortune:1});roundtrip(s);
   });
   it('only surviving watched strikes build patience; third strike remains an out',()=>{
     let s=grown('patience');s=endTurn(pitch(s,9));expect(s.battle.waitCharge).toBe(0);s=advancePitch(s);
@@ -66,7 +72,7 @@ describe('growth changes choices while preserving zone-hit guarantee',()=>{
     let s=grown('relay');s.battle.relayActive=1;s=playCard(pitch(s,0,.99),'c0');expect(s.battle.relayActive).toBe(1);
     s=advancePitch(s);expect(s.battle.relayActive).toBe(1);
     s.battle.runs=2;s.battle.bases[2]='p8';s=playCard(pitch(s),'basic');expect(s.phase).toBe('reward');
-    s=startBattle(chooseCard(s,'skip','relay'));expect(s.battle.relayActive).toBe(0);expect(s.battle.relayPending).toBe(0);roundtrip(s);
+    s=startBattle(chooseReward(s,{type:'skip'},'relay'));expect(s.battle.relayActive).toBe(0);expect(s.battle.relayPending).toBe(0);roundtrip(s);
   });
   it('ground and bloop hits build luck, center hits do not; cap and rank gains apply',()=>{
     for(const [label,gain] of [['땅볼 안타',1],['바가지 안타 · 행운의 단타',2],['중전안타',0]]){
@@ -88,7 +94,7 @@ describe('growth changes choices while preserving zone-hit guarantee',()=>{
   });
   it('fortune carries across battles; weak hits do not charge it before growth is acquired',()=>{
     let s=grown('fortune');s.fortune=2;s.battle.runs=2;s.battle.bases[2]='p8';s=playCard(kindPitch(s,'중전안타'),'c0');
-    const n=startBattle(chooseCard(s,'skip','fortune'));expect(n.fortune).toBe(2);expect(n.growth.fortune).toBe(2);roundtrip(n);
+    const n=startBattle(chooseReward(s,{type:'skip'},'fortune'));expect(n.fortune).toBe(2);expect(n.growth.fortune).toBe(2);roundtrip(n);
     const raw=hand(startBattle(createDuel(1)));expect(playCard(kindPitch(raw,'땅볼 안타'),'c0').fortune).toBe(0);
   });
   it('rejects unavailable modes, invalid ranks, fabricated rewards, and invalid meter values',()=>{
