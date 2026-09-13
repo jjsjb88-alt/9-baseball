@@ -1,6 +1,30 @@
 # 9ZONE SHOWDOWN — Codex 인수인계
 
-## 최우선 v8.2 인수인계 · 2026-09-13
+## 최우선 v8.3 인수인계 · 2026-09-13
+
+읽는 순서: `docs/feedback/INBOX.md` 전체 → `docs/STATUS.md` v8.3 절. 전투·판정은
+`docs/DUEL.md` 맨 위 v8.2 절, 덱·보상·성장·유물·읽기는 `docs/DECK.md`의 해당 절을 따른다.
+아래 v8.2 절과 그 이하는 역사다.
+
+INBOX 최상단의 DUEL 현행화 작업을 `e36f645`로 완료했다. `docs/DUEL.md` 상단은 이제
+`chooseReward(state, action, growthKey)`, 카드 추가·제거·강화·유물·건너뛰기, 성장 친화 풀,
+`state.version = 8`, `9zone-read-v8`을 현행 계약으로 적는다. 커버 안 적중 보장, 타석 경계,
+고정된 `pending` 판정과 점진 레퍼토리·읽기 등급·유물도 실제 엔진 및 `docs/DECK.md`와 맞췄다.
+
+v6의 `chooseCard`·시그니처 카드·`9zone-growth-v6` 설명은 삭제하지 않고 명시적인 과거 기록으로
+내렸다. v5·v3도 보존 기록으로 표시했으므로 새 세션은 문서 맨 위 절만 현행 구현 지침으로 읽는다.
+
+`pnpm test` 14파일·126개와 `pnpm build`가 통과했다. 문서 변경이라 화면 QA 대상은 아니다.
+
+다음 한 바퀴는 INBOX 최상단의 **레퍼토리 확장 사건 표시 한 건만** 한다. 타석이 넘어가며
+레퍼토리가 1존 늘어나는 순간을 기존 `s.last.events` / 로그 경로로 보여 주고, 새 애니메이션
+시스템은 만들지 않는다.
+
+`deckbuilding-v8` 브랜치에 있으며 **push·배포하지 않았다.** `loop/PROMPT.md`가 푸시를 금지한다.
+
+---
+
+## 과거 v8.2 인수인계 · 2026-09-13
 
 읽는 순서: `docs/feedback/INBOX.md` 전체 → `docs/STATUS.md` v8.2 절. 읽기 등급을 다시 건드릴
 때만 `docs/DECK.md` §9를 본다. 아래 v8.1 절과 그 이하는 역사다.
