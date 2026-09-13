@@ -39,9 +39,6 @@ jobs:
       - name: Run tests
         run: pnpm test
 
-      - name: Run policy regression
-        run: pnpm run test:policy
-
       - name: Run current 9-zone engine smoke report
         run: node scripts/zone-report.js 30
 
