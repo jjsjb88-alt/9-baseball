@@ -2,6 +2,7 @@ import {describe,it,expect} from 'vitest';
 import {createDuel,startBattle,playCard,chooseReward,saveDuel,readDuel,baseIntent,publicProbabilities,
   repertoire,repertoireWidth,readLevel,advanceBatter,endTurn,advancePitch} from '../src/duel/engine.js';
 import {rewardProblem} from '../src/duel/deck.js';
+import {perceivedProbabilities,planAction} from '../src/duel/policy.js';
 import {STAGES,ZONE_ORDER,WIDEN_EVERY,PUTAWAY_REACH,RELICS,RELIC_OFFERS,READ_THRESHOLDS,
   observeScore,bandFor,rangeFor,shadeFor} from '../src/duel/cards.js';
 
@@ -94,6 +95,27 @@ describe('information is earned, never faked',()=>{
   it('reports a true zero for zones outside the repertoire at every level',()=>{
     const s=startBattle(createDuel(1)),live=repertoire(s),p=publicProbabilities(s);
     for(let z=0;z<9;z++)if(!live.includes(z)){expect(p[z]).toBe(0);expect(bandFor(p[z])).toBe('희박');expect(shadeFor(p[z])).toBe(0);}
+  });
+  it('limits the policy to shading, ranges, or exact odds at each read level',()=>{
+    const s=startBattle(createDuel(1));
+    s.battle.intent.probabilities=[.13,.16,.17,.08,.08,.08,.08,.08,.08,.06];
+    const shade=perceivedProbabilities(s,0),range=perceivedProbabilities(s,1),exact=perceivedProbabilities(s,2);
+    expect(shade[0]).toBeCloseTo(shade[1]);expect(shade[1]).toBeCloseTo(shade[2]);
+    expect(range[0]).toBeLessThan(range[1]);expect(range[1]).toBeCloseTo(range[2]);
+    expect(exact).toEqual(s.battle.intent.probabilities);
+    for(const probabilities of [shade,range,exact])expect(probabilities.reduce((sum,p)=>sum+p,0)).toBeCloseTo(1);
+  });
+  it('can choose a different zone from the information visible at each level',()=>{
+    const s=startBattle(createDuel(1));
+    s.battle.preparations=2;s.battle.hand=[];
+    s.battle.intent.probabilities=[.13,.16,.17,.08,.08,.08,.08,.08,.08,.06];
+    expect([0,1,2].map(level=>planAction(s,{level}).zone)).toEqual([0,1,2]);
+  });
+  it('keeps the ledger ball probability exact, including a scouted certain ball',()=>{
+    const s=startBattle(createDuel(1));s.relics=['ledger'];
+    expect(perceivedProbabilities(s,0)[9]).toBeCloseTo(publicProbabilities(s)[9]);
+    s.battle.scouted=true;s.battle.pending.zone=9;
+    expect(perceivedProbabilities(s,0)).toEqual([0,0,0,0,0,0,0,0,0,1]);
   });
 });
 

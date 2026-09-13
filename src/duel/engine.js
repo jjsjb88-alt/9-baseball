@@ -156,10 +156,10 @@ export function swingOdds(s,id,zone){
   if(!covered){const foul=clamp((k==='defend'?.42:.12)+(b.patient?.12:0),0,.65);return {hit:0,foul,out:0,whiff:1-foul,power:0,covered:false};}
   return {hit:1,foul:0,out:0,whiff:0,power:0,covered:true};
 }
-export function previewCard(s,id){
+export function previewCard(s,id,probabilities=publicProbabilities(s)){
   const problem=cardProblem(s,id);if(problem)return {problem};
   if(id!=='basic'&&CARDS[card(s,id).kind].type==='skill')return {label:CARDS[card(s,id).kind].text};
-  const odds=publicProbabilities(s).map((p,z)=>({p,o:swingOdds(s,id,z)}));
+  const odds=probabilities.map((p,z)=>({p,o:swingOdds(s,id,z)}));
   const sum=key=>odds.reduce((v,{p,o})=>v+p*(o[key]||0),0);
   const hit=sum('hit'),types=hitProfile(s,id,s.battle.aimZone).map((t,i)=>({...t,p:hit?odds.reduce((v,{p,o},z)=>v+p*o.hit*hitProfile(s,id,z)[i].p,0)/hit:0}));
   const active=s.battle.relayActive;
