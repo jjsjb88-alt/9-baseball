@@ -8,7 +8,8 @@ const rangeMidpoint=p=>{const [low,high]=rangeFor(p).replaceAll('%','').split('~
 export function perceivedProbabilities(s,level=readLevel(s)){
   const exact=publicProbabilities(s);
   if(level>=2)return exact;
-  const perceived=exact.map(p=>p===0?0:level===0?shadeFor(p):rangeMidpoint(p));
+  const knowsUnused=(s.relics||[]).includes('radar');
+  const perceived=exact.map(p=>level===0?(knowsUnused&&p===0?0:shadeFor(p)):p===0?0:rangeMidpoint(p));
   if((s.relics||[]).includes('ledger'))return [...normalize(perceived.slice(0,9),1-exact[9]),exact[9]];
   return normalize(perceived);
 }

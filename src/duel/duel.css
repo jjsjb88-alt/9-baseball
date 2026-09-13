@@ -96,12 +96,10 @@
 .hand-divider span{writing-mode:vertical-rl;font-size:9px;letter-spacing:3px;color:#9fb3a4;font-weight:800}
 
 /* ---------- v8 · 레퍼토리와 읽기 등급 ---------- */
-/* 명암: the zone grid itself carries the read at level 0, before any number is earned. */
-.zone-cell.shade-0{background:#0e1f27}
+/* 명암: 등급 0은 죽은 존을 포함해 드묾 / 가끔 / 자주 세 단계만 보여준다. */
 .zone-cell.shade-1{background:#16323d}
-.zone-cell.shade-2{background:#1d4553}
-.zone-cell.shade-3{background:#265a6b}
-.zone-cell.shade-4{background:#2f7186}
+.zone-cell.shade-2{background:#235060}
+.zone-cell.shade-3{background:#2f7186}
 .zone-cell.unused{background:#0b171d;border-style:dashed;border-color:#33464c}
 .zone-cell.unused strong{font-size:9px;color:#6d8190;letter-spacing:.5px}
 .read-state{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px;margin-top:8px;padding:7px 10px;background:#0f2027;border:1px solid #3a5258;border-radius:6px}

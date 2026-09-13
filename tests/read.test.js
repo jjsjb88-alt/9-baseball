@@ -4,7 +4,7 @@ import {createDuel,startBattle,playCard,chooseReward,saveDuel,readDuel,baseInten
 import {rewardProblem} from '../src/duel/deck.js';
 import {perceivedProbabilities,planAction} from '../src/duel/policy.js';
 import {STAGES,ZONE_ORDER,WIDEN_EVERY,PUTAWAY_REACH,RELICS,RELIC_OFFERS,READ_THRESHOLDS,
-  observeScore,bandFor,rangeFor,shadeFor} from '../src/duel/cards.js';
+  observeScore,bandFor,rangeFor,shadeFor,shadeNameFor} from '../src/duel/cards.js';
 
 const pitch=(s,zone=s.battle.aimZone,roll=.5,powerRoll=.99)=>{s.battle.pending={zone,roll,powerRoll};return s;};
 function only(s,kind,plus){
@@ -83,32 +83,42 @@ describe('information is earned, never faked',()=>{
     expect(readLevel(full)).toBe(2);
     expect(readLevel({...full,relics:['scope']})).toBe(2);
   });
-  it('describes a probability without inventing digits',()=>{
+  it('describes a probability without inventing digits and uses only three shades',()=>{
     expect(rangeFor(.17)).toBe('15~20%');
     expect(rangeFor(0)).toBe('0~5%');
     expect(bandFor(.4)).toBe('자주');
     expect(bandFor(0)).toBe('희박');
-    expect(shadeFor(0)).toBe(0);
-    expect(shadeFor(.5)).toBe(4);
-    expect(shadeFor(.02)).toBeGreaterThan(0);
+    expect(shadeFor(0)).toBe(shadeFor(.02));
+    expect([0,.02,.13].map(shadeFor)).toEqual([1,1,1]);
+    expect([.14,.27].map(shadeFor)).toEqual([2,2]);
+    expect([.28,.5].map(shadeFor)).toEqual([3,3]);
+    expect([.02,.16,.4].map(shadeNameFor)).toEqual(['드묾','가끔','자주']);
   });
   it('reports a true zero for zones outside the repertoire at every level',()=>{
     const s=startBattle(createDuel(1)),live=repertoire(s),p=publicProbabilities(s);
-    for(let z=0;z<9;z++)if(!live.includes(z)){expect(p[z]).toBe(0);expect(bandFor(p[z])).toBe('희박');expect(shadeFor(p[z])).toBe(0);}
+    for(let z=0;z<9;z++)if(!live.includes(z)){expect(p[z]).toBe(0);expect(bandFor(p[z])).toBe('희박');expect(shadeFor(p[z])).toBe(shadeFor(.02));}
   });
   it('limits the policy to shading, ranges, or exact odds at each read level',()=>{
     const s=startBattle(createDuel(1));
-    s.battle.intent.probabilities=[.13,.16,.17,.08,.08,.08,.08,.08,.08,.06];
+    s.battle.intent.probabilities=[.14,.20,.21,.06,.06,.06,.06,.06,.06,.09];
     const shade=perceivedProbabilities(s,0),range=perceivedProbabilities(s,1),exact=perceivedProbabilities(s,2);
     expect(shade[0]).toBeCloseTo(shade[1]);expect(shade[1]).toBeCloseTo(shade[2]);
     expect(range[0]).toBeLessThan(range[1]);expect(range[1]).toBeCloseTo(range[2]);
     expect(exact).toEqual(s.battle.intent.probabilities);
     for(const probabilities of [shade,range,exact])expect(probabilities.reduce((sum,p)=>sum+p,0)).toBeCloseTo(1);
   });
+  it('hides unused zones at level zero unless the radar relic identifies them',()=>{
+    const s=startBattle(createDuel(1));
+    s.battle.intent.probabilities=[0,.02,.13,.14,.27,.28,.04,.04,.04,.04];
+    const hidden=perceivedProbabilities(s,0);
+    expect(hidden[0]).toBeCloseTo(hidden[1]);
+    const revealed=perceivedProbabilities({...s,relics:['radar']},0);
+    expect(revealed[0]).toBe(0);expect(revealed[1]).toBeGreaterThan(0);
+  });
   it('can choose a different zone from the information visible at each level',()=>{
     const s=startBattle(createDuel(1));
     s.battle.preparations=2;s.battle.hand=[];
-    s.battle.intent.probabilities=[.13,.16,.17,.08,.08,.08,.08,.08,.08,.06];
+    s.battle.intent.probabilities=[.14,.20,.21,.06,.06,.06,.06,.06,.06,.09];
     expect([0,1,2].map(level=>planAction(s,{level}).zone)).toEqual([0,1,2]);
   });
   it('keeps the ledger ball probability exact, including a scouted certain ball',()=>{

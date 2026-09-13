@@ -44,6 +44,14 @@ describe('9-zone strategic UI',()=>{
     const before=readDuel(localStorage).battle.pending;fireEvent.click(screen.getByRole('button',{name:'몸쪽 중간',exact:true}));
     expect(readDuel(localStorage).battle.pending).toEqual(before);expect(readDuel(localStorage).battle.aimZone).toBe(3);
   });
+  it('renders an unused zone like a rare zone at read level zero',()=>{
+    const s=startBattle(createDuel(1,'away'));
+    s.battle.intent.probabilities=[0,.02,.13,.14,.27,.28,.04,.04,.04,.04];
+    saveDuel(localStorage,s);render(<Duel/>);fireEvent.click(screen.getByRole('button',{name:'이어하기'}));dismiss();
+    const unused=screen.getByRole('button',{name:'몸쪽 높음'}),rare=screen.getByRole('button',{name:'가운데 높음'});
+    expect(unused.classList.contains('shade-1')).toBe(true);expect(rare.classList.contains('shade-1')).toBe(true);
+    expect(unused.title).toBe('드묾');expect(unused.textContent).not.toContain('안 씀');
+  });
   it('hit puts named player on base and gates the next batter, including reload',()=>{
     begin();useCard('strike');expect(screen.getByLabelText('베이스 주자').textContent).toContain('강한결');
     expect(screen.getByRole('region',{name:'타석 종료 결과'})).toBeTruthy();expect(screen.queryByRole('button',{name:'카드 사용'})).toBeNull();

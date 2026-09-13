@@ -1,6 +1,6 @@
 import React,{useEffect,useId,useRef,useState} from 'react';
 import {CARDS,TYPE_NAMES,STAGES,GLOSSARY,LINEUP,BUILDS,ZONES,GROWTHS,growthCost,rewardChoices,AXES,AXIS_NAMES,ROLES,REWARD_ACTIONS,AFFINITY_CARDS,upgradeText,canUpgrade,DECK_MIN,DECK_MAX,
-  READ_LEVELS,RELICS,RELIC_OFFERS,bandFor,rangeFor,shadeFor,observeScore} from './cards.js';
+  READ_LEVELS,RELICS,RELIC_OFFERS,bandFor,rangeFor,shadeFor,shadeNameFor,observeScore} from './cards.js';
 import {createDuel,startBattle,playCard,endTurn,chooseReward,previewCard,readDuel,saveDuel,advanceBatter,currentBatter,advancePitch,setAimZone,coverage,publicProbabilities,pitchClue,matchup,setGrowthMode,growthProblem,readLevel} from './engine.js';
 import {deckProfile,diagnose,applyRewardToDeck,rewardProblem,profileDelta,relationsFor,growthConflict} from './deck.js';
 import './duel.css';
@@ -56,9 +56,10 @@ function ZoneBoard({s,id,onZone,disabled}){
     {clue&&<b className="scout-clue">{clue} · 확률 갱신</b>}
     </div><div className="zone-grid" role="group" aria-label="노릴 코스">
     {ZONES.map((name,z)=>{const dead=p[z]<=0,shade=shadeFor(p[z]);
-      // Level 0 shows shading only. A coarser level hides digits; it never prints a number that is not true.
-      const figure=b.revealed?(b.revealed.zone===z?'●':'·'):dead&&showUnused?'안 씀':level===0?'':level===1?rangeFor(p[z]):pct(p[z]);
-      return <button key={z} aria-label={name} title={dead?'이번에 쓰지 않는 존':bandFor(p[z])} aria-pressed={b.aimZone===z} disabled={disabled} onClick={()=>onZone(z)}
+      // Level 0 deliberately groups an unused zone with a rare one unless the radar relic identifies it.
+      const figure=b.revealed?(b.revealed.zone===z?'●':'·'):dead&&showUnused?'안 씀':level===0?'':dead?'0%':level===1?rangeFor(p[z]):pct(p[z]);
+      const title=dead&&showUnused?'이번에 쓰지 않는 존':level===0?shadeNameFor(p[z]):dead?'0%':level===1?rangeFor(p[z]):pct(p[z]);
+      return <button key={z} aria-label={name} title={title} aria-pressed={b.aimZone===z} disabled={disabled} onClick={()=>onZone(z)}
         className={'zone-cell shade-'+shade+' '+(dead&&showUnused?'unused ':'')+(covered.includes(z)?'covered ':'')+(b.aimZone===z?'aimed ':'')+(b.revealed?.zone===z?'actual':'')}>
         <span>{name}</span><strong>{figure}</strong><small>{proficient.includes(z)?'★ 숙련':'비숙련'}{b.aimZone===z?' · 노림':''}</small>
       </button>;})}</div>

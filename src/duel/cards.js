@@ -78,7 +78,7 @@ export const WIDEN_EVERY=2; // plate appearances per +1 zone
 export const PUTAWAY_REACH=2; // extra zones a pitcher reaches for at two strikes
 // Information is earned, not given. 0-1 관찰 = shading only, 2-3 = bands, 4+ = exact percentages.
 export const READ_LEVELS=[
-  {name:'명암만',short:'명암',detail:'존의 밝기로 경향만 보입니다. 숫자는 아직 보이지 않습니다.'},
+  {name:'명암만',short:'명암',detail:'존의 밝기를 자주·가끔·드묾 세 단계로만 봅니다. 숫자는 아직 보이지 않습니다.'},
   {name:'대략 구간',short:'구간',detail:'존마다 대략적인 확률 구간이 보입니다.'},
   {name:'정확한 확률',short:'확률',detail:'존마다 정확한 확률이 보입니다.'},
 ];
@@ -87,7 +87,8 @@ export const READ_BANDS=[[.28,'자주'],[.14,'가끔'],[.05,'드묾'],[0,'희박
 export const observeScore=deck=>(deck||[]).reduce((n,c)=>n+(CARDS[c.kind]?.role==='관찰'?(c.plus?2:1):0),0);
 export const bandFor=p=>(READ_BANDS.find(([min])=>p>=min)||READ_BANDS.at(-1))[1];
 export const rangeFor=p=>{const lo=Math.max(0,Math.floor(p*20)*5);return lo+'~'+(lo+5)+'%';};
-export const shadeFor=p=>p<=0?0:Math.min(4,1+Math.floor(p/.09));
+export const shadeFor=p=>p>=.28?3:p>=.14?2:1;
+export const shadeNameFor=p=>['','드묾','가끔','자주'][shadeFor(p)];
 // Relics sit on top of the deck, never replace it. All three are about seeing the pitcher.
 export const RELICS={
   scope:{name:'낡은 망원경',art:'eye',text:'읽기 등급 +1. 존 확률이 한 단계 더 자세히 보입니다.'},
