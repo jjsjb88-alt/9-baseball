@@ -47,6 +47,14 @@ function ZoneBoard({s,id,onZone,disabled}){
   const duel=matchup(s,id||'basic'),sacrifice=id&&s.deck.find(c=>c.id===id)?.kind==='bunt';
   const covered=b.revealed?.coverage||coverage(s,id||'basic'),proficient=BUILDS[s.build].zones,clue=pitchClue(s);
   const level=readLevel(s),relics=s.relics||[],showUnused=relics.includes('radar'),exactBall=relics.includes('ledger');
+  const zoneButtons=useRef([]);
+  function moveZone(e,z){
+    const next={ArrowLeft:z%3?z-1:z,ArrowRight:z%3<2?z+1:z,ArrowUp:z>=3?z-3:z,ArrowDown:z<6?z+3:z,Home:0,End:8}[e.key];
+    if(next==null||next===z)return;
+    e.preventDefault();
+    onZone(next);
+    zoneButtons.current[next]?.focus();
+  }
   return <section className="zone-panel" aria-label="9존 타격 계획">
     <div className="zone-explain"><span className="eyebrow">{b.revealed?'REVEAL · 실제 공':'READ → BET'}</span><h2>{b.revealed?b.revealed.label:'어떤 공을 기다릴까?'}</h2>
     <p>{b.revealed?'● 표시가 방금 공의 코스입니다.':sacrifice?'희생 번트는 안타 보장의 예외입니다. 스트라이크에 70% 희생, 30% 파울.':'존 선택은 공을 다시 뽑지 않습니다. 숫자는 코스 확률, 초록 테두리는 타격 범위. 범위에 들어오면 안타 확정입니다.'}</p>
@@ -54,14 +62,15 @@ function ZoneBoard({s,id,onZone,disabled}){
     <div className={'ball-read '+(b.revealed?.zone===9?'actual':'')}>존 밖 볼 {b.revealed?(b.revealed.zone===9?'● 실제 공':''):exactBall||level===2?pct(p[9]):level===1?rangeFor(p[9]):bandFor(p[9])}{exactBall&&level<2&&<i className="relic-mark"> 기록장</i>}</div>
     <div className="read-state"><b>레퍼토리 {b.intent.repertoire?.length||9}/9</b><span>읽기 · {READ_LEVELS[level].name}</span>{(s.relics||[]).map(k=><em key={k}>{RELICS[k].name}</em>)}</div>
     {clue&&<b className="scout-clue">{clue} · 확률 갱신</b>}
-    </div><div className="zone-grid" role="group" aria-label="노릴 코스">
+    </div><p id="zone-keyboard-help" className="sr-only">방향키로 인접한 존을 고르고, Home과 End 키로 처음과 마지막 존을 고릅니다.</p><div className="zone-grid" role="group" aria-label="노릴 코스" aria-describedby="zone-keyboard-help">
     {ZONES.map((name,z)=>{const dead=p[z]<=0,shade=shadeFor(p[z]);
       // Level 0 deliberately groups an unused zone with a rare one unless the radar relic identifies it.
-      const figure=b.revealed?(b.revealed.zone===z?'●':'·'):dead&&showUnused?'안 씀':level===0?'':dead?'0%':level===1?rangeFor(p[z]):pct(p[z]);
+      const figure=b.revealed?(b.revealed.zone===z?'●':'·'):dead&&showUnused?'안 씀':level===0?shadeNameFor(p[z]):dead?'0%':level===1?rangeFor(p[z]):pct(p[z]);
       const title=dead&&showUnused?'이번에 쓰지 않는 존':level===0?shadeNameFor(p[z]):dead?'0%':level===1?rangeFor(p[z]):pct(p[z]);
-      return <button key={z} aria-label={name} title={title} aria-pressed={b.aimZone===z} disabled={disabled} onClick={()=>onZone(z)}
+      return <button key={z} ref={el=>zoneButtons.current[z]=el} aria-label={name} aria-describedby={`zone-read-${z}`} title={title} aria-pressed={b.aimZone===z} disabled={disabled}
+        tabIndex={b.aimZone===z?0:-1} onKeyDown={e=>moveZone(e,z)} onClick={()=>onZone(z)}
         className={'zone-cell shade-'+shade+' '+(dead&&showUnused?'unused ':'')+(covered.includes(z)?'covered ':'')+(b.aimZone===z?'aimed ':'')+(b.revealed?.zone===z?'actual':'')}>
-        <span>{name}</span><strong>{figure}</strong><small>{proficient.includes(z)?'★ 숙련':'비숙련'}{b.aimZone===z?' · 노림':''}</small>
+        <span>{name}</span><strong id={`zone-read-${z}`}>{figure}</strong><small>{proficient.includes(z)?'★ 숙련':'비숙련'}{b.aimZone===z?' · 노림':''}</small>
       </button>;})}</div>
     <div className="pitch-history" aria-label="최근 투구 기록">{b.history.length?b.history.slice(-5).map((h,i)=><span key={i}>{h.balls}B {h.strikes}S · {h.zone===9?'볼':ZONES[h.zone]} / {h.label}</span>):<span>첫 공 · 투구 기록이 여기에 쌓입니다.</span>}</div>
   </section>;
@@ -130,7 +139,7 @@ function RewardScreen({s,growthChoice,onGrowth,action,onAction,target,onTarget,o
   const after=pending&&!problem?applyRewardToDeck(s.deck,pending,s.nextId).deck:null;
   const delta=after?profileDelta(s.deck,after):null;
   const grown=growthChoice?{...s.growth,[growthChoice]:s.growth[growthChoice]+1}:s.growth;
-  return <>
+  return <div className="reward-flow" role="group" aria-label="보상 선택 4단계">
     <GrowthReward s={s} chosen={growthChoice} onChoose={onGrowth}/>
     {!growthChoice?<p className="growth-prompt">먼저 성장을 선택하세요. 선택 전에는 보상이나 다음 승부가 확정되지 않습니다.</p>:<>
       <section className="deck-section" aria-label="내 덱 구성">
@@ -173,7 +182,7 @@ function RewardScreen({s,growthChoice,onGrowth,action,onAction,target,onTarget,o
         <button className="primary" disabled={!!problem} onClick={onConfirm}>{GROWTHS[growthChoice].short} Lv.{s.growth[growthChoice]+1} · 이 덱으로 확정</button>
       </section>
     </>}
-  </>;
+  </div>;
 }
 
 export default function Duel(){

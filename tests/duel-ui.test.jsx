@@ -7,7 +7,7 @@ import {createDuel,startBattle,playCard,advanceBatter,readDuel,saveDuel} from '.
 import {planAction} from '../src/duel/policy.js';
 import {CARDS,ZONES} from '../src/duel/cards.js';
 beforeEach(()=>{localStorage.clear();vi.useFakeTimers()});
-afterEach(()=>{cleanup();vi.useRealTimers()});
+afterEach(()=>{cleanup();vi.useRealTimers();vi.unstubAllGlobals()});
 const finish=()=>act(()=>vi.runAllTimers());
 function dismiss(){const skip=screen.queryByRole('button',{name:'건너뛰기',exact:true});if(skip)fireEvent.click(skip);}
 function begin(zone=5,roll=.5){
@@ -44,13 +44,33 @@ describe('9-zone strategic UI',()=>{
     const before=readDuel(localStorage).battle.pending;fireEvent.click(screen.getByRole('button',{name:'몸쪽 중간',exact:true}));
     expect(readDuel(localStorage).battle.pending).toEqual(before);expect(readDuel(localStorage).battle.aimZone).toBe(3);
   });
+  it('moves and selects the 9-zone grid with arrow, Home, and End keys',()=>{
+    begin();const middle=screen.getByRole('button',{name:'한가운데',exact:true});middle.focus();
+    fireEvent.keyDown(middle,{key:'ArrowRight'});expect(document.activeElement).toBe(screen.getByRole('button',{name:/바깥 중간/}));
+    expect(readDuel(localStorage).battle.aimZone).toBe(5);
+    fireEvent.keyDown(document.activeElement,{key:'ArrowUp'});expect(document.activeElement).toBe(screen.getByRole('button',{name:/바깥 높음/}));
+    fireEvent.keyDown(document.activeElement,{key:'End'});expect(document.activeElement).toBe(screen.getByRole('button',{name:/바깥 낮음/}));
+    expect(readDuel(localStorage).battle.aimZone).toBe(8);
+  });
   it('renders an unused zone like a rare zone at read level zero',()=>{
     const s=startBattle(createDuel(1,'away'));
     s.battle.intent.probabilities=[0,.02,.13,.14,.27,.28,.04,.04,.04,.04];
     saveDuel(localStorage,s);render(<Duel/>);fireEvent.click(screen.getByRole('button',{name:'이어하기'}));dismiss();
     const unused=screen.getByRole('button',{name:'몸쪽 높음'}),rare=screen.getByRole('button',{name:'가운데 높음'});
     expect(unused.classList.contains('shade-1')).toBe(true);expect(rare.classList.contains('shade-1')).toBe(true);
-    expect(unused.title).toBe('드묾');expect(unused.textContent).not.toContain('안 씀');
+    expect(unused.title).toBe('드묾');expect(unused.textContent).toContain('드묾');expect(unused.textContent).not.toContain('안 씀');
+  });
+  it('keeps the four reward stages in screen-reader order',()=>{
+    const s=startBattle(createDuel(1));s.battle.runs=1;s.battle.bases[2]='p8';s.battle.pending={zone:5,roll:.5,powerRoll:.99};
+    saveDuel(localStorage,playCard(s,'c0'));render(<Duel/>);fireEvent.click(screen.getByRole('button',{name:'이어하기'}));
+    fireEvent.click(screen.getByRole('button',{name:'끝까지 기다린 한 공',exact:true}));
+    const flow=screen.getByRole('group',{name:'보상 선택 4단계'});
+    expect([...flow.querySelectorAll(':scope > section')].map(x=>x.getAttribute('aria-label'))).toEqual(['성장 선택','내 덱 구성','덱 변경 방식','변화 확인']);
+  });
+  it('shortens result effects when reduced motion is requested',()=>{
+    vi.stubGlobal('matchMedia',vi.fn(()=>({matches:true,addEventListener:vi.fn(),removeEventListener:vi.fn()})));
+    begin(9);fireEvent.click(screen.getByRole('button',{name:'한 구 지켜보기',exact:true}));expect(document.querySelector('.duel-fx')).toBeTruthy();
+    act(()=>vi.advanceTimersByTime(61));expect(document.querySelector('.duel-fx')).toBeNull();
   });
   it('hit puts named player on base and gates the next batter, including reload',()=>{
     begin();useCard('strike');expect(screen.getByLabelText('베이스 주자').textContent).toContain('강한결');
