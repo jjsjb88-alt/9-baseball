@@ -19,19 +19,6 @@
 
 ## 미처리 지시
 
-### 4. 죽은 코드 마지막 세대를 정리한다
-
-현행 진입점은 `src/duel` 하나인데 저장소에는 폐기된 세대가 남아 매 배포마다 검사가 돈다.
-
-- `src/game/` (NIGHT RUN / CORE TEST)
-- 그에 딸린 `tests/run-*`, `tests/core-test-*`, `tests/showdown-*`
-- `scripts/core-test-report.js`
-
-**반드시 지우기 전에** `src/main.jsx`부터 import 그래프를 따라가 `src/duel`이 이들 중 무엇도
-참조하지 않음을 확인한다. 하나라도 참조하면 그 항목은 건너뛰고 이유를 STATUS에 적는다.
-git 이력이 보존하므로 복구 가능하다. `package.json`의 관련 스크립트도 함께 정리한다.
-한 바퀴에 전부 하지 말고 한 세대씩 해도 된다.
-
 ### 5. `HANDOFF.md`를 읽을 수 있는 크기로 되돌린다
 
 80KB · 26개 절이고 대부분 역사다. 새 세션이 현행을 판별하는 비용이 계속 커진다.
@@ -68,6 +55,7 @@ git 이력이 보존하므로 복구 가능하다. `package.json`의 관련 스�
 
 ## 처리 완료
 
+- (2026-09-13) 현행 import 그래프와 분리된 `src/game` NIGHT RUN / CORE TEST 세대·검사·리포트·전용 스타일 제거 — `4bfb400`
 - (2026-09-13) 현행 import 그래프와 분리된 `BaseballSim-deck-5.jsx` 세대·UI 검사·전용 런타임 자산 제거 — `2850d35`
 - (2026-09-13) 현행 import 그래프와 분리된 LAST LIGHT 세대·검사·리포트·2.4MB 자산 제거 — `ed1d2dd`
 - (2026-09-13) 레퍼토리 확장 순간을 사건·로그·강조로 표시하고 Chrome 1440×1000 화면 확인 — `5966572`
