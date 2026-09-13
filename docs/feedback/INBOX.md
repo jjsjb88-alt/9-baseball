@@ -19,16 +19,14 @@
 
 ## 미처리 지시
 
-### 4. 죽은 코드 세 세대를 정리한다
+### 4. 죽은 코드 두 세대를 정리한다
 
 현행 진입점은 `src/duel` 하나인데 저장소에는 폐기된 세대가 남아 매 배포마다 검사가 돈다.
 
 - `BaseballSim-deck-5.jsx` (486KB 단일 파일)
-- `src/reboot/` (LAST LIGHT, 2026-09-09에 5시간 살았다)
 - `src/game/` (NIGHT RUN / CORE TEST)
-- 그에 딸린 `tests/last-light-*`, `tests/run-*`, `tests/core-test-*`, `tests/showdown-*`
-- `scripts/last-light-report.js`, `scripts/core-test-report.js`
-- `assets/reboot/` (2.4MB 배경 하나 포함 — 저장소 최대 파일이 폐기된 세대의 것이다)
+- 그에 딸린 `tests/run-*`, `tests/core-test-*`, `tests/showdown-*`
+- `scripts/core-test-report.js`
 
 **반드시 지우기 전에** `src/main.jsx`부터 import 그래프를 따라가 `src/duel`이 이들 중 무엇도
 참조하지 않음을 확인한다. 하나라도 참조하면 그 항목은 건너뛰고 이유를 STATUS에 적는다.
@@ -71,6 +69,7 @@ git 이력이 보존하므로 복구 가능하다. `package.json`의 관련 스�
 
 ## 처리 완료
 
+- (2026-09-13) 현행 import 그래프와 분리된 LAST LIGHT 세대·검사·리포트·2.4MB 자산 제거 — `ed1d2dd`
 - (2026-09-13) 레퍼토리 확장 순간을 사건·로그·강조로 표시하고 Chrome 1440×1000 화면 확인 — `5966572`
 - (2026-09-13) `docs/DUEL.md`를 v8 현행 계약으로 갱신하고 v6 이하를 과거로 표시 — `e36f645`
 - (2026-09-13) 읽기 등급 0을 3단계 명암으로 축소 · 죽은 존 은닉 · 판독기 효과 복구 — `f21e06c`

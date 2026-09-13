@@ -1,24 +1,21 @@
 # 9ZONE SHOWDOWN — Codex 인수인계
 
-## 최우선 인수인계: v8.5 · 2026-09-13
+## 최우선 인수인계: v8.6 · 2026-09-13
 
-읽는 순서: `docs/feedback/INBOX.md` 전체 → `docs/STATUS.md` v8.5 절. 아래 v8.4 절과 그
+읽는 순서: `docs/feedback/INBOX.md` 전체 → `docs/STATUS.md` v8.6 절. 아래 v8.4 절과 그
 이하는 역사다.
 
-INBOX 3번을 완료했다. 구현·회귀 테스트는 `5966572`에 체크포인트로 남겼다. `advanceBatter`는 영구
-레퍼토리 폭이 늘어난 순간 새 존 이름과 폭 변화를 `s.last.events`와 `battle.log`에 기록한다.
-화면의 기존 `role="status"` 경로는 이 사건일 때 금색 경계·배경을 쓰며 새 애니메이션은 없다.
+INBOX 4번 중 LAST LIGHT 한 세대를 완료했다. 삭제 전 `src/main.jsx`에서 시작한 현행 그래프가
+`src/duel` 내부와 `assets/duel`로만 이어지고 `src/reboot`를 참조하지 않음을 확인했다.
+LAST LIGHT 코드 6개와 전용 검사 2개, 리포트, package 명령, `assets/reboot`를 `ed1d2dd`에서
+제거했다. Git 이력으로 복구 가능하며 NIGHT RUN / CORE TEST와 단일 파일 세대는 건드리지 않았다.
 
-`pnpm test` 14파일·128개, `pnpm build`, `git diff --check`가 통과했다. 확장 경계·비경계,
-로그 기록, live status 텍스트와 강조 클래스를 검사한다.
+삭제 후 관련 참조는 0건이다. `pnpm test` 12파일·117개, `pnpm build`, `git diff --check`가
+통과했다. Chrome 1440×1000 실제 시작 화면을 직접 읽어 배경·타자 이미지·세 시작 덱·시드 입력·
+시작 버튼이 정상 렌더링되고 잘리거나 로드에 실패한 요소가 없음을 확인했다. 화면 자체는 바꾸지 않았다.
 
-브라우저 커넥터에는 사용 가능한 브라우저가 없었지만, Chrome 프로필을 Vite 감시 범위 밖에 두고
-1440×1000 실제 화면을 캡처했다. 3번 타자 `#24 박도윤`, `레퍼토리 5/9`,
-`투수 레퍼토리 확장 · 4→5존 · 가운데 높음 추가`가 함께 보였고, 스크린샷을 직접 읽어 금색
-강조 바의 배치·가독성을 확인했다. 사람 재미나 30분 런은 검증하지 않았다.
-
-다음 세션은 INBOX 4번의 죽은 코드 정리에서 한 세대만 고른다. 삭제 전에 `src/main.jsx`부터
-import 그래프를 따라 현행 `src/duel`이 대상 코드·검사·스크립트·자산을 참조하지 않는지 확인한다.
+다음 세션도 INBOX 4번에서 남은 두 세대 중 하나만 고른다. 삭제 전에 `src/main.jsx`부터 import
+그래프를 다시 따라 대상 코드·검사·스크립트가 현행에서 참조되지 않는지 확인한다.
 
 `deckbuilding-v8` 브랜치에 있으며 **push·배포하지 않았다.** `loop/PROMPT.md`가 푸시를 금지한다.
 
