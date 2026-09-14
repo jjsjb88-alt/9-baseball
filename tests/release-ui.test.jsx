@@ -27,3 +27,13 @@ it('watch selection does not consume a pitch and explicit execution does',()=>{
  fireEvent.click(screen.getByRole('button',{name:'한 구 지켜보기',exact:true}));expect(readDuel(localStorage)).toEqual(s);
  fireEvent.click(screen.getByRole('button',{name:'지켜보기 · 공 진행'}));expect(readDuel(localStorage).stats.pitches).toBe(1);
 });
+it('keeps batter and impact animation keys distinct on the first hit',()=>{
+ const error=vi.spyOn(console,'error').mockImplementation(()=>{});
+ try{
+  const s=startBattle(createDuel(1));s.battle.pending={zone:5,roll:.5,powerRoll:.99};saveDuel(localStorage,s);render(<Duel/>);
+  fireEvent.click(screen.getByRole('button',{name:'이어하기'}));fireEvent.click(screen.getByRole('button',{name:'스윙하기',exact:true}));
+  fireEvent.click(screen.getByRole('button',{name:'밀어치기',exact:true}));fireEvent.click(screen.getByTestId('execute-action'));
+  expect(readDuel(localStorage).stats.hits).toBe(1);
+  expect(error.mock.calls.some(args=>args.join(' ').includes('same key'))).toBe(false);
+ }finally{error.mockRestore();}
+});
