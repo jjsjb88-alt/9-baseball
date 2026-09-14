@@ -2,7 +2,9 @@
 
 ## 최우선 인수인계 V8.10 · 2026-09-15
 
-현재 코드/배포 준비는 `codex/v8-release`에서 수행했다. 원본 작업 디렉터리의 main+미커밋 V6.1 및
+현재 코드 `5d1be77`은 main과 `codex/v8-release`에 push했고 Pages 배포도 완료했다.
+Actions `34896681529` 성공 및 공개 사이트 동일 번들/첫 안타/저장 복원을 확인했다.
+작업 트리는 원본 폴더 아래 `logs/v8-release`다. 원본 작업 디렉터리의 main+미커밋 V6.1 및
 별도 level/deckEdits 실험은 수정하지 않았다. 그 코드를 다시 전체 병합하지 말 것.
 배포 기준은 v8의 `plus` / `chooseReward` / version 8 계약이다.
 

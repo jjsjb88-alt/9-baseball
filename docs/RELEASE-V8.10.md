@@ -46,3 +46,9 @@
 
 배포 대상은 기존 GitHub Pages: https://jjsjb88-alt.github.io/9-baseball/
 main에 fast-forward 가능한 커밋을 올리고 CI 검사 후 배포한다. 강제 push는 하지 않는다.
+
+2026-09-15: 코드 `5d1be776258f1c36b0ddb15347b8f17674c1fdea` 배포 완료.
+[Actions 34896681529](https://github.com/jjsjb88-alt/9-baseball/actions/runs/34896681529) 성공.
+공개 DOM의 `/9-baseball/assets/index-B7HKwh1J.js`가 로컬 최종 빌드와 같음을 확인했다.
+공개 사이트에서 새 런 → 첫 경기 → 리로드/이어하기 → 밀어치기 중전안타/1루 출루를 확인했다.
+이 과정의 콘솔 오류/경고는 없었다. 문서만 갱신하는 후속 커밋은 배포 코드 변경이 아니다.
