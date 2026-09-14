@@ -14,7 +14,7 @@ function begin(zone=5,roll=.5){
   const s=startBattle(createDuel(1,'away'));s.battle.pending={zone,roll,powerRoll:.95};
   saveDuel(localStorage,s);render(<Duel/>);fireEvent.click(screen.getByRole('button',{name:'이어하기'}));dismiss();
 }
-function useCard(kind){fireEvent.click(screen.getByRole('button',{name:CARDS[kind].type==='skill'?'준비하기':'스윙하기',exact:true}));fireEvent.click(screen.getAllByRole('button',{name:CARDS[kind].name,exact:true})[0]);fireEvent.click(screen.getByRole('button',{name:'카드 사용'}));finish();}
+function useCard(kind){fireEvent.click(screen.getByRole('button',{name:CARDS[kind].type==='skill'?'준비하기':'스윙하기',exact:true}));fireEvent.click(screen.getAllByRole('button',{name:CARDS[kind].name,exact:true})[0]);fireEvent.click(screen.getByTestId('execute-action'));finish();}
 describe('9-zone strategic UI',()=>{
   it('selects a distinct starter deck and trial seed without overwriting legacy saves',()=>{
     localStorage.setItem('9zone-lineup-v3','legacy');render(<Duel/>);
@@ -65,16 +65,16 @@ describe('9-zone strategic UI',()=>{
     saveDuel(localStorage,playCard(s,'c0'));render(<Duel/>);fireEvent.click(screen.getByRole('button',{name:'이어하기'}));
     fireEvent.click(screen.getByRole('button',{name:'끝까지 기다린 한 공',exact:true}));
     const flow=screen.getByRole('group',{name:'보상 선택 4단계'});
-    expect([...flow.querySelectorAll(':scope > section')].map(x=>x.getAttribute('aria-label'))).toEqual(['성장 선택','내 덱 구성','덱 변경 방식','변화 확인']);
+    expect([...flow.querySelectorAll(':scope > section')].map(x=>x.getAttribute('aria-label'))).toEqual(['다음 상대 리포트','성장 선택','내 덱 구성','덱 변경 방식','변화 확인']);
   });
   it('shortens result effects when reduced motion is requested',()=>{
     vi.stubGlobal('matchMedia',vi.fn(()=>({matches:true,addEventListener:vi.fn(),removeEventListener:vi.fn()})));
-    begin(9);fireEvent.click(screen.getByRole('button',{name:'한 구 지켜보기',exact:true}));expect(document.querySelector('.duel-fx')).toBeTruthy();
+    begin(9);fireEvent.click(screen.getByRole('button',{name:'한 구 지켜보기',exact:true}));fireEvent.click(screen.getByRole('button',{name:'지켜보기 · 공 진행'}));expect(document.querySelector('.duel-fx')).toBeTruthy();
     act(()=>vi.advanceTimersByTime(61));expect(document.querySelector('.duel-fx')).toBeNull();
   });
   it('hit puts named player on base and gates the next batter, including reload',()=>{
     begin();useCard('strike');expect(screen.getByLabelText('베이스 주자').textContent).toContain('강한결');
-    expect(screen.getByRole('region',{name:'타석 종료 결과'})).toBeTruthy();expect(screen.queryByRole('button',{name:'카드 사용'})).toBeNull();
+    expect(screen.getByRole('region',{name:'타석 종료 결과'})).toBeTruthy();expect(screen.queryByTestId('execute-action')).toBeNull();
     const saved=readDuel(localStorage);cleanup();render(<Duel/>);fireEvent.click(screen.getByRole('button',{name:'이어하기'}));expect(readDuel(localStorage)).toEqual(saved);
     fireEvent.click(screen.getByRole('button',{name:'다음 타자 입장 · 2번 이민준'}));expect(readDuel(localStorage).battle.batterIndex).toBe(1);
   });
@@ -95,11 +95,11 @@ describe('9-zone strategic UI',()=>{
   });
   it('BASIC is always selectable and reveal cannot be double-triggered',()=>{
     begin(5);fireEvent.click(screen.getByRole('button',{name:'스윙하기',exact:true}));fireEvent.click(screen.getByRole('button',{name:'BASIC SWING',exact:true}));
-    fireEvent.click(screen.getByRole('button',{name:'카드 사용'}));expect(readDuel(localStorage).stats.pitches).toBe(1);expect(readDuel(localStorage).stats.cards).toBe(0);finish();
+    fireEvent.click(screen.getByTestId('execute-action'));expect(readDuel(localStorage).stats.pitches).toBe(1);expect(readDuel(localStorage).stats.cards).toBe(0);finish();
     expect(readDuel(localStorage).stats.hits).toBe(1);
   });
   it('duplicate watch input consumes only one pitch and records a ball',()=>{
-    begin(9);const button=screen.getByRole('button',{name:'한 구 지켜보기',exact:true});fireEvent.click(button);fireEvent.click(button);
+    begin(9);fireEvent.click(screen.getByRole('button',{name:'한 구 지켜보기',exact:true}));const button=screen.getByRole('button',{name:'지켜보기 · 공 진행'});fireEvent.click(button);fireEvent.click(button);
     expect(readDuel(localStorage).stats.pitches).toBe(1);expect(readDuel(localStorage).battle.balls).toBe(1);finish();
   });
   it('plays a complete run through UI with public decisions only',()=>{
@@ -115,8 +115,8 @@ describe('9-zone strategic UI',()=>{
         fireEvent.click(screen.getByRole('button',{name:'행운 Lv.'+(s.growth.fortune+1)+' · 이 덱으로 확정'}));}
       else {const a=planAction(s);fireEvent.click(screen.getByRole('button',{name:ZONES[a.zone],exact:true}));
         if(a.mode!==s.battle.growthMode)fireEvent.click(screen.getByRole('button',{name:a.mode==='normal'?'성장 사용 해제':a.mode==='fortune'?'행운 예약':'기다린 공 승부',exact:true}));
-        if(!a.id){fireEvent.click(screen.getByRole('button',{name:'한 구 지켜보기',exact:true}));finish();}
-        else if(a.id==='basic'){fireEvent.click(screen.getByRole('button',{name:'스윙하기',exact:true}));fireEvent.click(screen.getByRole('button',{name:'BASIC SWING',exact:true}));fireEvent.click(screen.getByRole('button',{name:'카드 사용'}));finish();}
+        if(!a.id){fireEvent.click(screen.getByRole('button',{name:'한 구 지켜보기',exact:true}));fireEvent.click(screen.getByRole('button',{name:'지켜보기 · 공 진행'}));finish();}
+        else if(a.id==='basic'){fireEvent.click(screen.getByRole('button',{name:'스윙하기',exact:true}));fireEvent.click(screen.getByRole('button',{name:'BASIC SWING',exact:true}));fireEvent.click(screen.getByTestId('execute-action'));finish();}
         else useCard(s.deck.find(c=>c.id===a.id).kind);
       }
     }

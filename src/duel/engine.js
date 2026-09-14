@@ -1,4 +1,4 @@
-import {CARDS,SAVE_KEY,STAGES,LINEUP,BUILDS,ZONES,GROWTHS,growthCost,rewardChoices,cardPower,DECK_MIN,DECK_MAX,
+import {CARDS,SAVE_KEY,STAGES,LINEUP,BUILDS,ZONES,GROWTHS,growthCost,rewardChoices,cardPower,cardText,DECK_MIN,DECK_MAX,
   ZONE_ORDER,WIDEN_EVERY,PUTAWAY_REACH,READ_THRESHOLDS,observeScore,RELICS,RELIC_OFFERS} from './cards.js';
 import {applyRewardToDeck,rewardProblem} from './deck.js';
 const clone=s=>JSON.parse(JSON.stringify(s));
@@ -106,11 +106,19 @@ export function setGrowthMode(state,mode){
   if(growthProblem(state,mode)||state.battle.growthMode===mode)return state;
   const s=clone(state);s.battle.growthMode=mode;return s;
 }
+// Only deliberate scouting exposes which row/column contains this already-dealt pitch.
+export function knownPitchZones(s){
+  const b=s.battle;
+  if(!b?.scouted||!b.pending)return Array.from({length:10},(_,z)=>z);
+  const zone=b.pending.zone;
+  if(zone===9)return [9];
+  return Array.from({length:9},(_,z)=>z).filter(z=>Math.floor(z/3)===Math.floor(zone/3)&&(!b.scoutPlus||z%3===zone%3));
+}
 export function publicProbabilities(s){
   const b=s.battle,p=b.intent.probabilities;
   if(!b.scouted||!b.pending)return [...p];
-  const row=b.pending.zone===9?3:Math.floor(b.pending.zone/3);
-  const visible=p.map((v,z)=>(z===9?3:Math.floor(z/3))===row?v:0),sum=visible.reduce((a,x)=>a+x,0);
+  const known=knownPitchZones(s);
+  const visible=p.map((v,z)=>known.includes(z)?v:0),sum=visible.reduce((a,x)=>a+x,0);
   return visible.map(v=>v/sum);
 }
 export function pitchClue(s){
@@ -150,15 +158,15 @@ export function hitProfile(s,id,zone){
 }
 // Shared outcome distribution for preview and resolution; never reads hidden random rolls.
 export function swingOdds(s,id,zone){
-  const b=s.battle,k=id==='basic'?'basic':card(s,id)?.kind,covered=coverage(s,id).includes(zone);
-  if(zone===9)return {hit:0,foul:k==='defend'?.22:.08,out:0,whiff:k==='defend'?.78:.92,power:0,covered:false};
-  if(k==='bunt')return {hit:0,foul:.30,out:0,whiff:0,sacrifice:.70,power:0,covered:true};
-  if(!covered){const foul=clamp((k==='defend'?.42:.12)+(b.patient?.12:0),0,.65);return {hit:0,foul,out:0,whiff:1-foul,power:0,covered:false};}
+  const b=s.battle,k=id==='basic'?'basic':card(s,id)?.kind,covered=coverage(s,id).includes(zone),plus=!!card(s,id)?.plus;
+  if(zone===9){const foul=k==='defend'?(plus?.34:.22):.08;return {hit:0,foul,out:0,whiff:1-foul,power:0,covered:false};}
+  if(k==='bunt')return {hit:0,foul:plus?.15:.30,out:0,whiff:0,sacrifice:plus?.85:.70,power:0,covered:true};
+  if(!covered){const foul=clamp((k==='defend'?(plus?.54:.42):.12)+(b.patient?.12:0),0,.66);return {hit:0,foul,out:0,whiff:1-foul,power:0,covered:false};}
   return {hit:1,foul:0,out:0,whiff:0,power:0,covered:true};
 }
 export function previewCard(s,id,probabilities=publicProbabilities(s)){
   const problem=cardProblem(s,id);if(problem)return {problem};
-  if(id!=='basic'&&CARDS[card(s,id).kind].type==='skill')return {label:CARDS[card(s,id).kind].text};
+  if(id!=='basic'&&CARDS[card(s,id).kind].type==='skill')return {label:cardText(card(s,id).kind,card(s,id).plus)};
   const odds=probabilities.map((p,z)=>({p,o:swingOdds(s,id,z)}));
   const sum=key=>odds.reduce((v,{p,o})=>v+p*(o[key]||0),0);
   const hit=sum('hit'),types=hitProfile(s,id,s.battle.aimZone).map((t,i)=>({...t,p:hit?odds.reduce((v,{p,o},z)=>v+p*o.hit*hitProfile(s,id,z)[i].p,0)/hit:0}));

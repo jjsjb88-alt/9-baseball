@@ -20,11 +20,25 @@ export const AXES=[['point','1존'],['row','가로 3존'],['column','세로 3존
 export const AXIS_NAMES=Object.fromEntries(AXES);
 // A `+` card never turns a covered pitch into an out. It only widens range, power, information or advancement.
 export const UPGRADES={
-  scout:'행 + 열 정보',setup:'집중 +2',watch:'카드 3장',calm:'카드 2장',lure:'타석 끝까지 유지',flow:'추가 2베이스',
+  bunt:'희생 85% · 파울 15%',defend:'미적중 파울 +12%p · 단타 유지',scout:'행 + 열 정보',setup:'집중 +2',watch:'카드 3장',calm:'카드 2장',lure:'타석 끝까지 유지',flow:'추가 2베이스',
 };
 export const upgradeText=kind=>UPGRADES[kind]||(CARDS[kind]?.type==='attack'?'파워 +18':null);
 export const canUpgrade=entry=>!!entry&&!entry.plus&&!!upgradeText(entry.kind);
-export const cardPower=entry=>(CARDS[entry?.kind]?.power||0)+(entry?.plus&&CARDS[entry.kind].type==='attack'?1:0);
+export const cardPower=entry=>(CARDS[entry?.kind]?.power||0)+(entry?.plus&&CARDS[entry.kind].type==='attack'&&!['bunt','defend'].includes(entry.kind)?1:0);
+export function cardText(kind,plus=false){
+  if(!plus)return CARDS[kind].text;
+  const special={
+    bunt:'9존 대응 · 스트라이크에 희생 85%, 파울 15%. 성공 시 아웃 +1, 주자 +1루. 2스트라이크 번트 파울은 삼진.',
+    defend:'선택 존과 상하좌우 커버 · 적중은 단타 확정. 범위 밖 파울 확률 +12%p. 파워 대신 생존 강화.',
+    scout:'준비 1회 · 이번 공의 높이와 안팎을 확인해 존을 특정합니다. 볼도 확인. 1장 뽑기.',
+    setup:'준비 1회 · 이번 타석 집중 +2. 타격 +16 · 파워 +10.',
+    watch:'준비 1회 · 카드 3장 뽑기. 손패 최대 9장.',
+    calm:'준비 1회 · 이번 타석 파울 생존력 증가. 카드 2장 뽑기.',
+    lure:'준비 1회 · 이번 타석 동안 스윙 범위를 상하좌우 1칸 확장. 범위 증가만큼 장타력 감소.',
+    flow:'준비 1회 · 이번 타석 안타 때 기존 주자 추가 2베이스. 주자가 있어야 사용.'
+  };
+  return special[kind]||CARDS[kind].text+' 강화: 기본 효과에 파워 +18.';
+}
 export const DECK_MIN=9,DECK_MAX=18;
 export const BUILDS={
   pull:{name:'몸쪽 장타',description:'좁게 기다려 크게 친다 · 당겨 넘기기 중심',stats:{technique:52,power:76,luck:44},zones:[0,3,4,6],cards:['slug','slug','setup','scout','lure','strike','slug','flow','watch','setup','rally','calm']},
@@ -58,7 +72,7 @@ export const REWARDS=[['calm','flow','rally'],['lure','scout','defend'],['finish
 // Three genuinely different directions per growth. v6 force-fed `bunt` to relay; that path won 5 of 270 runs.
 // Each pool is 정보 / 페이오프 / 보완 — three real directions for one growth.
 // 기다림 keeps `scout` first: the growth is charged by WATCHED strikes, so information is its enabler, not a flavor pick.
-export const AFFINITY_CARDS={patience:['scout','slug','lure'],relay:['rally','finisher','flow'],fortune:['defend','calm','strike']};
+export const AFFINITY_CARDS={patience:['scout','slug','lure'],relay:['rally','finisher','flow','bunt'],fortune:['defend','calm','strike']};
 export const rewardChoices=(stage,growthKey)=>[...new Set([...(REWARDS[stage]||[]),...(AFFINITY_CARDS[growthKey]||[])])];
 export const REWARD_ACTIONS=[
   {type:'add',name:'카드 추가',hint:'후보 한 장을 덱에 넣습니다'},
@@ -86,7 +100,7 @@ export const READ_THRESHOLDS=[2,4];
 export const READ_BANDS=[[.28,'자주'],[.14,'가끔'],[.05,'드묾'],[0,'희박']];
 export const observeScore=deck=>(deck||[]).reduce((n,c)=>n+(CARDS[c.kind]?.role==='관찰'?(c.plus?2:1):0),0);
 export const bandFor=p=>(READ_BANDS.find(([min])=>p>=min)||READ_BANDS.at(-1))[1];
-export const rangeFor=p=>{const lo=Math.max(0,Math.floor(p*20)*5);return lo+'~'+(lo+5)+'%';};
+export const rangeFor=p=>{const lo=Math.min(100,Math.max(0,Math.floor(p*20)*5));return lo===100?'100%':lo+'~'+Math.min(100,lo+5)+'%';};
 export const shadeFor=p=>p>=.28?3:p>=.14?2:1;
 export const shadeNameFor=p=>['','드묾','가끔','자주'][shadeFor(p)];
 // Relics sit on top of the deck, never replace it. All three are about seeing the pitcher.

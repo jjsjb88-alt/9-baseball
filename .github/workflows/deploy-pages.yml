@@ -45,7 +45,11 @@ jobs:
       - name: Run growth transitions and activation smoke report
         run: node scripts/growth-report.js 5
 
-      - name: Build site
+      - name: Run deck upgrade and relic smoke report
+        # Exercises real upgraded/relic runs, not just metadata assertions.
+        run: node scripts/deck-report.js 2
+
+      - name: Build production site
         run: pnpm run build
 
       - name: Configure GitHub Pages

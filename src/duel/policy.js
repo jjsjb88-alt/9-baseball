@@ -1,15 +1,16 @@
 import {CARDS,rangeFor,shadeFor} from './cards.js';
-import {previewCard,cardProblem,publicProbabilities,readLevel,setAimZone,setGrowthMode,growthProblem} from './engine.js';
+import {previewCard,cardProblem,publicProbabilities,readLevel,setAimZone,setGrowthMode,growthProblem,knownPitchZones} from './engine.js';
 
 // Public-information baseline, not an oracle or a human-fun metric.
 // This module never reads pending pitch, RNG seed, or resolved future states.
 const normalize=(weights,total=1)=>{const sum=weights.reduce((value,weight)=>value+weight,0);return weights.map(weight=>sum?weight/sum*total:0);};
-const rangeMidpoint=p=>{const [low,high]=rangeFor(p).replaceAll('%','').split('~').map(Number);return (low+high)/200;};
+const rangeMidpoint=p=>{const [low,high=low]=rangeFor(p).replaceAll('%','').split('~').map(Number);return (low+high)/200;};
 export function perceivedProbabilities(s,level=readLevel(s)){
   const exact=publicProbabilities(s);
   if(level>=2)return exact;
   const knowsUnused=(s.relics||[]).includes('radar');
-  const perceived=exact.map(p=>level===0?(knowsUnused&&p===0?0:shadeFor(p)):p===0?0:rangeMidpoint(p));
+  const known=knownPitchZones(s);
+  const perceived=exact.map((p,z)=>!known.includes(z)?0:known.length===1?1:level===0?(knowsUnused&&p===0?0:shadeFor(p)):p===0?0:rangeMidpoint(p));
   if((s.relics||[]).includes('ledger'))return [...normalize(perceived.slice(0,9),1-exact[9]),exact[9]];
   return normalize(perceived);
 }

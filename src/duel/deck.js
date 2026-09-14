@@ -41,12 +41,13 @@ export function deckProfile(deck){
 // Reads as "what is my deck missing", never as "press this". Order is severity, not importance.
 export function diagnose(deck,growth){
   const p=deckProfile(deck),out=[],g=growth||{};
-  if(p.roles.관찰>=2&&p.axes.row<=1)
-    out.push({level:'warn',text:`관찰 ${p.roles.관찰}장이 행 정보를 주는데, 그 정보를 쓰는 가로 3존 카드가 ${p.axes.row}장뿐입니다.`});
+  const rowOnly=deck.filter(e=>e.kind==='scout'&&!e.plus).length;
+  if(rowOnly>=2&&p.axes.row<=1)
+    out.push({level:'warn',text:`관찰 ${rowOnly}장이 행 정보를 주는데, 그 정보를 쓰는 가로 3존 카드가 ${p.axes.row}장뿐입니다.`});
   if(p.wide>=6&&p.roles.장타===0)
-    out.push({level:'warn',text:`넓은 범위 ${p.wide}장에 장타 수단이 없습니다. 단타만으로 목표 득점을 채워야 합니다.`});
+    out.push({level:'warn',text:`넓은 범위 ${p.wide}장에 전용 장타 카드가 없습니다. 단타·주루 중심으로 득점할지, 장타 카드를 보완할지 비교하세요.`});
   if(p.prepare>p.swing)
-    out.push({level:'warn',text:`준비 ${p.prepare}장 · 스윙 ${p.swing}장. 준비는 타석당 2회뿐이라 실제로 칠 카드가 부족합니다.`});
+    out.push({level:'warn',text:`준비 ${p.prepare}장 · 스윙 ${p.swing}장. 준비는 타석당 2회뿐이라 손패에 남기 쉽습니다. 스윙 비율을 비교하세요.`});
   if(g.patience>0&&p.wide>=5)
     out.push({level:'warn',text:`기다림 사용 중에는 커버가 1존으로 강제됩니다. 넓은 범위 ${p.wide}장의 범위가 그동안 무효가 됩니다.`});
   const eye=observeScore(deck),lv=eye>=READ_THRESHOLDS[1]?2:eye>=READ_THRESHOLDS[0]?1:0;

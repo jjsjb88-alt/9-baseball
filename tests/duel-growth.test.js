@@ -14,8 +14,8 @@ describe('growth changes choices while preserving zone-hit guarantee',()=>{
   it('requires one valid growth and commits card + growth exactly once',()=>{
     const s=reward(),before=structuredClone(s);expect(chooseReward(s,{type:'add',kind:'rally'})).toBe(s);expect(chooseReward(s,{type:'add',kind:'rally'},'unknown')).toBe(s);
     expect(chooseReward(s,{type:'add',kind:'slug'},'relay')).toBe(s);
-    // v6 force-fed 희생 번트 to 연결 as its signature and that path won 5 of 270 runs. It is no longer a 연결 candidate.
-    expect(chooseReward(s,{type:'add',kind:'bunt'},'relay')).toBe(s);expect(s).toEqual(before);
+    // Bunt is an optional enabler, while unrelated draw cards remain outside this offer.
+    expect(chooseReward(s,{type:'add',kind:'watch'},'relay')).toBe(s);expect(s).toEqual(before);
     const n=chooseReward(s,{type:'add',kind:'rally'},'relay');expect(n.growth.relay).toBe(1);expect(n.deck.at(-1).kind).toBe('rally');expect(n.growthHistory).toEqual(['relay']);expect(n.phase).toBe('map');
     expect(chooseReward(n,{type:'add',kind:'rally'},'relay')).toBe(n);roundtrip(n);roundtrip(startBattle(n));
   });
@@ -23,7 +23,7 @@ describe('growth changes choices while preserving zone-hit guarantee',()=>{
     for(const key of Object.keys(GROWTHS)){const s=grown(key,3);expect(s.growth[key]).toBe(3);expect(s.growthHistory).toEqual([key,key,key]);
       for(const kind of AFFINITY_CARDS[key])expect(rewardChoices(0,key)).toContain(kind);
       expect(AFFINITY_CARDS[key].length).toBeGreaterThanOrEqual(3);roundtrip(s);}
-    expect(rewardChoices(0,'relay')).not.toContain('bunt');
+    expect(rewardChoices(0,'relay')).toContain('bunt');
     expect(AFFINITY_CARDS.patience[0]).toBe('scout'); // 기다림 is charged by WATCHED strikes; without information it collapses.
     let s=chooseReward(reward(),{type:'skip'},'patience');s=startBattle(s);s.battle.runs=1;s=chooseReward(reward(s),{type:'skip'},'fortune');expect(s.growth).toEqual({patience:1,relay:0,fortune:1});roundtrip(s);
   });

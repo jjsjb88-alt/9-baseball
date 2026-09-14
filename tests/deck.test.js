@@ -57,7 +57,7 @@ describe('reward actions compete: add, remove, upgrade and skip share one rule s
     const done=[{id:'c0',kind:'slug',plus:true},{id:'c1',kind:'strike'}];
     expect(rewardProblem(done,{type:'upgrade',id:'c0'},0,'patience')).toBeTruthy();
     expect(rewardProblem(done,{type:'upgrade',id:'c1'},0,'patience')).toBeNull();
-    expect(rewardProblem(done,{type:'add',kind:'bunt'},0,'relay')).toBeTruthy(); // not a 연결 candidate any more
+    expect(rewardProblem(done,{type:'add',kind:'bunt'},0,'relay')).toBeNull(); // optional enabler, never forced
     expect(rewardProblem(done,{type:'skip'},0,'patience')).toBeNull();
   });
   it('applies each action purely, leaving the source deck untouched',()=>{
@@ -108,7 +108,7 @@ describe('upgrades widen range, power, information and advancement — never the
     }
   });
   it('gives attack cards +18 power and leaves coverage identical',()=>{
-    for(const kind of ['slug','finisher','strike','rally','defend']){
+    for(const kind of ['slug','finisher','strike','rally']){
       const base=held(kind,false),up=held(kind,true);
       expect(cardPower(up.deck[0])-cardPower(base.deck[0])).toBe(1);
       expect(matchup(up,'c0').powerEdge-matchup(base,'c0').powerEdge).toBe(18);
