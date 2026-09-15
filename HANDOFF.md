@@ -21,12 +21,16 @@
 - `src/duel/duel.css`의 `MASTER PRESENTATION` 절은 스캔, 히트스톱, 선택적 슬로모션, 충격 링, 전체 화면 셰이크, 속도선, 스파크, 존 비교, 공 궤적, 전광판/베이스 반응을 담당한다.
 - Git 이력에서 `assets/sprites-v2/frames` 36장을 복구했다. App.jsx는 Vite glob으로 타자 스윙 12 / 미스 6 / 투수 투구 12 / 삼진 6을 실제 타임라인에 재생한다. 다시 3포즈 자산만 쓰는 구조로 퇴행시키지 않는다.
 - `src/duel/PixelVFX.jsx`는 320×180 nearest-neighbor 캔버스 VFX 패스다. 파티클은 시작 시 한 번 생성해 프레임 간 물리 연속성을 유지한다.
+- `src/duel/ArenaRenderer2.jsx`는 Renderer 2.0의 핵심이다. 외부 라이브러리 없이 native WebGL2를 사용하며 CSS 경기장은 fallback이다.
+- Renderer 2.0은 6단 공간감, 카메라 줌/팬/틸트, 경기별 조명, 원근 공/그림자, 바닥 READ TRACE를 담당한다.
+- 공 본체를 DOM/PixelVFX에 중복시키지 않는다. WebGL active면 WebGL이 core ball, PixelVFX는 trail/particle만 담당.
+- CINEMA LAB의 R2 ON/OFF와 WEBGL 상태 뱃지를 삭제하지 않는다. 시각 QA에서 Legacy 2D와 직접 A/B 비교하는 계약이다.
 - READ TRACE, 경기별 구장 색감, 라이벌 그레이딩, 도트 스미어/잔상/패럴랙스, 타구별 그림자·먼지·체공은 현재 품질 계약의 일부다.
 - `src/duel/audio.js`는 판정별 합성 사운드를 갖고 저역 임팩트·노이즈·공기음·스테레오·홈런 스웰을 레이어한다. `src/duel/haptics.js`는 지원 모바일의 판정별 진동을 담당한다. 둘 다 실패가 전투를 막으면 안 된다.
 - reduced-motion 계약은 transient FX를 60ms 안에 정리하는 것이다. 영구 결과 정보는 남긴다.
 
 검증:
-- 125/125 테스트.
+- 126/126 테스트.
 - V9.2 30시드 full-run 완주율 0.233(7/30), 평균 최종 덱 10.5장.
 - zone / V9 / showcase growth / deck-relic 리포트와 프로덕션 빌드 성공.
 - 픽셀 시네마 기준 GitHub Actions run `34958791058` 성공: 125/125 테스트, V9/zone/growth/deck-relic 리포트, 프로덕션 빌드 통과.
