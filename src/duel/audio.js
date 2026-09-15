@@ -1,9 +1,16 @@
 // Synthesized judgement cues. No network assets: impact, air, crowd-like swell and UI tones are layered in Web Audio.
 let context,master;
 const CUES={
+  deadCenter:{type:'triangle',gain:.078,noise:.072,noiseDur:.06,notes:[[188,0,.05,.72,-.18],[96,.035,.12,.54,.02],[720,.09,.13,.84,.2]]},
   hit:{type:'triangle',gain:.074,noise:.055,noiseDur:.055,notes:[[176,0,.055,.7,-.15],[92,.038,.13,.55,.05],[620,.095,.10,.8,.18]]},
+  jammed:{type:'triangle',gain:.052,noise:.085,noiseDur:.09,notes:[[132,0,.055,.62,-.12],[84,.05,.11,.58,.08],[390,.14,.09,.78,.18]]},
+  lucky:{type:'sine',gain:.048,noise:.04,noiseDur:.07,notes:[[220,0,.055,.9,-.16],[330,.11,.08,.96,0],[520,.24,.16,1.02,.2]]},
+
   extra:{type:'triangle',gain:.078,noise:.07,noiseDur:.075,notes:[[162,0,.06,.72,-.18],[248,.045,.08,.9,.1],[505,.105,.12,.75,.24],[760,.18,.12,.82,-.05]]},
   homer:{type:'square',gain:.06,noise:.095,noiseDur:.11,swell:.12,notes:[[88,0,.13,.7,-.2],[176,.04,.14,.8,.15],[352,.10,.16,.84,-.1],[704,.20,.22,.9,.2],[1056,.34,.28,.94,0]]},
+  nearMiss:{type:'sawtooth',gain:.034,noise:.03,noiseDur:.13,notes:[[520,0,.08,.7,.24],[310,.11,.16,.48,0],[156,.31,.22,.56,-.18]]},
+  chase:{type:'sawtooth',gain:.039,noise:.045,noiseDur:.1,notes:[[380,0,.075,.44,.18],[165,.07,.15,.34,-.18]]},
+  fooled:{type:'sawtooth',gain:.043,noise:.04,noiseDur:.09,notes:[[460,0,.075,.38,.2],[205,.05,.14,.34,-.12],[92,.14,.17,.44,0]]},
   whiff:{type:'sawtooth',gain:.042,noise:.034,noiseDur:.09,notes:[[440,0,.08,.42,.18],[230,.045,.13,.36,-.12],[108,.11,.16,.48,0]]},
   foul:{type:'square',gain:.034,noise:.06,noiseDur:.04,notes:[[820,0,.032,.86,.2],[1120,.042,.05,.9,-.15],[540,.09,.08,.6,.08]]},
   ball:{type:'sine',gain:.045,noise:.012,noiseDur:.035,notes:[[300,0,.08,.92,-.08],[420,.075,.10,.95,.08]]},
