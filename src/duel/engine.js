@@ -51,7 +51,7 @@ function dealPitch(s){
   b.pending={zone,roll:unit(s,'pitchSeed'),powerRoll:unit(s,'pitchSeed')};
   b.scouted=false;b.scoutPlus=false;b.revealed=null;
 }
-export function createDuel(seed=Date.now()>>>0,build=DECKBUILDER_BUILD){
+export function createDuel(seed=Date.now()>>>0,build='away'){
   if(!Object.hasOwn(BUILDS,build))build=DECKBUILDER_BUILD;
   const baseDeck=BUILDS[build].cards;
   return {version:9,seed:seed>>>0,pitchSeed:(seed^0x9e3779b9)>>>0,initialSeed:seed>>>0,build,phase:'map',stage:0,
@@ -315,6 +315,7 @@ export function readDuel(storage){
     ||new Set(s.deck.map(c=>c.id)).size!==s.deck.length
     ||!Array.isArray(s.rewards)||s.rewards.length!==s.stage
     ||!s.rewards.every((r,i)=>r&&['add','remove','upgrade','relic','skip'].includes(r.type)
+      &&(s.build!==DECKBUILDER_BUILD||['add','skip'].includes(r.type))
       &&(r.type!=='add'||rewardChoices(i,s.growthHistory?.[i],s.build).includes(r.kind))
       &&(r.type!=='relic'||(RELIC_OFFERS[i]||[]).includes(r.kind))
       &&(!['remove','upgrade'].includes(r.type)||typeof r.id==='string'))
