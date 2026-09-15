@@ -78,6 +78,21 @@ describe('9-zone strategic UI',()=>{
     const saved=readDuel(localStorage);cleanup();render(<Duel/>);fireEvent.click(screen.getByRole('button',{name:'이어하기'}));expect(readDuel(localStorage)).toEqual(saved);
     fireEvent.click(screen.getByRole('button',{name:'다음 타자 입장 · 2번 이민준'}));expect(readDuel(localStorage).battle.batterIndex).toBe(1);
   });
+  it('animates full-pose pixel actors and overlays the tactical read trace',()=>{
+    begin();
+    fireEvent.click(screen.getByRole('button',{name:'스윙하기',exact:true}));
+    fireEvent.click(screen.getByRole('button',{name:'밀어치기',exact:true}));
+    fireEvent.click(screen.getByTestId('execute-action'));
+    expect(document.querySelector('.sprite-batter.pose-load')).toBeTruthy();
+    expect(document.querySelector('.sprite-pitcher.pose-legkick')).toBeTruthy();
+    act(()=>vi.advanceTimersByTime(110));
+    expect(document.querySelector('.sprite-batter.pose-contact')).toBeTruthy();
+    expect(document.querySelector('.sprite-pitcher.pose-release')).toBeTruthy();
+    expect(document.querySelector('.read-trace')).toBeTruthy();
+    expect(document.querySelector('.read-trace .actual')).toBeTruthy();
+    finish();
+  });
+
   it('uses selective slow motion for a one-zone miss instead of every whiff',()=>{
     begin(0,.99);
     fireEvent.click(screen.getByRole('button',{name:'한가운데',exact:true}));
