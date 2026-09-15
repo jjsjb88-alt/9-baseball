@@ -999,3 +999,75 @@
 @media(prefers-reduced-motion:reduce){
   .renderer2-host .actor-left,.renderer2-host .actor-right,.renderer2-host .living-diamond{transform:none!important;transition:none!important}
 }
+
+
+/* ---------- DECISION UX · show only what the player needs now ---------- */
+.duel-combat>.scoreboard,.duel-combat>.zone-panel,.duel-combat>.pitch-read,.duel-combat>.duel-table,.duel-combat>.battle-ribbon{
+  transition:opacity .18s ease,filter .18s ease,transform .18s ease,max-height .22s ease,padding .22s ease,margin .22s ease,border-width .22s ease;
+}
+.duel-combat.phase-battle.decision-hub>.zone-panel,
+.duel-combat.phase-battle.decision-prepare>.zone-panel,
+.duel-combat.phase-battle.decision-watch>.zone-panel{
+  max-height:0!important;min-height:0!important;overflow:hidden;opacity:0;pointer-events:none;
+  padding-top:0!important;padding-bottom:0!important;margin-top:0!important;margin-bottom:0!important;border-width:0!important;
+  transform:translateY(-8px) scale(.985);
+}
+.duel-combat.phase-battle.decision-swing>.zone-panel{max-height:900px;opacity:1;animation:decision-panel-in .24s cubic-bezier(.16,.85,.2,1) both}
+.duel-combat.phase-battle.decision-prepare>.pitch-read,.duel-combat.phase-battle.decision-watch>.pitch-read{opacity:.45;filter:saturate(.65)}
+.duel-combat.cinematic-focus>.battle-ribbon,
+.duel-combat.cinematic-focus>.scoreboard,
+.duel-combat.cinematic-focus>.zone-panel,
+.duel-combat.cinematic-focus>.pitch-read,
+.duel-combat.cinematic-focus>.duel-table{
+  opacity:.035!important;filter:saturate(.25) brightness(.62);pointer-events:none;transform:scale(.985);
+}
+.duel-combat.cinematic-focus>.duel-arena{z-index:20;box-shadow:0 12px 45px #000a}
+.duel-combat.cinematic-focus .intent{opacity:.16;transition:opacity .12s ease}
+@keyframes decision-panel-in{0%{opacity:0;transform:translateY(-8px) scale(.985)}100%{opacity:1;transform:none}}
+
+/* ---------- PATHOGENIC-STYLE LIVE SYNERGY ---------- */
+.synergy-map{margin-top:10px;padding:12px;border:1px solid #49645f;background:linear-gradient(145deg,#10252b,#0b1d23);border-radius:10px;overflow:hidden}
+.synergy-map.empty{border-color:#3d514e}
+.synergy-head{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}.synergy-head h3{margin:0;font-size:12px;color:#dce9df}
+.synergy-network{display:grid;grid-template-columns:minmax(118px,.55fr) minmax(0,1.7fr);gap:18px;align-items:center;margin-top:10px}
+.synergy-candidate{position:relative;display:flex;flex-direction:column;gap:3px;padding:10px;border:1px solid #e0bd70;background:linear-gradient(145deg,#443821,#183036);box-shadow:0 0 18px #d5a94f18}
+.synergy-candidate:after{content:'';position:absolute;right:-19px;top:50%;width:19px;height:1px;background:#8db89e}
+.synergy-candidate span{font-size:6px;letter-spacing:2px;color:#e3bd6b}.synergy-candidate strong{font-size:13px}.synergy-candidate small{font-size:7px;color:#9eb1aa}
+.synergy-links{display:grid;gap:5px}.synergy-link{position:relative;display:grid;grid-template-columns:13px 1fr;gap:7px;align-items:center;min-height:37px;padding:6px 8px;border:1px solid #3e5f57;background:#132c31}
+.synergy-link:before{content:'';position:absolute;left:-19px;top:50%;width:19px;height:1px;background:#76ba91}.synergy-link>i{width:8px;height:8px;border-radius:50%;background:#72d698;box-shadow:0 0 10px #72d69888}
+.synergy-link.conflict{border-color:#734c4b;background:#302125}.synergy-link.conflict:before{background:#d2786b}.synergy-link.conflict>i{background:#dc7769;box-shadow:0 0 9px #dc776977}
+.synergy-link strong{display:block;font-size:9px}.synergy-link span{display:block;margin-top:2px;font-size:7px;color:#9db3aa;line-height:1.35}
+.synergy-none{padding:9px;border:1px dashed #445b57;color:#859a92}.synergy-none strong,.synergy-none span{display:block}.synergy-none strong{font-size:9px}.synergy-none span{font-size:7px;margin-top:3px}
+.synergy-summary{margin:8px 0 0!important;padding:5px 7px;border-left:2px solid #65c58a;font-size:7px!important;color:#a9cbb7!important}.synergy-summary.bad{border-left-color:#cf6d62;color:#d4aaa4!important}
+
+/* ---------- CUPHEAD-STYLE FAILURE JOURNEY ---------- */
+.failure-timeline{margin:11px 0 12px;padding:10px;border:1px solid #63494b;background:linear-gradient(145deg,#2a2024,#132127);border-radius:9px;text-align:left}
+.failure-head{display:grid;grid-template-columns:auto 1fr;gap:3px 8px;align-items:baseline}.failure-head>span{font-size:6px;letter-spacing:2px;color:#d28a7e}.failure-head>strong{font-size:10px;color:#f0beb4}.failure-head>small{grid-column:1/-1;color:#9faeaa;font-size:7px;line-height:1.4}
+.failure-timeline ol{list-style:none;margin:9px 0 0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:0}
+.failure-timeline li{position:relative;display:grid;grid-template-columns:18px 1fr;grid-template-rows:auto auto;gap:1px 5px;min-width:0;padding:7px 6px 7px 3px;border-top:2px solid #53635f;background:#102127}
+.failure-timeline li:not(:last-child):after{content:'›';position:absolute;right:-4px;top:16px;z-index:2;color:#657d75;font-size:12px}
+.failure-timeline li>i{grid-row:1/3;display:grid;place-items:center;align-self:center;width:15px;height:15px;border:1px solid #61736d;border-radius:50%;font-style:normal;font-size:6px;color:#91a49d}
+.failure-timeline li>span{font-size:5px;letter-spacing:1px;color:#82978f}.failure-timeline li>b{font-size:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.failure-timeline li>em{grid-column:2;font-style:normal;font-size:7px;color:#b7c5c0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.failure-timeline li.done{border-top-color:#6ca98a}.failure-timeline li.near{border-top-color:#e2b35e;background:#2b2a20}.failure-timeline li.warn{border-top-color:#c7855d}.failure-timeline li.fail{border-top-color:#d96f67;background:#302024}
+.failure-timeline li.near>i{border-color:#e2b35e;color:#f2cf84}.failure-timeline li.fail>i{border-color:#d96f67;color:#ffc0b7}
+
+/* ---------- BLOOD-DUNGEON-STYLE RUN STORY ---------- */
+.run-story{margin:16px 0;padding:14px;border:1px solid #4d635d;background:linear-gradient(145deg,#10252a,#0a1a21);border-radius:10px;text-align:left}
+.run-story-head{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}.run-story-head h2{margin:0;font-size:14px}.run-story-head p{flex-basis:100%;margin:1px 0 0!important;color:#91a59e!important;font-size:8px!important}
+.run-story-track{display:flex;list-style:none;margin:13px 0 0;padding:0;overflow-x:auto;scroll-snap-type:x proximity}
+.run-story-track li{position:relative;display:grid;grid-template-columns:24px minmax(105px,1fr);gap:7px;align-items:center;min-width:160px;padding:8px 18px 8px 0;scroll-snap-align:start}
+.run-story-track li:not(:last-child):after{content:'';position:absolute;right:1px;top:50%;width:17px;height:1px;background:#536e65}
+.run-story-track li>i{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;border:1px solid #668077;background:#10252a;color:#9cb0a9;font-style:normal;font-size:7px}
+.run-story-track li span,.run-story-track li strong,.run-story-track li small{display:block}.run-story-track li span{font-size:5px;letter-spacing:1.4px;color:#839b92}.run-story-track li strong{margin-top:2px;font-size:8px;line-height:1.2}.run-story-track li small{margin-top:3px;font-size:6px;color:#83978f;line-height:1.35}
+.run-story-track .story-rival>i,.run-story-track .story-finish>i{border-color:#d1ae64;color:#efd18b;box-shadow:0 0 10px #d1ae6433}.run-story-track .story-reward>i{border-color:#6dac86;color:#9cddb3}.run-story-track .story-facility>i{border-color:#6992af;color:#99c7e4}.run-story-track .story-loss>i{border-color:#c86f67;color:#efa69f}
+.run-story.compact{padding:10px;margin:11px 0}.run-story.compact .run-story-head h2{font-size:11px}.run-story.compact .run-story-track{margin-top:8px}.run-story.compact .run-story-track li{min-width:135px;padding-top:4px;padding-bottom:4px}
+
+@media(max-width:700px){
+  .synergy-network{grid-template-columns:1fr;gap:6px}.synergy-candidate:after,.synergy-link:before{display:none}.synergy-links{grid-template-columns:1fr}
+  .failure-timeline ol{grid-template-columns:repeat(2,1fr);gap:4px}.failure-timeline li:not(:last-child):after{display:none}
+  .run-story-track li{min-width:145px}
+}
+@media(prefers-reduced-motion:reduce){
+  .duel-combat>.scoreboard,.duel-combat>.zone-panel,.duel-combat>.pitch-read,.duel-combat>.duel-table,.duel-combat>.battle-ribbon{transition:none!important}
+  .duel-combat.phase-battle.decision-swing>.zone-panel{animation:none!important}
+}
