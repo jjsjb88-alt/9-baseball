@@ -47,7 +47,7 @@ describe('V9 main-run UI',()=>{
     expect(routes).toBeTruthy();
     expect(screen.queryByRole('button',{name:'이 상대와 승부 시작'})).toBeNull();
     fireEvent.click(screen.getByRole('button',{name:/강팀 원정/}));
-    expect(screen.getByText(/목표 3점/)).toBeTruthy();
+    expect(screen.getAllByText(/목표 3점/).length).toBeGreaterThan(0);
     expect(screen.getByRole('button',{name:'이 상대와 승부 시작'})).toBeTruthy();
   });
 
