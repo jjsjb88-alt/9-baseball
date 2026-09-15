@@ -29,6 +29,8 @@ describe('V9 main run builds a deck instead of choosing a finished archetype',()
     expect(BUILDS[s.build].name).toBe('무명 타선');
     expect(s.deck).toHaveLength(9);
     expect(s.nextId).toBe(9);
+    expect(s.deck.filter(c=>c.kind==='place')).toHaveLength(4);
+    expect(s.deck.some(c=>['slug','rally','defend','bunt','flow','finisher'].includes(c.kind))).toBe(false);
     expect(Object.keys(s.growth)).toEqual(Object.keys(GROWTHS));
     expect(Object.values(s.growth)).toEqual([0,0,0]);
     expect(s.growthHistory).toEqual([]);
