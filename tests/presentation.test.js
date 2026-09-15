@@ -1,21 +1,41 @@
 import {describe,it,expect} from 'vitest';
-import {presentationFor} from '../src/duel/presentation.js';
+import {contactGrade,presentationFor,presentationTimeline} from '../src/duel/presentation.js';
 
-const state=(kind,label,zone=4,coverage=[])=>({
+const state=(kind,label,zone=4,coverage=[],aimZone=4)=>({
   last:{kind:kind==='skill'?'skill':'pitch',text:label,events:kind==='skill'?['중간 높이 확인']:[]},
-  battle:{revealed:kind==='skill'?null:{kind,label,zone,coverage}}
+  battle:{revealed:kind==='skill'?null:{kind,label,zone,coverage,aimZone}}
 });
 
 describe('master presentation language',()=>{
-  it('separates reading, contact and missing into different judgement families',()=>{
+  it('separates reading, exact contact and a one-zone miss',()=>{
     expect(presentationFor(state('skill','릴리스 간파 · 준비 1/2'))).toMatchObject({kind:'read',title:'읽었다',cue:'read'});
-    expect(presentationFor(state('hit','중전안타',4,[4]))).toMatchObject({kind:'hit',title:'맞혔다',kicker:'READ CONFIRMED'});
-    expect(presentationFor(state('whiff','헛스윙',1,[4]))).toMatchObject({kind:'whiff',title:'빗나갔다',cue:'whiff'});
+    expect(presentationFor(state('hit','중전안타',4,[4],4))).toMatchObject({kind:'dead-center',grade:'dead-center',title:'정확히 맞혔다',cue:'deadCenter'});
+    expect(presentationFor(state('whiff','헛스윙',1,[4],4))).toMatchObject({kind:'near-miss',grade:'near-miss',title:'한 칸 차이',cue:'nearMiss'});
   });
 
-  it('reserves a larger presentation for extra-base contact and home runs',()=>{
-    expect(presentationFor(state('hit','2루타',5,[5]))).toMatchObject({kind:'extra',title:'갈랐다',cue:'extra'});
-    expect(presentationFor(state('hit','홈런',3,[3]))).toMatchObject({kind:'homer',title:'넘겼다',cue:'homer'});
+  it('reserves different success language for power, jammed and lucky contact',()=>{
+    expect(presentationFor(state('hit','2루타',5,[5],5))).toMatchObject({kind:'extra',title:'갈랐다',cue:'extra'});
+    expect(presentationFor(state('hit','홈런',3,[3],3))).toMatchObject({kind:'homer',title:'넘겼다',cue:'homer'});
+    expect(presentationFor(state('hit','땅볼 안타',5,[5],4))).toMatchObject({kind:'jammed',title:'빠졌다',cue:'jammed'});
+    expect(presentationFor(state('hit','바가지 안타 · 행운의 단타',2,[2],1))).toMatchObject({kind:'lucky',title:'떨어졌다',cue:'lucky'});
+    expect(presentationFor(state('hit','중전안타',5,[5],4))).toMatchObject({kind:'hit',grade:'solid',title:'맞혔다'});
+  });
+
+  it('diversifies whiffs into near miss, chase and wrong read',()=>{
+    expect(contactGrade(state('whiff','헛스윙',1,[4],4).battle.revealed)).toBe('near-miss');
+    expect(presentationFor(state('whiff','헛스윙',9,[4],4))).toMatchObject({kind:'chase',title:'쫓았다',cue:'chase'});
+    expect(presentationFor(state('whiff','헛스윙',0,[8],8))).toMatchObject({kind:'whiff',grade:'fooled',title:'속았다',cue:'fooled'});
+  });
+
+  it('uses slow motion only for moments that benefit from anticipation',()=>{
+    const near=presentationTimeline(presentationFor(state('whiff','헛스윙',1,[4],4)));
+    const normal=presentationTimeline(presentationFor(state('hit','중전안타',5,[5],4)));
+    const lucky=presentationTimeline(presentationFor(state('hit','바가지 안타 · 행운의 단타',2,[2],1)));
+    expect(near.slowmo).toBe(360);
+    expect(lucky.slowmo).toBeGreaterThan(0);
+    expect(normal.slowmo).toBe(0);
+    expect(near.releaseAt).toBe(near.impactAt+near.freeze+near.slowmo);
+    expect(presentationTimeline(presentationFor(state('whiff','헛스윙',1,[4],4)),true)).toMatchObject({duration:60,slowmo:0});
   });
 
   it('gives every non-contact judgement its own readable language',()=>{
