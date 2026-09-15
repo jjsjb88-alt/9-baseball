@@ -199,7 +199,7 @@ function JudgementVisual({shot,stage}){
   return <div className={'judgement-layer judgement-'+shot.kind+' stage-'+(stage||'windup')} aria-hidden="true"><span className="judgement-wash"/><span className="judgement-flash"/><span className="judgement-vignette"/><span className="pitch-ball"/><span className="speed-lines"/>{shot.motion?.slowmo>0&&<span className="slowmo-mark">{shot.grade==='near-miss'?'ONE ZONE':shot.grade==='lucky'?'HANG TIME':shot.grade==='jammed'?'OFF BARREL':shot.grade==='dead-center'?'LOCKED':shot.grade==='homer'||shot.grade==='grand-slam'?'TIME STOPS':'SLOW'}</span>}<span className="judgement-ring ring-a"/><span className="judgement-ring ring-b"/><span className="judgement-ring ring-c"/><span className="judgement-slash slash-a"/><span className="judgement-slash slash-b"/>{Array.from({length:6},(_,i)=><span key={i} className={'judgement-spark spark-'+(i+1)}/>) }<div className="judgement-copy"><span>{shot.kicker}</span><strong>{shot.title}</strong><em>{shot.detail}</em></div></div>;
 }
 function CinemaLab({sound,onBack}){
-  const [chosen,setChosen]=useState(CINEMA_CASES[1]),[stage,setStage]=useState(null),[token,setToken]=useState(0);
+  const [chosen,setChosen]=useState(CINEMA_CASES[1]),[stage,setStage]=useState(null),[token,setToken]=useState(0),[renderer2,setRenderer2]=useState(true);
   const timers=useRef([]),shot=presentationFor(chosen.state),timeline=presentationTimeline(shot,false),revealed=chosen.state.battle.revealed;
   useEffect(()=>()=>timers.current.forEach(clearTimeout),[]);
   function play(item=chosen){
@@ -212,16 +212,16 @@ function CinemaLab({sound,onBack}){
     timers.current=list;
   }
   return <main className={'cinema-lab release-combat stadium-stage-3 rival-game'+(shot?' fx-'+shot.kind:'')+(shot?.motion?.shake?' shake-'+shot.motion.shake:'')+(stage?' fx-stage-'+stage:'')}>
-    <section className="cinema-lab-head"><div><span className="eyebrow">PREVIEW ONLY · MASTER PIXEL CINEMA</span><h1>연출 검수실</h1><p>게임 결과를 기다리지 않고 동일한 실전 렌더러로 판정을 반복 비교합니다. 사운드는 상단 ♪ 버튼에서 켜세요.</p></div><button onClick={onBack}>← 게임으로</button></section>
-    <section className="cinema-lab-stage duel-arena stadium renderer2-host" aria-label="연출 검수 무대">
-      <ArenaRenderer2 stage={stage} shot={shot} match={3} rival={true} revealed={revealed} token={token} label="연출 검수 WebGL 경기장"/>
-      <PixelCinema stage={stage} shot={shot}/><PixelVFX stage={stage} shot={shot} token={token} drawCore={false}/><ReadTrace s={chosen.state} stage={stage} shot={shot}/>
+    <section className="cinema-lab-head"><div><span className="eyebrow">PREVIEW ONLY · MASTER PIXEL CINEMA</span><h1>연출 검수실</h1><p>같은 판정을 반복 재생하고 Renderer 2.0을 켜고 끄며 공간감 차이를 직접 비교하세요. 사운드는 상단 ♪ 버튼에서 켜세요.</p></div><div className="cinema-lab-head-actions"><button className={renderer2?'renderer-toggle on':'renderer-toggle'} onClick={()=>setRenderer2(x=>!x)}>R2 {renderer2?'ON':'OFF'}</button><button onClick={onBack}>← 게임으로</button></div></section>
+    <section className={'cinema-lab-stage duel-arena stadium '+(renderer2?'renderer2-host':'renderer1-host')} aria-label="연출 검수 무대">
+      {renderer2&&<ArenaRenderer2 stage={stage} shot={shot} match={3} rival={true} revealed={revealed} token={token} label="연출 검수 WebGL 경기장"/>}
+      <PixelCinema stage={stage} shot={shot}/><PixelVFX stage={stage} shot={shot} token={token} drawCore={!renderer2}/><ReadTrace s={chosen.state} stage={stage} shot={shot}/>
       <div className="actor-left"><Sprite who="batter" stage={stage} shot={shot}/><span className="batter-nameplate">#09 TEST BATTER</span></div><div className="actor-right"><Sprite who="pitcher" stage={stage} shot={shot}/></div>
       {stage&&revealed&&<div className={'duel-fx '+revealed.kind+' '+labFlight(revealed)}><span className="pixel-ball"/><span className="ball-shadow"/><span className="ground-skip skip-a"/><span className="ground-skip skip-b"/><span className="flight-spark fs-a"/><span className="flight-spark fs-b"/><span className="flight-spark fs-c"/></div>}
       {stage&&<JudgementVisual shot={shot} stage={stage}/>}<ClutchLayer stakes={chosen.stakes} stage={stage}/>
     </section>
     <section className="cinema-lab-controls" aria-label="연출 선택">
-      <div className="cinema-selected"><span>{chosen.group}</span><strong>{chosen.name}</strong><small>{shot.kicker+' · '+Math.round(timeline.duration)+'ms'+(timeline.slowmo?' · SLOW '+timeline.slowmo+'ms':'')}</small><button className="primary" onClick={()=>play(chosen)}>▶ 다시 재생</button></div>
+      <div className="cinema-selected"><span>{chosen.group} · {renderer2?'WEBGL 2.5D':'LEGACY 2D'}</span><strong>{chosen.name}</strong><small>{shot.kicker+' · '+Math.round(timeline.duration)+'ms'+(timeline.slowmo?' · SLOW '+timeline.slowmo+'ms':'')}</small><button className="primary" onClick={()=>play(chosen)}>▶ 다시 재생</button></div>
       <div className="cinema-case-grid">{CINEMA_CASES.map(item=><button key={item.key} className={chosen.key===item.key?'selected':''} aria-pressed={chosen.key===item.key} onClick={()=>play(item)}><span>{item.group}</span><strong>{item.name}</strong></button>)}</div>
     </section>
   </main>;
