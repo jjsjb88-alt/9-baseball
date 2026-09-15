@@ -1,0 +1,68 @@
+// @vitest-environment happy-dom
+import React from 'react';
+import {beforeEach,describe,it,expect} from 'vitest';
+import {fireEvent,render,screen,within} from '@testing-library/react';
+import Duel from '../src/duel/App.jsx';
+import {createDuel,startBattle,playCard,saveDuel,readDuel} from '../src/duel/engine.js';
+import {DECKBUILDER_BUILD,STAGES} from '../src/duel/cards.js';
+
+const pitch=(s,zone=s.battle.aimZone,roll=.1,powerRoll=.99)=>{
+  s.battle.pending={zone,roll,powerRoll};
+  return s;
+};
+function rewardState(){
+  let s=startBattle(createDuel(11,DECKBUILDER_BUILD));
+  s.battle.runs=STAGES[0].target-1;
+  s.battle.bases=[null,null,'p8'];
+  return playCard(pitch(s),'c0');
+}
+function hitState(){
+  const s=startBattle(createDuel(19,DECKBUILDER_BUILD));
+  return playCard(pitch(s),'c0');
+}
+
+beforeEach(()=>localStorage.clear());
+
+describe('V9 main-run UI',()=>{
+  it('presents the neutral deck as the main run and finished archetypes as showcases',()=>{
+    render(<Duel/>);
+    const starter=screen.getByRole('button',{name:/무명 타선/});
+    expect(starter.getAttribute('aria-pressed')).toBe('true');
+    expect(within(starter).getByText('MAIN RUN')).toBeTruthy();
+    for(const name of ['몸쪽 장타','바깥 연결','끈질긴 컨택']){
+      const button=screen.getByRole('button',{name:new RegExp(name)});
+      expect(within(button).getByText('완성형 체험')).toBeTruthy();
+    }
+  });
+
+  it('turns a combat win into a direct three-card draft with no mandatory growth choice',()=>{
+    const s=rewardState();
+    expect(s.phase).toBe('reward');
+    saveDuel(localStorage,s);
+    render(<Duel/>);
+    fireEvent.click(screen.getByRole('button',{name:'이어하기'}));
+    expect(screen.getByRole('group',{name:'덱 빌딩 카드 선택'})).toBeTruthy();
+    for(const name of ['당겨 넘기기','주자 연결','커트 스윙'])expect(screen.getByRole('button',{name})).toBeTruthy();
+    expect(screen.queryByRole('button',{name:'끝까지 기다린 한 공'})).toBeNull();
+
+    fireEvent.click(screen.getByRole('button',{name:'당겨 넘기기'}));
+    fireEvent.click(screen.getByRole('button',{name:'이 덱으로 다음 경기'}));
+    const saved=readDuel(localStorage);
+    expect(saved.stage).toBe(1);
+    expect(saved.deck).toHaveLength(10);
+    expect(saved.deck.at(-1).kind).toBe('slug');
+    expect(saved.growth).toEqual({patience:0,relay:0,fortune:0});
+  });
+
+  it('makes a hit the dominant result instead of a small log line',()=>{
+    const s=hitState();
+    expect(s.phase).toBe('between');
+    saveDuel(localStorage,s);
+    render(<Duel/>);
+    fireEvent.click(screen.getByRole('button',{name:'이어하기'}));
+    const result=screen.getByLabelText('타석 종료 결과');
+    expect(result.querySelector('.result-call')?.textContent).toBe('안타');
+    expect(result.className).toContain('result-hit');
+    expect(within(result).getByRole('heading',{level:2}).textContent).toContain('안타');
+  });
+});
