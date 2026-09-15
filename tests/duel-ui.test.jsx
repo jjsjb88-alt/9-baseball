@@ -139,6 +139,11 @@ describe('9-zone strategic UI',()=>{
     const result=screen.getByRole('region',{name:'투구 결과'});
     expect(result.className).toContain('result-grade-near-miss');
     expect(result.querySelector('.result-call')?.textContent).toBe('한 칸 차이');
+    const failure=screen.getByRole('region',{name:'실패 과정'});
+    expect(failure.textContent).toContain('READ');
+    expect(failure.textContent).toContain('BET');
+    expect(failure.textContent).toContain('REVEAL');
+    expect(failure.textContent).toContain('IMPACT');
   });
 
   it('uncovered whiff keeps same batter and requires next pitch confirmation',()=>{
