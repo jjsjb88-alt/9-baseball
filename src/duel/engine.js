@@ -1,5 +1,5 @@
 import {CARDS,SAVE_KEY,STAGES,LINEUP,BUILDS,ZONES,GROWTHS,growthCost,rewardChoices,cardPower,cardText,DECK_MIN,DECK_MAX,
-  ZONE_ORDER,WIDEN_EVERY,PUTAWAY_REACH,READ_THRESHOLDS,observeScore,RELICS,RELIC_OFFERS,DECKBUILDER_BUILD,FACILITY_ROUTES,canUpgrade} from './cards.js';
+  ZONE_ORDER,WIDEN_EVERY,PUTAWAY_REACH,READ_THRESHOLDS,observeScore,RELICS,RELIC_OFFERS,DECKBUILDER_BUILD,FACILITY_ROUTES,ROUTE_CHOICES,routeChoice,canUpgrade} from './cards.js';
 import {applyRewardToDeck,rewardProblem} from './deck.js';
 const clone=s=>JSON.parse(JSON.stringify(s));
 const card=(s,id)=>s.deck.find(c=>c.id===id);
@@ -25,6 +25,12 @@ export function readLevel(s){
   const facilityScout=s.build===DECKBUILDER_BUILD&&s.stage>0&&s.facilities?.[s.stage-1]?.type==='scouting'?1:0;
   return Math.min(2,base+((s.relics||[]).includes('scope')?1:0)+facilityScout);
 }
+export const activeRoute=s=>s?.build===DECKBUILDER_BUILD?routeChoice(s.stage,s.route):null;
+export const battleTarget=s=>STAGES[s.stage].target+(activeRoute(s)?.targetDelta||0);
+export const pitcherProfile=s=>{
+  const base=STAGES[s.stage].stats,bonus=activeRoute(s)?.statBonus||0;
+  return {stuff:base.stuff+bonus,movement:base.movement+bonus,command:base.command+bonus};
+};
 export function baseIntent(s){
   const b=s.battle,style=STAGES[s.stage].style;
   let weights=[5,6,10,7,8,15,5,7,12,25],name='바깥쪽 승부',detail='루키는 바깥쪽을 선호합니다. 2스트라이크에서는 몸쪽 비중이 높아집니다.';
@@ -58,11 +64,15 @@ export function createDuel(seed=Date.now()>>>0,build='away'){
   return {version:9,seed:seed>>>0,pitchSeed:(seed^0x9e3779b9)>>>0,initialSeed:seed>>>0,build,phase:'map',stage:0,
     growth:{patience:0,relay:0,fortune:0},growthHistory:[],fortune:0,relics:[],
     growthStats:{waitStrikes:0,patienceSwings:0,relayCreated:0,relayHits:0,fortuneEarned:0,fortuneUses:0},
-    deck:baseDeck.map((kind,i)=>({id:'c'+i,kind})),nextId:baseDeck.length,rewards:[],facilities:[],victories:0,battle:null,last:null,
+    deck:baseDeck.map((kind,i)=>({id:'c'+i,kind})),nextId:baseDeck.length,rewards:[],facilities:[],route:null,routeHistory:[],victories:0,battle:null,last:null,
     stats:{cards:0,pitches:0,runs:0,outs:0,appearances:0,hits:0,walks:0,fouls:0,whiffs:0,totalBases:0}};
 }
+export function chooseRoute(state,routeId){
+  if(state.build!==DECKBUILDER_BUILD||state.phase!=='map'||!routeChoice(state.stage,routeId)||state.route===routeId)return state;
+  const s=clone(state);s.route=routeId;s.last=null;return s;
+}
 export function startBattle(state){
-  if(state.phase!=='map')return state;const s=clone(state);s.phase='battle';
+  if(state.phase!=='map'||state.build===DECKBUILDER_BUILD&&!routeChoice(state.stage,state.route))return state;const s=clone(state);s.phase='battle';
   s.battle={turn:1,batterIndex:0,preparations:0,runSignal:false,results:[],history:[],outs:0,runs:0,strikes:0,balls:0,
     aim:0,aimZone:s.build==='pull'?3:s.build==='away'?5:4,expanded:false,patient:false,scouted:false,
     expandedPlus:false,scoutPlus:false,runSignalPlus:false,
@@ -135,7 +145,7 @@ export function matchup(s,id='basic',zone=s.battle.aimZone){
   const base=BUILDS[s.build].stats,player=b.batterIndex;
   const hitter={technique:base.technique+[0,4,-2,2,-3,1,3,-1,0][player]+b.aim*8+b.relayActive*10,
     power:base.power+[0,-3,5,-1,4,0,-4,2,1][player]+b.aim*5,luck:base.luck};
-  const pitcher=STAGES[s.stage].stats;
+  const pitcher=pitcherProfile(s);
   const familiarity=BUILDS[s.build].zones.includes(zone)?12:0;
   const widthPenalty=Math.max(0,coverage(s,id).length-1)*7;
   const growthPower=b.growthMode==='patience'&&s.growth.patience?(12+12*s.growth.patience)*b.waitCharge:0;
@@ -192,7 +202,12 @@ function finishPA(s,label){const b=s.battle;b.results.push({batterId:currentBatt
 function finalize(s,before,kind,name,events,growthEvents=[]){
   const b=s.battle;s.last={kind,text:name,events,growthEvents,runs:b.runs-before.runs,outs:b.outs-before.outs};
   b.log=[name,...events,...b.log].slice(0,12);s.stats.outs+=b.outs-before.outs;
-  if(b.runs>=STAGES[s.stage].target){s.victories++;s.phase=s.stage===3?'won':'reward';}else if(b.outs>=3)s.phase='lost';return s;
+  if(b.runs>=battleTarget(s)){
+    s.victories++;
+    if(s.build===DECKBUILDER_BUILD)s.routeHistory.push(s.route);
+    s.phase=s.stage===3?'won':'reward';
+  }else if(b.outs>=3)s.phase='lost';
+  return s;
 }
 export function battingResult(s,id){
   const {zone,roll,powerRoll}=s.battle.pending,o=swingOdds(s,id,zone),k=id==='basic'?'basic':card(s,id).kind;
@@ -289,7 +304,7 @@ export function advanceBatter(state){
 export function chooseReward(state,action,growthKey=null){
   const deckbuilder=state.build===DECKBUILDER_BUILD;
   if(state.phase!=='reward'||(!deckbuilder&&(!Object.hasOwn(GROWTHS,growthKey)||state.growth[growthKey]>=3)))return state;
-  if(rewardProblem(state.deck,action,state.stage,growthKey,state.relics,state.build))return state;
+  if(rewardProblem(state.deck,action,state.stage,growthKey,state.relics,state.build,state.route))return state;
   const s=clone(state),moved=applyRewardToDeck(s.deck,action,s.nextId);
   s.deck=moved.deck;s.nextId=moved.nextId;
   if(action.type==='relic')s.relics=[...s.relics,action.kind];
@@ -297,7 +312,7 @@ export function chooseReward(state,action,growthKey=null){
   else{s.growth[growthKey]++;s.growthHistory.push(growthKey);}
   s.rewards.push(['add','relic'].includes(action.type)?{type:action.type,kind:action.kind}
     :action.type==='skip'?{type:'skip'}:{type:action.type,id:action.id});
-  s.stage++;s.phase=deckbuilder?'facility':'map';s.battle=null;s.last=null;return s;
+  s.stage++;s.route=null;s.phase=deckbuilder?'facility':'map';s.battle=null;s.last=null;return s;
 }
 export function facilityProblem(state,action){
   if(state.build!==DECKBUILDER_BUILD||state.phase!=='facility')return '시설 선택 단계가 아닙니다.';
@@ -357,7 +372,13 @@ export function readDuel(storage){
     ||s.deck.some(c=>!c||typeof c.id!=='string'||!/^c\d+$/.test(c.id)||!Object.hasOwn(CARDS,c.kind)||!['boolean','undefined'].includes(typeof c.plus))
     ||new Set(s.deck.map(c=>c.id)).size!==s.deck.length
     ||!Array.isArray(s.rewards)||s.rewards.length!==s.stage
-    ||!Array.isArray(s.facilities)
+    ||!Array.isArray(s.facilities)||!Array.isArray(s.routeHistory)
+    ||(s.build===DECKBUILDER_BUILD
+      ?s.routeHistory.length!==s.victories||!s.routeHistory.every((id,i)=>!!routeChoice(i,id))
+        ||(s.route!==null&&!routeChoice(s.stage,s.route))
+        ||(s.phase==='facility'&&s.route!==null)
+        ||(['battle','pitch','between','reward','lost','won'].includes(s.phase)&&!routeChoice(s.stage,s.route))
+      :s.route!==null||s.routeHistory.length!==0)
     ||(s.build===DECKBUILDER_BUILD
       ?s.facilities.length!==(s.phase==='facility'?Math.max(0,s.stage-1):s.stage)
       :s.facilities.length!==0)
@@ -367,7 +388,7 @@ export function readDuel(storage){
       &&(r.type!=='equipment'||(RELIC_OFFERS[i]||[]).includes(r.kind)))
     ||!s.rewards.every((r,i)=>r&&['add','remove','upgrade','relic','skip'].includes(r.type)
       &&(s.build!==DECKBUILDER_BUILD||['add','skip'].includes(r.type))
-      &&(r.type!=='add'||rewardChoices(i,s.growthHistory?.[i],s.build).includes(r.kind))
+      &&(r.type!=='add'||rewardChoices(i,s.growthHistory?.[i],s.build,s.routeHistory?.[i]).includes(r.kind))
       &&(r.type!=='relic'||(RELIC_OFFERS[i]||[]).includes(r.kind))
       &&(!['remove','upgrade'].includes(r.type)||typeof r.id==='string'))
     ||s.relics.length!==s.rewards.filter(r=>r.type==='relic').length+s.facilities.filter(r=>r.type==='equipment').length
@@ -395,10 +416,10 @@ export function readDuel(storage){
   if(s.phase==='battle'){if(!b.pending||!int(b.pending.zone,0,9)||!['roll','powerRoll'].every(k=>Number.isFinite(b.pending[k])&&b.pending[k]>=0&&b.pending[k]<1)||b.revealed!==null)fail();}
   else if(b.pending!==null||!b.revealed||!int(b.revealed.zone,0,9)||typeof b.revealed.label!=='string')fail();
   if(s.phase==='map'||['battle','pitch'].includes(s.phase)&&(b.outs>=3||b.strikes>=3||b.balls>=4||players.includes(currentBatter(s).id))
-    ||['battle','pitch','between'].includes(s.phase)&&b.runs>=STAGES[s.stage].target
+    ||['battle','pitch','between'].includes(s.phase)&&b.runs>=battleTarget(s)
     ||s.phase==='between'&&(b.outs>=3||b.results.at(-1)?.turn!==b.turn)
-    ||s.phase==='lost'&&(b.outs!==3||b.runs>=STAGES[s.stage].target)
-    ||['reward','won'].includes(s.phase)&&b.runs<STAGES[s.stage].target)fail();
+    ||s.phase==='lost'&&(b.outs!==3||b.runs>=battleTarget(s))
+    ||['reward','won'].includes(s.phase)&&b.runs<battleTarget(s))fail();
   if(!s.last||typeof s.last.text!=='string'||!Array.isArray(s.last.events)||!s.last.events.every(t=>typeof t==='string'))fail();
   return s;
 }
