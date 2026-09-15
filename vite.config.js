@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  base: process.env.GITHUB_ACTIONS === "true" ? "/9-baseball/" : "/",
+  base: process.env.VITE_BASE || (process.env.GITHUB_ACTIONS === "true" ? "/9-baseball/" : "/"),
   server: {
     watch: {
       // The autonomous loop drops a Chrome profile in .qa-chrome for screen QA. Watching its

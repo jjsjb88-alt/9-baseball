@@ -2,6 +2,7 @@
 export const ZONES=['몸쪽 높음','가운데 높음','바깥 높음','몸쪽 중간','한가운데','바깥 중간','몸쪽 낮음','가운데 낮음','바깥 낮음'];
 // role/axis/gives/needs drive the deck screens. Every value here restates an engine rule, never a new one.
 export const CARDS={
+  place:{name:'맞혀놓기',type:'attack',art:'bat',shape:'point',power:-1,role:'범위',axis:'point',gives:['1존 커버'],needs:[],text:'선택한 1존 커버. 적중하면 안타 확정. 범위도 장타 보정도 없는 스타터 카드.',flavor:'좋은 덱을 만들기 전에도 공은 맞혀야 한다.'},
   strike:{name:'밀어치기',type:'attack',art:'bat',shape:'column',power:0,role:'범위',axis:'column',gives:['세로 3존 커버'],needs:[],text:'선택한 세로 3존 커버. 적중하면 안타 확정. 바깥쪽에서 타구 질 보너스.',flavor:'바깥 공을 끝까지 보고 반대편으로.'},
   slug:{name:'당겨 넘기기',type:'attack',art:'comet',shape:'point',power:2,role:'장타',axis:'point',gives:['파워 +36'],needs:[],text:'선택한 1존 적중 시 안타 확정. 파워 +36으로 장타 베팅. 빗나가면 헛스윙 위험.',flavor:'내가 기다린 공 하나.'},
   rally:{name:'주자 연결',type:'attack',art:'double',shape:'row',power:0,role:'진루',axis:'row',gives:['가로 3존 커버','주자 2베이스'],needs:[],text:'선택한 가로 3존 커버. 안타 때 기존 주자는 최소 두 베이스 전진.',flavor:'홈으로 부를 공을 기다린다.'},
@@ -40,10 +41,12 @@ export function cardText(kind,plus=false){
   return special[kind]||CARDS[kind].text+' 강화: 기본 효과에 파워 +18.';
 }
 export const DECK_MIN=9,DECK_MAX=18;
+export const DECKBUILDER_BUILD='starter';
 export const BUILDS={
-  pull:{name:'몸쪽 장타',description:'좁게 기다려 크게 친다 · 당겨 넘기기 중심',stats:{technique:52,power:76,luck:44},zones:[0,3,4,6],cards:['slug','slug','setup','scout','lure','strike','slug','flow','watch','setup','rally','calm']},
-  away:{name:'바깥 연결',description:'세로 커버로 출루와 진루 · 밀어치기 중심',stats:{technique:76,power:45,luck:50},zones:[2,4,5,8],cards:['strike','rally','scout','watch','setup','strike','rally','flow','calm','strike','lure','bunt']},
-  contact:{name:'끈질긴 컨택',description:'넓게 버티며 볼넷과 기회 탐색 · 커트 중심',stats:{technique:58,power:34,luck:72},zones:[1,3,5,7],cards:['defend','strike','scout','calm','watch','defend','rally','defend','setup','lure','bunt','calm']},
+  starter:{name:'무명 타선',description:'정답이 없는 9장 · 약한 기본 타격을 교체하며 이번 런의 야구를 만든다',stats:{technique:58,power:52,luck:52},zones:[1,3,5,7],cards:['place','place','place','place','strike','strike','setup','watch','scout']},
+  pull:{name:'몸쪽 장타',description:'완성형 체험 · 좁게 기다려 크게 친다',stats:{technique:52,power:76,luck:44},zones:[0,3,4,6],cards:['slug','slug','setup','scout','lure','strike','slug','flow','watch','setup','rally','calm']},
+  away:{name:'바깥 연결',description:'완성형 체험 · 출루와 진루를 다음 타석까지 잇는다',stats:{technique:76,power:45,luck:50},zones:[2,4,5,8],cards:['strike','rally','scout','watch','setup','strike','rally','flow','calm','strike','lure','bunt']},
+  contact:{name:'끈질긴 컨택',description:'완성형 체험 · 넓게 버티며 계속 타석을 잇는다',stats:{technique:58,power:34,luck:72},zones:[1,3,5,7],cards:['defend','strike','scout','calm','watch','defend','rally','defend','setup','lure','bunt','calm']},
 };
 export const TYPE_NAMES={attack:'한 공의 스윙',skill:'타석 준비 · 최대 2회'};
 // `affinity` replaces v6's fixed `signature`. A growth names an axis it pays off, never one required card.
@@ -73,7 +76,47 @@ export const REWARDS=[['calm','flow','rally'],['lure','scout','defend'],['finish
 // Each pool is 정보 / 페이오프 / 보완 — three real directions for one growth.
 // 기다림 keeps `scout` first: the growth is charged by WATCHED strikes, so information is its enabler, not a flavor pick.
 export const AFFINITY_CARDS={patience:['scout','slug','lure'],relay:['rally','finisher','flow','bunt'],fortune:['defend','calm','strike']};
-export const rewardChoices=(stage,growthKey)=>[...new Set([...(REWARDS[stage]||[]),...(AFFINITY_CARDS[growthKey]||[])])];
+// V9 main-run rewards deliberately open with three different identities. The player, not a preset, decides what this run becomes.
+export const V9_REWARDS=[
+  ['slug','rally','defend'],
+  ['scout','flow','finisher'],
+  ['lure','bunt','calm'],
+];
+// V9.2: a route is a baseball opponent choice, not map decoration. Hard routes ask for
+// one more run against a better pitcher and pay back with one extra draft candidate.
+export const ROUTE_CHOICES=[
+  [
+    {id:'home-opener',name:'홈 개막전',tag:'안정',text:'현재 전력으로 정면 승부합니다.',risk:'기본 목표 · 기본 투수 능력',reward:'승리 시 기본 3장 드래프트',targetDelta:0,statBonus:0,rewardBonus:null},
+    {id:'giant-road',name:'강팀 원정',tag:'고위험',text:'첫 경기부터 강한 투수진을 상대합니다.',risk:'목표 +1점 · 투수 능력 +6',reward:'승리 시 릴리스 간파가 4번째 후보',targetDelta:1,statBonus:6,rewardBonus:'scout'},
+  ],
+  [
+    {id:'sinker-study',name:'낮은 공 연구전',tag:'안정',text:'낮은 코스에 적응하며 덱을 정리합니다.',risk:'기본 목표 · 기본 투수 능력',reward:'승리 시 기본 3장 드래프트',targetDelta:0,statBonus:0,rewardBonus:null},
+    {id:'city-rival',name:'도시 라이벌',tag:'라이벌',text:'낮은 공을 더 강하게 밀어붙이는 라이벌전입니다.',risk:'목표 +1점 · 투수 능력 +7',reward:'승리 시 당겨 넘기기가 4번째 후보',targetDelta:1,statBonus:7,rewardBonus:'slug'},
+  ],
+  [
+    {id:'deep-series',name:'수비형 강팀',tag:'안정',text:'외야가 깊은 팀을 상대로 출루와 진루를 시험합니다.',risk:'기본 목표 · 기본 투수 능력',reward:'승리 시 기본 3장 드래프트',targetDelta:0,statBonus:0,rewardBonus:null},
+    {id:'wall-rival',name:'담장 라이벌',tag:'라이벌',text:'장타를 억제하는 팀과 정면으로 부딪칩니다.',risk:'목표 +1점 · 투수 능력 +8',reward:'승리 시 주자 연결이 4번째 후보',targetDelta:1,statBonus:8,rewardBonus:'rally'},
+  ],
+  [
+    {id:'regular-final',name:'정규 결승',tag:'안정',text:'지금까지 만든 팀으로 마지막 세 아웃을 넘습니다.',risk:'기본 목표 · 기본 투수 능력',reward:'완주 기록',targetDelta:0,statBonus:0,rewardBonus:null},
+    {id:'ace-final',name:'라이벌 에이스',tag:'최종 도전',text:'가장 강한 투수에게 한 점을 더 요구받는 결승입니다.',risk:'목표 +1점 · 투수 능력 +10',reward:'라이벌 격파 기록',targetDelta:1,statBonus:10,rewardBonus:null},
+  ],
+];
+export const routeChoice=(stage,id)=>(ROUTE_CHOICES[stage]||[]).find(r=>r.id===id)||null;
+export const rewardChoices=(stage,growthKey,build='away',routeId=null)=>build===DECKBUILDER_BUILD
+  ? [...new Set([...(V9_REWARDS[stage]||[]),...(routeChoice(stage,routeId)?.rewardBonus?[routeChoice(stage,routeId).rewardBonus]:[])])]
+  : [...new Set([...(REWARDS[stage]||[]),...(AFFINITY_CARDS[growthKey]||[])])];
+export const FACILITIES={
+  training:{name:'타격 훈련',tag:'강화',art:'target',text:'가진 카드 1장을 + 판으로 강화합니다. 다음 경기부터 같은 카드가 더 강한 역할을 합니다.'},
+  scouting:{name:'스카우팅',tag:'정보',art:'eye',text:'다음 상대 한 경기 동안 읽기 등급 +1. 더 정확한 공개 정보로 노릴 존을 정합니다.'},
+  release:{name:'라커룸 정리',tag:'제거',art:'book',text:'카드 1장을 덱에서 제거합니다. 약한 스타터를 덜 뽑고 핵심 카드를 더 자주 봅니다.'},
+  equipment:{name:'장비실',tag:'유물',art:'spark',text:'투수 읽기를 바꾸는 장비 하나를 가져갑니다. 카드와 별개의 런 규칙입니다.'},
+};
+export const FACILITY_ROUTES=[
+  ['training','scouting'],
+  ['release','equipment'],
+  ['training','equipment'],
+];
 export const REWARD_ACTIONS=[
   {type:'add',name:'카드 추가',hint:'후보 한 장을 덱에 넣습니다'},
   {type:'remove',name:'카드 제거',hint:'약한 카드를 덱에서 뺍니다'},
@@ -81,8 +124,8 @@ export const REWARD_ACTIONS=[
   {type:'relic',name:'유물 획득',hint:'투수를 더 잘 보게 해주는 물건 하나'},
   {type:'skip',name:'덱 그대로',hint:'성장만 받고 덱은 두 번째 기회를 기다립니다'},
 ];
-export const SAVE_KEY='9zone-read-v8';
-export const LEGACY_SAVE_KEYS=['9zone-deck-v7','9zone-growth-v6','9zone-zones-v5'];
+export const SAVE_KEY='9zone-deckbuilder-v9';
+export const LEGACY_SAVE_KEYS=['9zone-read-v8','9zone-deck-v7','9zone-growth-v6','9zone-zones-v5'];
 // A pitcher opens with a few zones and widens. The first batter of the first game should be readable.
 export const ZONE_ORDER={
   rookie:[5,2,4,8,1,7,3,0,6],sinker:[7,6,8,4,5,3,1,2,0],

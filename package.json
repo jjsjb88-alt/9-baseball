@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "report:zones": "node scripts/zone-report.js 100",
-    "report:growth": "node scripts/growth-report.js 30"
+    "report:growth": "node scripts/growth-report.js 30",
+    "report:v9": "node scripts/v9-report.js 20"
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",

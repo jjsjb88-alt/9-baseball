@@ -1,10 +1,10 @@
 import {createDuel,startBattle,playCard,endTurn,chooseReward,advancePitch,advanceBatter,setAimZone,setGrowthMode,readDuel,saveDuel} from '../src/duel/engine.js';
 import {planAction} from '../src/duel/policy.js';
-import {BUILDS,GROWTHS,AFFINITY_CARDS,READ_LEVELS,rewardChoices} from '../src/duel/cards.js';
+import {BUILDS,GROWTHS,AFFINITY_CARDS,READ_LEVELS,rewardChoices,DECKBUILDER_BUILD} from '../src/duel/cards.js';
 const count=Number(process.argv[2]||30);
 if(!Number.isInteger(count)||count<1||count>500)throw Error('Use 1–500 seeds');
 const rows=[];
-for(let level=0;level<READ_LEVELS.length;level++)for(const build of Object.keys(BUILDS))for(const growth of Object.keys(GROWTHS)){
+for(let level=0;level<READ_LEVELS.length;level++)for(const build of Object.keys(BUILDS).filter(k=>k!==DECKBUILDER_BUILD))for(const growth of Object.keys(GROWTHS)){
   const row={readLevel:level,read:READ_LEVELS[level].name,build,growth,runs:count,wins:0,firstWins:0,growthAcquired:0,waitStrikes:0,patienceSwings:0,relayCreated:0,relayHits:0,fortuneEarned:0,fortuneUses:0};
   for(let seed=1;seed<=count;seed++){
     let s=createDuel(seed,build),guard=0;

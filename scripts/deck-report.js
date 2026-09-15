@@ -1,11 +1,11 @@
 import {createDuel,startBattle,playCard,endTurn,chooseReward,advancePitch,advanceBatter,setAimZone,setGrowthMode,readDuel,saveDuel} from '../src/duel/engine.js';
 import {planAction} from '../src/duel/policy.js';
-import {CARDS,BUILDS,RELICS,RELIC_OFFERS} from '../src/duel/cards.js';
+import {CARDS,BUILDS,RELICS,RELIC_OFFERS,DECKBUILDER_BUILD} from '../src/duel/cards.js';
 const count=Number(process.argv[2]||10);
 if(!Number.isInteger(count)||count<1||count>100)throw Error('Use 1–100 seeds');
 const variants=[{type:'skip',key:'baseline'},...Object.keys(CARDS).map(key=>({type:'upgrade',key})),...Object.keys(RELICS).map(key=>({type:'relic',key}))];
 const rows=[];
-for(const build of Object.keys(BUILDS))for(const variant of variants){
+for(const build of Object.keys(BUILDS).filter(k=>k!==DECKBUILDER_BUILD))for(const variant of variants){
   const row={build,variant:variant.key,runs:count,wins:0,acquired:0,pitches:0,runsScored:0};
   for(let seed=1;seed<=count;seed++){
     let s=createDuel(seed,build),steps=0,acquired=false;

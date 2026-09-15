@@ -3,9 +3,9 @@ import React from 'react';
 import {render,screen,fireEvent,cleanup,act} from '@testing-library/react';
 import {afterEach,beforeEach,describe,it,expect,vi} from 'vitest';
 import Duel from '../src/duel/App.jsx';
-import {createDuel,startBattle,playCard,advanceBatter,readDuel,saveDuel} from '../src/duel/engine.js';
+import {createDuel,startBattle,chooseRoute,playCard,advanceBatter,readDuel,saveDuel} from '../src/duel/engine.js';
 import {planAction} from '../src/duel/policy.js';
-import {CARDS,ZONES} from '../src/duel/cards.js';
+import {CARDS,ZONES,DECKBUILDER_BUILD,ROUTE_CHOICES} from '../src/duel/cards.js';
 beforeEach(()=>{localStorage.clear();vi.useFakeTimers()});
 afterEach(()=>{cleanup();vi.useRealTimers();vi.unstubAllGlobals()});
 const finish=()=>act(()=>vi.runAllTimers());
@@ -78,6 +78,74 @@ describe('9-zone strategic UI',()=>{
     const saved=readDuel(localStorage);cleanup();render(<Duel/>);fireEvent.click(screen.getByRole('button',{name:'이어하기'}));expect(readDuel(localStorage)).toEqual(saved);
     fireEvent.click(screen.getByRole('button',{name:'다음 타자 입장 · 2번 이민준'}));expect(readDuel(localStorage).battle.batterIndex).toBe(1);
   });
+  it('runs the full cinema presentation inside the neutral MAIN RUN battle, not only in the lab',()=>{
+    let s=createDuel(19,DECKBUILDER_BUILD);
+    s=chooseRoute(s,ROUTE_CHOICES[0][0].id);
+    s=startBattle(s);
+    s.battle.pending={zone:s.battle.aimZone,roll:.1,powerRoll:.99};
+    saveDuel(localStorage,s);
+    render(<Duel/>);
+    fireEvent.click(screen.getByRole('button',{name:'이어하기'}));dismiss();
+    fireEvent.click(screen.getByRole('button',{name:'스윙하기',exact:true}));
+    fireEvent.click(screen.getByRole('button',{name:'BASIC SWING',exact:true}));
+    fireEvent.click(screen.getByTestId('execute-action'));
+    const arena=screen.getByRole('region',{name:'승부 구장'});
+    expect(arena.className).toContain('fx-stage-windup');
+    expect([...arena.classList].some(c=>c.startsWith('fx-')&&!c.startsWith('fx-stage-'))).toBe(true);
+    expect(arena.querySelector('.judgement-layer')).toBeTruthy();
+    expect(arena.querySelector('.pixel-cinema')).toBeTruthy();
+    expect(arena.querySelector('.pixel-vfx-canvas')).toBeTruthy();
+    act(()=>vi.advanceTimersByTime(106));
+    expect(arena.className).toContain('fx-stage-impact');
+    expect(arena.querySelector('.sprite-batter.pose-contact')).toBeTruthy();
+    finish();
+  });
+
+  it('mounts Pixel Cinema Renderer 2.0 as the live spatial arena with safe fallback',()=>{
+    begin();
+    const arena=screen.getByRole('region',{name:'승부 구장'});
+    expect(arena.classList.contains('renderer2-host')).toBe(true);
+    expect(arena.querySelector('canvas.arena-renderer2')).toBeTruthy();
+    expect(arena.querySelector('canvas.pixel-vfx-canvas')).toBeTruthy();
+  });
+
+  it('animates full-pose pixel actors and overlays the tactical read trace',()=>{
+    begin();
+    fireEvent.click(screen.getByRole('button',{name:'스윙하기',exact:true}));
+    fireEvent.click(screen.getByRole('button',{name:'밀어치기',exact:true}));
+    fireEvent.click(screen.getByTestId('execute-action'));
+    expect(document.querySelector('.sprite-batter.pose-load.v2-sequence')).toBeTruthy();
+    expect(document.querySelector('.sprite-pitcher.pose-legkick.v2-sequence')).toBeTruthy();
+    act(()=>vi.advanceTimersByTime(110));
+    expect(document.querySelector('.sprite-batter.pose-contact')).toBeTruthy();
+    expect(document.querySelector('.sprite-pitcher.pose-release')).toBeTruthy();
+    expect(document.querySelector('.read-trace')).toBeTruthy();
+    expect(document.querySelector('.read-trace .actual')).toBeTruthy();
+    finish();
+  });
+
+  it('uses selective slow motion for a one-zone miss instead of every whiff',()=>{
+    begin(0,.99);
+    fireEvent.click(screen.getByRole('button',{name:'한가운데',exact:true}));
+    fireEvent.click(screen.getByRole('button',{name:'스윙하기',exact:true}));
+    fireEvent.click(screen.getByRole('button',{name:'밀어치기',exact:true}));
+    fireEvent.click(screen.getByTestId('execute-action'));
+    expect(document.querySelector('.presentation-stage-windup')).toBeTruthy();
+    act(()=>vi.advanceTimersByTime(116));expect(document.querySelector('.presentation-stage-impact')).toBeTruthy();
+    act(()=>vi.advanceTimersByTime(25));expect(document.querySelector('.presentation-stage-slowmo')).toBeTruthy();
+    expect(document.querySelector('.slowmo-mark')?.textContent).toBe('ONE ZONE');
+    act(()=>vi.advanceTimersByTime(360));expect(document.querySelector('.presentation-stage-release')).toBeTruthy();
+    finish();
+    const result=screen.getByRole('region',{name:'투구 결과'});
+    expect(result.className).toContain('result-grade-near-miss');
+    expect(result.querySelector('.result-call')?.textContent).toBe('한 칸 차이');
+    const failure=screen.getByRole('region',{name:'실패 과정'});
+    expect(failure.textContent).toContain('READ');
+    expect(failure.textContent).toContain('BET');
+    expect(failure.textContent).toContain('REVEAL');
+    expect(failure.textContent).toContain('IMPACT');
+  });
+
   it('uncovered whiff keeps same batter and requires next pitch confirmation',()=>{
     begin(0,.99);useCard('strike');expect(screen.getByRole('region',{name:'투구 결과'})).toBeTruthy();expect(readDuel(localStorage).battle.strikes).toBe(1);
     expect(screen.queryByRole('button',{name:/다음 타자 입장/})).toBeNull();
