@@ -78,6 +78,14 @@ describe('9-zone strategic UI',()=>{
     const saved=readDuel(localStorage);cleanup();render(<Duel/>);fireEvent.click(screen.getByRole('button',{name:'이어하기'}));expect(readDuel(localStorage)).toEqual(saved);
     fireEvent.click(screen.getByRole('button',{name:'다음 타자 입장 · 2번 이민준'}));expect(readDuel(localStorage).battle.batterIndex).toBe(1);
   });
+  it('mounts Pixel Cinema Renderer 2.0 as the live spatial arena with safe fallback',()=>{
+    begin();
+    const arena=screen.getByRole('region',{name:'승부 구장'});
+    expect(arena.classList.contains('renderer2-host')).toBe(true);
+    expect(arena.querySelector('canvas.arena-renderer2')).toBeTruthy();
+    expect(arena.querySelector('canvas.pixel-vfx-canvas')).toBeTruthy();
+  });
+
   it('animates full-pose pixel actors and overlays the tactical read trace',()=>{
     begin();
     fireEvent.click(screen.getByRole('button',{name:'스윙하기',exact:true}));
