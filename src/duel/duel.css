@@ -282,3 +282,37 @@
   .facility-node{min-height:auto}
   .facility-workbench{padding:16px}
 }
+
+
+/* ---------- V9.2 · opponent branches ---------- */
+.v92-branches{grid-column:1/-1;max-width:1120px;width:100%;margin:8px auto 28px;padding:22px;border:1px solid #55766f;border-radius:16px;background:linear-gradient(145deg,#112a30,#0d2027);box-shadow:0 16px 42px #06161c88}
+.branch-head{max-width:820px;margin:0 auto 18px;text-align:center}
+.branch-head h2{margin:7px 0 8px;font-size:clamp(22px,3vw,32px);color:#f0d69a}
+.branch-head p{margin:0;color:#becdc6;line-height:1.7;font-size:13px}
+.branch-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.opponent-route{position:relative;display:flex;min-height:205px;flex-direction:column;align-items:flex-start;gap:8px;padding:20px;text-align:left;border:1px solid #55766f;border-radius:14px;background:linear-gradient(145deg,#173238,#10242b);color:#e7eee8;transition:transform .14s ease,border-color .14s ease,box-shadow .14s ease}
+.opponent-route:hover{transform:translateY(-2px);border-color:#92a99c}
+.opponent-route.selected{border-color:#f0c66f;box-shadow:0 0 0 2px #f0c66f22,inset 0 0 32px #f0c66f0c}
+.opponent-route.danger{background:linear-gradient(145deg,#3a2624,#17252a);border-color:#875d4d}
+.opponent-route.danger.selected{border-color:#efb06f;box-shadow:0 0 0 2px #efb06f33,inset 0 0 40px #d76b3b12}
+.opponent-route .route-tag,.route-tag{display:inline-block;padding:3px 8px;border:1px solid #6f8d82;border-radius:999px;font-style:normal;font-size:9px;font-weight:800;letter-spacing:1.1px;color:#b9cec3}
+.opponent-route.danger .route-tag,.route-tag.danger{border-color:#ad755f;color:#ffc59c;background:#3b211c}
+.route-tag.safe{color:#bfe0c7}
+.opponent-route>strong{font-size:23px;line-height:1.15;color:#f3dfa9}
+.opponent-route p{margin:0;font-size:13px;line-height:1.6;color:#c2cec8}
+.opponent-route small{margin-top:auto;font-size:11px;line-height:1.55;color:#d2b9a4}
+.opponent-route>b{font-size:12px;line-height:1.55;color:#f0d283}
+.branch-confirm{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:16px;padding:12px 14px;border-top:1px solid #39534f;color:#c9d7cf;font-size:13px}
+.branch-confirm .primary{min-width:220px}
+.route-bonus-callout{display:block;margin-top:12px;padding:10px 12px;border-left:3px solid #efb06f;background:#38261d;color:#ffd29f;font-size:12px;line-height:1.6}
+.route-history{color:#c9dacd!important}
+.route-history.danger{color:#f4c39e!important}
+.route-run-summary{color:#e9c394!important;line-height:1.7}
+.opponent-report .route-tag{margin:2px 0 8px}
+@media(max-width:760px){
+  .v92-branches{padding:16px 12px;margin:4px auto 22px}
+  .branch-grid{grid-template-columns:1fr}
+  .opponent-route{min-height:auto}
+  .branch-confirm{align-items:stretch;flex-direction:column}
+  .branch-confirm .primary{width:100%;min-width:0}
+}
