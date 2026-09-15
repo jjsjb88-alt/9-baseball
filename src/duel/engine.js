@@ -1,5 +1,5 @@
 import {CARDS,SAVE_KEY,STAGES,LINEUP,BUILDS,ZONES,GROWTHS,growthCost,rewardChoices,cardPower,cardText,DECK_MIN,DECK_MAX,
-  ZONE_ORDER,WIDEN_EVERY,PUTAWAY_REACH,READ_THRESHOLDS,observeScore,RELICS,RELIC_OFFERS,DECKBUILDER_BUILD} from './cards.js';
+  ZONE_ORDER,WIDEN_EVERY,PUTAWAY_REACH,READ_THRESHOLDS,observeScore,RELICS,RELIC_OFFERS,DECKBUILDER_BUILD,FACILITY_ROUTES,canUpgrade} from './cards.js';
 import {applyRewardToDeck,rewardProblem} from './deck.js';
 const clone=s=>JSON.parse(JSON.stringify(s));
 const card=(s,id)=>s.deck.find(c=>c.id===id);
@@ -22,7 +22,8 @@ export function repertoire(s){
 export function readLevel(s){
   const score=observeScore(s.deck);
   const base=score>=READ_THRESHOLDS[1]?2:score>=READ_THRESHOLDS[0]?1:0;
-  return Math.min(2,base+((s.relics||[]).includes('scope')?1:0));
+  const facilityScout=s.build===DECKBUILDER_BUILD&&s.stage>0&&s.facilities?.[s.stage-1]?.type==='scouting'?1:0;
+  return Math.min(2,base+((s.relics||[]).includes('scope')?1:0)+facilityScout);
 }
 export function baseIntent(s){
   const b=s.battle,style=STAGES[s.stage].style;
@@ -57,7 +58,7 @@ export function createDuel(seed=Date.now()>>>0,build='away'){
   return {version:9,seed:seed>>>0,pitchSeed:(seed^0x9e3779b9)>>>0,initialSeed:seed>>>0,build,phase:'map',stage:0,
     growth:{patience:0,relay:0,fortune:0},growthHistory:[],fortune:0,relics:[],
     growthStats:{waitStrikes:0,patienceSwings:0,relayCreated:0,relayHits:0,fortuneEarned:0,fortuneUses:0},
-    deck:baseDeck.map((kind,i)=>({id:'c'+i,kind})),nextId:baseDeck.length,rewards:[],victories:0,battle:null,last:null,
+    deck:baseDeck.map((kind,i)=>({id:'c'+i,kind})),nextId:baseDeck.length,rewards:[],facilities:[],victories:0,battle:null,last:null,
     stats:{cards:0,pitches:0,runs:0,outs:0,appearances:0,hits:0,walks:0,fouls:0,whiffs:0,totalBases:0}};
 }
 export function startBattle(state){
@@ -296,7 +297,46 @@ export function chooseReward(state,action,growthKey=null){
   else{s.growth[growthKey]++;s.growthHistory.push(growthKey);}
   s.rewards.push(['add','relic'].includes(action.type)?{type:action.type,kind:action.kind}
     :action.type==='skip'?{type:'skip'}:{type:action.type,id:action.id});
-  s.stage++;s.phase='map';s.battle=null;s.last=null;return s;
+  s.stage++;s.phase=deckbuilder?'facility':'map';s.battle=null;s.last=null;return s;
+}
+export function facilityProblem(state,action){
+  if(state.build!==DECKBUILDER_BUILD||state.phase!=='facility')return '시설 선택 단계가 아닙니다.';
+  const route=FACILITY_ROUTES[state.stage-1]||[];
+  if(!action||!route.includes(action.type))return '이번 이동 경로의 시설이 아닙니다.';
+  if(action.type==='scouting')return null;
+  if(action.type==='training'){
+    const target=state.deck.find(c=>c.id===action.id);
+    if(!target)return '강화할 카드를 선택하세요.';
+    if(!canUpgrade(target))return '이 카드는 더 강화할 수 없습니다.';
+    return null;
+  }
+  if(action.type==='release'){
+    if(state.deck.length<=DECK_MIN)return '더 이상 카드를 줄일 수 없습니다.';
+    if(!state.deck.some(c=>c.id===action.id))return '제거할 카드를 선택하세요.';
+    return null;
+  }
+  if(action.type==='equipment'){
+    const offers=RELIC_OFFERS[state.stage-1]||[];
+    if(!offers.includes(action.kind))return '이번 장비실의 물건이 아닙니다.';
+    if(state.relics.includes(action.kind))return '이미 가진 장비입니다.';
+    return null;
+  }
+  return '알 수 없는 시설 선택입니다.';
+}
+export function chooseFacility(state,action){
+  if(facilityProblem(state,action))return state;
+  const s=clone(state);
+  if(action.type==='training'){
+    s.deck=applyRewardToDeck(s.deck,{type:'upgrade',id:action.id},s.nextId).deck;
+    s.facilities.push({type:'training',id:action.id});
+  }else if(action.type==='release'){
+    s.deck=applyRewardToDeck(s.deck,{type:'remove',id:action.id},s.nextId).deck;
+    s.facilities.push({type:'release',id:action.id});
+  }else if(action.type==='equipment'){
+    s.relics=[...s.relics,action.kind];
+    s.facilities.push({type:'equipment',kind:action.kind});
+  }else s.facilities.push({type:'scouting'});
+  s.phase='map';s.last=null;return s;
 }
 export function saveDuel(storage,s){storage.setItem(SAVE_KEY,JSON.stringify(s));}
 export function readDuel(storage){
@@ -304,23 +344,32 @@ export function readDuel(storage){
   const s=JSON.parse(raw),int=(v,a,z)=>Number.isInteger(v)&&v>=a&&v<=z,fail=()=>{throw new Error('9존 저장 기록이 손상됐습니다.');};
   const baseSize=BUILDS[s?.build]?.cards?.length||0;
   const adds=Array.isArray(s?.rewards)?s.rewards.filter(r=>r?.type==='add').length:0;
-  const drops=Array.isArray(s?.rewards)?s.rewards.filter(r=>r?.type==='remove').length:0;
-  const ups=Array.isArray(s?.rewards)?s.rewards.filter(r=>r?.type==='upgrade').length:0;
+  const facilityHistory=Array.isArray(s?.facilities)?s.facilities:[];
+  const drops=(Array.isArray(s?.rewards)?s.rewards.filter(r=>r?.type==='remove').length:0)+facilityHistory.filter(r=>r?.type==='release').length;
+  const ups=(Array.isArray(s?.rewards)?s.rewards.filter(r=>r?.type==='upgrade').length:0)+facilityHistory.filter(r=>r?.type==='training').length;
   // v7 deck ids stay unique but no longer stay contiguous — removal makes c0..cN impossible to hold.
   if(!s||s.version!==9||!Object.hasOwn(BUILDS,s.build)||!['seed','pitchSeed','initialSeed'].every(k=>int(s[k],0,0xffffffff))
     ||!Array.isArray(s.relics)||s.relics.some(k=>!Object.hasOwn(RELICS,k))||new Set(s.relics).size!==s.relics.length
-    ||!int(s.stage,0,3)||!['map','battle','pitch','between','reward','won','lost'].includes(s.phase)
+    ||!int(s.stage,0,3)||!['map','facility','battle','pitch','between','reward','won','lost'].includes(s.phase)
     ||!Array.isArray(s.deck)||!int(s.deck.length,DECK_MIN,DECK_MAX)
     ||s.deck.some(c=>!c||typeof c.id!=='string'||!/^c\d+$/.test(c.id)||!Object.hasOwn(CARDS,c.kind)||!['boolean','undefined'].includes(typeof c.plus))
     ||new Set(s.deck.map(c=>c.id)).size!==s.deck.length
     ||!Array.isArray(s.rewards)||s.rewards.length!==s.stage
+    ||!Array.isArray(s.facilities)
+    ||(s.build===DECKBUILDER_BUILD
+      ?s.facilities.length!==(s.phase==='facility'?Math.max(0,s.stage-1):s.stage)
+      :s.facilities.length!==0)
+    ||!s.facilities.every((r,i)=>r&&FACILITY_ROUTES[i]?.includes(r.type)
+      &&(r.type!=='training'||typeof r.id==='string')
+      &&(r.type!=='release'||typeof r.id==='string')
+      &&(r.type!=='equipment'||(RELIC_OFFERS[i]||[]).includes(r.kind)))
     ||!s.rewards.every((r,i)=>r&&['add','remove','upgrade','relic','skip'].includes(r.type)
       &&(s.build!==DECKBUILDER_BUILD||['add','skip'].includes(r.type))
       &&(r.type!=='add'||rewardChoices(i,s.growthHistory?.[i],s.build).includes(r.kind))
       &&(r.type!=='relic'||(RELIC_OFFERS[i]||[]).includes(r.kind))
       &&(!['remove','upgrade'].includes(r.type)||typeof r.id==='string'))
-    ||s.relics.length!==s.rewards.filter(r=>r.type==='relic').length
-    ||!s.relics.every(k=>s.rewards.some(r=>r.type==='relic'&&r.kind===k))
+    ||s.relics.length!==s.rewards.filter(r=>r.type==='relic').length+s.facilities.filter(r=>r.type==='equipment').length
+    ||!s.relics.every(k=>s.rewards.some(r=>r.type==='relic'&&r.kind===k)||s.facilities.some(r=>r.type==='equipment'&&r.kind===k))
     ||s.nextId!==baseSize+adds||s.deck.length!==baseSize+adds-drops||s.deck.filter(c=>c.plus).length>ups
     ||s.deck.some(c=>Number(c.id.slice(1))>=s.nextId)
     ||!s.stats||!['cards','pitches','runs','outs','appearances','hits','walks','fouls','whiffs','totalBases'].every(k=>int(s.stats[k],0,100000)))fail();
@@ -329,7 +378,7 @@ export function readDuel(storage){
     ||!s.growthHistory.every(k=>s.build===DECKBUILDER_BUILD?k===null:Object.hasOwn(GROWTHS,k))
     ||!Object.keys(GROWTHS).every(k=>s.growth[k]===s.growthHistory.filter(x=>x===k).length)
     ||!int(s.fortune,0,6)||!s.growthStats||!['waitStrikes','patienceSwings','relayCreated','relayHits','fortuneEarned','fortuneUses'].every(k=>int(s.growthStats[k],0,100000)))fail();
-  const b=s.battle;if(!b){if(s.phase!=='map')fail();return s;}
+  const b=s.battle;if(!b){if(!['map','facility'].includes(s.phase))fail();return s;}
   if(!['hand','draw','discard','results','history','log'].every(k=>Array.isArray(b[k]))||!Array.isArray(b.bases)||b.bases.length!==3
     ||!int(b.outs,0,3)||!int(b.strikes,0,3)||!int(b.balls,0,4)||!int(b.runs,0,100)||!int(b.aim,0,4)||!int(b.aimZone,0,8)
     ||!int(b.turn,1,100000)||!int(b.batterIndex,0,8)||b.batterIndex!==(b.turn-1)%9||!int(b.preparations,0,2)
