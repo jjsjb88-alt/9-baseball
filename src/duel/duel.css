@@ -417,3 +417,97 @@
   .judgement-layer *,.fx-read .zone-grid,.fx-read .zone-cell,.fx-hit .duel-arena,.fx-extra .duel-arena,.fx-homer .duel-arena,.fx-hit .actor-left,.fx-extra .actor-left,.fx-homer .actor-left,.fx-whiff .actor-left,.fx-called .actor-left,.fx-ball .actor-left{animation:none!important}
   .judgement-wash{opacity:.72}.judgement-copy{opacity:1;filter:none}.judgement-ring,.judgement-slash,.judgement-read:before{display:none}
 }
+
+
+/* ---------- MASTER PRESENTATION II · four-stage cinematic pipeline ---------- */
+.release-combat.fx-stage-windup .duel-arena{animation:camera-breathe .12s ease-out both}
+.release-combat.fx-stage-impact .duel-arena{animation:impact-freeze .085s steps(2) both}
+.release-combat.fx-stage-release.fx-hit .duel-arena,.release-combat.fx-stage-release.fx-extra .duel-arena{animation:camera-hit-release .42s cubic-bezier(.16,.8,.2,1) both}
+.release-combat.fx-stage-release.fx-homer .duel-arena{animation:camera-homer-release .72s cubic-bezier(.12,.86,.18,1) both}
+.release-combat.fx-stage-release.fx-whiff .duel-arena{animation:camera-miss-release .5s cubic-bezier(.2,.7,.2,1) both}
+.release-combat.fx-stage-settle .duel-arena{animation:camera-settle .28s ease-out both}
+
+.judgement-layer .judgement-flash{position:absolute;inset:0;z-index:6;background:#fff9dd;opacity:0;mix-blend-mode:screen}
+.judgement-layer.stage-impact .judgement-flash{animation:impact-flash .11s steps(2) both}
+.judgement-layer .judgement-vignette{position:absolute;inset:-2%;z-index:1;background:radial-gradient(circle at 44% 55%,transparent 28%,#03101866 63%,#020b10e8 100%);opacity:0}
+.judgement-layer.stage-windup .judgement-vignette{animation:vignette-in .16s ease-out both}
+.judgement-layer.stage-impact .judgement-vignette{opacity:.68}
+.judgement-layer.stage-release .judgement-vignette{animation:vignette-out .36s ease-out both}
+
+.pitch-ball{position:absolute;z-index:8;left:75%;top:40%;width:8px;height:8px;border-radius:50%;background:#fff9dc;box-shadow:-7px 0 #f6d98a,-14px 0 #e69a5d,0 0 12px #fff6c9;opacity:0}
+.stage-windup .pitch-ball{animation:pitch-incoming .12s cubic-bezier(.18,.7,.22,1) both}
+.judgement-read .pitch-ball,.judgement-lock .pitch-ball,.judgement-expand .pitch-ball,.judgement-signal .pitch-ball,.judgement-survive .pitch-ball,.judgement-draw .pitch-ball{display:none}
+
+.speed-lines{position:absolute;inset:-20%;z-index:2;opacity:0;background:repeating-linear-gradient(100deg,transparent 0 22px,#ffffff0d 23px 25px,transparent 26px 46px);transform:skewX(-12deg)}
+.stage-release.judgement-hit .speed-lines,.stage-release.judgement-extra .speed-lines,.stage-release.judgement-homer .speed-lines,.stage-release.judgement-whiff .speed-lines,.stage-release.judgement-foul .speed-lines{animation:speed-lines .46s ease-out both}
+
+.judgement-spark{position:absolute;z-index:7;left:39%;top:57%;width:6px;height:2px;background:var(--j);box-shadow:0 0 7px var(--j);opacity:0;transform-origin:left center}
+.stage-impact .judgement-spark{animation:spark-pop .34s ease-out both}
+.spark-1{--a:-68deg;--d:58px}.spark-2{--a:-36deg;--d:72px}.spark-3{--a:-4deg;--d:64px}.spark-4{--a:28deg;--d:70px}.spark-5{--a:61deg;--d:60px}.spark-6{--a:115deg;--d:52px}
+.judgement-ball .judgement-spark,.judgement-called .judgement-spark,.judgement-read .judgement-spark,.judgement-lock .judgement-spark,.judgement-expand .judgement-spark,.judgement-signal .judgement-spark,.judgement-survive .judgement-spark,.judgement-draw .judgement-spark{display:none}
+
+.release-combat[class*="fx-stage-"] .duel-fx .pixel-ball{animation:none!important;opacity:0!important}
+.release-combat.fx-stage-release .duel-fx.hit .pixel-ball{display:block;opacity:1!important;animation:ball-hit .5s steps(10) both!important}
+.release-combat.fx-stage-release .duel-fx.pitch .pixel-ball{display:block;opacity:1!important;animation:ball-pitch .46s steps(10) both!important}
+.release-combat.fx-stage-release .flight-ground.hit .pixel-ball{animation:flight-ground .6s steps(12) both!important}
+.release-combat.fx-stage-release .flight-bloop.hit .pixel-ball{animation:flight-bloop .6s steps(14) both!important}
+.release-combat.fx-stage-release .flight-homer.hit .pixel-ball{animation:flight-homer .72s steps(16) both!important}
+.release-combat.fx-stage-release.fx-whiff .duel-fx .pixel-ball{display:block;opacity:1!important;animation:ball-whiff .58s linear both!important}
+.release-combat.fx-stage-release.fx-foul .duel-fx .pixel-ball{display:block;opacity:1!important;animation:ball-foul .64s steps(12) both!important}
+
+.fx-stage-impact.fx-hit .scoreboard-score strong,.fx-stage-impact.fx-extra .scoreboard-score strong,.fx-stage-impact.fx-homer .scoreboard-score strong{animation:score-impact .32s cubic-bezier(.18,.8,.2,1) both}
+.fx-stage-impact.fx-whiff .scoreboard-count,.fx-stage-impact.fx-called .scoreboard-count,.fx-stage-impact.fx-out .scoreboard-count{animation:count-impact .32s ease-out both}
+.fx-stage-release.fx-homer .living-diamond{animation:diamond-glow .72s ease-out both}
+.fx-stage-release.fx-extra .living-diamond,.fx-stage-release.fx-hit .living-diamond{animation:diamond-kick .5s ease-out both}
+
+.fx-stage-impact .actor-left{filter:brightness(1.22) contrast(1.05) drop-shadow(0 8px 3px #07151a80)}
+.fx-stage-impact.fx-hit .actor-left,.fx-stage-impact.fx-extra .actor-left,.fx-stage-impact.fx-homer .actor-left{transform:translateX(5px) scale(1.012)}
+.fx-stage-impact.fx-whiff .actor-left{transform:translateX(8px) rotate(1.5deg)}
+.fx-stage-impact.fx-called .actor-left{filter:saturate(.28) contrast(1.12)}
+.fx-stage-impact .actor-right{transform:translateX(-2px)}
+
+.stage-windup .judgement-copy{opacity:0!important;animation:none!important}
+.stage-impact .judgement-copy{animation:judgement-copy-impact .22s cubic-bezier(.12,.9,.18,1) both}
+.stage-release .judgement-copy{opacity:1}
+.stage-settle .judgement-copy{animation:judgement-copy-settle .3s ease-out both}
+.stage-windup .judgement-ring,.stage-windup .judgement-slash{opacity:0!important;animation:none!important}
+.stage-impact .judgement-ring.ring-a{animation:impact-ring-a .42s ease-out both}
+.stage-impact .judgement-ring.ring-b{animation:impact-ring-b .48s ease-out .025s both}
+.stage-impact .judgement-ring.ring-c{animation:impact-ring-c .54s ease-out .045s both}
+.stage-impact .judgement-slash.slash-a{animation:impact-slash-a .3s ease-out both}
+.stage-impact .judgement-slash.slash-b{animation:impact-slash-b .34s ease-out .02s both}
+.judgement-ball .ring-c,.judgement-called .ring-c,.judgement-read .ring-c,.judgement-lock .ring-c,.judgement-expand .ring-c,.judgement-signal .ring-c,.judgement-survive .ring-c,.judgement-draw .ring-c{display:none}
+
+@keyframes pitch-incoming{0%{left:76%;top:38%;opacity:0;transform:scale(.7)}18%{opacity:1}75%{left:44%;top:56%;opacity:1;transform:scale(1)}100%{left:39%;top:58%;opacity:0;transform:scale(1.45)}}
+@keyframes camera-breathe{from{transform:scale(1)}to{transform:scale(1.006)}}
+@keyframes impact-freeze{0%{transform:scale(1.008)}45%{transform:scale(1.018)}100%{transform:scale(1.012)}}
+@keyframes camera-hit-release{0%{transform:scale(1.015) translate(5px,-2px)}22%{transform:scale(1.012) translate(-5px,2px)}45%{transform:scale(1.008) translate(3px,-1px)}100%{transform:none}}
+@keyframes camera-homer-release{0%{transform:scale(1.025) translate(8px,-5px)}14%{transform:scale(1.02) translate(-8px,4px)}28%{transform:scale(1.018) translate(6px,1px)}44%{transform:scale(1.014) translate(-4px,-2px)}68%{transform:scale(1.008)}100%{transform:none}}
+@keyframes camera-miss-release{0%{transform:translateX(6px) rotate(.25deg)}22%{transform:translateX(-5px) rotate(-.2deg)}48%{transform:translateX(2px)}100%{transform:none}}
+@keyframes camera-settle{from{filter:brightness(1.08)}to{filter:none;transform:none}}
+@keyframes impact-flash{0%{opacity:0}22%{opacity:.9}55%{opacity:.18}100%{opacity:0}}
+@keyframes vignette-in{from{opacity:0}to{opacity:.72}}
+@keyframes vignette-out{from{opacity:.65}to{opacity:0}}
+@keyframes speed-lines{0%{opacity:0;transform:translateX(6%) skewX(-12deg)}16%{opacity:.82}100%{opacity:0;transform:translateX(-8%) skewX(-12deg)}}
+@keyframes spark-pop{0%{opacity:0;transform:rotate(var(--a)) translateX(0) scaleX(.2)}18%{opacity:1}100%{opacity:0;transform:rotate(var(--a)) translateX(var(--d)) scaleX(1.3)}}
+@keyframes score-impact{0%{transform:scale(1)}32%{transform:scale(1.18);text-shadow:0 0 18px #ffe49a}100%{transform:scale(1)}}
+@keyframes count-impact{0%{transform:none}30%{transform:translateX(4px)}55%{transform:translateX(-3px)}100%{transform:none}}
+@keyframes diamond-glow{0%{filter:none}28%{filter:drop-shadow(0 0 16px #ffd56f) brightness(1.35)}100%{filter:none}}
+@keyframes diamond-kick{0%{transform:translateX(-50%) scale(1)}24%{transform:translateX(-50%) scale(1.06)}100%{transform:translateX(-50%) scale(1)}}
+@keyframes judgement-copy-impact{0%{opacity:0;transform:scale(.72);filter:blur(6px)}45%{opacity:1;transform:scale(1.12);filter:blur(0)}100%{opacity:1;transform:scale(1)}}
+@keyframes judgement-copy-settle{from{opacity:1;transform:translateY(0)}to{opacity:.82;transform:translateY(-5px)}}
+@keyframes impact-ring-a{0%{opacity:0;transform:translate(-50%,-50%) scale(.12)}22%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(3.8)}}
+@keyframes impact-ring-b{0%{opacity:0;transform:translate(-50%,-50%) scale(.12)}25%{opacity:.8}100%{opacity:0;transform:translate(-50%,-50%) scale(5)}}
+@keyframes impact-ring-c{0%{opacity:0;transform:translate(-50%,-50%) scale(.12)}25%{opacity:.55}100%{opacity:0;transform:translate(-50%,-50%) scale(6.2)}}
+@keyframes impact-slash-a{0%{opacity:0;transform:rotate(-22deg) scaleX(.05)}24%{opacity:1}100%{opacity:0;transform:rotate(-22deg) scaleX(1.8)}}
+@keyframes impact-slash-b{0%{opacity:0;transform:rotate(18deg) scaleX(.05)}24%{opacity:.9}100%{opacity:0;transform:rotate(18deg) scaleX(1.65)}}
+
+@media(max-width:560px){
+  .pitch-ball{width:7px;height:7px}
+  .judgement-spark{left:42%;top:54%}
+  .stage-release.judgement-homer .speed-lines{opacity:.7}
+}
+@media(prefers-reduced-motion:reduce){
+  .release-combat[class*="fx-stage-"] .duel-arena,.release-combat[class*="fx-stage-"] .actor-left,.release-combat[class*="fx-stage-"] .actor-right,.release-combat[class*="fx-stage-"] .living-diamond,.release-combat[class*="fx-stage-"] .scoreboard-score strong,.release-combat[class*="fx-stage-"] .scoreboard-count,.pitch-ball,.speed-lines,.judgement-spark,.judgement-flash,.judgement-vignette{animation:none!important}
+  .pitch-ball,.speed-lines,.judgement-spark,.judgement-flash{display:none!important}
+}
