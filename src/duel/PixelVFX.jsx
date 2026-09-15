@@ -81,12 +81,12 @@ function releasePoint(shot,p){
   else if(['homer','grand-slam','extra'].includes(shot?.grade))y-=Math.sin(Math.PI*p)*22;
   return [x,y];
 }
-function releasePass(ctx,t,shot,data){
+function releasePass(ctx,t,shot,data,drawCore=true){
   const colors=paletteFor(shot),dur=shot?.grade==='grand-slam'?.92:shot?.grade==='homer'?.78:shot?.grade==='lucky'?.82:.58,p=Math.min(1,t/dur),[x,y]=releasePoint(shot,p);
   for(let i=9;i>=1;i--){
     const q=Math.max(0,p-i*.018),[tx,ty]=releasePoint(shot,q);square(ctx,tx,ty,i>5?3:2,colors[i%colors.length],(10-i)*.045);
   }
-  square(ctx,x,y,4,'#fffce2',.96);square(ctx,x+1,y+1,2,colors[0],.9);
+  if(drawCore){square(ctx,x,y,4,'#fffce2',.96);square(ctx,x+1,y+1,2,colors[0],.9);}
   const extra=shot?.grade==='grand-slam'?22:shot?.grade==='homer'?14:6;
   for(let i=0;i<extra;i++){const d=data.release[i];square(ctx,x-d.dx,y+d.dy,2,colors[d.color],d.alpha);}
 }
@@ -95,7 +95,7 @@ function settlePass(ctx,t,shot,data){
   for(let i=0;i<count;i++){const p=data.settle[i];square(ctx,p.x,p.y+Math.min(30,t*18),p.size,colors[p.color],Math.max(0,p.alpha-t*.28));}
 }
 
-export default function PixelVFX({stage,shot,token=0}){
+export default function PixelVFX({stage,shot,token=0,drawCore=true}){
   const ref=useRef(null);
   useEffect(()=>{
     if(!stage||!shot)return;
@@ -110,13 +110,13 @@ export default function PixelVFX({stage,shot,token=0}){
       if(!alive)return;const t=(now-start)/1000;ctx.clearRect(0,0,320,180);ctx.globalCompositeOperation='source-over';
       if(stage==='impact')impactPass(ctx,t,shot,data);
       else if(stage==='slowmo')slowmoPass(ctx,t,shot,data);
-      else if(stage==='release')releasePass(ctx,t,shot,data);
+      else if(stage==='release')releasePass(ctx,t,shot,data,drawCore);
       else if(stage==='settle')settlePass(ctx,t,shot,data);
       ctx.globalAlpha=1;
       if(t<duration)raf=requestAnimationFrame(loop);
     };
     raf=requestAnimationFrame(loop);
     return ()=>{alive=false;cancelAnimationFrame(raf);ctx.clearRect(0,0,320,180)};
-  },[stage,shot?.grade,shot?.kind,token]);
+  },[stage,shot?.grade,shot?.kind,token,drawCore]);
   return <canvas ref={ref} className={'pixel-vfx-canvas '+(shot?'vfx-'+(shot.grade||shot.kind):'')} width="320" height="180" aria-hidden="true"/>;
 }
