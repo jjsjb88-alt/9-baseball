@@ -78,6 +78,22 @@ describe('9-zone strategic UI',()=>{
     const saved=readDuel(localStorage);cleanup();render(<Duel/>);fireEvent.click(screen.getByRole('button',{name:'이어하기'}));expect(readDuel(localStorage)).toEqual(saved);
     fireEvent.click(screen.getByRole('button',{name:'다음 타자 입장 · 2번 이민준'}));expect(readDuel(localStorage).battle.batterIndex).toBe(1);
   });
+  it('uses selective slow motion for a one-zone miss instead of every whiff',()=>{
+    begin(0,.99);
+    fireEvent.click(screen.getByRole('button',{name:'스윙하기',exact:true}));
+    fireEvent.click(screen.getByRole('button',{name:'밀어치기',exact:true}));
+    fireEvent.click(screen.getByTestId('execute-action'));
+    expect(document.querySelector('.presentation-stage-windup')).toBeTruthy();
+    act(()=>vi.advanceTimersByTime(116));expect(document.querySelector('.presentation-stage-impact')).toBeTruthy();
+    act(()=>vi.advanceTimersByTime(25));expect(document.querySelector('.presentation-stage-slowmo')).toBeTruthy();
+    expect(document.querySelector('.slowmo-mark')?.textContent).toBe('ONE ZONE');
+    act(()=>vi.advanceTimersByTime(360));expect(document.querySelector('.presentation-stage-release')).toBeTruthy();
+    finish();
+    const result=screen.getByRole('region',{name:'투구 결과'});
+    expect(result.className).toContain('result-grade-near-miss');
+    expect(result.querySelector('.result-call')?.textContent).toBe('한 칸 차이');
+  });
+
   it('uncovered whiff keeps same batter and requires next pitch confirmation',()=>{
     begin(0,.99);useCard('strike');expect(screen.getByRole('region',{name:'투구 결과'})).toBeTruthy();expect(readDuel(localStorage).battle.strikes).toBe(1);
     expect(screen.queryByRole('button',{name:/다음 타자 입장/})).toBeNull();
