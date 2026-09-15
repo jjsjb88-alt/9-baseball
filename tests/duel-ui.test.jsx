@@ -190,4 +190,30 @@ describe('9-zone strategic UI',()=>{
     }
     expect(guard).toBeLessThan(600);expect(['won','lost']).toContain(readDuel(localStorage).phase);expect(screen.getByRole('button',{name:'다시 도전'})).toBeTruthy();
   });
+
+  it('pulls the arena into view when a swing starts its cinema, and leaves it alone when already visible',()=>{
+    const rect=(top,height)=>()=>({top,bottom:top+height,height,left:0,right:390,width:390,x:0,y:top});
+    const armed=()=>{
+      const s=startBattle(createDuel(1));s.battle.pending={zone:s.battle.aimZone,roll:.1,powerRoll:.99};
+      saveDuel(localStorage,s);render(<Duel/>);
+      fireEvent.click(screen.getByRole('button',{name:'이어하기'}));dismiss();
+      const arena=screen.getByRole('region',{name:'승부 구장'});
+      const scrolled=[];arena.scrollIntoView=opts=>scrolled.push(opts);
+      return {arena,scrolled};
+    };
+    const swing=()=>{
+      fireEvent.click(screen.getByRole('button',{name:'스윙하기',exact:true}));
+      fireEvent.click(screen.getByRole('button',{name:'BASIC SWING',exact:true}));
+      fireEvent.click(screen.getByTestId('execute-action'));
+    };
+    const off=armed();
+    off.arena.getBoundingClientRect=rect(-476,155);
+    swing();finish();
+    expect(off.scrolled).toEqual([{block:'center',behavior:'auto'}]);
+    cleanup();localStorage.clear();
+    const on=armed();
+    on.arena.getBoundingClientRect=rect(120,155);
+    swing();finish();
+    expect(on.scrolled).toEqual([]);
+  });
 });
