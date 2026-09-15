@@ -211,6 +211,47 @@ function RewardScreen({s,growthChoice,onGrowth,action,onAction,target,onTarget,o
   </div>;
 }
 
+function FacilityScreen({s,choice,onChoice,target,onTarget,onConfirm}){
+  const routeIndex=s.stage-1,route=FACILITY_ROUTES[routeIndex]||[],selected=choice&&route.includes(choice)?choice:null;
+  const action=!selected?null:selected==='scouting'?{type:'scouting'}
+    :selected==='equipment'?(target?{type:'equipment',kind:target}:null)
+    :(target?{type:selected,id:target}:null);
+  const problem=!selected?'다음 경기 전에 들를 곳을 하나 고르세요.'
+    :!action?(selected==='equipment'?'장비를 선택하세요.':'카드를 선택하세요.')
+    :facilityProblem(s,action);
+  const deckAction=action&&['training','release'].includes(action.type)
+    ?{type:action.type==='training'?'upgrade':'remove',id:action.id}:null;
+  const after=deckAction&&!problem?applyRewardToDeck(s.deck,deckAction,s.nextId).deck:null;
+  const delta=after?profileDelta(s.deck,after):[];
+  const scoutFrom=readLevel(s),scoutTo=Math.min(2,scoutFrom+1);
+  return <div className="facility-flow" role="group" aria-label="다음 경기 준비 선택">
+    <section className="facility-intro">
+      <span className="eyebrow">BETWEEN GAMES · ROUTE {s.stage} / 3</span>
+      <h1>다음 상대를 만나기 전에,<br/>팀을 한 번 바꿀 수 있습니다.</h1>
+      <p>모든 걸 얻을 수는 없습니다. 덱을 강하게 만들지, 얇게 만들지, 투수를 더 읽을지 하나를 포기하고 하나를 고릅니다.</p>
+    </section>
+    <div className="facility-route" aria-label="시설 선택">{route.map(type=>{const x=FACILITIES[type];
+      return <button key={type} type="button" className={'facility-node '+(selected===type?'selected':'')} aria-pressed={selected===type}
+        onClick={()=>{onChoice(type);onTarget(null);}}>
+        <span className="facility-icon"><PixelIcon art={x.art}/></span><small>{x.tag}</small><strong>{x.name}</strong><p>{x.text}</p>
+      </button>;})}</div>
+    {selected&&<section className="facility-workbench">
+      <span className="eyebrow">선택한 시설 · {FACILITIES[selected].name}</span>
+      {selected==='training'&&<><h2>강화할 카드 한 장</h2><DeckList deck={s.deck} selected={target} onPick={onTarget} mode="upgrade"/></>}
+      {selected==='release'&&<><h2>덱에서 뺄 카드 한 장</h2><p>덱이 얇아질수록 핵심 카드를 더 자주 봅니다.</p><DeckList deck={s.deck} selected={target} onPick={onTarget} mode="remove"/></>}
+      {selected==='equipment'&&<><h2>장비 하나를 가져갑니다</h2><div className="relic-offers">{(RELIC_OFFERS[routeIndex]||[]).map(k=>{const owned=s.relics.includes(k);
+        return <button key={k} type="button" className={'relic-card '+(target===k?'selected':'')} disabled={owned}
+          aria-label={RELICS[k].name} aria-pressed={target===k} onClick={()=>onTarget(k)}>
+          <span className="relic-icon"><PixelIcon art={RELICS[k].art}/></span><strong>{RELICS[k].name}</strong><span>{RELICS[k].text}</span>{owned&&<small>이미 보유</small>}
+        </button>;})}</div></>}
+      {selected==='scouting'&&<div className="scout-brief"><h2>다음 상대를 한 단계 더 읽습니다</h2><p>{READ_LEVELS[scoutFrom].name} → <strong>{READ_LEVELS[scoutTo].name}</strong></p><small>다음 한 경기 동안만 적용. 숨은 실제 공을 공개하지 않고, 공개 확률 정보의 해상도만 높입니다.</small></div>}
+      {!!delta.length&&<ul className="delta-list facility-delta">{delta.map(r=><li key={r.label} className={r.delta>0?'up':'down'}><b>{r.label}</b><span>{r.from} → {r.to}</span><i>{r.delta>0?'+'+r.delta:r.delta}</i></li>)}</ul>}
+      {problem?<p className="reward-hold">{problem}</p>:<button className="primary" onClick={()=>onConfirm(action)}>이 준비로 다음 경기</button>}
+    </section>}
+  </div>;
+}
+
+
 const OPPONENT_NOTES=[
   {plan:'바깥쪽 코스가 중심. 초반에는 적은 코스로 승부합니다.',question:'안전하게 출루할 범위와 큰 한 방, 어느 쪽을 준비할까?'},
   {plan:'낮은 코스와 높은 변화량. 맞힌 공은 안타지만 타구 질이 낮아질 수 있습니다.',question:'낮은 가로 범위를 챙길까, 타구 질을 높일까?'},
