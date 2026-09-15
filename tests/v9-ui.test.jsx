@@ -81,14 +81,14 @@ describe('V9 main-run UI',()=>{
     expect(screen.getByText(/스카우팅 적용/)).toBeTruthy();
   });
 
-  it('makes a hit the dominant result instead of a small log line',()=>{
+  it('makes contact quality the dominant result instead of a generic hit log',()=>{
     const s=hitState();
     expect(s.phase).toBe('between');
     saveDuel(localStorage,s);
     render(<Duel/>);
     fireEvent.click(screen.getByRole('button',{name:'이어하기'}));
     const result=screen.getByLabelText('타석 종료 결과');
-    expect(result.querySelector('.result-call')?.textContent).toBe('안타');
+    expect(result.querySelector('.result-call')?.textContent).toBe('정확히 맞혔다');
     expect(result.className).toContain('result-hit');
     expect(within(result).getByRole('heading',{level:2}).textContent).toContain('안타');
   });
