@@ -30,6 +30,11 @@ const CUES={
   draw:{type:'sine',gain:.032,noise:.006,noiseDur:.025,notes:[[500,0,.04,1.04,-.18],[600,.045,.045,1.04,0],[700,.095,.05,1.04,.18]]},
   pitch:{type:'sine',gain:.045,noise:.025,noiseDur:.07,notes:[[310,0,.09,.62,.16],[110,.14,.1,.58,-.12]]},
   skill:{type:'sine',gain:.04,noise:.008,noiseDur:.025,notes:[[440,0,.06,.9,-.08],[660,.06,.1,.92,.08]]},
+  rbi:{type:'sine',gain:.045,noise:.012,noiseDur:.03,notes:[[330,0,.06,1.04,-.12],[495,.07,.08,1.03,0],[660,.15,.11,1.02,.14]]},
+  'game-win':{type:'triangle',gain:.05,noise:.02,noiseDur:.04,swell:.085,echo:.08,notes:[[294,0,.07,1.04,-.12],[440,.075,.09,1.03,0],[588,.17,.12,1.02,.14],[784,.29,.16,1.01,0]]},
+  champion:{type:'triangle',gain:.054,noise:.025,noiseDur:.05,swell:.12,echo:.13,notes:[[262,0,.07,1.05,-.15],[392,.08,.1,1.04,-.02],[523,.18,.13,1.03,.12],[784,.34,.18,1.02,.2],[1047,.56,.23,1.01,0]]},
+  'rival-champion':{type:'square',gain:.05,noise:.032,noiseDur:.065,swell:.15,echo:.18,notes:[[220,0,.08,1.05,-.18],[330,.08,.1,1.04,.16],[440,.19,.14,1.03,-.08],[660,.36,.18,1.02,.18],[880,.58,.24,1.01,0]]},
+  'game-loss':{type:'triangle',gain:.042,noise:.016,noiseDur:.04,notes:[[220,0,.08,.78,.08],[165,.11,.12,.7,-.06],[110,.27,.18,.62,0]]},
 };
 function audio(){
   const Audio=globalThis.AudioContext||globalThis.webkitAudioContext;if(!Audio)return null;
