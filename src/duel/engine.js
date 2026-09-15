@@ -327,11 +327,13 @@ export function chooseFacility(state,action){
   if(facilityProblem(state,action))return state;
   const s=clone(state);
   if(action.type==='training'){
+    const kind=s.deck.find(c=>c.id===action.id).kind;
     s.deck=applyRewardToDeck(s.deck,{type:'upgrade',id:action.id},s.nextId).deck;
-    s.facilities.push({type:'training',id:action.id});
+    s.facilities.push({type:'training',id:action.id,kind});
   }else if(action.type==='release'){
+    const kind=s.deck.find(c=>c.id===action.id).kind;
     s.deck=applyRewardToDeck(s.deck,{type:'remove',id:action.id},s.nextId).deck;
-    s.facilities.push({type:'release',id:action.id});
+    s.facilities.push({type:'release',id:action.id,kind});
   }else if(action.type==='equipment'){
     s.relics=[...s.relics,action.kind];
     s.facilities.push({type:'equipment',kind:action.kind});
@@ -360,8 +362,8 @@ export function readDuel(storage){
       ?s.facilities.length!==(s.phase==='facility'?Math.max(0,s.stage-1):s.stage)
       :s.facilities.length!==0)
     ||!s.facilities.every((r,i)=>r&&FACILITY_ROUTES[i]?.includes(r.type)
-      &&(r.type!=='training'||typeof r.id==='string')
-      &&(r.type!=='release'||typeof r.id==='string')
+      &&(r.type!=='training'||typeof r.id==='string'&&Object.hasOwn(CARDS,r.kind))
+      &&(r.type!=='release'||typeof r.id==='string'&&Object.hasOwn(CARDS,r.kind))
       &&(r.type!=='equipment'||(RELIC_OFFERS[i]||[]).includes(r.kind)))
     ||!s.rewards.every((r,i)=>r&&['add','remove','upgrade','relic','skip'].includes(r.type)
       &&(s.build!==DECKBUILDER_BUILD||['add','skip'].includes(r.type))
