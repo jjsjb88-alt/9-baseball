@@ -85,14 +85,14 @@ function flags(shot){
 }
 const coverMask=zones=>(zones||[]).reduce((m,z)=>z>=0&&z<9?m|(1<<z):m,0);
 
-export default function ArenaRenderer2({stage=null,shot=null,match=0,rival=false,revealed=null,token=0,label='Pixel Cinema Renderer 2.0'}){
+export default function ArenaRenderer2({stage=null,shot=null,match=0,rival=false,revealed=null,token=0,label='Pixel Cinema Renderer 2.0',onStatus=null}){
   const ref=useRef(null);
   useEffect(()=>{
     const canvas=ref.current;if(!canvas)return;
-    let gl;try{gl=canvas.getContext?.('webgl2',{alpha:false,antialias:false,depth:false,stencil:false,premultipliedAlpha:false});}catch{return;}
-    if(!gl)return;
-    let p;try{p=makeProgram(gl);}catch(err){canvas.dataset.rendererError=String(err?.message||err);return;}
-    canvas.dataset.renderer='webgl2';
+    let gl;try{gl=canvas.getContext?.('webgl2',{alpha:false,antialias:false,depth:false,stencil:false,premultipliedAlpha:false});}catch{onStatus?.('fallback');return;}
+    if(!gl){onStatus?.('fallback');return;}
+    let p;try{p=makeProgram(gl);}catch(err){canvas.dataset.rendererError=String(err?.message||err);onStatus?.('error');return;}
+    canvas.dataset.renderer='webgl2';onStatus?.('webgl2');
     const uniform=name=>gl.getUniformLocation(p,name),U={resolution:uniform('u_resolution'),time:uniform('u_time'),phase:uniform('u_phase'),match:uniform('u_match'),rival:uniform('u_rival'),success:uniform('u_success'),danger:uniform('u_danger'),power:uniform('u_power'),stage:uniform('u_stage'),ballMode:uniform('u_ballMode'),trace:uniform('u_trace'),coverMask:uniform('u_coverMask'),aim:uniform('u_aim'),actual:uniform('u_actual')};
     const code=STAGE[stage]||0,start=performance.now(),duration=durationFor(stage,shot),f=flags(shot);
     const tactical=!!revealed&&['dead-center','solid','jammed','lucky','extra','homer','grand-slam','near-miss','near-miss-k','chase','chase-k','fooled','strikeout'].includes(shot?.grade||'')&&[2,3,4].includes(code);
