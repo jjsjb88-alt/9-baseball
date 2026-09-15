@@ -72,7 +72,13 @@ function actorPose(who,stage,shot){
 }
 function Sprite({who,stage=null,shot=null}){
   const pose=actorPose(who,stage,shot),src=(who==='pitcher'?PITCHER_POSES:BATTER_POSES)[pose];
-  return <span className={'sprite-stage sprite-'+who+' pose-'+pose}><img aria-hidden="true" className="duel-sprite" src={src}/><i className="sprite-bloom" aria-hidden="true"/></span>;
+  return <span className={'sprite-stage sprite-'+who+' pose-'+pose}>
+    <img aria-hidden="true" className="sprite-echo echo-back" src={src}/>
+    <img aria-hidden="true" className="sprite-echo echo-mid" src={src}/>
+    <img aria-hidden="true" className="duel-sprite" src={src}/>
+    {who==='batter'&&<i className="bat-smear" aria-hidden="true"/>}
+    <i className="sprite-bloom" aria-hidden="true"/>
+  </span>;
 }
 function PixelCinema({stage,shot}){
   const intense=['homer','grand-slam','extra','dead-center'].includes(shot?.grade),danger=['near-miss','near-miss-k','chase','chase-k','fooled','strikeout'].includes(shot?.grade);
