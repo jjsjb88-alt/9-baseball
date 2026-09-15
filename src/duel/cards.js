@@ -85,6 +85,17 @@ export const V9_REWARDS=[
 export const rewardChoices=(stage,growthKey,build='away')=>build===DECKBUILDER_BUILD
   ? [...(V9_REWARDS[stage]||[])]
   : [...new Set([...(REWARDS[stage]||[]),...(AFFINITY_CARDS[growthKey]||[])])];
+export const FACILITIES={
+  training:{name:'타격 훈련',tag:'강화',art:'target',text:'가진 카드 1장을 + 판으로 강화합니다. 다음 경기부터 같은 카드가 더 강한 역할을 합니다.'},
+  scouting:{name:'스카우팅',tag:'정보',art:'eye',text:'다음 상대 한 경기 동안 읽기 등급 +1. 더 정확한 공개 정보로 노릴 존을 정합니다.'},
+  release:{name:'라커룸 정리',tag:'제거',art:'book',text:'카드 1장을 덱에서 제거합니다. 약한 스타터를 덜 뽑고 핵심 카드를 더 자주 봅니다.'},
+  equipment:{name:'장비실',tag:'유물',art:'spark',text:'투수 읽기를 바꾸는 장비 하나를 가져갑니다. 카드와 별개의 런 규칙입니다.'},
+};
+export const FACILITY_ROUTES=[
+  ['training','scouting'],
+  ['release','equipment'],
+  ['training','equipment'],
+];
 export const REWARD_ACTIONS=[
   {type:'add',name:'카드 추가',hint:'후보 한 장을 덱에 넣습니다'},
   {type:'remove',name:'카드 제거',hint:'약한 카드를 덱에서 뺍니다'},
