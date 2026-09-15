@@ -632,3 +632,109 @@
 @keyframes screen-shake-strong{0%,100%{transform:none}16%{transform:translate(5px,-3px)}34%{transform:translate(-5px,3px)}54%{transform:translate(4px,-2px)}74%{transform:translate(-3px,2px)}}
 @keyframes screen-shake-epic{0%,100%{transform:none}10%{transform:translate(7px,-4px)}24%{transform:translate(-8px,5px)}38%{transform:translate(7px,3px)}52%{transform:translate(-6px,-3px)}68%{transform:translate(4px,2px)}82%{transform:translate(-3px,1px)}}
 @media(prefers-reduced-motion:reduce){.release-combat.fx-stage-impact[class*="shake-"]{animation:none!important}}
+
+
+/* ---------- PIXEL CINEMA · living stadium + full-pose actors ---------- */
+.sprite-stage{position:relative;display:block;width:100%;height:100%;transform-origin:center bottom}
+.sprite-stage .duel-sprite{display:block;width:100%;height:100%;object-fit:contain;object-position:center bottom;image-rendering:pixelated;filter:drop-shadow(0 9px 3px #061117b8) drop-shadow(0 0 1px #e9d8ad66)}
+.sprite-stage:after{content:'';position:absolute;left:18%;right:18%;bottom:4%;height:8%;border-radius:50%;background:#02090c88;filter:blur(4px);z-index:-1}
+.sprite-stage .sprite-bloom{position:absolute;inset:11% 10% 8%;z-index:-1;border-radius:50%;opacity:.13;background:radial-gradient(circle,#f7d89970 0,transparent 68%);filter:blur(11px);transition:opacity .12s ease,transform .12s ease}
+.fx-stage-impact .sprite-batter .sprite-bloom{opacity:.42;transform:scale(1.18);background:radial-gradient(circle,#fff4bf9e 0,#e9b55e40 30%,transparent 70%)}
+.fx-stage-impact .sprite-pitcher .sprite-bloom{opacity:.25;transform:scale(1.07)}
+.fx-dead-center .sprite-batter .sprite-bloom,.fx-homer .sprite-batter .sprite-bloom,.fx-grand-slam .sprite-batter .sprite-bloom{opacity:.62;background:radial-gradient(circle,#fffbd7bb 0,#f5c66a66 28%,transparent 68%)}
+
+.actor-left .sprite-stage,.actor-right .sprite-stage{animation:actor-idle-breathe 2.8s steps(4,end) infinite}
+.fx-stage-windup .actor-left .sprite-stage,.fx-stage-windup .actor-right .sprite-stage,.fx-stage-impact .actor-left .sprite-stage,.fx-stage-impact .actor-right .sprite-stage,.fx-stage-slowmo .actor-left .sprite-stage,.fx-stage-slowmo .actor-right .sprite-stage,.fx-stage-release .actor-left .sprite-stage,.fx-stage-release .actor-right .sprite-stage,.fx-stage-settle .actor-left .sprite-stage,.fx-stage-settle .actor-right .sprite-stage{animation:none}
+.fx-stage-windup .actor-right .sprite-stage{animation:pitcher-coil .14s steps(2,end) both}
+.fx-stage-windup .actor-left .sprite-stage.pose-load{animation:batter-load-in .14s steps(2,end) both}
+.fx-stage-impact .actor-right .sprite-stage{animation:pitcher-release-snap .11s steps(2,end) both}
+.fx-stage-impact .actor-left .sprite-stage.pose-contact{animation:batter-contact-snap .11s steps(2,end) both}
+.fx-stage-impact .actor-left .sprite-stage.pose-miss{animation:batter-miss-snap .14s steps(3,end) both}
+.fx-stage-release .actor-left .sprite-stage.pose-follow{animation:batter-follow-through .42s steps(4,end) both}
+.fx-stage-release .actor-left .sprite-stage.pose-homer{animation:batter-homer-hold .78s steps(5,end) both}
+.fx-stage-release .actor-left .sprite-stage.pose-miss{animation:batter-miss-follow .48s steps(4,end) both}
+.fx-stage-release .actor-right .sprite-stage.pose-follow{animation:pitcher-finish .42s steps(4,end) both}
+.fx-stage-release .actor-right .sprite-stage.pose-strikeout{animation:pitcher-k-celebrate .66s steps(5,end) both}
+
+.pixel-cinema{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden}
+.pixel-cinema:before{content:'';position:absolute;inset:0;z-index:0;background:
+  repeating-linear-gradient(90deg,#ffffff07 0 1px,transparent 1px 4px),
+  repeating-linear-gradient(0deg,#0000000d 0 1px,transparent 1px 3px);
+  mix-blend-mode:soft-light;opacity:.34}
+.pixel-cinema:after{content:'';position:absolute;inset:0;z-index:0;background:radial-gradient(ellipse at 50% 58%,transparent 35%,#020a0f2e 72%,#02090ed1 112%);opacity:.8}
+.cinema-light{position:absolute;top:-18%;width:34%;height:82%;opacity:.14;filter:blur(4px);mix-blend-mode:screen;transform-origin:top center}
+.beam-left{left:-2%;background:linear-gradient(105deg,transparent 12%,#f7e5b846 45%,#fff7da15 67%,transparent 72%);transform:rotate(-9deg);animation:stadium-beam-left 7s ease-in-out infinite}
+.beam-right{right:-2%;background:linear-gradient(75deg,transparent 12%,#e8f1d948 45%,#fffbdc16 67%,transparent 72%);transform:rotate(9deg);animation:stadium-beam-right 8s ease-in-out infinite}
+.cinema-haze{position:absolute;left:-10%;right:-10%;bottom:-9%;height:42%;background:linear-gradient(180deg,transparent,#b9b1890c 38%,#ccb98412 64%,transparent);filter:blur(10px);opacity:.72;animation:field-haze 6s ease-in-out infinite}
+.air-pixel{position:absolute;width:2px;height:2px;background:#f8e5aa;opacity:.14;box-shadow:0 0 3px #f6d99366;animation:air-drift 5.8s linear infinite}
+.air-1{left:9%;top:26%;animation-delay:-.4s}.air-2{left:15%;top:54%;animation-delay:-2.7s}.air-3{left:23%;top:38%;animation-delay:-1.2s}.air-4{left:31%;top:66%;animation-delay:-4.3s}.air-5{left:41%;top:22%;animation-delay:-3.2s}.air-6{left:49%;top:48%;animation-delay:-.8s}.air-7{left:58%;top:31%;animation-delay:-5s}.air-8{left:66%;top:59%;animation-delay:-1.8s}.air-9{left:74%;top:24%;animation-delay:-4.9s}.air-10{left:81%;top:45%;animation-delay:-2.2s}.air-11{left:87%;top:67%;animation-delay:-3.8s}.air-12{left:93%;top:34%;animation-delay:-1s}
+
+.plate-dust,.mound-dust{position:absolute;bottom:3%;width:90px;height:20px;opacity:.12;background:
+  radial-gradient(circle at 22% 66%,#d0a06a 0 2px,transparent 3px),
+  radial-gradient(circle at 38% 48%,#e0b67b 0 1px,transparent 2px),
+  radial-gradient(circle at 56% 72%,#c88d59 0 2px,transparent 3px),
+  radial-gradient(circle at 71% 42%,#e6c391 0 1px,transparent 2px);
+  filter:blur(.15px)}
+.dust-a{left:8%;animation:dust-idle-a 4.2s steps(8,end) infinite}.dust-b{left:17%;bottom:6%;transform:scale(.65);animation:dust-idle-b 5s steps(8,end) infinite}.mound-dust{right:10%;animation:dust-idle-b 4.6s steps(8,end) infinite}
+.fx-stage-impact .dust-a,.fx-stage-impact .dust-b{opacity:.75;animation:plate-dust-burst .35s steps(6,end) both}
+.fx-stage-impact .mound-dust{opacity:.55;animation:mound-dust-burst .36s steps(6,end) both}
+.fx-stage-release .dust-a,.fx-stage-release .dust-b{opacity:.35}
+
+.crowd-flash{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff7c7;box-shadow:0 0 5px #fff0b0;opacity:0}
+.cf-1{left:17%;top:13%}.cf-2{left:35%;top:18%}.cf-3{left:68%;top:14%}.cf-4{left:84%;top:21%}
+.cinema-intense.cinema-release .crowd-flash,.cinema-intense.cinema-settle .crowd-flash{animation:crowd-camera-flash .8s steps(2,end) both}
+.cinema-intense .cf-2{animation-delay:.12s!important}.cinema-intense .cf-3{animation-delay:.25s!important}.cinema-intense .cf-4{animation-delay:.4s!important}
+
+.impact-debris{position:absolute;left:39%;top:58%;width:3px;height:3px;background:#f7d58a;box-shadow:0 0 4px #f2c769;opacity:0;z-index:8}
+.cinema-impact .impact-debris{animation:impact-debris-burst .42s cubic-bezier(.1,.8,.2,1) both}
+.debris-1{--dx:-44px;--dy:-34px}.debris-2{--dx:-23px;--dy:-52px}.debris-3{--dx:4px;--dy:-58px}.debris-4{--dx:31px;--dy:-44px}.debris-5{--dx:52px;--dy:-16px}.debris-6{--dx:46px;--dy:18px}.debris-7{--dx:20px;--dy:36px}.debris-8{--dx:-12px;--dy:40px}.debris-9{--dx:-39px;--dy:23px}.debris-10{--dx:-54px;--dy:-4px}
+.cinema-danger.cinema-impact .impact-debris{background:#e68e78;box-shadow:0 0 4px #df6f5e}
+.cinema-intense.cinema-impact .impact-debris{width:4px;height:4px;background:#fff2ad;box-shadow:0 0 7px #f8d56c}
+
+.contact-core{position:absolute;z-index:9;left:39%;top:58%;width:8px;height:8px;transform:translate(-50%,-50%) scale(.1);background:#fffbe5;border-radius:50%;opacity:0;box-shadow:0 0 8px #fff6c7,0 0 22px #f4c969,0 0 40px #e79b3a}
+.contact-cross{position:absolute;z-index:9;left:39%;top:58%;background:#fff8d8;opacity:0;box-shadow:0 0 8px #ffe69c}
+.cross-h{width:72px;height:2px;transform:translate(-50%,-50%) scaleX(.1)}.cross-v{width:2px;height:72px;transform:translate(-50%,-50%) scaleY(.1)}
+.cinema-impact .contact-core{animation:contact-core-pop .18s steps(3,end) both}
+.cinema-impact .cross-h{animation:contact-cross-h .24s ease-out both}.cinema-impact .cross-v{animation:contact-cross-v .24s ease-out both}
+.cinema-danger.cinema-impact .contact-core{background:#ffb2a0;box-shadow:0 0 8px #ffb2a0,0 0 24px #df6e5a}
+.cinema-windup .contact-core,.cinema-windup .contact-cross,.cinema-slowmo .contact-cross,.cinema-release .contact-cross,.cinema-settle .contact-cross{opacity:0}
+
+.fx-stage-impact.fx-dead-center .pixel-cinema,.fx-stage-impact.fx-extra .pixel-cinema,.fx-stage-impact.fx-homer .pixel-cinema,.fx-stage-impact.fx-grand-slam .pixel-cinema{filter:saturate(1.2) brightness(1.1)}
+.fx-stage-slowmo .pixel-cinema:after{background:radial-gradient(ellipse at 39% 58%,transparent 12%,#03101866 46%,#01070bed 100%)}
+.fx-stage-release.fx-homer .beam-left,.fx-stage-release.fx-homer .beam-right,.fx-stage-release.fx-grand-slam .beam-left,.fx-stage-release.fx-grand-slam .beam-right{opacity:.38;filter:blur(2px)}
+.fx-stage-release.fx-grand-slam .cinema-haze{opacity:1;background:linear-gradient(180deg,transparent,#f3d88c1a 34%,#ffc45d22 72%,transparent)}
+
+@keyframes actor-idle-breathe{0%,100%{transform:translateY(0)}25%{transform:translateY(-1px)}50%{transform:translateY(-2px)}75%{transform:translateY(-1px)}}
+@keyframes pitcher-coil{0%{transform:translateY(0) rotate(0)}100%{transform:translateY(-2px) rotate(-.8deg)}}
+@keyframes batter-load-in{0%{transform:translateX(0)}100%{transform:translateX(-3px)}}
+@keyframes pitcher-release-snap{0%{transform:translateX(0)}100%{transform:translateX(-5px) rotate(-1deg)}}
+@keyframes batter-contact-snap{0%{transform:translateX(-2px) rotate(-.5deg)}100%{transform:translateX(7px) rotate(1deg)}}
+@keyframes batter-miss-snap{0%{transform:translateX(-1px)}100%{transform:translateX(8px) rotate(1.7deg)}}
+@keyframes batter-follow-through{0%{transform:translateX(6px) rotate(1deg)}35%{transform:translateX(3px) rotate(.5deg)}100%{transform:none}}
+@keyframes batter-homer-hold{0%{transform:translateX(8px) rotate(1.5deg) scale(1.01)}28%{transform:translateX(4px) rotate(.8deg) scale(1.015)}100%{transform:none}}
+@keyframes batter-miss-follow{0%{transform:translateX(8px) rotate(1.7deg)}45%{transform:translateX(3px) rotate(.7deg)}100%{transform:none}}
+@keyframes pitcher-finish{0%{transform:translateX(-4px) rotate(-1deg)}100%{transform:none}}
+@keyframes pitcher-k-celebrate{0%{transform:translateY(0)}30%{transform:translateY(-3px) scale(1.01)}100%{transform:none}}
+@keyframes stadium-beam-left{0%,100%{transform:rotate(-9deg) translateX(0);opacity:.12}50%{transform:rotate(-7deg) translateX(2%);opacity:.18}}
+@keyframes stadium-beam-right{0%,100%{transform:rotate(9deg) translateX(0);opacity:.11}50%{transform:rotate(7deg) translateX(-2%);opacity:.17}}
+@keyframes field-haze{0%,100%{transform:translateX(-1%);opacity:.48}50%{transform:translateX(2%);opacity:.78}}
+@keyframes air-drift{0%{transform:translate(0,8px);opacity:0}15%{opacity:.18}75%{opacity:.1}100%{transform:translate(14px,-32px);opacity:0}}
+@keyframes dust-idle-a{0%,100%{transform:translate(0,0);opacity:.08}50%{transform:translate(4px,-3px);opacity:.16}}
+@keyframes dust-idle-b{0%,100%{transform:translate(0,0) scale(.7);opacity:.05}50%{transform:translate(-4px,-2px) scale(.86);opacity:.14}}
+@keyframes plate-dust-burst{0%{transform:translate(0,0) scale(.7);opacity:.1}35%{transform:translate(18px,-10px) scale(1.2);opacity:.8}100%{transform:translate(38px,-21px) scale(1.65);opacity:0}}
+@keyframes mound-dust-burst{0%{transform:translate(0,0) scale(.7);opacity:.1}35%{transform:translate(-14px,-8px) scale(1.1);opacity:.6}100%{transform:translate(-31px,-18px) scale(1.45);opacity:0}}
+@keyframes crowd-camera-flash{0%,18%,100%{opacity:0}19%,28%{opacity:1}29%,36%{opacity:.18}}
+@keyframes impact-debris-burst{0%{transform:translate(-50%,-50%) scale(.2);opacity:0}18%{opacity:1}100%{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.65);opacity:0}}
+@keyframes contact-core-pop{0%{opacity:0;transform:translate(-50%,-50%) scale(.1)}35%{opacity:1;transform:translate(-50%,-50%) scale(2.4)}100%{opacity:0;transform:translate(-50%,-50%) scale(4.2)}}
+@keyframes contact-cross-h{0%{opacity:0;transform:translate(-50%,-50%) scaleX(.05)}25%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scaleX(1.35)}}
+@keyframes contact-cross-v{0%{opacity:0;transform:translate(-50%,-50%) scaleY(.05)}25%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scaleY(1.35)}}
+
+@media(max-width:760px){
+  .sprite-stage .duel-sprite{filter:drop-shadow(0 6px 2px #061117b5)}
+  .cinema-light{height:72%;width:42%}.air-pixel:nth-of-type(n+8){display:none}
+  .plate-dust,.mound-dust{transform:scale(.75)}
+}
+@media(prefers-reduced-motion:reduce){
+  .actor-left .sprite-stage,.actor-right .sprite-stage,.pixel-cinema *{animation:none!important}
+  .cinema-light,.cinema-haze,.air-pixel,.plate-dust,.mound-dust,.crowd-flash,.impact-debris,.contact-core,.contact-cross{display:none!important}
+}
