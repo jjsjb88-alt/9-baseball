@@ -211,3 +211,42 @@
 .release-combat .zone-details p{font-size:12px;line-height:1.5}
 .release-combat .scout-clue{display:block;margin:8px 0;color:#b6edc3;font-size:13px}
 @media(max-width:1099px){.release-combat .duel-arena{height:155px}.release-combat .actor-left,.release-combat .actor-right{width:120px;height:120px}.release-combat .intent{top:8px;padding:5px 10px}.release-combat .intent strong{font-size:12px}.release-combat .zone-cell{min-height:67px}.release-combat .zone-heading h2{font-size:17px}}
+
+
+/* ---------- V9 · main-run deckbuilding ---------- */
+.v9-build-picker .build-mode{display:inline-block;margin-bottom:6px;padding:3px 6px;border:1px solid #6e8279;border-radius:999px;font-size:8px;letter-spacing:1.2px;color:#aebfb5}
+.v9-build-picker button[aria-pressed=true] .build-mode{border-color:#f1cb7a;color:#f1cb7a}
+.v9-draft-intro{max-width:980px;margin:28px auto 18px;padding:20px 22px;text-align:left;background:linear-gradient(145deg,#1c3435,#10242b);border:1px solid #66847a;border-radius:12px}
+.v9-draft-intro h2{margin:5px 0 8px;color:#f0d498}
+.v9-draft-intro p,.draft-rule{font-size:12px;line-height:1.7;color:#c5d2ca}
+.v9-card-draft{max-width:1120px;margin-left:auto;margin-right:auto}
+.v9-card-draft .reward-cards{justify-content:center;margin:18px 0}
+.reward-skip{margin:4px auto 0;padding:10px 14px;border:1px dashed #71877d;background:#132b32;color:#b9c8c1}
+.reward-skip.selected{border-style:solid;border-color:#f0c77a;color:#f0d79e;box-shadow:0 0 0 2px #f0c77a33}
+
+/* The playtest said results were too small to read at a glance. Outcome is now the visual anchor. */
+.pa-result{position:relative;overflow:hidden;padding:18px 18px 16px;border-width:2px}
+.pa-result .result-call{display:block;margin:6px 0 2px;font-size:34px;line-height:1;font-weight:1000;letter-spacing:-1.5px;color:#f4dfa9;text-shadow:2px 2px #071419}
+.pa-result h2{margin:5px 0 7px;font-size:18px;line-height:1.25;color:#eef2e8}
+.pa-result.result-hit{background:linear-gradient(145deg,#285241,#102b2e);border-color:#84c795;box-shadow:0 10px 30px #0c2119aa,inset 0 0 32px #76c79018}
+.pa-result.result-hit .result-call{font-size:40px;color:#9fe3ac}
+.pa-result.result-whiff,.pa-result.result-called{background:linear-gradient(145deg,#442f35,#18242b);border-color:#c4877d}
+.pa-result.result-whiff .result-call,.pa-result.result-called .result-call{color:#efb09f}
+.pa-result.result-foul{background:linear-gradient(145deg,#463d2b,#1b2729);border-color:#c9ac68}
+.pa-result.result-foul .result-call{color:#f0cf82}
+.pa-result.result-ball{background:linear-gradient(145deg,#253d50,#13262d);border-color:#7cacc7}
+.pa-result.result-ball .result-call{color:#a7d7ee}
+.pa-result.result-out,.pa-result.result-sacrifice{background:linear-gradient(145deg,#44332e,#18262b);border-color:#b98b6c}
+.pa-result.result-out .result-call,.pa-result.result-sacrifice .result-call{color:#e5b38d}
+
+@media(min-width:700px){
+  .pa-result .result-call{font-size:42px}
+  .pa-result.result-hit .result-call{font-size:50px}
+  .pa-result h2{font-size:22px}
+}
+@media(max-width:800px){
+  .v9-card-draft .reward-cards{justify-content:flex-start}
+  .v9-draft-intro{margin:20px 0 12px;padding:16px}
+  .pa-result .result-call{font-size:32px}
+  .pa-result.result-hit .result-call{font-size:38px}
+}
