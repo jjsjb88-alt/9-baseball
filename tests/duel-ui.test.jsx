@@ -3,9 +3,9 @@ import React from 'react';
 import {render,screen,fireEvent,cleanup,act} from '@testing-library/react';
 import {afterEach,beforeEach,describe,it,expect,vi} from 'vitest';
 import Duel from '../src/duel/App.jsx';
-import {createDuel,startBattle,playCard,advanceBatter,readDuel,saveDuel} from '../src/duel/engine.js';
+import {createDuel,startBattle,chooseRoute,playCard,advanceBatter,readDuel,saveDuel} from '../src/duel/engine.js';
 import {planAction} from '../src/duel/policy.js';
-import {CARDS,ZONES} from '../src/duel/cards.js';
+import {CARDS,ZONES,DECKBUILDER_BUILD,ROUTE_CHOICES} from '../src/duel/cards.js';
 beforeEach(()=>{localStorage.clear();vi.useFakeTimers()});
 afterEach(()=>{cleanup();vi.useRealTimers();vi.unstubAllGlobals()});
 const finish=()=>act(()=>vi.runAllTimers());
@@ -78,6 +78,29 @@ describe('9-zone strategic UI',()=>{
     const saved=readDuel(localStorage);cleanup();render(<Duel/>);fireEvent.click(screen.getByRole('button',{name:'이어하기'}));expect(readDuel(localStorage)).toEqual(saved);
     fireEvent.click(screen.getByRole('button',{name:'다음 타자 입장 · 2번 이민준'}));expect(readDuel(localStorage).battle.batterIndex).toBe(1);
   });
+  it('runs the full cinema presentation inside the neutral MAIN RUN battle, not only in the lab',()=>{
+    let s=createDuel(19,DECKBUILDER_BUILD);
+    s=chooseRoute(s,ROUTE_CHOICES[0][0].id);
+    s=startBattle(s);
+    s.battle.pending={zone:s.battle.aimZone,roll:.1,powerRoll:.99};
+    saveDuel(localStorage,s);
+    render(<Duel/>);
+    fireEvent.click(screen.getByRole('button',{name:'이어하기'}));dismiss();
+    fireEvent.click(screen.getByRole('button',{name:'스윙하기',exact:true}));
+    fireEvent.click(screen.getByRole('button',{name:'BASIC SWING',exact:true}));
+    fireEvent.click(screen.getByTestId('execute-action'));
+    const arena=screen.getByRole('region',{name:'승부 구장'});
+    expect(arena.className).toContain('fx-stage-windup');
+    expect(arena.className).toContain('fx-dead-center');
+    expect(arena.querySelector('.judgement-layer')).toBeTruthy();
+    expect(arena.querySelector('.pixel-cinema')).toBeTruthy();
+    expect(arena.querySelector('.pixel-vfx-canvas')).toBeTruthy();
+    act(()=>vi.advanceTimersByTime(106));
+    expect(arena.className).toContain('fx-stage-impact');
+    expect(arena.querySelector('.sprite-batter.pose-contact')).toBeTruthy();
+    finish();
+  });
+
   it('mounts Pixel Cinema Renderer 2.0 as the live spatial arena with safe fallback',()=>{
     begin();
     const arena=screen.getByRole('region',{name:'승부 구장'});
