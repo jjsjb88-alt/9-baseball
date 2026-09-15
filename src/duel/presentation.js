@@ -3,7 +3,7 @@ import {CARDS,ZONES} from './cards.js';
 const actualZone=revealed=>revealed?.zone===9?'존 밖':ZONES[revealed?.zone]||'코스 미확인';
 const covered=revealed=>Array.isArray(revealed?.coverage)&&revealed.coverage.includes(revealed.zone);
 const withMotion=(shot,motion)=>({...shot,motion});
-const gridDistance=(a,b)=>a>8||b>8?99:Math.abs(Math.floor(a/3)-Math.floor(b/3))+Math.abs(a%3-b%3);
+const gridDistance=(a,b)=>a>8||b>8?99:Math.max(Math.abs(Math.floor(a/3)-Math.floor(b/3)),Math.abs(a%3-b%3));
 const coverageDistance=revealed=>{
   if(!Array.isArray(revealed?.coverage)||revealed.zone>8||!revealed.coverage.length)return 99;
   return Math.min(...revealed.coverage.map(z=>gridDistance(revealed.zone,z)));
