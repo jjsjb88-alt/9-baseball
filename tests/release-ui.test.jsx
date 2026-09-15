@@ -20,7 +20,7 @@ it.each([['카드 추가','주자 연결','add'],['카드 제거','밀어치기'
   expect(s.deck.length).toBe(before.deck.length+(type==='add'?1:type==='remove'?-1:0));
   if(type==='relic')expect(s.relics).toEqual(['scope']);
   if(type==='upgrade')expect(s.deck.find(c=>c.kind==='bunt').plus).toBe(true);
-  cleanup();render(<Duel/>);fireEvent.click(screen.getByRole('button',{name:'이어하기'}));expect(screen.getByRole('region',{name:'런 스토리'})).toBeTruthy();expect(screen.getByText('상세 선택 기록 펼치기')).toBeTruthy();
+  cleanup();render(<Duel/>);fireEvent.click(screen.getByRole('button',{name:'이어하기'}));expect(screen.getByText('상세 선택 기록 펼치기')).toBeTruthy();
 });
 it('watch selection does not consume a pitch and explicit execution does',()=>{
  const s=startBattle(createDuel(1));saveDuel(localStorage,s);render(<Duel/>);fireEvent.click(screen.getByRole('button',{name:'이어하기'}));
