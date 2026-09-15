@@ -738,3 +738,45 @@
   .actor-left .sprite-stage,.actor-right .sprite-stage,.pixel-cinema *{animation:none!important}
   .cinema-light,.cinema-haze,.air-pixel,.plate-dust,.mound-dust,.crowd-flash,.impact-debris,.contact-core,.contact-cross{display:none!important}
 }
+
+
+/* ---------- PIXEL SMEAR · afterimages, bat arc, stadium parallax ---------- */
+.sprite-echo{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center bottom;image-rendering:pixelated;opacity:0;pointer-events:none;mix-blend-mode:screen;filter:saturate(1.1) brightness(1.12)}
+.bat-smear{position:absolute;left:43%;top:43%;width:58%;height:38%;opacity:0;pointer-events:none;transform-origin:15% 70%;border-top:4px solid #fff0c2;border-right:3px solid #efbd72;border-radius:56% 70% 12% 0;clip-path:polygon(2% 38%,100% 0,92% 18%,18% 68%);filter:drop-shadow(0 0 4px #f3bc67)}
+.fx-stage-impact .sprite-batter .bat-smear{animation:bat-smear-impact .13s steps(3,end) both}
+.fx-stage-release.fx-dead-center .sprite-batter .echo-back,.fx-stage-release.fx-extra .sprite-batter .echo-back,.fx-stage-release.fx-homer .sprite-batter .echo-back,.fx-stage-release.fx-grand-slam .sprite-batter .echo-back{animation:pixel-echo-back .34s steps(4,end) both}
+.fx-stage-release.fx-dead-center .sprite-batter .echo-mid,.fx-stage-release.fx-extra .sprite-batter .echo-mid,.fx-stage-release.fx-homer .sprite-batter .echo-mid,.fx-stage-release.fx-grand-slam .sprite-batter .echo-mid{animation:pixel-echo-mid .28s steps(4,end) both}
+.fx-stage-release.fx-near-miss .sprite-batter .echo-back,.fx-stage-release.fx-chase .sprite-batter .echo-back,.fx-stage-release.fx-whiff .sprite-batter .echo-back{animation:pixel-miss-echo-back .38s steps(4,end) both}
+.fx-stage-release.fx-near-miss .sprite-batter .echo-mid,.fx-stage-release.fx-chase .sprite-batter .echo-mid,.fx-stage-release.fx-whiff .sprite-batter .echo-mid{animation:pixel-miss-echo-mid .31s steps(4,end) both}
+.fx-stage-slowmo.fx-near-miss .sprite-batter .echo-back{opacity:.17;transform:translateX(7px) rotate(1deg)}
+.fx-stage-slowmo.fx-lucky .sprite-batter .echo-back,.fx-stage-slowmo.fx-jammed .sprite-batter .echo-back{opacity:.11;transform:translateX(-3px)}
+.fx-stage-impact .sprite-pitcher .echo-back{animation:pitcher-release-echo .2s steps(3,end) both}
+
+.release-combat .duel-arena.stadium{background-size:106% auto;will-change:background-size,background-position}
+.release-combat.fx-stage-windup .duel-arena.stadium{animation:stadium-push-in .16s steps(3,end) both}
+.release-combat.fx-stage-impact .duel-arena.stadium{background-size:110% auto;background-position:center 60%}
+.release-combat.fx-stage-slowmo .duel-arena.stadium{background-size:112% auto;background-position:49% 59%}
+.release-combat.fx-stage-release.fx-hit .duel-arena.stadium,.release-combat.fx-stage-release.fx-dead-center .duel-arena.stadium,.release-combat.fx-stage-release.fx-extra .duel-arena.stadium{animation:stadium-kick-back .44s steps(6,end) both}
+.release-combat.fx-stage-release.fx-homer .duel-arena.stadium,.release-combat.fx-stage-release.fx-grand-slam .duel-arena.stadium{animation:stadium-homer-pull .82s steps(8,end) both}
+.release-combat.fx-stage-release.fx-near-miss .duel-arena.stadium,.release-combat.fx-stage-release.fx-chase .duel-arena.stadium,.release-combat.fx-stage-release.fx-whiff .duel-arena.stadium{animation:stadium-miss-drift .48s steps(6,end) both}
+
+.fx-stage-impact.fx-dead-center .duel-arena:before,.fx-stage-impact.fx-extra .duel-arena:before,.fx-stage-impact.fx-homer .duel-arena:before,.fx-stage-impact.fx-grand-slam .duel-arena:before{content:'';position:absolute;inset:0;z-index:11;pointer-events:none;background:linear-gradient(90deg,transparent 0 37%,#fff7d422 38% 40%,transparent 41% 100%);mix-blend-mode:screen;animation:impact-slice .12s steps(2,end) both}
+.fx-stage-impact.fx-near-miss .duel-arena:before,.fx-stage-impact.fx-chase .duel-arena:before,.fx-stage-impact.fx-whiff .duel-arena:before{content:'';position:absolute;inset:0;z-index:11;pointer-events:none;background:linear-gradient(100deg,transparent 0 34%,#ff987f18 35% 38%,transparent 39% 100%);mix-blend-mode:screen;animation:miss-slice .15s steps(3,end) both}
+
+@keyframes bat-smear-impact{0%{opacity:0;transform:rotate(-16deg) scaleX(.35)}35%{opacity:.95;transform:rotate(12deg) scaleX(1.05)}100%{opacity:0;transform:rotate(34deg) scaleX(1.22)}}
+@keyframes pixel-echo-back{0%{opacity:.28;transform:translateX(-10px) scaleX(1.02)}50%{opacity:.12;transform:translateX(-18px) scaleX(1.04)}100%{opacity:0;transform:translateX(-26px) scaleX(1.06)}}
+@keyframes pixel-echo-mid{0%{opacity:.34;transform:translateX(-5px)}60%{opacity:.12;transform:translateX(-12px)}100%{opacity:0;transform:translateX(-17px)}}
+@keyframes pixel-miss-echo-back{0%{opacity:.24;transform:translateX(10px) rotate(1deg)}55%{opacity:.1;transform:translateX(19px) rotate(1.8deg)}100%{opacity:0;transform:translateX(27px) rotate(2.4deg)}}
+@keyframes pixel-miss-echo-mid{0%{opacity:.28;transform:translateX(5px) rotate(.6deg)}55%{opacity:.11;transform:translateX(12px) rotate(1.2deg)}100%{opacity:0;transform:translateX(18px) rotate(1.8deg)}}
+@keyframes pitcher-release-echo{0%{opacity:.24;transform:translateX(6px)}70%{opacity:.08;transform:translateX(15px)}100%{opacity:0;transform:translateX(21px)}}
+@keyframes stadium-push-in{from{background-size:106% auto;background-position:center 59%}to{background-size:109% auto;background-position:center 60%}}
+@keyframes stadium-kick-back{0%{background-size:112% auto;background-position:49% 60%}35%{background-size:107% auto;background-position:51% 59%}100%{background-size:106% auto;background-position:center 59%}}
+@keyframes stadium-homer-pull{0%{background-size:114% auto;background-position:48% 61%}35%{background-size:108% auto;background-position:52% 57%}100%{background-size:104% auto;background-position:center 55%}}
+@keyframes stadium-miss-drift{0%{background-size:111% auto;background-position:50% 60%}45%{background-size:108% auto;background-position:48% 60%}100%{background-size:106% auto;background-position:center 59%}}
+@keyframes impact-slice{0%{opacity:0;transform:translateX(-4px)}40%{opacity:1}100%{opacity:0;transform:translateX(5px)}}
+@keyframes miss-slice{0%{opacity:0;transform:translateX(4px)}35%{opacity:.8}100%{opacity:0;transform:translateX(-5px)}}
+
+@media(prefers-reduced-motion:reduce){
+  .sprite-echo,.bat-smear{display:none!important}
+  .release-combat .duel-arena.stadium{animation:none!important;background-size:cover!important;background-position:center 59%!important}
+}
