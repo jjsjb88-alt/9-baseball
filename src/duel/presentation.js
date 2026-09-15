@@ -23,7 +23,7 @@ export function contactGrade(revealed){
     const d=coverageDistance(revealed);
     return d===1?'near-miss':'fooled';
   }
-  if(revealed.kind==='foul')return 'foul';
+  if(revealed.kind==='foul')return revealed.strikesBefore===2?'battle-foul':'foul';
   if(revealed.kind==='called')return label.includes('삼진')?'frozen':'called';
   if(revealed.kind==='ball')return label==='볼넷'?'walk':'ball';
   if(revealed.kind==='out')return 'out';
@@ -44,10 +44,12 @@ const MOTION={
   lucky:{duration:1280,impactAt:110,settleAt:920,freeze:42,slowmo:260,haptic:[10,28,12],shake:'soft'},
   extra:{duration:1280,impactAt:110,settleAt:890,freeze:72,slowmo:120,haptic:[18,18,42,28,24],shake:'strong'},
   homer:{duration:1700,impactAt:120,settleAt:1180,freeze:92,slowmo:180,haptic:[24,18,54,34,82],shake:'epic'},
+  grandSlam:{duration:2200,impactAt:125,settleAt:1560,freeze:110,slowmo:260,haptic:[32,20,70,38,110,45,140],shake:'epic'},
   nearMiss:{duration:1380,impactAt:115,settleAt:980,freeze:24,slowmo:360,haptic:[8,70,10],shake:'soft'},
   chase:{duration:1040,impactAt:115,settleAt:720,freeze:18,slowmo:0,haptic:[9],shake:'medium'},
   fooled:{duration:1080,impactAt:115,settleAt:760,freeze:22,slowmo:80,haptic:[10],shake:'medium'},
   foul:{duration:900,impactAt:105,settleAt:610,freeze:38,slowmo:0,haptic:[10,18,10],shake:'soft'},
+  battleFoul:{duration:1080,impactAt:108,settleAt:760,freeze:42,slowmo:90,haptic:[11,20,11],shake:'soft'},
   ball:{duration:760,impactAt:95,settleAt:500,freeze:0,slowmo:0,haptic:[4],shake:'none'},
   called:{duration:980,impactAt:120,settleAt:670,freeze:42,slowmo:0,haptic:[7,46,14],shake:'soft'},
   sacrifice:{duration:900,impactAt:110,settleAt:620,freeze:42,slowmo:0,haptic:[9,20,9],shake:'soft'},
@@ -78,6 +80,7 @@ export function presentationFor(state){
   if(!revealed)return null;
   const zone=actualZone(revealed),label=revealed.label||'판정',grade=contactGrade(revealed);
   if(revealed.kind==='hit'){
+    if(grade==='homer'&&(last?.runs||0)>=4)return withMotion({kind:'grand-slam',grade:'grand-slam',cue:'grandSlam',kicker:'GRAND SLAM',title:'싹쓸었다',detail:`${zone} · 네 명이 모두 홈으로 돌아온다`},MOTION.grandSlam);
     if(grade==='homer')return withMotion({kind:'homer',grade,cue:'homer',kicker:'PERFECT CONTACT',title:'넘겼다',detail:`${zone} · 기다린 공을 가장 크게 돌려줬다`},MOTION.homer);
     if(grade==='extra')return withMotion({kind:'extra',grade,cue:'extra',kicker:'GAP SHOT',title:'갈랐다',detail:`${zone} · 수비 사이를 찢은 장타`},MOTION.extra);
     if(grade==='lucky')return withMotion({kind:'lucky',grade,cue:'lucky',kicker:'JUST ENOUGH',title:'떨어졌다',detail:`${zone} · 빗맞았지만 수비 사이에 떨어졌다`},MOTION.lucky);
@@ -87,6 +90,8 @@ export function presentationFor(state){
   }
   if(revealed.kind==='whiff'){
     const strikeout=label.includes('삼진');
+    if(strikeout&&grade==='near-miss')return withMotion({kind:'near-miss',grade:'near-miss-k',cue:'nearMiss',kicker:'JUST MISSED · K',title:'한 칸 차이로 끝',detail:`${zone} · 마지막 공이 커버 바로 옆을 통과했다`},MOTION.nearMiss);
+    if(strikeout&&grade==='chase')return withMotion({kind:'chase',grade:'chase-k',cue:'strikeout',kicker:'CHASED · K',title:'쫓아가다 끝',detail:'존 밖 유인구에 마지막 스윙을 내줬다'},MOTION.chase);
     if(strikeout)return withMotion({kind:'whiff',grade:'strikeout',cue:'strikeout',kicker:'STRIKE THREE',title:'놓쳤다',detail:`${zone} · 이 타석은 여기서 끝`},MOTION.fooled);
     if(grade==='near-miss')return withMotion({kind:'near-miss',grade,cue:'nearMiss',kicker:'JUST MISSED',title:'한 칸 차이',detail:`${zone} · 커버 바로 옆을 통과했다`},MOTION.nearMiss);
     if(grade==='chase')return withMotion({kind:'chase',grade,cue:'chase',kicker:'CHASED',title:'쫓았다',detail:'존 밖 공에 배트가 따라 나갔다'},MOTION.chase);
@@ -94,17 +99,23 @@ export function presentationFor(state){
   }
   if(revealed.kind==='foul'){
     const strikeout=label.includes('삼진');
-    return withMotion({kind:strikeout?'whiff':'foul',grade:strikeout?'strikeout':'foul',cue:strikeout?'strikeout':'foul',kicker:strikeout?'STRIKE THREE':'STAY ALIVE',title:strikeout?'끝났다':'살아남았다',detail:`${zone} · ${label}`},strikeout?MOTION.fooled:MOTION.foul);
+    if(strikeout)return withMotion({kind:'whiff',grade:'strikeout',cue:'strikeout',kicker:'STRIKE THREE',title:'끝났다',detail:`${zone} · 번트 파울 삼진`},MOTION.fooled);
+    if(grade==='battle-foul')return withMotion({kind:'battle-foul',grade,cue:'battleFoul',kicker:'TWO STRIKES · ALIVE',title:'끝까지 버텼다',detail:`${zone} · 마지막 스트라이크를 파울로 지웠다`},MOTION.battleFoul);
+    return withMotion({kind:'foul',grade,cue:'foul',kicker:'STAY ALIVE',title:'살아남았다',detail:`${zone} · ${label}`},MOTION.foul);
   }
   if(revealed.kind==='ball'){
     const walk=label==='볼넷';
+    if(walk&&(last?.runs||0)>0)return withMotion({kind:'walk-rbi',grade:'walk-rbi',cue:'walkRbi',kicker:'FORCED HOME',title:'밀어냈다',detail:'볼넷 하나로 주자가 홈을 밟았다'},MOTION.ball);
     return withMotion({kind:'ball',grade,cue:walk?'walk':'ball',kicker:walk?'TAKE YOUR BASE':'TAKE',title:walk?'참아냈다':'골랐다',detail:walk?'네 개를 골라 1루로 나갑니다.':'존 밖 공을 흘려보냈다.'},MOTION.ball);
   }
   if(revealed.kind==='called'){
     const strikeout=label.includes('삼진');
     return withMotion({kind:'called',grade,cue:strikeout?'strikeout':'called',kicker:strikeout?'CALLED STRIKE THREE':'CALLED STRIKE',title:strikeout?'굳었다':'지켜봤다',detail:`${zone} · 배트를 내지 않았다`},MOTION.called);
   }
-  if(revealed.kind==='sacrifice')return withMotion({kind:'sacrifice',grade,cue:'sacrifice',kicker:'TEAM PLAY',title:'보냈다',detail:`${zone} · 아웃 하나를 주자 진루로 바꿨다`},MOTION.sacrifice);
+  if(revealed.kind==='sacrifice'){
+    if((last?.runs||0)>0)return withMotion({kind:'sacrifice-run',grade:'sacrifice-run',cue:'sacrifice',kicker:'PRODUCTIVE OUT',title:'점을 만들었다',detail:`${zone} · 아웃 하나를 득점으로 바꿨다`},MOTION.sacrifice);
+    return withMotion({kind:'sacrifice',grade,cue:'sacrifice',kicker:'TEAM PLAY',title:'보냈다',detail:`${zone} · 아웃 하나를 주자 진루로 바꿨다`},MOTION.sacrifice);
+  }
   if(revealed.kind==='out')return withMotion({kind:'out',grade,cue:'out',kicker:'IN PLAY',title:'잡혔다',detail:`${zone} · ${label}`},MOTION.out);
   return withMotion({kind:'pitch',grade:'pitch',cue:'pitch',kicker:'REVEAL',title:label,detail:zone},MOTION.pitch);
 }
