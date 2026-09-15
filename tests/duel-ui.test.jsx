@@ -80,6 +80,7 @@ describe('9-zone strategic UI',()=>{
   });
   it('uses selective slow motion for a one-zone miss instead of every whiff',()=>{
     begin(0,.99);
+    fireEvent.click(screen.getByRole('button',{name:'한가운데',exact:true}));
     fireEvent.click(screen.getByRole('button',{name:'스윙하기',exact:true}));
     fireEvent.click(screen.getByRole('button',{name:'밀어치기',exact:true}));
     fireEvent.click(screen.getByTestId('execute-action'));
