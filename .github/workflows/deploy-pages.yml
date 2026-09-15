@@ -5,6 +5,11 @@ on:
     branches:
       - main
   workflow_dispatch:
+  workflow_run:
+    workflows:
+      - V9 Deckbuilder CI
+    types:
+      - completed
 
 permissions:
   contents: read
@@ -17,10 +22,20 @@ concurrency:
 
 jobs:
   build:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
-      - name: Check out source
+      - name: Check out stable main
         uses: actions/checkout@v6
+        with:
+          ref: main
+          path: stable
+
+      - name: Check out V9 preview
+        uses: actions/checkout@v6
+        with:
+          ref: codex/v9-deckbuilder
+          path: preview-src
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -31,42 +46,54 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
 
-      - name: Install dependencies
+      - name: Verify stable V8 root
+        working-directory: stable
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm test
+          node scripts/zone-report.js 30
+          node scripts/growth-report.js 5
+          node scripts/deck-report.js 2
+
+      - name: Build stable V8 root
+        working-directory: stable
+        run: pnpm run build
+
+      - name: Install V9 preview dependencies
+        working-directory: preview-src
         run: pnpm install --frozen-lockfile
 
-      - name: Run tests
-        run: pnpm test
-
-      - name: Run current 9-zone engine smoke report
-        run: node scripts/zone-report.js 30
-
-      - name: Run growth transitions and activation smoke report
-        run: node scripts/growth-report.js 5
-
-      - name: Run deck upgrade and relic smoke report
-        # Exercises real upgraded/relic runs, not just metadata assertions.
-        run: node scripts/deck-report.js 2
-
-      - name: Build production site
+      - name: Build V9 preview subpath
+        working-directory: preview-src
+        env:
+          VITE_BASE: /9-baseball/preview/
         run: pnpm run build
+
+      - name: Compose stable root plus V9 preview
+        run: |
+          mkdir -p site/preview
+          cp -a stable/dist/. site/
+          cp -a preview-src/dist/. site/preview/
+          test -f site/index.html
+          test -f site/preview/index.html
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload GitHub Pages artifact
+      - name: Upload combined GitHub Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: dist
+          path: site
 
   deploy:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - name: Deploy to GitHub Pages
+      - name: Deploy stable root plus V9 preview
         id: deployment
         uses: actions/deploy-pages@v4
