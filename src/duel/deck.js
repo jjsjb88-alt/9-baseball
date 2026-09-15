@@ -72,7 +72,7 @@ export function applyRewardToDeck(deck,action,nextId){
 }
 
 // One rule set for the engine, the UI's disabled states and readDuel. Returns null when the action is legal.
-export function rewardProblem(deck,action,stage,growthKey,relics,build='away'){
+export function rewardProblem(deck,action,stage,growthKey,relics,build='away',routeId=null){
   if(!action||!action.type)return '보상 행동을 선택하세요.';
   const entries=Array.isArray(deck)?deck:[];
   if(action.type==='skip')return null;
@@ -84,7 +84,7 @@ export function rewardProblem(deck,action,stage,growthKey,relics,build='away'){
     return null;
   }
   if(action.type==='add'){
-    if(!rewardChoices(stage,growthKey,build).includes(action.kind))return '이번 보상의 후보가 아닙니다.';
+    if(!rewardChoices(stage,growthKey,build,routeId).includes(action.kind))return '이번 보상의 후보가 아닙니다.';
     if(entries.length>=DECK_MAX)return `덱은 ${DECK_MAX}장을 넘을 수 없습니다. 먼저 카드를 제거하세요.`;
     return null;
   }
