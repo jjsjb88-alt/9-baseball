@@ -831,3 +831,40 @@
   .read-trace{animation:none!important;opacity:1;transform:none}
   .trace-stage-release{opacity:.75}
 }
+
+
+/* ---------- CLUTCH LAYER · score < game win < run finish ---------- */
+.clutch-layer{position:absolute;z-index:14;left:50%;bottom:10%;transform:translateX(-50%);min-width:190px;text-align:center;pointer-events:none;opacity:0}
+.clutch-layer>span{display:block;font-size:7px;font-weight:1000;letter-spacing:3px;color:#f2cf7d;text-shadow:0 2px #071218}
+.clutch-layer>strong{display:block;margin-top:2px;font-size:clamp(24px,5vw,46px);line-height:.95;color:#fff0bd;text-shadow:3px 3px 0 #15242b,-2px -2px 0 #8c6a36,0 0 18px #f0c36f55}
+.clutch-stage-release{animation:clutch-enter .26s steps(4,end) both}.clutch-stage-settle{opacity:1}
+.clutch-rbi{bottom:7%;min-width:150px}.clutch-rbi>strong{font-size:clamp(20px,4vw,34px);color:#dff3d6;text-shadow:2px 2px #17322b,0 0 14px #78d69844}
+.clutch-game-win>span,.clutch-champion>span,.clutch-rival-champion>span{color:#ffe39a}
+.clutch-champion>strong{font-size:clamp(34px,7vw,64px);color:#fff4bc}
+.clutch-rival-champion>strong{font-size:clamp(36px,7vw,70px);color:#ffd4a6;text-shadow:4px 4px #3a1d1b,-3px -3px #a85b45,0 0 25px #ec8b5f66}
+.clutch-game-loss>span{color:#d99a8e}.clutch-game-loss>strong{color:#e7b3aa;text-shadow:3px 3px #2b1d22,0 0 18px #b04d493d}
+
+.pixel-confetti{position:absolute;left:50%;top:50%;width:1px;height:1px}
+.pixel-confetti i{position:absolute;width:4px;height:4px;background:#f5d377;opacity:0;box-shadow:5px 0 #e99758;image-rendering:pixelated}
+.clutch-stage-release .pixel-confetti i,.clutch-stage-settle .pixel-confetti i{animation:pixel-confetti-fall .95s steps(9,end) both}
+.confetti-1{--cx:-96px;--cy:-68px;animation-delay:.02s!important}.confetti-2{--cx:-78px;--cy:-48px;animation-delay:.08s!important}.confetti-3{--cx:-60px;--cy:-82px;animation-delay:.12s!important}.confetti-4{--cx:-42px;--cy:-55px;animation-delay:.05s!important}.confetti-5{--cx:-26px;--cy:-92px;animation-delay:.16s!important}.confetti-6{--cx:-12px;--cy:-64px;animation-delay:.1s!important}.confetti-7{--cx:8px;--cy:-88px;animation-delay:.18s!important}.confetti-8{--cx:24px;--cy:-58px;animation-delay:.04s!important}.confetti-9{--cx:40px;--cy:-84px;animation-delay:.14s!important}.confetti-10{--cx:58px;--cy:-54px;animation-delay:.09s!important}.confetti-11{--cx:76px;--cy:-76px;animation-delay:.19s!important}.confetti-12{--cx:94px;--cy:-46px;animation-delay:.11s!important}.confetti-13{--cx:-84px;--cy:-30px;animation-delay:.21s!important}.confetti-14{--cx:-48px;--cy:-36px;animation-delay:.17s!important}.confetti-15{--cx:-4px;--cy:-34px;animation-delay:.23s!important}.confetti-16{--cx:34px;--cy:-32px;animation-delay:.2s!important}.confetti-17{--cx:66px;--cy:-38px;animation-delay:.24s!important}.confetti-18{--cx:86px;--cy:-26px;animation-delay:.15s!important}
+
+.stakes-rbi.fx-stage-settle .scoreboard-score strong{animation:score-run-lock .48s steps(5,end) both}
+.stakes-game-win.fx-stage-settle .scoreboard,.stakes-champion.fx-stage-settle .scoreboard,.stakes-rival-champion.fx-stage-settle .scoreboard{animation:scoreboard-victory .7s steps(6,end) both}
+.stakes-game-win.fx-stage-settle .count-lights i,.stakes-champion.fx-stage-settle .count-lights i,.stakes-rival-champion.fx-stage-settle .count-lights i{animation:light-chase .65s steps(4,end) both}
+.stakes-champion.fx-stage-settle .cinema-light,.stakes-rival-champion.fx-stage-settle .cinema-light{opacity:.45;animation:finale-lights .8s steps(6,end) both}
+.stakes-rival-champion.fx-stage-settle .duel-arena{box-shadow:inset 0 0 0 2px #e79a6e88,inset 0 0 65px #a23d241f}
+.stakes-game-loss.fx-stage-settle .duel-arena{filter:saturate(.48) brightness(.72)}
+.stakes-game-loss.fx-stage-settle .pixel-cinema{filter:saturate(.4) brightness(.68)}
+
+@keyframes clutch-enter{0%{opacity:0;transform:translate(-50%,10px) scale(.82)}45%{opacity:1;transform:translate(-50%,-2px) scale(1.08)}100%{opacity:1;transform:translate(-50%,0) scale(1)}}
+@keyframes pixel-confetti-fall{0%{opacity:0;transform:translate(0,0) rotate(0)}15%{opacity:1}70%{opacity:.95}100%{opacity:0;transform:translate(var(--cx),calc(var(--cy) + 120px)) rotate(180deg)}}
+@keyframes score-run-lock{0%{transform:scale(1)}30%{transform:scale(1.22);color:#e7ffd9;text-shadow:0 0 18px #87d99b}100%{transform:scale(1)}}
+@keyframes scoreboard-victory{0%{box-shadow:none;filter:none}20%{box-shadow:inset 0 0 0 2px #f0cd7d,0 0 20px #f0cd7d55;filter:brightness(1.3)}45%{filter:brightness(.92)}70%{filter:brightness(1.18)}100%{box-shadow:none;filter:none}}
+@keyframes light-chase{0%,100%{filter:none}30%{filter:brightness(1.8) drop-shadow(0 0 5px #ffe393)}60%{filter:brightness(.8)}}
+@keyframes finale-lights{0%{opacity:.18}25%{opacity:.6}50%{opacity:.26}75%{opacity:.55}100%{opacity:.38}}
+
+@media(prefers-reduced-motion:reduce){
+  .clutch-layer,.pixel-confetti i,.stakes-rbi .scoreboard-score strong,.stakes-game-win .scoreboard,.stakes-champion .scoreboard,.stakes-rival-champion .scoreboard,.stakes-champion .cinema-light,.stakes-rival-champion .cinema-light{animation:none!important}
+  .clutch-layer{opacity:1}.pixel-confetti{display:none}
+}
