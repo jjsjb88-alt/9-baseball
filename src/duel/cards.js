@@ -2,6 +2,7 @@
 export const ZONES=['몸쪽 높음','가운데 높음','바깥 높음','몸쪽 중간','한가운데','바깥 중간','몸쪽 낮음','가운데 낮음','바깥 낮음'];
 // role/axis/gives/needs drive the deck screens. Every value here restates an engine rule, never a new one.
 export const CARDS={
+  place:{name:'맞혀놓기',type:'attack',art:'bat',shape:'point',power:-1,role:'범위',axis:'point',gives:['1존 커버'],needs:[],text:'선택한 1존 커버. 적중하면 안타 확정. 범위도 장타 보정도 없는 스타터 카드.',flavor:'좋은 덱을 만들기 전에도 공은 맞혀야 한다.'},
   strike:{name:'밀어치기',type:'attack',art:'bat',shape:'column',power:0,role:'범위',axis:'column',gives:['세로 3존 커버'],needs:[],text:'선택한 세로 3존 커버. 적중하면 안타 확정. 바깥쪽에서 타구 질 보너스.',flavor:'바깥 공을 끝까지 보고 반대편으로.'},
   slug:{name:'당겨 넘기기',type:'attack',art:'comet',shape:'point',power:2,role:'장타',axis:'point',gives:['파워 +36'],needs:[],text:'선택한 1존 적중 시 안타 확정. 파워 +36으로 장타 베팅. 빗나가면 헛스윙 위험.',flavor:'내가 기다린 공 하나.'},
   rally:{name:'주자 연결',type:'attack',art:'double',shape:'row',power:0,role:'진루',axis:'row',gives:['가로 3존 커버','주자 2베이스'],needs:[],text:'선택한 가로 3존 커버. 안타 때 기존 주자는 최소 두 베이스 전진.',flavor:'홈으로 부를 공을 기다린다.'},
@@ -42,7 +43,7 @@ export function cardText(kind,plus=false){
 export const DECK_MIN=9,DECK_MAX=18;
 export const DECKBUILDER_BUILD='starter';
 export const BUILDS={
-  starter:{name:'무명 타선',description:'정답이 없는 9장 · 경기마다 카드를 골라 이번 런의 야구를 만든다',stats:{technique:58,power:52,luck:52},zones:[1,3,5,7],cards:['strike','strike','strike','defend','defend','setup','watch','scout','calm']},
+  starter:{name:'무명 타선',description:'정답이 없는 9장 · 약한 기본 타격을 교체하며 이번 런의 야구를 만든다',stats:{technique:58,power:52,luck:52},zones:[1,3,5,7],cards:['place','place','place','place','strike','strike','setup','watch','scout']},
   pull:{name:'몸쪽 장타',description:'완성형 체험 · 좁게 기다려 크게 친다',stats:{technique:52,power:76,luck:44},zones:[0,3,4,6],cards:['slug','slug','setup','scout','lure','strike','slug','flow','watch','setup','rally','calm']},
   away:{name:'바깥 연결',description:'완성형 체험 · 출루와 진루를 다음 타석까지 잇는다',stats:{technique:76,power:45,luck:50},zones:[2,4,5,8],cards:['strike','rally','scout','watch','setup','strike','rally','flow','calm','strike','lure','bunt']},
   contact:{name:'끈질긴 컨택',description:'완성형 체험 · 넓게 버티며 계속 타석을 잇는다',stats:{technique:58,power:34,luck:72},zones:[1,3,5,7],cards:['defend','strike','scout','calm','watch','defend','rally','defend','setup','lure','bunt','calm']},
