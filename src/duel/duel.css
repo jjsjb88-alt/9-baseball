@@ -972,6 +972,8 @@
 
 /* Keep the old painted stadium only as a no-WebGL safety net. */
 .arena-renderer2[data-renderer="webgl2"]{box-shadow:inset 0 -18px 28px #02090b55}
+.renderer2-host:has(.arena-renderer2[data-renderer="webgl2"]) .duel-fx .pixel-ball{opacity:0!important}
+.renderer2-host:has(.arena-renderer2[data-renderer="webgl2"]) .ball-shadow{opacity:0!important}
 .cinema-lab-stage .arena-renderer2{filter:contrast(1.04) saturate(1.04)}
 .cinema-lab-head .eyebrow:after{content:' · RENDERER 2.0';color:#9fe5e7;text-shadow:0 0 8px #65c8ce55}
 
