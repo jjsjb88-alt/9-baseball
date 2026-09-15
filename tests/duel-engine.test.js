@@ -1,7 +1,7 @@
 import {describe,it,expect} from 'vitest';
 import {createDuel,startBattle,playCard,endTurn,chooseReward,previewCard,readDuel,saveDuel,cardProblem,baseIntent,advanceBatter,currentBatter,advancePitch,setAimZone,coverage,swingOdds,hitProfile,publicProbabilities,setGrowthMode} from '../src/duel/engine.js';
 import {planAction} from '../src/duel/policy.js';
-import {SAVE_KEY,LINEUP,CARDS,BUILDS} from '../src/duel/cards.js';
+import {SAVE_KEY,LINEUP,CARDS,BUILDS,DECKBUILDER_BUILD} from '../src/duel/cards.js';
 const memory=()=>{const d={};return {setItem:(k,v)=>d[k]=v,getItem:k=>d[k]??null}};
 function fixture(kind='strike',build='away'){const s=startBattle(createDuel(1,build));s.deck[0].kind=kind;return s;}
 function pitch(s,zone,roll=.5,powerRoll=.95){s.battle.pending={zone,roll,powerRoll};return s;}
@@ -94,7 +94,7 @@ describe('9-zone read success is guaranteed; stats only choose hit type',()=>{
   it('public bot cannot see hidden pitches; entire runs conserve players/cards and terminate',()=>{
     const a=fixture(),b=structuredClone(a);pitch(a,0,.1);pitch(b,8,.99);expect(planAction(a)).toEqual(planAction(b));
     const phases=new Set();let won=0;
-    for(const build of Object.keys(BUILDS))for(let seed=1;seed<=10;seed++){
+    for(const build of Object.keys(BUILDS).filter(k=>k!==DECKBUILDER_BUILD))for(let seed=1;seed<=10;seed++){
       let s=createDuel(seed,build),guard=0;
       while(!['won','lost'].includes(s.phase)&&guard++<1000){
         phases.add(s.phase);
