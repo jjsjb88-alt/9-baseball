@@ -11,6 +11,9 @@
 - `src/duel/presentation.js`가 판정 문구·연출 종류·오디오 큐의 단일 기준점이다.
 - `assets/sprites-v2/frames`에서 Git 이력의 36프레임 라이브러리를 복구했고 실제 전투에 연결했다: 타자 스윙 12 / 미스 6 / 투수 투구 12 / 삼진 6.
 - `src/duel/PixelVFX.jsx`는 320×180 픽셀 VFX 캔버스로 접촉 파편·슬로모션 입자·타구 트레일을 렌더한다.
+- `src/duel/ArenaRenderer2.jsx` 추가: native WebGL2 2.5D 경기장, 경기별 색온도, 라이벌 그레이딩, 가상 카메라, 원근 공/그림자, 바닥 투영 READ TRACE.
+- Renderer 2.0이 공 본체를 소유하고 PixelVFX는 trail/particle만 담당한다. legacy DOM ball은 WebGL 활성 시 숨기고 fallback에서만 사용한다.
+- CINEMA LAB에서 R2 ON/OFF A/B 비교와 `WEBGL2 ACTIVE / CSS FALLBACK / SHADER ERROR` 런타임 상태 확인 가능.
 - READ TRACE는 노린 존·커버·실제 공을 판정 순간 경기장 안에서 겹쳐 보여준다.
 - 타구 물리는 라이너/땅볼/바가지/홈런으로 분리하고, 구장 분위기는 4경기와 라이벌 여부에 따라 색온도·조명이 달라진다.
 - 캐릭터 도트 스미어·잔상·배트 아크·배경 패럴랙스·관중 플래시·구장 먼지·접촉점 광원을 별도 계층으로 사용한다.
@@ -21,7 +24,7 @@
 - Web Audio는 저역 타격+노이즈+공기음+스테레오+홈런 스웰을 레이어하고, 지원 모바일에서는 판정별 진동 패턴을 사용한다.
 - `prefers-reduced-motion`에서는 60ms 안에 transient FX를 제거하고 결과 패널로 정보는 계속 남긴다.
 - 저장은 version 9 / `9zone-deckbuilder-v9`; 배포 V8 및 v5/v6/v7 저장 보존.
-- **125/125 테스트 통과**. V9.2 30시드 full-run 완주율 0.233(7/30), 평균 최종 덱 10.5장.
+- **126/126 테스트 통과**. V9.2 30시드 full-run 완주율 0.233(7/30), 평균 최종 덱 10.5장.
 - zone / V9 full-run / showcase growth / deck-relic 리포트와 프로덕션 Vite 빌드 모두 CI 성공. 최근 픽셀 시네마 기준 검증 run `34958791058`: 125/125 테스트, V9 full-run 리포트, 기존 리포트와 프로덕션 빌드 성공.
 
 ### 다음 작업
