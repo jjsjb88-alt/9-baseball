@@ -36,6 +36,9 @@ jobs:
       - name: Run first-pitcher smoke report
         run: node scripts/zone-report.js 10
 
+      - name: Run V9 main-run draft smoke report
+        run: node scripts/v9-report.js 10
+
       - name: Run showcase growth smoke report
         run: node scripts/growth-report.js 2
 
