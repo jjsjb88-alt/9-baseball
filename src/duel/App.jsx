@@ -269,11 +269,15 @@ function OpponentReport({stage}){
   </section>;
 }
 function RewardJournal({s}){
-  if(!s.rewards.length)return null;
-  return <details className="reward-journal" open><summary>내가 만든 덱 · 지난 선택</summary><ol>{s.rewards.map((r,i)=>{
+  if(!s.rewards.length&&!s.facilities?.length)return null;
+  return <details className="reward-journal" open><summary>내가 만든 팀 · 지난 선택</summary><ol>{s.rewards.flatMap((r,i)=>{
     const card=s.deck.find(c=>c.id===r.id),name=card?CARDS[card.kind].name:null;
     const text=r.type==='add'?CARDS[r.kind].name+' 추가':r.type==='relic'?RELICS[r.kind].name+' 획득':r.type==='upgrade'?(name||'카드')+' 강화':r.type==='remove'?'카드 1장 제거':'덱 유지';
-    const growth=s.growthHistory[i];return <li key={i}>{i+1}경기 보상 · {growth?GROWTHS[growth].short+' 성장 / ':'덱 빌딩 / '}{text}</li>;
+    const growth=s.growthHistory[i],rows=[<li key={'r'+i}>{i+1}경기 보상 · {growth?GROWTHS[growth].short+' 성장 / ':'카드 / '}{text}</li>];
+    const f=s.facilities?.[i];
+    if(f){const facilityText=f.type==='training'?CARDS[f.kind].name+' 강화':f.type==='release'?CARDS[f.kind].name+' 방출':f.type==='equipment'?RELICS[f.kind].name+' 장착':'다음 상대 스카우팅';
+      rows.push(<li key={'f'+i} className="facility-history">{FACILITIES[f.type].name} · {facilityText}</li>);}
+    return rows;
   })}</ol></details>;
 }
 export default function Duel(){
