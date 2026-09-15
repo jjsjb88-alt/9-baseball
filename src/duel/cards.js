@@ -82,8 +82,29 @@ export const V9_REWARDS=[
   ['scout','flow','finisher'],
   ['lure','bunt','calm'],
 ];
-export const rewardChoices=(stage,growthKey,build='away')=>build===DECKBUILDER_BUILD
-  ? [...(V9_REWARDS[stage]||[])]
+// V9.2: a route is a baseball opponent choice, not map decoration. Hard routes ask for
+// one more run against a better pitcher and pay back with one extra draft candidate.
+export const ROUTE_CHOICES=[
+  [
+    {id:'home-opener',name:'홈 개막전',tag:'안정',text:'현재 전력으로 정면 승부합니다.',risk:'기본 목표 · 기본 투수 능력',reward:'승리 시 기본 3장 드래프트',targetDelta:0,statBonus:0,rewardBonus:null},
+    {id:'giant-road',name:'강팀 원정',tag:'고위험',text:'첫 경기부터 강한 투수진을 상대합니다.',risk:'목표 +1점 · 투수 능력 +6',reward:'승리 시 릴리스 간파가 4번째 후보',targetDelta:1,statBonus:6,rewardBonus:'scout'},
+  ],
+  [
+    {id:'sinker-study',name:'낮은 공 연구전',tag:'안정',text:'낮은 코스에 적응하며 덱을 정리합니다.',risk:'기본 목표 · 기본 투수 능력',reward:'승리 시 기본 3장 드래프트',targetDelta:0,statBonus:0,rewardBonus:null},
+    {id:'city-rival',name:'도시 라이벌',tag:'라이벌',text:'낮은 공을 더 강하게 밀어붙이는 라이벌전입니다.',risk:'목표 +1점 · 투수 능력 +7',reward:'승리 시 당겨 넘기기가 4번째 후보',targetDelta:1,statBonus:7,rewardBonus:'slug'},
+  ],
+  [
+    {id:'deep-series',name:'수비형 강팀',tag:'안정',text:'외야가 깊은 팀을 상대로 출루와 진루를 시험합니다.',risk:'기본 목표 · 기본 투수 능력',reward:'승리 시 기본 3장 드래프트',targetDelta:0,statBonus:0,rewardBonus:null},
+    {id:'wall-rival',name:'담장 라이벌',tag:'라이벌',text:'장타를 억제하는 팀과 정면으로 부딪칩니다.',risk:'목표 +1점 · 투수 능력 +8',reward:'승리 시 주자 연결이 4번째 후보',targetDelta:1,statBonus:8,rewardBonus:'rally'},
+  ],
+  [
+    {id:'regular-final',name:'정규 결승',tag:'안정',text:'지금까지 만든 팀으로 마지막 세 아웃을 넘습니다.',risk:'기본 목표 · 기본 투수 능력',reward:'완주 기록',targetDelta:0,statBonus:0,rewardBonus:null},
+    {id:'ace-final',name:'라이벌 에이스',tag:'최종 도전',text:'가장 강한 투수에게 한 점을 더 요구받는 결승입니다.',risk:'목표 +1점 · 투수 능력 +10',reward:'라이벌 격파 기록',targetDelta:1,statBonus:10,rewardBonus:null},
+  ],
+];
+export const routeChoice=(stage,id)=>(ROUTE_CHOICES[stage]||[]).find(r=>r.id===id)||null;
+export const rewardChoices=(stage,growthKey,build='away',routeId=null)=>build===DECKBUILDER_BUILD
+  ? [...new Set([...(V9_REWARDS[stage]||[]),...(routeChoice(stage,routeId)?.rewardBonus?[routeChoice(stage,routeId).rewardBonus]:[])])]
   : [...new Set([...(REWARDS[stage]||[]),...(AFFINITY_CARDS[growthKey]||[])])];
 export const FACILITIES={
   training:{name:'타격 훈련',tag:'강화',art:'target',text:'가진 카드 1장을 + 판으로 강화합니다. 다음 경기부터 같은 카드가 더 강한 역할을 합니다.'},
