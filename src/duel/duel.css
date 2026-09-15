@@ -780,3 +780,54 @@
   .sprite-echo,.bat-smear{display:none!important}
   .release-combat .duel-arena.stadium{animation:none!important;background-size:cover!important;background-position:center 59%!important}
 }
+
+
+/* ---------- READ TRACE · tactical hologram + four stadium moods ---------- */
+.read-trace{position:absolute;z-index:10;right:4.5%;top:18%;width:116px;padding:8px 8px 7px;border:1px solid #d8c78977;background:#07151bd9;box-shadow:0 7px 22px #0009,inset 0 0 22px #8dd8c414;backdrop-filter:blur(2px);opacity:0;transform:translateX(9px) scale(.96);image-rendering:pixelated}
+.trace-stage-impact{animation:trace-pop .22s steps(3,end) both}.trace-stage-slowmo{opacity:1;transform:none}.trace-stage-release{animation:trace-release .42s steps(5,end) both}
+.trace-kicker{display:block;margin-bottom:5px;font-size:6px;font-weight:1000;letter-spacing:2px;color:#e8cf8f}
+.trace-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.trace-grid i{position:relative;display:grid;place-items:center;aspect-ratio:1;background:#173039;border:1px solid #4d6765;color:#78908a;font-style:normal;font-size:6px}
+.trace-grid i.covered{background:#5c512f;border-color:#d9bd6c;color:#f3da98;box-shadow:inset 0 0 0 1px #b8944e55}
+.trace-grid i.aim:after{content:'';position:absolute;inset:2px;border:1px solid #fff0bb;box-shadow:0 0 5px #efd485}
+.trace-grid i.actual{z-index:2;background:#6d302e;border-color:#ffab91;color:#ffe2d8;box-shadow:0 0 0 2px #ff9b7b55,0 0 12px #e66851}
+.trace-grid i.actual.covered{background:#28614a;border-color:#b8efc0;color:#e8ffe9;box-shadow:0 0 0 2px #95e3aa55,0 0 14px #69d28c}
+.trace-grid i.actual:before{content:'◆';position:absolute;right:1px;top:-2px;font-size:7px;color:#fff1db;text-shadow:0 0 5px currentColor}
+.trace-outside{margin-top:3px;padding:2px 4px;border:1px solid #3d5856;color:#708985;font-size:6px;font-weight:900;letter-spacing:1px;text-align:center}.trace-outside.actual{border-color:#e88671;color:#ffc2b4;background:#552c2c;box-shadow:0 0 8px #e46c5555}
+.trace-legend{display:flex;gap:5px;align-items:center;margin-top:4px;font-size:5px;color:#9cafaa}.trace-legend b{color:#e2c477}.trace-legend em{font-style:normal;color:#ef8c76}
+.trace-dead-center,.trace-homer,.trace-grand-slam,.trace-extra{border-color:#a9e1b4aa;box-shadow:0 7px 22px #0009,inset 0 0 24px #71da9622}.trace-near-miss,.trace-near-miss-k,.trace-chase,.trace-chase-k,.trace-fooled,.trace-strikeout{border-color:#df8c7baa}
+.trace-stage-slowmo.trace-near-miss,.trace-stage-slowmo.trace-near-miss-k{animation:trace-near-tension .72s steps(6,end) infinite}
+@keyframes trace-pop{0%{opacity:0;transform:translateX(9px) scale(.94)}45%{opacity:1;transform:translateX(-2px) scale(1.02)}100%{opacity:1;transform:none}}
+@keyframes trace-release{0%{opacity:1;transform:none}65%{opacity:.72}100%{opacity:0;transform:translateX(8px) scale(.98)}}
+@keyframes trace-near-tension{0%,100%{box-shadow:0 7px 22px #0009,inset 0 0 20px #e56d5512}50%{box-shadow:0 7px 22px #0009,inset 0 0 30px #e56d5530,0 0 10px #d36c5540}}
+
+/* The same stadium tells four different chapters of a run. */
+.stadium-stage-0 .duel-arena:after{background:linear-gradient(180deg,#7c57220d 0 35%,#07192128 58%,#0719218b 100%)}
+.stadium-stage-0 .pixel-cinema{filter:sepia(.06) saturate(1.06)}
+.stadium-stage-0 .cinema-light{opacity:.17}
+.stadium-stage-1 .duel-arena:after{background:linear-gradient(180deg,#18392318 0 38%,#071b1c35 60%,#06151895 100%)}
+.stadium-stage-1 .pixel-cinema{filter:hue-rotate(-8deg) saturate(.95)}
+.stadium-stage-1 .cinema-haze{background:linear-gradient(180deg,transparent,#8ca46d12 34%,#7d8e5c17 68%,transparent)}
+.stadium-stage-2 .duel-arena:after{background:linear-gradient(180deg,#112a481c 0 38%,#0718274f 62%,#050d159e 100%)}
+.stadium-stage-2 .pixel-cinema{filter:hue-rotate(9deg) saturate(.92) brightness(.94)}
+.stadium-stage-2 .cinema-light{opacity:.2;background:linear-gradient(105deg,transparent 12%,#bfdcff42 45%,#eef8ff14 67%,transparent)}
+.stadium-stage-3 .duel-arena:after{background:linear-gradient(180deg,#060a1414 0 30%,#07101d58 58%,#02070db0 100%)}
+.stadium-stage-3 .pixel-cinema{filter:saturate(1.02) contrast(1.08) brightness(.88)}
+.stadium-stage-3 .cinema-light{opacity:.27;filter:blur(2px)}
+.stadium-stage-3 .cinema-haze{opacity:.4}
+.rival-game .duel-arena{box-shadow:inset 0 0 0 1px #d1845f55,inset 0 -40px 70px #4a1f181c}
+.rival-game .intent{border-color:#d98b65;box-shadow:0 5px 22px #0009,0 0 18px #8b3a2b22}
+.rival-game .pixel-cinema:after{background:radial-gradient(ellipse at 50% 58%,transparent 30%,#18080728 70%,#03090ed8 112%)}
+.rival-game .crowd-flash{box-shadow:0 0 7px #ffc28c}
+
+.pitch-ball:before,.pixel-ball:before{content:'';position:absolute;width:1px;height:5px;left:3px;top:1px;background:#c85a4f;box-shadow:2px 1px #c85a4f;opacity:.85;transform:rotate(-28deg)}
+.pitch-ball:after,.pixel-ball:after{content:'';position:absolute;width:1px;height:4px;right:2px;bottom:1px;background:#c85a4f;box-shadow:-2px -1px #c85a4f;opacity:.8;transform:rotate(24deg)}
+
+@media(max-width:760px){
+  .read-trace{right:2.5%;top:15%;width:92px;padding:6px}
+  .trace-kicker{font-size:5px}.trace-grid i{font-size:5px}.trace-legend{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  .read-trace{animation:none!important;opacity:1;transform:none}
+  .trace-stage-release{opacity:.75}
+}
