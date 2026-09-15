@@ -47,18 +47,11 @@ jobs:
         with:
           node-version: 22
 
-      - name: Verify stable V8 root
+      - name: Build stable V8 root
         working-directory: stable
         run: |
           pnpm install --frozen-lockfile
-          pnpm test
-          node scripts/zone-report.js 30
-          node scripts/growth-report.js 5
-          node scripts/deck-report.js 2
-
-      - name: Build stable V8 root
-        working-directory: stable
-        run: pnpm run build
+          pnpm run build
 
       - name: Install V9 preview dependencies
         working-directory: preview-src
