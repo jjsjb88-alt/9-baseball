@@ -316,3 +316,93 @@
   .branch-confirm{align-items:stretch;flex-direction:column}
   .branch-confirm .primary{width:100%;min-width:0}
 }
+
+
+/* ---------- MASTER PRESENTATION · judgement language ---------- */
+.judgement-layer{--j:#f0cf86;position:absolute;inset:0;z-index:12;overflow:hidden;pointer-events:none;isolation:isolate}
+.judgement-wash{position:absolute;inset:-8%;background:radial-gradient(circle at 43% 58%,transparent 0 12%,#07131944 31%,#031016d9 82%);opacity:0;animation:judgement-wash .9s ease-out both}
+.judgement-copy{position:absolute;z-index:5;left:8%;right:8%;top:18%;display:flex;flex-direction:column;align-items:center;text-align:center;filter:drop-shadow(0 6px 0 #071319);animation:judgement-copy .88s cubic-bezier(.18,.9,.22,1) both}
+.judgement-copy>span{padding:3px 9px;border:1px solid color-mix(in srgb,var(--j) 65%,transparent);background:#07191fdd;color:var(--j);font-size:9px;font-weight:1000;letter-spacing:3.4px}
+.judgement-copy>strong{margin-top:4px;color:#fff2cd;font-size:clamp(40px,8vw,84px);font-weight:1000;letter-spacing:-4px;line-height:.9;text-shadow:3px 3px 0 #102229,-2px -2px 0 color-mix(in srgb,var(--j) 45%,transparent)}
+.judgement-copy>em{margin-top:10px;padding:5px 10px;background:#08181ed6;border-left:3px solid var(--j);color:#dfe8df;font-size:11px;font-style:normal;font-weight:800;letter-spacing:-.2px}
+.judgement-ring{position:absolute;z-index:2;left:39%;top:55%;width:52px;height:52px;border:3px solid var(--j);border-radius:50%;transform:translate(-50%,-50%) scale(.1);opacity:0}
+.judgement-ring.ring-a{animation:judgement-ring .7s cubic-bezier(.1,.85,.25,1) .08s both}
+.judgement-ring.ring-b{animation:judgement-ring .78s cubic-bezier(.1,.85,.25,1) .16s both}
+.judgement-slash{position:absolute;z-index:3;width:50%;height:3px;left:27%;top:53%;background:linear-gradient(90deg,transparent,var(--j),#fff7d6,var(--j),transparent);box-shadow:0 0 14px var(--j);opacity:0;transform-origin:center}
+.judgement-slash.slash-a{transform:rotate(-22deg) scaleX(.2);animation:judgement-slash .52s ease-out .08s both}
+.judgement-slash.slash-b{transform:rotate(18deg) scaleX(.2);animation:judgement-slash-b .52s ease-out .13s both}
+.judgement-hit{--j:#9ee2a8}.judgement-extra{--j:#f4cf78}.judgement-homer{--j:#ffd66f}
+.judgement-whiff{--j:#ef9d8b}.judgement-foul{--j:#f0c977}.judgement-ball{--j:#9fd8ee}.judgement-called{--j:#e7a38f}
+.judgement-out{--j:#d59a79}.judgement-sacrifice{--j:#d8c18c}.judgement-read{--j:#9fe5e7}.judgement-lock{--j:#f0d18d}
+.judgement-expand{--j:#b9dc9c}.judgement-signal{--j:#e2b3f0}.judgement-survive{--j:#c3d9ff}.judgement-draw{--j:#dfd49d}
+
+.judgement-read .judgement-wash{background:repeating-linear-gradient(0deg,#07191f88 0 8px,#0f384019 8px 10px),radial-gradient(circle at 50% 52%,#1a6d7070,transparent 55%);animation:read-wash .72s ease-out both}
+.judgement-read:before{content:'';position:absolute;z-index:4;left:0;right:0;height:2px;top:8%;background:#c6ffff;box-shadow:0 0 18px #79f3f6,0 0 42px #79f3f6;animation:read-scan .7s cubic-bezier(.2,.75,.2,1) both}
+.judgement-read .judgement-ring{left:50%;top:55%;width:130px;height:130px;border-width:1px}
+.judgement-read .judgement-slash{display:none}
+.fx-read .zone-grid{animation:read-grid .72s ease-out both}
+.fx-read .zone-cell{animation:read-cell .72s ease-out both}.fx-read .zone-cell.aimed{box-shadow:0 0 0 2px #bffcff,0 0 24px #75eef088}
+
+.judgement-homer .judgement-copy{top:12%;animation:homer-copy 1.08s cubic-bezier(.12,.86,.18,1) both}
+.judgement-homer .judgement-copy>strong{font-size:clamp(54px,11vw,106px);color:#fff1aa;text-shadow:4px 4px 0 #4d2c1c,-3px -3px 0 #dd7a34,0 0 30px #ffd86f}
+.judgement-homer .judgement-wash{background:radial-gradient(circle at 40% 58%,#fff8bfcc 0 2%,#f3b44e80 3% 13%,#702e1d44 30%,#031016d8 76%);animation:homer-flash 1.05s ease-out both}
+.judgement-homer .judgement-ring{left:39%;top:58%;width:92px;height:92px;border-width:5px}
+.fx-homer .duel-arena{animation:camera-homer .75s cubic-bezier(.15,.9,.2,1) both}
+.fx-homer .actor-left{animation:batter-contact .7s steps(5) both}
+.fx-hit .duel-arena,.fx-extra .duel-arena{animation:camera-hit .5s cubic-bezier(.15,.8,.2,1) both}
+.fx-hit .actor-left,.fx-extra .actor-left{animation:batter-contact .56s steps(5) both}
+
+.judgement-whiff .judgement-ring{display:none}
+.judgement-whiff .judgement-slash{left:18%;top:61%;width:68%;height:2px;filter:blur(.2px)}
+.judgement-whiff .judgement-copy>strong{color:#ffd6cc}
+.judgement-whiff .judgement-wash{background:linear-gradient(112deg,#071319bb 0 40%,#812f2e44 45%,#071319dd 52%);animation:miss-wash 1s ease-out both}
+.fx-whiff .actor-left{animation:batter-whiff .72s cubic-bezier(.3,.2,.2,1) both}
+.fx-whiff .pixel-ball{display:block!important;animation:ball-whiff .58s linear both!important;background:#fff9d5;box-shadow:-9px 0 #f6d885,-18px 0 #d6925f}
+
+.judgement-foul .judgement-copy>strong{color:#ffe4a2}
+.judgement-foul .judgement-ring{width:42px;height:42px}.fx-foul .pixel-ball{display:block!important;animation:ball-foul .64s steps(12) both!important}
+.judgement-ball .judgement-ring,.judgement-called .judgement-ring{left:57%;top:47%;width:80px;height:80px;border-width:2px}
+.judgement-ball .judgement-slash,.judgement-called .judgement-slash{display:none}
+.judgement-ball .judgement-wash{background:linear-gradient(180deg,#0b314966,#06151dcc);animation:take-wash .8s ease-out both}
+.judgement-called .judgement-wash{background:linear-gradient(180deg,#4c292c66,#06151ddd);animation:take-wash .95s ease-out both}
+.fx-called .actor-left{animation:called-freeze .95s steps(2) both}
+.fx-ball .actor-left{animation:take-relax .7s ease-out both}
+.judgement-out .judgement-copy>strong{color:#f0c5ad}.judgement-out .judgement-wash{background:radial-gradient(circle at 65% 38%,#a55f4433,#071319dd 68%)}
+.judgement-sacrifice .judgement-copy>strong{color:#efe2b9}.judgement-sacrifice .judgement-slash{display:none}
+
+.judgement-lock .judgement-ring,.judgement-expand .judgement-ring,.judgement-signal .judgement-ring,.judgement-survive .judgement-ring,.judgement-draw .judgement-ring{left:32%;top:58%;width:105px;height:105px;border-width:1px}
+.judgement-lock .judgement-slash,.judgement-expand .judgement-slash,.judgement-signal .judgement-slash,.judgement-survive .judgement-slash,.judgement-draw .judgement-slash{display:none}
+.judgement-lock .judgement-copy,.judgement-expand .judgement-copy,.judgement-signal .judgement-copy,.judgement-survive .judgement-copy,.judgement-draw .judgement-copy{top:30%;align-items:flex-start;text-align:left;left:12%;right:35%}
+.judgement-lock .judgement-copy>strong,.judgement-expand .judgement-copy>strong,.judgement-signal .judgement-copy>strong,.judgement-survive .judgement-copy>strong,.judgement-draw .judgement-copy>strong{font-size:clamp(28px,5vw,52px);letter-spacing:-2px}
+.judgement-lock .judgement-copy>em,.judgement-expand .judgement-copy>em,.judgement-signal .judgement-copy>em,.judgement-survive .judgement-copy>em,.judgement-draw .judgement-copy>em{font-size:10px}
+
+@keyframes judgement-wash{0%{opacity:0}12%{opacity:1}68%{opacity:.92}100%{opacity:0}}
+@keyframes judgement-copy{0%{opacity:0;transform:translateY(18px) scale(.86);filter:blur(7px) drop-shadow(0 6px 0 #071319)}18%{opacity:1;transform:translateY(0) scale(1.08);filter:blur(0) drop-shadow(0 6px 0 #071319)}42%{transform:scale(1)}78%{opacity:1}100%{opacity:0;transform:translateY(-7px) scale(.98)}}
+@keyframes judgement-ring{0%{opacity:0;transform:translate(-50%,-50%) scale(.08)}20%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(5.6)}}
+@keyframes judgement-slash{0%{opacity:0;transform:rotate(-22deg) scaleX(.08)}24%{opacity:1}100%{opacity:0;transform:rotate(-22deg) scaleX(1.7)}}
+@keyframes judgement-slash-b{0%{opacity:0;transform:rotate(18deg) scaleX(.08)}24%{opacity:.9}100%{opacity:0;transform:rotate(18deg) scaleX(1.5)}}
+@keyframes read-scan{0%{top:7%;opacity:0}12%{opacity:1}80%{top:88%;opacity:1}100%{top:96%;opacity:0}}
+@keyframes read-wash{0%{opacity:0}15%{opacity:1}70%{opacity:.8}100%{opacity:0}}
+@keyframes read-grid{0%{filter:brightness(1)}18%{filter:brightness(1.55) contrast(1.1)}45%{filter:brightness(.82)}75%{filter:brightness(1.28)}100%{filter:brightness(1)}}
+@keyframes read-cell{0%,100%{transform:none}25%{transform:scale(.98)}45%{transform:scale(1.015)}}
+@keyframes homer-copy{0%{opacity:0;transform:scale(.62) translateY(24px)}12%{opacity:1;transform:scale(1.18) translateY(0)}26%{transform:scale(.96)}42%{transform:scale(1.02)}78%{opacity:1}100%{opacity:0;transform:scale(1) translateY(-8px)}}
+@keyframes homer-flash{0%{opacity:0}7%{opacity:1}18%{opacity:.28}30%{opacity:.92}100%{opacity:0}}
+@keyframes camera-hit{0%,100%{transform:none}15%{transform:translate(5px,-2px) scale(1.012)}26%{transform:translate(-4px,2px) scale(1.008)}38%{transform:translate(2px,-1px)}}
+@keyframes camera-homer{0%,100%{transform:none}10%{transform:scale(1.018) translate(7px,-4px)}18%{transform:scale(1.022) translate(-7px,4px)}27%{transform:scale(1.014) translate(5px,1px)}42%{transform:scale(1.008) translate(-3px,-1px)}}
+@keyframes batter-contact{0%{transform:translateX(0)}18%{transform:translateX(-5px) rotate(-1deg)}34%{transform:translateX(6px) rotate(1deg)}100%{transform:translateX(0)}}
+@keyframes batter-whiff{0%{transform:translateX(0);filter:none}28%{transform:translateX(8px) rotate(2deg);filter:blur(.5px)}55%{transform:translateX(-3px) rotate(-1deg)}100%{transform:translateX(0);filter:none}}
+@keyframes ball-whiff{0%{left:74%;top:38%;opacity:0}15%{opacity:1}58%{left:39%;top:59%;opacity:1}100%{left:15%;top:67%;opacity:0}}
+@keyframes ball-foul{0%{left:72%;top:38%;opacity:0}20%{opacity:1}50%{left:40%;top:58%}68%{left:48%;top:26%}100%{left:62%;top:-8%;opacity:0}}
+@keyframes miss-wash{0%{opacity:0}16%{opacity:.92}32%{opacity:.3}48%{opacity:.82}100%{opacity:0}}
+@keyframes take-wash{0%{opacity:0}15%{opacity:.72}75%{opacity:.5}100%{opacity:0}}
+@keyframes called-freeze{0%,55%{filter:saturate(.35) contrast(1.06)}100%{filter:none}}
+@keyframes take-relax{0%{transform:translateX(0)}30%{transform:translateX(-4px)}100%{transform:translateX(0)}}
+
+@media(max-width:560px){
+  .judgement-copy{left:5%;right:5%;top:20%}.judgement-copy>strong{font-size:clamp(38px,14vw,64px);letter-spacing:-3px}.judgement-copy>em{font-size:9px}
+  .judgement-lock .judgement-copy,.judgement-expand .judgement-copy,.judgement-signal .judgement-copy,.judgement-survive .judgement-copy,.judgement-draw .judgement-copy{left:8%;right:18%;top:28%}
+}
+@media(prefers-reduced-motion:reduce){
+  .judgement-layer *,.fx-read .zone-grid,.fx-read .zone-cell,.fx-hit .duel-arena,.fx-extra .duel-arena,.fx-homer .duel-arena,.fx-hit .actor-left,.fx-extra .actor-left,.fx-homer .actor-left,.fx-whiff .actor-left,.fx-called .actor-left,.fx-ball .actor-left{animation:none!important}
+  .judgement-wash{opacity:.72}.judgement-copy{opacity:1;filter:none}.judgement-ring,.judgement-slash,.judgement-read:before{display:none}
+}
