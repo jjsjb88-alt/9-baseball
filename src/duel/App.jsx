@@ -487,7 +487,7 @@ function RouteBranches({s,onChoose,onStart}){
 }
 function RewardJournal({s}){
   if(!s.rewards.length&&!s.facilities?.length&&!s.routeHistory?.length)return null;
-  return <details className="reward-journal" open><summary>내가 만든 팀 · 지난 선택</summary><ol>{s.rewards.flatMap((r,i)=>{
+  return <details className="reward-journal"><summary>상세 선택 기록 펼치기</summary><ol>{s.rewards.flatMap((r,i)=>{
     const card=s.deck.find(c=>c.id===r.id),name=card?CARDS[card.kind].name:null,route=routeChoice(i,s.routeHistory?.[i]);
     const text=r.type==='add'?CARDS[r.kind].name+' 추가':r.type==='relic'?RELICS[r.kind].name+' 획득':r.type==='upgrade'?(name||'카드')+' 강화':r.type==='remove'?'카드 1장 제거':'덱 유지';
     const growth=s.growthHistory[i],rows=[];
