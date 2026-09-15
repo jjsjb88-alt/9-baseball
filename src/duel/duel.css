@@ -567,3 +567,18 @@
   .fx-stage-slowmo .duel-arena,.fx-stage-slowmo .actor-left,.fx-stage-slowmo .actor-right,.fx-stage-slowmo .living-diamond,.fx-dead-center .zone-cell.actual,.fx-jammed .zone-cell.actual,.fx-lucky .zone-cell.actual,.fx-near-miss .zone-cell.actual,.fx-near-miss .zone-cell.covered,.fx-chase .ball-read,.slowmo-mark{animation:none!important}
   .fx-stage-slowmo .pitch-ball,.slowmo-mark{display:none!important}
 }
+
+
+/* ---------- Persistent judgement grade ---------- */
+.pa-result.result-grade-dead-center{border-color:#9fe1ad;background:linear-gradient(145deg,#214d39,#10282a)}
+.pa-result.result-grade-dead-center .result-call{color:#bdf3c8;text-shadow:0 0 18px #64c98844}
+.pa-result.result-grade-jammed{border-color:#c99167;background:linear-gradient(145deg,#49352b,#1a282b)}
+.pa-result.result-grade-jammed .result-call{color:#f2c09a}
+.pa-result.result-grade-lucky{border-color:#9e8cc5;background:linear-gradient(145deg,#3b334d,#17252c)}
+.pa-result.result-grade-lucky .result-call{color:#dfd2ff}
+.pa-result.result-grade-near-miss{border-color:#d27f70;background:linear-gradient(145deg,#472f34,#17242a)}
+.pa-result.result-grade-near-miss .result-call{color:#f5b4a9}
+.pa-result.result-grade-chase{border-color:#a66e5e;background:linear-gradient(145deg,#3f2c2c,#17242a)}
+.pa-result.result-grade-chase .result-call{color:#eab09d}
+.pa-result.result-grade-fooled{border-color:#915f67;background:linear-gradient(145deg,#372a32,#17242a)}
+.pa-result.result-grade-fooled .result-call{color:#dc9eaa}
