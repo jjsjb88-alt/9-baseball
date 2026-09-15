@@ -141,17 +141,21 @@ function RewardScreen({s,growthChoice,onGrowth,action,onAction,target,onTarget,o
   const deckbuilder=s.build===DECKBUILDER_BUILD;
   const growthReady=deckbuilder||!!growthChoice;
   const pool=rewardChoices(s.stage,growthChoice,s.build);
-  const pending=!action?null:action==='skip'?{type:'skip'}
-    :['add','relic'].includes(action)?(target?{type:action,kind:target}:null):(target?{type:action,id:target}:null);
-  const problem=!growthReady?'성장을 먼저 선택하세요.':!action?'보상 방식을 선택하세요.'
-    :!pending?(action==='relic'?'유물을 선택하세요.':'대상 카드를 선택하세요.'):rewardProblem(s.deck,pending,s.stage,growthChoice,s.relics,s.build);
+  const chosenAction=deckbuilder?(action==='skip'?'skip':'add'):action;
+  const pending=!chosenAction?null:chosenAction==='skip'?{type:'skip'}
+    :['add','relic'].includes(chosenAction)?(target?{type:chosenAction,kind:target}:null):(target?{type:chosenAction,id:target}:null);
+  const problem=!growthReady?'성장을 먼저 선택하세요.'
+    :deckbuilder&&!pending?'카드 한 장을 고르거나 이번 보상을 건너뛰세요.'
+    :!chosenAction?'보상 방식을 선택하세요.'
+    :!pending?(chosenAction==='relic'?'유물을 선택하세요.':'대상 카드를 선택하세요.')
+    :rewardProblem(s.deck,pending,s.stage,growthChoice,s.relics,s.build);
   const after=pending&&!problem?applyRewardToDeck(s.deck,pending,s.nextId).deck:null;
   const delta=after?profileDelta(s.deck,after):null;
   const grown=!deckbuilder&&growthChoice?{...s.growth,[growthChoice]:s.growth[growthChoice]+1}:s.growth;
-  return <div className="reward-flow" role="group" aria-label={deckbuilder?'덱 빌딩 보상 3단계':'보상 선택 4단계'}>
+  return <div className="reward-flow" role="group" aria-label={deckbuilder?'덱 빌딩 카드 선택':'보상 선택 4단계'}>
     <OpponentReport stage={s.stage+1}/>
     <details className="deck-peek" open><summary>현재 덱 · {s.deck.length}장 — {deckbuilder?'이번 런을 어디로 만들까':'성장 선택 전에 비교'}</summary><DeckProfileView deck={s.deck} growth={s.growth}/></details>
-    {deckbuilder?<section className="growth-reward v9-draft-intro" aria-label="메인 런 덱 빌딩 안내"><span className="eyebrow">BUILD 01 · 방향은 정해져 있지 않다</span><h2>첫 9장은 정답이 아닙니다.</h2><p>장타, 연결, 컨택 중 하나로 깊게 가도 되고 섞어도 됩니다. 카드가 빌드를 만들고, 유물은 그 규칙을 비틉니다.</p></section>:<GrowthReward s={s} chosen={growthChoice} onChoose={onGrowth}/>}
+    {deckbuilder?<section className="growth-reward v9-draft-intro" aria-label="메인 런 덱 빌딩 안내"><span className="eyebrow">BUILD · 방향은 정해져 있지 않다</span><h2>첫 9장은 정답이 아닙니다.</h2><p>장타, 연결, 컨택 중 하나로 깊게 가도 되고 섞어도 됩니다. 전투의 기본 보상은 세 카드 중 하나입니다.</p></section>:<GrowthReward s={s} chosen={growthChoice} onChoose={onGrowth}/>}
     {!growthReady?<p className="growth-prompt">먼저 성장을 선택하세요. 선택 전에는 보상이나 다음 승부가 확정되지 않습니다.</p>:<>
       <section className="deck-section" aria-label="내 덱 구성">
         <span className="eyebrow">{deckbuilder?'01':'02'} · 지금 내 덱</span><h2>이 {deckProfile(s.deck).total}장으로 무엇을 할 수 있나</h2>
@@ -159,8 +163,13 @@ function RewardScreen({s,growthChoice,onGrowth,action,onAction,target,onTarget,o
         <div className="read-row"><b>읽기 · {READ_LEVELS[readLevel(s)].name}</b><span>관찰 점수 {observeScore(s.deck)}</span>
           {(s.relics||[]).length?(s.relics||[]).map(k=><em key={k}>{RELICS[k].name}</em>):<em className="none">유물 없음</em>}</div>
       </section>
-      <section className="deck-section" aria-label="덱 변경 방식">
-        <span className="eyebrow">{deckbuilder?'02':'03'} · 덱을 어떻게 바꿀까</span><h2>{deckbuilder?'이번 승리로 덱의 방향을 하나 바꿉니다':'한 번의 보상에 한 가지만 고를 수 있습니다'}</h2>
+      {deckbuilder?<section className="deck-section v9-card-draft" aria-label="카드 보상 선택">
+        <span className="eyebrow">02 · 카드 보상</span><h2>이번 승리가 덱의 다음 방향을 정합니다</h2>
+        <p className="draft-rule">세 장 모두 강점이 다릅니다. 정답을 고르는 게 아니라, 지금 덱에서 만들고 싶은 야구를 고르세요.</p>
+        <div className="reward-cards">{pool.map(kind=><Card key={kind} kind={kind} selected={chosenAction==='add'&&target===kind} onClick={()=>{onAction('add');onTarget(kind);}}/>)}</div>
+        <button type="button" className={'reward-skip'+(chosenAction==='skip'?' selected':'')} aria-pressed={chosenAction==='skip'} onClick={()=>{onAction('skip');onTarget(null);}}>이번 카드 보상 건너뛰기</button>
+      </section>:<section className="deck-section" aria-label="덱 변경 방식">
+        <span className="eyebrow">03 · 덱을 어떻게 바꿀까</span><h2>한 번의 보상에 한 가지만 고를 수 있습니다</h2>
         <div className="reward-action-row">{REWARD_ACTIONS.map(a=>{
           const blocked=a.type==='add'&&s.deck.length>=DECK_MAX?`덱 ${DECK_MAX}장 상한`
             :a.type==='remove'&&s.deck.length<=DECK_MIN?`덱 ${DECK_MIN}장 하한`
@@ -177,7 +186,7 @@ function RewardScreen({s,growthChoice,onGrowth,action,onAction,target,onTarget,o
             <span className="relic-icon"><PixelIcon art={RELICS[k].art}/></span>
             <strong>{RELICS[k].name}</strong><span>{RELICS[k].text}</span>{owned&&<small>이미 가진 유물</small>}</button>;})}
         </div>}
-      </section>
+      </section>}
       <section className="deck-section confirm" aria-label="변화 확인">
         <span className="eyebrow">{deckbuilder?'03':'04'} · 이 선택이 덱을 어떻게 바꾸나</span>
         {problem?<p className="reward-hold">{problem}</p>:<>
@@ -190,7 +199,7 @@ function RewardScreen({s,growthChoice,onGrowth,action,onAction,target,onTarget,o
               {next.map((n,i)=><li key={'next'+i} className={n.level}>{n.text}</li>)}
               {!fixed.length&&!next.length&&<li className="info">지적할 구성 문제가 없습니다.</li>}
             </ul>;})()}</>}
-        <button className="primary" disabled={!!problem} onClick={()=>onConfirm(pending)}>{deckbuilder?'이 선택으로 다음 경기':GROWTHS[growthChoice].short+' Lv.'+(s.growth[growthChoice]+1)+' · 이 덱으로 확정'}</button>
+        <button className="primary" disabled={!!problem} onClick={()=>onConfirm(pending)}>{deckbuilder?'이 덱으로 다음 경기':GROWTHS[growthChoice].short+' Lv.'+(s.growth[growthChoice]+1)+' · 이 덱으로 확정'}</button>
       </section>
     </>}
   </div>;
