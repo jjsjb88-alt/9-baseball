@@ -620,3 +620,15 @@
   .presentation-grand-slam.presentation-stage-impact:after,.presentation-grand-slam.presentation-stage-slowmo:before,.fx-grand-slam .duel-header,.fx-grand-slam .scoreboard,.fx-grand-slam .duel-table,.fx-stage-release.fx-grand-slam .duel-arena,.fx-stage-release.fx-grand-slam .living-diamond,.fx-battle-foul .zone-cell.actual{animation:none!important}
   .presentation-grand-slam.presentation-stage-impact:after,.presentation-grand-slam.presentation-stage-slowmo:before{display:none!important}
 }
+
+
+/* ---------- Full-screen impact shake ---------- */
+.release-combat.fx-stage-impact.shake-soft{animation:screen-shake-soft .16s steps(3) both}
+.release-combat.fx-stage-impact.shake-medium{animation:screen-shake-medium .19s steps(4) both}
+.release-combat.fx-stage-impact.shake-strong{animation:screen-shake-strong .23s steps(5) both}
+.release-combat.fx-stage-impact.shake-epic{animation:screen-shake-epic .3s steps(7) both}
+@keyframes screen-shake-soft{0%,100%{transform:none}35%{transform:translate(1px,-1px)}70%{transform:translate(-1px,1px)}}
+@keyframes screen-shake-medium{0%,100%{transform:none}20%{transform:translate(3px,-2px)}45%{transform:translate(-3px,2px)}70%{transform:translate(2px,1px)}}
+@keyframes screen-shake-strong{0%,100%{transform:none}16%{transform:translate(5px,-3px)}34%{transform:translate(-5px,3px)}54%{transform:translate(4px,-2px)}74%{transform:translate(-3px,2px)}}
+@keyframes screen-shake-epic{0%,100%{transform:none}10%{transform:translate(7px,-4px)}24%{transform:translate(-8px,5px)}38%{transform:translate(7px,3px)}52%{transform:translate(-6px,-3px)}68%{transform:translate(4px,2px)}82%{transform:translate(-3px,1px)}}
+@media(prefers-reduced-motion:reduce){.release-combat.fx-stage-impact[class*="shake-"]{animation:none!important}}
