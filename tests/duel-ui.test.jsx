@@ -83,8 +83,8 @@ describe('9-zone strategic UI',()=>{
     fireEvent.click(screen.getByRole('button',{name:'스윙하기',exact:true}));
     fireEvent.click(screen.getByRole('button',{name:'밀어치기',exact:true}));
     fireEvent.click(screen.getByTestId('execute-action'));
-    expect(document.querySelector('.sprite-batter.pose-load')).toBeTruthy();
-    expect(document.querySelector('.sprite-pitcher.pose-legkick')).toBeTruthy();
+    expect(document.querySelector('.sprite-batter.pose-load.v2-sequence')).toBeTruthy();
+    expect(document.querySelector('.sprite-pitcher.pose-legkick.v2-sequence')).toBeTruthy();
     act(()=>vi.advanceTimersByTime(110));
     expect(document.querySelector('.sprite-batter.pose-contact')).toBeTruthy();
     expect(document.querySelector('.sprite-pitcher.pose-release')).toBeTruthy();
