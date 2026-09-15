@@ -259,7 +259,7 @@ function resolve(state,id){
   }
   if(id&&mode==='patience'){growthEvents.unshift('기다린 한 공 · '+b.waitCharge+'중첩 사용');b.waitCharge=0;s.growthStats.patienceSwings++;}
   if(id&&!(mode==='fortune'&&result.kind!=='hit'))b.growthMode='normal';
-  b.revealed={zone:pending.zone,label:result.label,kind:result.kind,coverage:usedCoverage,action:k||'take',growthEvents};
+  b.revealed={zone:pending.zone,label:result.label,kind:result.kind,coverage:usedCoverage,aimZone:id?b.aimZone:null,action:k||'take',growthEvents};
   b.history.push({zone:pending.zone,label:result.label,aimZone:id?b.aimZone:null,turn:b.turn,...countBefore});
   b.history=b.history.slice(-18);b.pending=null;b.scouted=false;b.scoutPlus=false;
   // Upgraded 코스 조정 survives the swing and lasts the rest of the plate appearance.
