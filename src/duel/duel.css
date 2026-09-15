@@ -911,3 +911,12 @@
 @media(prefers-reduced-motion:reduce){
   .ball-shadow,.ground-skip,.flight-spark,.release-combat .duel-fx:after{display:none!important}
 }
+
+
+/* ---------- PIXEL VFX CANVAS · 320x180 nearest-neighbor render pass ---------- */
+.pixel-vfx-canvas{position:absolute;inset:0;z-index:8;width:100%;height:100%;pointer-events:none;image-rendering:pixelated;image-rendering:crisp-edges;mix-blend-mode:screen;opacity:.92}
+.fx-stage-slowmo .pixel-vfx-canvas{opacity:.78;filter:saturate(.9)}
+.fx-stage-release.fx-homer .pixel-vfx-canvas,.fx-stage-release.fx-grand-slam .pixel-vfx-canvas{opacity:1;filter:saturate(1.12) contrast(1.05)}
+.fx-stage-impact.fx-dead-center .pixel-vfx-canvas,.fx-stage-impact.fx-extra .pixel-vfx-canvas{opacity:1}
+.fx-stage-release.fx-near-miss .pixel-vfx-canvas,.fx-stage-release.fx-chase .pixel-vfx-canvas,.fx-stage-release.fx-whiff .pixel-vfx-canvas{mix-blend-mode:screen;filter:saturate(.86)}
+@media(prefers-reduced-motion:reduce){.pixel-vfx-canvas{display:none!important}}
