@@ -1,22 +1,25 @@
 import {describe,it,expect} from 'vitest';
-import {createDuel,startBattle,playCard,chooseReward,chooseFacility,saveDuel,readDuel,readLevel} from '../src/duel/engine.js';
-import {BUILDS,CARDS,DECKBUILDER_BUILD,GROWTHS,STAGES,rewardChoices,RELIC_OFFERS} from '../src/duel/cards.js';
+import {createDuel,startBattle,chooseRoute,battleTarget,pitcherProfile,playCard,chooseReward,chooseFacility,saveDuel,readDuel,readLevel} from '../src/duel/engine.js';
+import {BUILDS,CARDS,DECKBUILDER_BUILD,GROWTHS,STAGES,rewardChoices,RELIC_OFFERS,ROUTE_CHOICES} from '../src/duel/cards.js';
 
 const pitch=(s,zone=s.battle.aimZone,roll=.1,powerRoll=.99)=>{
   s.battle.pending={zone,roll,powerRoll};
   return s;
 };
 function rewardState(){
-  let s=startBattle(createDuel(1,DECKBUILDER_BUILD));
-  s.battle.runs=STAGES[0].target-1;
+  let s=createDuel(1,DECKBUILDER_BUILD);
+  s=chooseRoute(s,ROUTE_CHOICES[0][0].id);
+  s=startBattle(s);
+  s.battle.runs=battleTarget(s)-1;
   s.battle.bases=[null,null,'p8'];
   s=playCard(pitch(s),'c0');
   expect(s.phase).toBe('reward');
   return s;
 }
 function nextReward(s){
+  s=chooseRoute(s,ROUTE_CHOICES[s.stage][0].id);
   s=startBattle(s);
-  s.battle.runs=STAGES[s.stage].target-1;
+  s.battle.runs=battleTarget(s)-1;
   s.battle.bases=[null,null,'p8'];
   return playCard(pitch(s),'c0');
 }
@@ -40,6 +43,25 @@ describe('V9 main run builds a deck instead of choosing a finished archetype',()
     expect(Object.keys(s.growth)).toEqual(Object.keys(GROWTHS));
     expect(Object.values(s.growth)).toEqual([0,0,0]);
     expect(s.growthHistory).toEqual([]);
+    expect(s.route).toBeNull();
+    expect(s.routeHistory).toEqual([]);
+  });
+
+  it('requires a route and makes the hard branch genuinely harder for a larger draft',()=>{
+    const base=createDuel(23,DECKBUILDER_BUILD);
+    expect(startBattle(base)).toBe(base);
+    const hard=ROUTE_CHOICES[0][1],routed=chooseRoute(base,hard.id);
+    expect(routed).not.toBe(base);
+    expect(battleTarget(routed)).toBe(STAGES[0].target+hard.targetDelta);
+    expect(pitcherProfile(routed)).toEqual({
+      stuff:STAGES[0].stats.stuff+hard.statBonus,
+      movement:STAGES[0].stats.movement+hard.statBonus,
+      command:STAGES[0].stats.command+hard.statBonus,
+    });
+    const pool=rewardChoices(0,null,DECKBUILDER_BUILD,hard.id);
+    expect(pool).toEqual(['slug','rally','defend',hard.rewardBonus]);
+    expect(startBattle(routed).phase).toBe('battle');
+    roundtrip(routed);
   });
 
   it('offers three different identity seeds after the first win',()=>{
@@ -51,10 +73,12 @@ describe('V9 main run builds a deck instead of choosing a finished archetype',()
 
   it('adds exactly one drafted card without secretly granting a growth rank',()=>{
     const s=rewardState();
+    expect(s.routeHistory).toEqual([ROUTE_CHOICES[0][0].id]);
     const n=chooseReward(s,{type:'add',kind:'slug'},null);
     expect(n).not.toBe(s);
     expect(n.phase).toBe('facility');
     expect(n.stage).toBe(1);
+    expect(n.route).toBeNull();
     expect(n.deck).toHaveLength(10);
     expect(n.deck.at(-1)).toEqual({id:'c9',kind:'slug'});
     expect(n.nextId).toBe(10);
@@ -90,7 +114,8 @@ describe('V9 main run builds a deck instead of choosing a finished archetype',()
     expect(scouted.phase).toBe('map');
     expect(scouted.facilities).toEqual([{type:'scouting'}]);
     expect(readLevel(scouted)).toBe(1);
-    expect(readLevel(startBattle(scouted))).toBe(1);
+    const routed=chooseRoute(scouted,ROUTE_CHOICES[scouted.stage][0].id);
+    expect(readLevel(startBattle(routed))).toBe(1);
     expect(readLevel({...scouted,stage:2})).toBe(0);
     roundtrip(scouted);
   });
