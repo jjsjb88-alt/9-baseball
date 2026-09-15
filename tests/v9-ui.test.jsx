@@ -81,6 +81,18 @@ describe('V9 main-run UI',()=>{
     expect(screen.getByText(/스카우팅 적용/)).toBeTruthy();
   });
 
+  it('shows live deck synergy when a reward candidate is selected',()=>{
+    const s=rewardState();
+    saveDuel(localStorage,s);
+    render(<Duel/>);
+    fireEvent.click(screen.getByRole('button',{name:'이어하기'}));
+    fireEvent.click(screen.getByRole('button',{name:'주자 연결'}));
+    const synergy=screen.getByRole('region',{name:'카드 시너지'});
+    expect(synergy.textContent).toContain('주자 연결');
+    expect(synergy.textContent).toContain('릴리스 간파');
+    expect(synergy.textContent).toContain('연계');
+  });
+
   it('makes contact quality the dominant result instead of a generic hit log',()=>{
     const s=hitState();
     expect(s.phase).toBe('between');
