@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import React from 'react';
-import {beforeEach,describe,it,expect} from 'vitest';
-import {fireEvent,render,screen,within} from '@testing-library/react';
+import {afterEach,beforeEach,describe,it,expect} from 'vitest';
+import {cleanup,fireEvent,render,screen,within} from '@testing-library/react';
 import Duel from '../src/duel/App.jsx';
 import {createDuel,startBattle,chooseRoute,battleTarget,playCard,saveDuel,readDuel} from '../src/duel/engine.js';
 import {DECKBUILDER_BUILD,STAGES,ROUTE_CHOICES} from '../src/duel/cards.js';
@@ -26,6 +26,7 @@ function hitState(){
 }
 
 beforeEach(()=>localStorage.clear());
+afterEach(()=>cleanup());
 
 describe('V9 main-run UI',()=>{
   it('presents the neutral deck as the main run and finished archetypes as showcases',()=>{
