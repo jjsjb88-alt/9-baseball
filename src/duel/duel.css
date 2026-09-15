@@ -942,3 +942,57 @@
   .cinema-lab-controls{grid-template-columns:1fr;padding:9px}.cinema-selected{display:grid;grid-template-columns:1fr auto;align-items:center}.cinema-selected>span,.cinema-selected>strong,.cinema-selected>small{grid-column:1}.cinema-selected .primary{grid-column:2;grid-row:1/4}
   .cinema-case-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.cinema-case-grid button{min-height:58px;padding:7px}.cinema-case-grid button strong{font-size:9px}
 }
+
+
+/* ---------- PIXEL CINEMA RENDERER 2.0 · native WebGL2 spatial arena ---------- */
+.renderer2-host{isolation:isolate;background-color:#07141b}
+.arena-renderer2{position:absolute;inset:0;z-index:0;width:100%;height:100%;display:block;pointer-events:none;image-rendering:pixelated;image-rendering:crisp-edges}
+.renderer2-host:after{z-index:1}
+.renderer2-host .pixel-cinema{z-index:2}
+.renderer2-host .actor-left,.renderer2-host .actor-right{z-index:4}
+.renderer2-host .living-diamond{z-index:5}
+.renderer2-host .intent{z-index:7}
+.renderer2-host .pixel-vfx-canvas{z-index:8}
+.renderer2-host .duel-fx{z-index:9}
+.renderer2-host .read-trace{z-index:10}
+.renderer2-host .judgement-layer{z-index:12}
+.renderer2-host .clutch-layer{z-index:14}
+
+/* Actors now live at different depths instead of sharing one flat plane. */
+.renderer2-host .actor-left{transform-origin:46% 100%;filter:drop-shadow(0 11px 8px #02090bbb)}
+.renderer2-host .actor-right{transform-origin:50% 100%;filter:drop-shadow(0 8px 6px #02090ba8)}
+.renderer2-host .actor-right:before,.renderer2-host .actor-left:before{content:'';position:absolute;z-index:-1;left:19%;right:19%;bottom:3%;height:8%;border-radius:50%;background:#0107087a;filter:blur(5px);transform:scaleX(1.25)}
+.renderer2-host.fx-stage-windup .actor-right{transform:scale(.96) translateY(-2px)}
+.renderer2-host.fx-stage-windup .actor-left{transform:scale(1.015)}
+.renderer2-host.fx-stage-impact .actor-left{filter:brightness(1.18) drop-shadow(0 12px 7px #02090bbb) drop-shadow(0 0 11px #f2c66b45)}
+.renderer2-host.fx-stage-impact .actor-right{filter:brightness(.88) drop-shadow(0 8px 6px #02090bbb)}
+.renderer2-host.fx-stage-slowmo .actor-left,.renderer2-host.fx-stage-slowmo .actor-right{filter:saturate(.78) contrast(1.09) brightness(.82) drop-shadow(0 9px 7px #02090bd0)}
+.renderer2-host.fx-stage-release.fx-homer .actor-left,.renderer2-host.fx-stage-release.fx-grand-slam .actor-left{filter:brightness(1.15) contrast(1.05) drop-shadow(0 12px 7px #02090bbb) drop-shadow(0 0 16px #f0bd5d4d)}
+.renderer2-host.fx-stage-release.fx-near-miss .actor-left,.renderer2-host.fx-stage-release.fx-whiff .actor-left{filter:saturate(.72) contrast(1.08) drop-shadow(0 10px 8px #02090bc7)}
+
+/* Keep the old painted stadium only as a no-WebGL safety net. */
+.arena-renderer2[data-renderer="webgl2"]{box-shadow:inset 0 -18px 28px #02090b55}
+.cinema-lab-stage .arena-renderer2{filter:contrast(1.04) saturate(1.04)}
+.cinema-lab-head .eyebrow:after{content:' · RENDERER 2.0';color:#9fe5e7;text-shadow:0 0 8px #65c8ce55}
+
+/* Depth cues tied to the simulated camera. */
+.renderer2-host.fx-stage-windup .living-diamond{transform:translateX(-50%) scale(.96);filter:brightness(.88)}
+.renderer2-host.fx-stage-impact .living-diamond{transform:translateX(-50%) scale(1.025);filter:brightness(1.08)}
+.renderer2-host.fx-stage-slowmo .living-diamond{transform:translateX(-50%) scale(1.04);filter:brightness(.72) saturate(.7)}
+.renderer2-host.fx-stage-release .living-diamond{transition:transform .18s ease-out,filter .18s ease-out}
+.renderer2-host.fx-stage-release.fx-homer .living-diamond,.renderer2-host.fx-stage-release.fx-grand-slam .living-diamond{transform:translateX(-50%) scale(.91);filter:brightness(.92)}
+.renderer2-host .batter-nameplate{backdrop-filter:blur(2px);box-shadow:0 4px 10px #0008}
+
+/* WebGL pass owns the broad lighting; DOM atmosphere becomes fine-grain only. */
+.renderer2-host .cinema-light{opacity:.07}
+.renderer2-host .cinema-haze{opacity:.38}
+.renderer2-host.fx-stage-impact .cinema-light{opacity:.13}
+.renderer2-host.fx-stage-release.fx-homer .cinema-light,.renderer2-host.fx-stage-release.fx-grand-slam .cinema-light{opacity:.18}
+
+@media(max-width:700px){
+  .arena-renderer2{image-rendering:pixelated}
+  .renderer2-host .actor-left:before,.renderer2-host .actor-right:before{filter:blur(3px)}
+}
+@media(prefers-reduced-motion:reduce){
+  .renderer2-host .actor-left,.renderer2-host .actor-right,.renderer2-host .living-diamond{transform:none!important;transition:none!important}
+}
