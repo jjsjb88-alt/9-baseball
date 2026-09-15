@@ -3,21 +3,25 @@ import React from 'react';
 import {beforeEach,describe,it,expect} from 'vitest';
 import {fireEvent,render,screen,within} from '@testing-library/react';
 import Duel from '../src/duel/App.jsx';
-import {createDuel,startBattle,playCard,saveDuel,readDuel} from '../src/duel/engine.js';
-import {DECKBUILDER_BUILD,STAGES} from '../src/duel/cards.js';
+import {createDuel,startBattle,chooseRoute,battleTarget,playCard,saveDuel,readDuel} from '../src/duel/engine.js';
+import {DECKBUILDER_BUILD,STAGES,ROUTE_CHOICES} from '../src/duel/cards.js';
 
 const pitch=(s,zone=s.battle.aimZone,roll=.1,powerRoll=.99)=>{
   s.battle.pending={zone,roll,powerRoll};
   return s;
 };
 function rewardState(){
-  let s=startBattle(createDuel(11,DECKBUILDER_BUILD));
-  s.battle.runs=STAGES[0].target-1;
+  let s=createDuel(11,DECKBUILDER_BUILD);
+  s=chooseRoute(s,ROUTE_CHOICES[0][0].id);
+  s=startBattle(s);
+  s.battle.runs=battleTarget(s)-1;
   s.battle.bases=[null,null,'p8'];
   return playCard(pitch(s),'c0');
 }
 function hitState(){
-  const s=startBattle(createDuel(19,DECKBUILDER_BUILD));
+  let s=createDuel(19,DECKBUILDER_BUILD);
+  s=chooseRoute(s,ROUTE_CHOICES[0][0].id);
+  s=startBattle(s);
   return playCard(pitch(s),'c0');
 }
 
@@ -33,6 +37,17 @@ describe('V9 main-run UI',()=>{
       const button=screen.getByRole('button',{name:new RegExp(name)});
       expect(within(button).getByText('완성형 체험')).toBeTruthy();
     }
+  });
+
+  it('makes the map an actual opponent choice before a main-run battle',()=>{
+    render(<Duel/>);
+    fireEvent.click(screen.getByRole('button',{name:'새 런 시작'}));
+    const routes=screen.getByRole('region',{name:'상대 경로 선택'});
+    expect(routes).toBeTruthy();
+    expect(screen.queryByRole('button',{name:'이 상대와 승부 시작'})).toBeNull();
+    fireEvent.click(screen.getByRole('button',{name:/강팀 원정/}));
+    expect(screen.getByText(/목표 3점/)).toBeTruthy();
+    expect(screen.getByRole('button',{name:'이 상대와 승부 시작'})).toBeTruthy();
   });
 
   it('turns a combat win into a direct three-card draft with no mandatory growth choice',()=>{
