@@ -1,5 +1,5 @@
 import {CARDS,SAVE_KEY,STAGES,LINEUP,BUILDS,ZONES,GROWTHS,growthCost,rewardChoices,cardPower,cardText,DECK_MIN,DECK_MAX,
-  ZONE_ORDER,WIDEN_EVERY,PUTAWAY_REACH,READ_THRESHOLDS,observeScore,RELICS,RELIC_OFFERS} from './cards.js';
+  ZONE_ORDER,WIDEN_EVERY,PUTAWAY_REACH,READ_THRESHOLDS,observeScore,RELICS,RELIC_OFFERS,DECKBUILDER_BUILD} from './cards.js';
 import {applyRewardToDeck,rewardProblem} from './deck.js';
 const clone=s=>JSON.parse(JSON.stringify(s));
 const card=(s,id)=>s.deck.find(c=>c.id===id);
@@ -51,12 +51,13 @@ function dealPitch(s){
   b.pending={zone,roll:unit(s,'pitchSeed'),powerRoll:unit(s,'pitchSeed')};
   b.scouted=false;b.scoutPlus=false;b.revealed=null;
 }
-export function createDuel(seed=Date.now()>>>0,build='away'){
-  if(!Object.hasOwn(BUILDS,build))build='away';
-  return {version:8,seed:seed>>>0,pitchSeed:(seed^0x9e3779b9)>>>0,initialSeed:seed>>>0,build,phase:'map',stage:0,
+export function createDuel(seed=Date.now()>>>0,build=DECKBUILDER_BUILD){
+  if(!Object.hasOwn(BUILDS,build))build=DECKBUILDER_BUILD;
+  const baseDeck=BUILDS[build].cards;
+  return {version:9,seed:seed>>>0,pitchSeed:(seed^0x9e3779b9)>>>0,initialSeed:seed>>>0,build,phase:'map',stage:0,
     growth:{patience:0,relay:0,fortune:0},growthHistory:[],fortune:0,relics:[],
     growthStats:{waitStrikes:0,patienceSwings:0,relayCreated:0,relayHits:0,fortuneEarned:0,fortuneUses:0},
-    deck:BUILDS[build].cards.map((kind,i)=>({id:'c'+i,kind})),nextId:12,rewards:[],victories:0,battle:null,last:null,
+    deck:baseDeck.map((kind,i)=>({id:'c'+i,kind})),nextId:baseDeck.length,rewards:[],victories:0,battle:null,last:null,
     stats:{cards:0,pitches:0,runs:0,outs:0,appearances:0,hits:0,walks:0,fouls:0,whiffs:0,totalBases:0}};
 }
 export function startBattle(state){
@@ -284,13 +285,15 @@ export function advanceBatter(state){
   b.log=[entry,...events,...b.log].slice(0,12);return s;
 }
 // One reward = one growth rank + one deck action. Adding, removing, upgrading and skipping compete.
-export function chooseReward(state,action,growthKey){
-  if(state.phase!=='reward'||!Object.hasOwn(GROWTHS,growthKey)||state.growth[growthKey]>=3)return state;
-  if(rewardProblem(state.deck,action,state.stage,growthKey,state.relics))return state;
+export function chooseReward(state,action,growthKey=null){
+  const deckbuilder=state.build===DECKBUILDER_BUILD;
+  if(state.phase!=='reward'||(!deckbuilder&&(!Object.hasOwn(GROWTHS,growthKey)||state.growth[growthKey]>=3)))return state;
+  if(rewardProblem(state.deck,action,state.stage,growthKey,state.relics,state.build))return state;
   const s=clone(state),moved=applyRewardToDeck(s.deck,action,s.nextId);
   s.deck=moved.deck;s.nextId=moved.nextId;
   if(action.type==='relic')s.relics=[...s.relics,action.kind];
-  s.growth[growthKey]++;s.growthHistory.push(growthKey);
+  if(deckbuilder)s.growthHistory.push(null);
+  else{s.growth[growthKey]++;s.growthHistory.push(growthKey);}
   s.rewards.push(['add','relic'].includes(action.type)?{type:action.type,kind:action.kind}
     :action.type==='skip'?{type:'skip'}:{type:action.type,id:action.id});
   s.stage++;s.phase='map';s.battle=null;s.last=null;return s;
@@ -299,11 +302,12 @@ export function saveDuel(storage,s){storage.setItem(SAVE_KEY,JSON.stringify(s));
 export function readDuel(storage){
   const raw=storage.getItem(SAVE_KEY);if(!raw)return null;
   const s=JSON.parse(raw),int=(v,a,z)=>Number.isInteger(v)&&v>=a&&v<=z,fail=()=>{throw new Error('9존 저장 기록이 손상됐습니다.');};
+  const baseSize=BUILDS[s?.build]?.cards?.length||0;
   const adds=Array.isArray(s?.rewards)?s.rewards.filter(r=>r?.type==='add').length:0;
   const drops=Array.isArray(s?.rewards)?s.rewards.filter(r=>r?.type==='remove').length:0;
   const ups=Array.isArray(s?.rewards)?s.rewards.filter(r=>r?.type==='upgrade').length:0;
   // v7 deck ids stay unique but no longer stay contiguous — removal makes c0..cN impossible to hold.
-  if(!s||s.version!==8||!Object.hasOwn(BUILDS,s.build)||!['seed','pitchSeed','initialSeed'].every(k=>int(s[k],0,0xffffffff))
+  if(!s||s.version!==9||!Object.hasOwn(BUILDS,s.build)||!['seed','pitchSeed','initialSeed'].every(k=>int(s[k],0,0xffffffff))
     ||!Array.isArray(s.relics)||s.relics.some(k=>!Object.hasOwn(RELICS,k))||new Set(s.relics).size!==s.relics.length
     ||!int(s.stage,0,3)||!['map','battle','pitch','between','reward','won','lost'].includes(s.phase)
     ||!Array.isArray(s.deck)||!int(s.deck.length,DECK_MIN,DECK_MAX)
@@ -311,17 +315,18 @@ export function readDuel(storage){
     ||new Set(s.deck.map(c=>c.id)).size!==s.deck.length
     ||!Array.isArray(s.rewards)||s.rewards.length!==s.stage
     ||!s.rewards.every((r,i)=>r&&['add','remove','upgrade','relic','skip'].includes(r.type)
-      &&(r.type!=='add'||rewardChoices(i,s.growthHistory?.[i]).includes(r.kind))
+      &&(r.type!=='add'||rewardChoices(i,s.growthHistory?.[i],s.build).includes(r.kind))
       &&(r.type!=='relic'||(RELIC_OFFERS[i]||[]).includes(r.kind))
       &&(!['remove','upgrade'].includes(r.type)||typeof r.id==='string'))
     ||s.relics.length!==s.rewards.filter(r=>r.type==='relic').length
     ||!s.relics.every(k=>s.rewards.some(r=>r.type==='relic'&&r.kind===k))
-    ||s.nextId!==12+adds||s.deck.length!==12+adds-drops||s.deck.filter(c=>c.plus).length>ups
+    ||s.nextId!==baseSize+adds||s.deck.length!==baseSize+adds-drops||s.deck.filter(c=>c.plus).length>ups
     ||s.deck.some(c=>Number(c.id.slice(1))>=s.nextId)
     ||!s.stats||!['cards','pitches','runs','outs','appearances','hits','walks','fouls','whiffs','totalBases'].every(k=>int(s.stats[k],0,100000)))fail();
   if(s.victories!==(s.phase==='won'?4:s.phase==='reward'?s.stage+1:s.stage)||s.phase==='won'&&s.stage!==3||s.phase==='reward'&&s.stage===3)fail();
   if(!s.growth||!Object.keys(GROWTHS).every(k=>int(s.growth[k],0,3))||!Array.isArray(s.growthHistory)||s.growthHistory.length!==s.stage
-    ||!s.growthHistory.every(k=>Object.hasOwn(GROWTHS,k))||!Object.keys(GROWTHS).every(k=>s.growth[k]===s.growthHistory.filter(x=>x===k).length)
+    ||!s.growthHistory.every(k=>s.build===DECKBUILDER_BUILD?k===null:Object.hasOwn(GROWTHS,k))
+    ||!Object.keys(GROWTHS).every(k=>s.growth[k]===s.growthHistory.filter(x=>x===k).length)
     ||!int(s.fortune,0,6)||!s.growthStats||!['waitStrikes','patienceSwings','relayCreated','relayHits','fortuneEarned','fortuneUses'].every(k=>int(s.growthStats[k],0,100000)))fail();
   const b=s.battle;if(!b){if(s.phase!=='map')fail();return s;}
   if(!['hand','draw','discard','results','history','log'].every(k=>Array.isArray(b[k]))||!Array.isArray(b.bases)||b.bases.length!==3
