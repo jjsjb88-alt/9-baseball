@@ -40,10 +40,12 @@ export function cardText(kind,plus=false){
   return special[kind]||CARDS[kind].text+' 강화: 기본 효과에 파워 +18.';
 }
 export const DECK_MIN=9,DECK_MAX=18;
+export const DECKBUILDER_BUILD='starter';
 export const BUILDS={
-  pull:{name:'몸쪽 장타',description:'좁게 기다려 크게 친다 · 당겨 넘기기 중심',stats:{technique:52,power:76,luck:44},zones:[0,3,4,6],cards:['slug','slug','setup','scout','lure','strike','slug','flow','watch','setup','rally','calm']},
-  away:{name:'바깥 연결',description:'세로 커버로 출루와 진루 · 밀어치기 중심',stats:{technique:76,power:45,luck:50},zones:[2,4,5,8],cards:['strike','rally','scout','watch','setup','strike','rally','flow','calm','strike','lure','bunt']},
-  contact:{name:'끈질긴 컨택',description:'넓게 버티며 볼넷과 기회 탐색 · 커트 중심',stats:{technique:58,power:34,luck:72},zones:[1,3,5,7],cards:['defend','strike','scout','calm','watch','defend','rally','defend','setup','lure','bunt','calm']},
+  starter:{name:'무명 타선',description:'정답이 없는 9장 · 경기마다 카드를 골라 이번 런의 야구를 만든다',stats:{technique:58,power:52,luck:52},zones:[1,3,5,7],cards:['strike','strike','strike','defend','defend','setup','watch','scout','calm']},
+  pull:{name:'몸쪽 장타',description:'완성형 체험 · 좁게 기다려 크게 친다',stats:{technique:52,power:76,luck:44},zones:[0,3,4,6],cards:['slug','slug','setup','scout','lure','strike','slug','flow','watch','setup','rally','calm']},
+  away:{name:'바깥 연결',description:'완성형 체험 · 출루와 진루를 다음 타석까지 잇는다',stats:{technique:76,power:45,luck:50},zones:[2,4,5,8],cards:['strike','rally','scout','watch','setup','strike','rally','flow','calm','strike','lure','bunt']},
+  contact:{name:'끈질긴 컨택',description:'완성형 체험 · 넓게 버티며 계속 타석을 잇는다',stats:{technique:58,power:34,luck:72},zones:[1,3,5,7],cards:['defend','strike','scout','calm','watch','defend','rally','defend','setup','lure','bunt','calm']},
 };
 export const TYPE_NAMES={attack:'한 공의 스윙',skill:'타석 준비 · 최대 2회'};
 // `affinity` replaces v6's fixed `signature`. A growth names an axis it pays off, never one required card.
@@ -73,7 +75,15 @@ export const REWARDS=[['calm','flow','rally'],['lure','scout','defend'],['finish
 // Each pool is 정보 / 페이오프 / 보완 — three real directions for one growth.
 // 기다림 keeps `scout` first: the growth is charged by WATCHED strikes, so information is its enabler, not a flavor pick.
 export const AFFINITY_CARDS={patience:['scout','slug','lure'],relay:['rally','finisher','flow','bunt'],fortune:['defend','calm','strike']};
-export const rewardChoices=(stage,growthKey)=>[...new Set([...(REWARDS[stage]||[]),...(AFFINITY_CARDS[growthKey]||[])])];
+// V9 main-run rewards deliberately open with three different identities. The player, not a preset, decides what this run becomes.
+export const V9_REWARDS=[
+  ['slug','rally','defend'],
+  ['scout','flow','finisher'],
+  ['lure','bunt','calm'],
+];
+export const rewardChoices=(stage,growthKey,build='away')=>build===DECKBUILDER_BUILD
+  ? [...(V9_REWARDS[stage]||[])]
+  : [...new Set([...(REWARDS[stage]||[]),...(AFFINITY_CARDS[growthKey]||[])])];
 export const REWARD_ACTIONS=[
   {type:'add',name:'카드 추가',hint:'후보 한 장을 덱에 넣습니다'},
   {type:'remove',name:'카드 제거',hint:'약한 카드를 덱에서 뺍니다'},
@@ -81,8 +91,8 @@ export const REWARD_ACTIONS=[
   {type:'relic',name:'유물 획득',hint:'투수를 더 잘 보게 해주는 물건 하나'},
   {type:'skip',name:'덱 그대로',hint:'성장만 받고 덱은 두 번째 기회를 기다립니다'},
 ];
-export const SAVE_KEY='9zone-read-v8';
-export const LEGACY_SAVE_KEYS=['9zone-deck-v7','9zone-growth-v6','9zone-zones-v5'];
+export const SAVE_KEY='9zone-deckbuilder-v9';
+export const LEGACY_SAVE_KEYS=['9zone-read-v8','9zone-deck-v7','9zone-growth-v6','9zone-zones-v5'];
 // A pitcher opens with a few zones and widens. The first batter of the first game should be readable.
 export const ZONE_ORDER={
   rookie:[5,2,4,8,1,7,3,0,6],sinker:[7,6,8,4,5,3,1,2,0],
