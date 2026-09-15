@@ -511,3 +511,59 @@
   .release-combat[class*="fx-stage-"] .duel-arena,.release-combat[class*="fx-stage-"] .actor-left,.release-combat[class*="fx-stage-"] .actor-right,.release-combat[class*="fx-stage-"] .living-diamond,.release-combat[class*="fx-stage-"] .scoreboard-score strong,.release-combat[class*="fx-stage-"] .scoreboard-count,.pitch-ball,.speed-lines,.judgement-spark,.judgement-flash,.judgement-vignette{animation:none!important}
   .pitch-ball,.speed-lines,.judgement-spark,.judgement-flash{display:none!important}
 }
+
+
+/* ---------- MASTER PRESENTATION III · contact quality + selective slow motion ---------- */
+.judgement-dead-center{--j:#b9ffd0}.judgement-jammed{--j:#efb382}.judgement-lucky{--j:#d7c7ff}
+.judgement-near-miss{--j:#ff9f8f}.judgement-chase{--j:#d68e7d}
+.fx-dead-center .zone-cell.actual{animation:zone-dead-center 1.02s cubic-bezier(.12,.88,.2,1) both}
+.fx-jammed .zone-cell.actual,.fx-lucky .zone-cell.actual{animation:zone-soft-contact 1.12s ease-out both}
+.fx-near-miss .zone-cell.actual{animation:zone-near-miss 1.26s cubic-bezier(.2,.7,.2,1) both}
+.fx-near-miss .zone-cell.covered:not(.actual){animation:zone-near-covered 1.26s ease-out both}
+.fx-chase .ball-read{animation:chase-ball 1s ease-out both}
+
+.fx-stage-slowmo .duel-arena{animation:slowmo-camera .5s cubic-bezier(.12,.78,.2,1) both}
+.fx-stage-slowmo .actor-left,.fx-stage-slowmo .actor-right,.fx-stage-slowmo .living-diamond{filter:saturate(.72) contrast(1.08) brightness(.88)}
+.fx-stage-slowmo.fx-near-miss .actor-left{transform:translateX(5px) rotate(1deg)}
+.fx-stage-slowmo.fx-lucky .duel-arena{filter:saturate(.82) brightness(.9)}
+.fx-stage-slowmo.fx-jammed .duel-arena{filter:saturate(.78) contrast(1.05)}
+.fx-stage-slowmo.fx-homer .duel-arena,.fx-stage-slowmo.fx-dead-center .duel-arena{filter:brightness(.86) contrast(1.12)}
+.stage-slowmo .judgement-flash{opacity:0}
+.stage-slowmo .judgement-vignette{opacity:.78;background:radial-gradient(circle at 40% 57%,transparent 18%,#06151c88 52%,#02080df2 100%)}
+.stage-slowmo .speed-lines{opacity:.22;animation:slow-lines .7s linear infinite}
+.stage-slowmo .judgement-copy{opacity:0!important;animation:none!important}
+.stage-slowmo .judgement-ring,.stage-slowmo .judgement-slash,.stage-slowmo .judgement-spark{opacity:0!important;animation:none!important}
+.slowmo-mark{position:absolute;z-index:10;left:50%;top:16%;transform:translateX(-50%);padding:4px 10px;border-top:1px solid var(--j);border-bottom:1px solid var(--j);color:var(--j);background:#061218c9;font-size:8px;font-weight:1000;letter-spacing:4px;opacity:0;white-space:nowrap}
+.stage-slowmo .slowmo-mark{animation:slowmo-mark .55s ease-out both}
+.stage-windup .slowmo-mark,.stage-impact .slowmo-mark,.stage-release .slowmo-mark,.stage-settle .slowmo-mark{opacity:0}
+
+.fx-stage-slowmo .pitch-ball{display:block!important;opacity:1!important;left:39%;top:58%;transform:scale(1.25);animation:slow-ball-pulse .5s ease-in-out infinite!important;box-shadow:0 0 0 1px #fff6c8,0 0 18px var(--j)}
+.fx-stage-slowmo.fx-near-miss .pitch-ball{left:var(--near-x,39%);top:var(--near-y,58%)}
+
+.fx-stage-release.fx-jammed .duel-fx.hit .pixel-ball{animation:flight-ground .72s steps(14) both!important}
+.fx-stage-release.fx-lucky .duel-fx.hit .pixel-ball{animation:flight-bloop .86s steps(18) both!important}
+.fx-stage-release.fx-dead-center .duel-fx.hit .pixel-ball{animation:ball-hit .46s steps(10) both!important}
+.fx-stage-release.fx-near-miss .duel-fx .pixel-ball{display:block;opacity:1!important;animation:ball-near-miss .68s linear both!important}
+.fx-stage-release.fx-chase .duel-fx .pixel-ball{display:block;opacity:1!important;animation:ball-chase .6s linear both!important}
+
+.fx-stage-release.fx-lucky .judgement-copy>strong{color:#efe6ff;text-shadow:3px 3px #231d3c,0 0 24px #b8a1f1}
+.fx-stage-release.fx-jammed .judgement-copy>strong{color:#ffd0a8;text-shadow:3px 3px #39251f,0 0 18px #df8f62}
+.fx-stage-release.fx-near-miss .judgement-copy>strong{color:#ffd0c8;text-shadow:3px 3px #421f20,0 0 22px #ef7d70}
+.fx-stage-release.fx-dead-center .judgement-copy>strong{color:#dcffe3;text-shadow:3px 3px #183326,0 0 24px #8de4aa}
+
+@keyframes slowmo-camera{0%{transform:scale(1.012)}40%{transform:scale(1.026)}100%{transform:scale(1.02)}}
+@keyframes slow-lines{from{transform:translateX(1%) skewX(-12deg)}to{transform:translateX(-2%) skewX(-12deg)}}
+@keyframes slowmo-mark{0%{opacity:0;transform:translate(-50%,5px);letter-spacing:7px}25%{opacity:1}100%{opacity:.78;transform:translate(-50%,0);letter-spacing:4px}}
+@keyframes slow-ball-pulse{0%,100%{filter:brightness(.9);transform:scale(1.12)}50%{filter:brightness(1.35);transform:scale(1.42)}}
+@keyframes zone-dead-center{0%{transform:scale(1);box-shadow:none}18%{transform:scale(1.13);box-shadow:0 0 0 3px #edfff0,0 0 34px #7ff0a2}46%{transform:scale(.97);box-shadow:0 0 0 2px #9df2b3,0 0 26px #7ff0a2}100%{transform:scale(1);box-shadow:none}}
+@keyframes zone-soft-contact{0%{transform:scale(1)}20%{transform:scale(1.06);box-shadow:0 0 0 2px #f6c294,0 0 18px #d8895e}48%{transform:scale(.985)}100%{transform:scale(1);box-shadow:none}}
+@keyframes zone-near-miss{0%{transform:scale(1);box-shadow:none}16%{transform:scale(1.11);box-shadow:0 0 0 3px #ffd1c8,0 0 32px #ef7c70}40%,72%{transform:scale(1.06);box-shadow:0 0 0 2px #f59c8f,0 0 26px #ef7c70}100%{transform:scale(1);box-shadow:none}}
+@keyframes zone-near-covered{0%,18%{opacity:1;box-shadow:inset 0 0 0 1px #d9bf75}42%,72%{opacity:.42;filter:saturate(.45);box-shadow:inset 0 0 0 2px #ffd38a}100%{opacity:1;filter:none}}
+@keyframes chase-ball{0%{transform:scale(1)}25%{transform:scale(1.12);box-shadow:0 0 0 2px #edac94}100%{transform:scale(1);box-shadow:none}}
+@keyframes ball-near-miss{0%{left:72%;top:38%;opacity:0}14%{opacity:1}54%{left:43%;top:56%;opacity:1}72%{left:34%;top:60%;opacity:1}100%{left:14%;top:67%;opacity:0}}
+@keyframes ball-chase{0%{left:72%;top:38%;opacity:0}16%{opacity:1}58%{left:43%;top:65%;opacity:1}100%{left:17%;top:80%;opacity:0}}
+
+@media(prefers-reduced-motion:reduce){
+  .fx-stage-slowmo .duel-arena,.fx-stage-slowmo .actor-left,.fx-stage-slowmo .actor-right,.fx-stage-slowmo .living-diamond,.fx-dead-center .zone-cell.actual,.fx-jammed .zone-cell.actual,.fx-lucky .zone-cell.actual,.fx-near-miss .zone-cell.actual,.fx-near-miss .zone-cell.covered,.fx-chase .ball-read,.slowmo-mark{animation:none!important}
+  .fx-stage-slowmo .pitch-ball,.slowmo-mark{display:none!important}
+}
