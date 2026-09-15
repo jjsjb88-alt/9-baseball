@@ -250,3 +250,35 @@
   .pa-result .result-call{font-size:32px}
   .pa-result.result-hit .result-call{font-size:38px}
 }
+
+
+/* ---------- V9.1 · between-game baseball facilities ---------- */
+.facility-screen{min-height:calc(100vh - 58px);padding:28px 18px 54px}
+.facility-flow{max-width:1120px;margin:0 auto}
+.facility-intro{max-width:760px;margin:0 auto 22px;text-align:center}
+.facility-intro h1{margin:8px 0 12px;font-size:clamp(28px,5vw,48px);line-height:1.08}
+.facility-intro p{max-width:680px;margin:0 auto;color:#c4d1ca;line-height:1.7}
+.facility-route{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;max-width:900px;margin:24px auto}
+.facility-node{min-height:210px;padding:22px;text-align:left;border:1px solid #54736c;border-radius:14px;background:linear-gradient(145deg,#173236,#102329);color:#eaf0e9}
+.facility-node:hover,.facility-node.selected{border-color:#e8c674;box-shadow:0 0 0 2px #e8c67422,inset 0 0 32px #e8c6740d}
+.facility-node .facility-icon{display:grid;place-items:center;width:48px;height:48px;margin-bottom:14px;border:1px solid #6d8c82;border-radius:10px;color:#e8c674}
+.facility-node .facility-icon svg{width:28px;height:28px}
+.facility-node small{display:block;margin-bottom:5px;color:#9fb4aa;letter-spacing:1.4px}
+.facility-node strong{display:block;font-size:22px;color:#f0d79d}
+.facility-node p{margin:9px 0 0;color:#bcc9c2;line-height:1.55}
+.facility-workbench{max-width:1040px;margin:22px auto 0;padding:22px;border:1px solid #4d6f67;border-radius:14px;background:#10262cdd}
+.facility-workbench>h2{margin:7px 0 14px;color:#f0d79d}
+.facility-workbench .deck-list{margin-top:14px}
+.scout-brief{padding:20px;border:1px solid #668e96;border-radius:12px;background:#17323c}
+.scout-brief h2{margin:0 0 8px;color:#b8e2ef}
+.scout-brief p{font-size:20px;margin:0 0 6px}
+.scout-brief small{color:#b9c9cf;line-height:1.6}
+.facility-delta{margin:18px 0}
+.map-scout-badge{display:inline-block;padding:7px 10px;border:1px solid #6c9ba8;border-radius:999px;background:#16313a;color:#bfe1ea}
+.facility-history{color:#d4bd82}
+@media(max-width:700px){
+  .facility-screen{padding:20px 12px 42px}
+  .facility-route{grid-template-columns:1fr}
+  .facility-node{min-height:auto}
+  .facility-workbench{padding:16px}
+}
