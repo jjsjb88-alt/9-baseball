@@ -52,6 +52,17 @@ describe('V9 main-run UI',()=>{
     expect(saved.deck).toHaveLength(10);
     expect(saved.deck.at(-1).kind).toBe('slug');
     expect(saved.growth).toEqual({patience:0,relay:0,fortune:0});
+    expect(saved.phase).toBe('facility');
+    expect(screen.getByRole('group',{name:'다음 경기 준비 선택'})).toBeTruthy();
+    expect(screen.getByRole('button',{name:/타격 훈련/})).toBeTruthy();
+    expect(screen.getByRole('button',{name:/스카우팅/})).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button',{name:/스카우팅/}));
+    fireEvent.click(screen.getByRole('button',{name:'이 준비로 다음 경기'}));
+    const routed=readDuel(localStorage);
+    expect(routed.phase).toBe('map');
+    expect(routed.facilities).toEqual([{type:'scouting'}]);
+    expect(screen.getByText(/스카우팅 적용/)).toBeTruthy();
   });
 
   it('makes a hit the dominant result instead of a small log line',()=>{
