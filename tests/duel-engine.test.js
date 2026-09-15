@@ -1,9 +1,10 @@
 import {describe,it,expect} from 'vitest';
-import {createDuel,startBattle,playCard,endTurn,chooseReward,previewCard,readDuel,saveDuel,cardProblem,baseIntent,advanceBatter,currentBatter,advancePitch,setAimZone,coverage,swingOdds,hitProfile,publicProbabilities,setGrowthMode} from '../src/duel/engine.js';
+import {createDuel,startBattle,chooseRoute,playCard,endTurn,chooseReward,previewCard,readDuel,saveDuel,cardProblem,baseIntent,advanceBatter,currentBatter,advancePitch,setAimZone,coverage,swingOdds,hitProfile,publicProbabilities,setGrowthMode} from '../src/duel/engine.js';
 import {planAction} from '../src/duel/policy.js';
-import {SAVE_KEY,LINEUP,CARDS,BUILDS,DECKBUILDER_BUILD} from '../src/duel/cards.js';
+import {SAVE_KEY,LINEUP,CARDS,BUILDS,DECKBUILDER_BUILD,ROUTE_CHOICES} from '../src/duel/cards.js';
 const memory=()=>{const d={};return {setItem:(k,v)=>d[k]=v,getItem:k=>d[k]??null}};
-function fixture(kind='strike',build='away'){const s=startBattle(createDuel(1,build));s.deck[0].kind=kind;return s;}
+function battle(seed,build){let s=createDuel(seed,build);if(build===DECKBUILDER_BUILD)s=chooseRoute(s,ROUTE_CHOICES[0][0].id);return startBattle(s);}
+function fixture(kind='strike',build='away'){const s=battle(1,build);s.deck[0].kind=kind;return s;}
 function pitch(s,zone,roll=.5,powerRoll=.95){s.battle.pending={zone,roll,powerRoll};return s;}
 function roundtrip(s){const store=memory();saveDuel(store,s);expect(readDuel(store)).toEqual(s);if(s.battle){const b=s.battle,ids=[...b.hand,...b.draw,...b.discard];expect(ids).toHaveLength(s.deck.length);expect(new Set(ids).size).toBe(s.deck.length);expect(b.bases.filter(Boolean).every(id=>LINEUP.some(p=>p.id===id))).toBe(true);}}
 describe('9-zone read success is guaranteed; stats only choose hit type',()=>{
@@ -41,7 +42,7 @@ describe('9-zone read success is guaranteed; stats only choose hit type',()=>{
     expect(s.seed).toBe(before.seed);expect(s.pitchSeed).toBe(before.pitchSeed);expect(a.hit).toBeCloseTo(coverage(s,'c0').reduce((v,z)=>v+s.battle.intent.probabilities[z],0));expect(a.bases).toBeUndefined();
   });
   it('same seed starts all builds against same pitcher; choosing aim or drawing cannot reroll',()=>{
-    const starts=Object.keys(BUILDS).map(k=>startBattle(createDuel(37,k)));
+    const starts=Object.keys(BUILDS).map(k=>battle(37,k));
     expect(starts[0].battle.pending).toEqual(starts[1].battle.pending);expect(starts[1].battle.pending).toEqual(starts[2].battle.pending);
     let s=fixture('watch');const pending=structuredClone(s.battle.pending);s=setAimZone(s,8);s=playCard(s,'c0');expect(s.battle.pending).toEqual(pending);expect(s.stats.pitches).toBe(0);roundtrip(s);
   });
