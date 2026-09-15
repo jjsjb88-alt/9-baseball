@@ -66,9 +66,10 @@ function batCrack(ctx,at,gainValue,pan=-.08){
 }
 function echoSend(ctx,node,amount,delayTime=.105){
   if(!amount)return;
-  const delay=ctx.createDelay(.35),wet=ctx.createGain(),feedback=ctx.createGain();
-  delay.delayTime.value=delayTime;wet.gain.value=amount;feedback.gain.value=Math.min(.22,amount*.55);
-  node.connect(delay);delay.connect(wet);wet.connect(master);delay.connect(feedback);feedback.connect(delay);
+  const delay=ctx.createDelay(.35),wet=ctx.createGain();
+  delay.delayTime.value=delayTime;wet.gain.value=amount;
+  node.connect(delay);delay.connect(wet);wet.connect(master);
+  globalThis.setTimeout?.(()=>{try{delay.disconnect();wet.disconnect()}catch{}},650);
 }
 function crowdSwell(ctx,at,gainValue){
   const duration=.62,frames=Math.floor(ctx.sampleRate*duration),buffer=ctx.createBuffer(1,frames,ctx.sampleRate),data=buffer.getChannelData(0);
