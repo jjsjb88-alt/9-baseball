@@ -397,6 +397,17 @@
 @keyframes take-wash{0%{opacity:0}15%{opacity:.72}75%{opacity:.5}100%{opacity:0}}
 @keyframes called-freeze{0%,55%{filter:saturate(.35) contrast(1.06)}100%{filter:none}}
 @keyframes take-relax{0%{transform:translateX(0)}30%{transform:translateX(-4px)}100%{transform:translateX(0)}}
+.fx-hit .zone-cell.actual,.fx-extra .zone-cell.actual,.fx-homer .zone-cell.actual{z-index:2;animation:zone-read-hit .86s cubic-bezier(.16,.86,.2,1) both}
+.fx-whiff .zone-cell.actual,.fx-called .zone-cell.actual,.fx-out .zone-cell.actual{z-index:2;animation:zone-read-miss .98s ease-out both}
+.fx-whiff .zone-cell.covered:not(.actual),.fx-called .zone-cell.covered:not(.actual),.fx-out .zone-cell.covered:not(.actual){animation:zone-cover-fade .9s ease-out both}
+.fx-foul .zone-cell.actual{animation:zone-foul .78s ease-out both}
+.fx-ball .ball-read{animation:ball-call .76s ease-out both}
+@keyframes zone-read-hit{0%{transform:scale(1);box-shadow:0 0 0 0 #b6f4bd00}18%{transform:scale(1.1);box-shadow:0 0 0 3px #d8ffd8,0 0 28px #78e29b}42%{transform:scale(.98);box-shadow:0 0 0 2px #8ce5a4,0 0 18px #78e29b99}100%{transform:scale(1);box-shadow:0 0 0 0 #78e29b00}}
+@keyframes zone-read-miss{0%{transform:scale(1);box-shadow:0 0 0 0 #f29a8800}16%{transform:scale(1.08);box-shadow:0 0 0 3px #ffd0c7,0 0 26px #e36e61}34%{transform:translateX(-3px) scale(1.02)}46%{transform:translateX(3px) scale(1.02)}100%{transform:none;box-shadow:0 0 0 0 #e36e6100}}
+@keyframes zone-cover-fade{0%,22%{opacity:1;filter:none}48%{opacity:.32;filter:saturate(.45)}100%{opacity:1;filter:none}}
+@keyframes zone-foul{0%{transform:scale(1)}25%{transform:scale(1.06);box-shadow:0 0 0 2px #ffe0a0,0 0 18px #e8b55f}48%{transform:rotate(-1deg) scale(1.02)}100%{transform:none}}
+@keyframes ball-call{0%{transform:scale(1);box-shadow:none}24%{transform:scale(1.1);box-shadow:0 0 0 2px #b8e9ff,0 0 20px #78cdec}100%{transform:scale(1);box-shadow:none}}
+
 
 @media(max-width:560px){
   .judgement-copy{left:5%;right:5%;top:20%}.judgement-copy>strong{font-size:clamp(38px,14vw,64px);letter-spacing:-3px}.judgement-copy>em{font-size:9px}
