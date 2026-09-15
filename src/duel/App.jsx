@@ -21,6 +21,12 @@ import pitcherRelease from '../../assets/sprites-v1/pitcher-release.png';
 import pitcherFollow from '../../assets/sprites-v1/pitcher-follow.png';
 import pitcherStrikeout from '../../assets/sprites-v1/pitcher-strikeout.png';
 
+const sortGlob=m=>Object.entries(m).sort(([a],[b])=>a.localeCompare(b)).map(([,url])=>url);
+const BATTER_SWING_V2=sortGlob(import.meta.glob('../../assets/sprites-v2/frames/batter-swing-*.png',{eager:true,import:'default'}));
+const BATTER_MISS_V2=sortGlob(import.meta.glob('../../assets/sprites-v2/frames/batter-miss-*.png',{eager:true,import:'default'}));
+const PITCHER_PITCH_V2=sortGlob(import.meta.glob('../../assets/sprites-v2/frames/pitcher-pitch-*.png',{eager:true,import:'default'}));
+const PITCHER_K_V2=sortGlob(import.meta.glob('../../assets/sprites-v2/frames/pitcher-strikeout-*.png',{eager:true,import:'default'}));
+
 const TOUR_KEY='9zone-zones-tour-v5';
 const TOUR_STEPS=[
   {eyebrow:'WELCOME 1 / 6',target:'scoreboard',title:'먼저 전광판을 봅니다',text:'현재 타자, 다음 타자, 목표 득점, 스트라이크, 아웃을 여기서 먼저 확인하세요. 가장 먼저 읽어야 하는 정보입니다.',tip:'지금 밝게 보이는 전광판만 먼저 확인하면 됩니다.'},
@@ -70,9 +76,52 @@ function actorPose(who,stage,shot){
   if(stage==='settle')return hit?'follow':miss?'miss':'idle';
   return 'idle';
 }
+function stageDuration(stage,shot){
+  const m=shot?.motion;if(!m)return 0;
+  if(stage==='windup')return m.impactAt;
+  if(stage==='impact')return Math.max(45,m.freeze||45);
+  if(stage==='slowmo')return Math.max(60,m.slowmo||60);
+  if(stage==='release')return Math.max(100,m.settleAt-(m.impactAt+(m.freeze||0)+(m.slowmo||0)));
+  if(stage==='settle')return Math.max(80,m.duration-m.settleAt);
+  return 0;
+}
+function sequenceSpec(who,stage,shot){
+  if(!stage||!shot||['read','lock','expand','signal','survive','draw'].includes(shot.grade))return null;
+  const hit=['dead-center','solid','jammed','lucky','extra','homer','grand-slam'].includes(shot.grade);
+  const miss=['near-miss','near-miss-k','chase','chase-k','fooled','strikeout'].includes(shot.grade);
+  if(who==='pitcher'){
+    if((shot.grade==='strikeout'||shot.grade?.endsWith('-k'))&&['release','settle'].includes(stage))
+      return {frames:PITCHER_K_V2,start:0,end:PITCHER_K_V2.length-1,duration:stageDuration(stage,shot)};
+    const ranges={windup:[0,5],impact:[6,7],slowmo:[7,7],release:[8,11],settle:[11,11]},r=ranges[stage];
+    return r?{frames:PITCHER_PITCH_V2,start:r[0],end:r[1],duration:stageDuration(stage,shot)}:null;
+  }
+  if(hit){
+    if(['homer','grand-slam'].includes(shot.grade)&&stage==='settle')return null;
+    const ranges={windup:[0,4],impact:[5,6],slowmo:[6,6],release:[7,11],settle:[11,11]},r=ranges[stage];
+    return r?{frames:BATTER_SWING_V2,start:r[0],end:r[1],duration:stageDuration(stage,shot)}:null;
+  }
+  if(miss){
+    const ranges={windup:[0,2],impact:[3,4],slowmo:[4,4],release:[4,5],settle:[5,5]},r=ranges[stage];
+    return r?{frames:BATTER_MISS_V2,start:r[0],end:r[1],duration:stageDuration(stage,shot)}:null;
+  }
+  return null;
+}
+function useSpriteFrame(spec,key){
+  const [index,setIndex]=useState(spec?.start||0);
+  useEffect(()=>{
+    if(!spec?.frames?.length){setIndex(0);return;}
+    let i=spec.start;setIndex(i);
+    if(spec.end<=spec.start)return;
+    const count=spec.end-spec.start+1,step=Math.max(24,Math.floor(spec.duration/count));
+    const timer=setInterval(()=>{i+=1;if(i>spec.end){clearInterval(timer);return;}setIndex(i);},step);
+    return ()=>clearInterval(timer);
+  },[spec?.frames,spec?.start,spec?.end,spec?.duration,key]);
+  return spec?.frames?.[Math.min(index,spec.frames.length-1)]||null;
+}
 function Sprite({who,stage=null,shot=null}){
-  const pose=actorPose(who,stage,shot),src=(who==='pitcher'?PITCHER_POSES:BATTER_POSES)[pose];
-  return <span className={'sprite-stage sprite-'+who+' pose-'+pose}>
+  const pose=actorPose(who,stage,shot),spec=sequenceSpec(who,stage,shot),animated=useSpriteFrame(spec,who+'-'+stage+'-'+(shot?.grade||'idle'));
+  const fallback=(who==='pitcher'?PITCHER_POSES:BATTER_POSES)[pose],src=animated||fallback;
+  return <span className={'sprite-stage sprite-'+who+' pose-'+pose+(animated?' v2-sequence':'')}>
     <img aria-hidden="true" className="sprite-echo echo-back" src={src}/>
     <img aria-hidden="true" className="sprite-echo echo-mid" src={src}/>
     <img aria-hidden="true" className="duel-sprite" src={src}/>
