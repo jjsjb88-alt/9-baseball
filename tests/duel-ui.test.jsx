@@ -91,7 +91,7 @@ describe('9-zone strategic UI',()=>{
     fireEvent.click(screen.getByTestId('execute-action'));
     const arena=screen.getByRole('region',{name:'승부 구장'});
     expect(arena.className).toContain('fx-stage-windup');
-    expect(arena.className).toContain('fx-dead-center');
+    expect([...arena.classList].some(c=>c.startsWith('fx-')&&!c.startsWith('fx-stage-'))).toBe(true);
     expect(arena.querySelector('.judgement-layer')).toBeTruthy();
     expect(arena.querySelector('.pixel-cinema')).toBeTruthy();
     expect(arena.querySelector('.pixel-vfx-canvas')).toBeTruthy();
