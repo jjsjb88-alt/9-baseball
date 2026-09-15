@@ -1,9 +1,9 @@
 import {describe,it,expect} from 'vitest';
 import {contactGrade,presentationFor,presentationTimeline} from '../src/duel/presentation.js';
 
-const state=(kind,label,zone=4,coverage=[],aimZone=4)=>({
-  last:{kind:kind==='skill'?'skill':'pitch',text:label,events:kind==='skill'?['중간 높이 확인']:[]},
-  battle:{revealed:kind==='skill'?null:{kind,label,zone,coverage,aimZone}}
+const state=(kind,label,zone=4,coverage=[],aimZone=4,context={})=>({
+  last:{kind:kind==='skill'?'skill':'pitch',text:label,events:kind==='skill'?['중간 높이 확인']:[],runs:context.runs||0},
+  battle:{revealed:kind==='skill'?null:{kind,label,zone,coverage,aimZone,strikesBefore:context.strikesBefore||0,ballsBefore:context.ballsBefore||0,action:context.action||'strike'}}
 });
 
 describe('master presentation language',()=>{
@@ -25,6 +25,15 @@ describe('master presentation language',()=>{
     expect(contactGrade(state('whiff','헛스윙',1,[4],4).battle.revealed)).toBe('near-miss');
     expect(presentationFor(state('whiff','헛스윙',9,[4],4))).toMatchObject({kind:'chase',title:'쫓았다',cue:'chase'});
     expect(presentationFor(state('whiff','헛스윙',0,[8],8))).toMatchObject({kind:'whiff',grade:'fooled',title:'속았다',cue:'fooled'});
+  });
+
+  it('lets baseball context upgrade the same raw result into a different moment',()=>{
+    expect(presentationFor(state('hit','홈런',4,[4],4,{runs:4}))).toMatchObject({kind:'grand-slam',grade:'grand-slam',title:'싹쓸었다',cue:'grandSlam'});
+    expect(presentationFor(state('foul','파울',1,[4],4,{strikesBefore:2}))).toMatchObject({kind:'battle-foul',grade:'battle-foul',title:'끝까지 버텼다',cue:'battleFoul'});
+    expect(presentationFor(state('ball','볼넷',9,[],4,{runs:1,ballsBefore:3}))).toMatchObject({kind:'walk-rbi',grade:'walk-rbi',title:'밀어냈다',cue:'walkRbi'});
+    expect(presentationFor(state('sacrifice','희생 번트',6,[],4,{runs:1}))).toMatchObject({kind:'sacrifice-run',grade:'sacrifice-run',title:'점을 만들었다'});
+    expect(presentationFor(state('whiff','헛스윙 삼진',1,[4],4,{strikesBefore:2}))).toMatchObject({kind:'near-miss',grade:'near-miss-k',title:'한 칸 차이로 끝'});
+    expect(presentationFor(state('whiff','헛스윙 삼진',9,[4],4,{strikesBefore:2}))).toMatchObject({kind:'chase',grade:'chase-k',title:'쫓아가다 끝'});
   });
 
   it('uses slow motion only for moments that benefit from anticipation',()=>{
