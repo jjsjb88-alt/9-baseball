@@ -1,7 +1,7 @@
 // Deck analysis shared by the engine, the reward screen and the save validator.
 // Every relation restates an engine rule that already existed in v6 — see docs/DECK.md §1.
 import {CARDS,ROLES,AXES,AXIS_NAMES,GROWTHS,cardPower,canUpgrade,rewardChoices,DECK_MIN,DECK_MAX,
-  RELIC_OFFERS,READ_LEVELS,READ_THRESHOLDS,observeScore} from './cards.js';
+  RELIC_OFFERS,READ_LEVELS,READ_THRESHOLDS,observeScore,DECKBUILDER_BUILD} from './cards.js';
 
 const shapeOf=e=>CARDS[e?.kind]?.shape||null;
 const WIDE=['row','column','cross','all'];
@@ -76,6 +76,8 @@ export function rewardProblem(deck,action,stage,growthKey,relics,build='away'){
   if(!action||!action.type)return '보상 행동을 선택하세요.';
   const entries=Array.isArray(deck)?deck:[];
   if(action.type==='skip')return null;
+  if(build===DECKBUILDER_BUILD&&!['add','skip'].includes(action.type))
+    return '메인 런의 경기 보상은 카드 1장 추가 또는 건너뛰기입니다. 강화·제거·유물은 이후 맵 노드에서 분리합니다.';
   if(action.type==='relic'){
     if(!(RELIC_OFFERS[stage]||[]).includes(action.kind))return '이번 보상의 유물이 아닙니다.';
     if((relics||[]).includes(action.kind))return '이미 가진 유물입니다.';
