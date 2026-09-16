@@ -13,6 +13,9 @@
 .v10-hp-bar>i{position:absolute;left:0;top:0;bottom:0;display:block;border-radius:999px}
 .v10-hp-ghost{background:#f5d78d40;transition:width .45s ease;animation:v10-ghost-fade .7s ease-out}
 .v10-hp-fill{background:linear-gradient(90deg,#3b9a71,#7fd0a1);transition:width .32s ease;z-index:1}
+/* 직전 HP에서 현재 HP까지 실제로 깎여 내려가는 걸 보여준다. to는 인라인 width가 맡는다. */
+.v10-hp-fill.is-draining{animation:v10-drain .52s cubic-bezier(.2,.7,.3,1) both}
+@keyframes v10-drain{from{width:var(--v10-hp-from)}}
 .v10-hp-shaky .v10-hp-fill{background:linear-gradient(90deg,#9a8d3b,#e5cd7d)}
 .v10-hp-cornered .v10-hp-fill{background:linear-gradient(90deg,#9a4d3b,#e08f6d)}
 .v10-hp-pulled .v10-hp-fill{background:#4a4038}
@@ -32,11 +35,11 @@
 .v10-result-row[data-row="hp"] .v10-result-value{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#ffdf72}
 
 .v10-map{display:grid;gap:12px;padding:12px;background:#0b1c23;color:#f4ecd8}
-.v10-map-board{position:relative;min-height:340px}
-.v10-map-edges{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.v10-map-board{position:relative}
+.v10-act-body>.v10-map-edges{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
 .v10-edge{stroke:#718b79;stroke-opacity:.55;stroke-width:.5;vector-effect:non-scaling-stroke}
 .v10-edge-live{stroke:#f0cc84;stroke-opacity:1;stroke-width:1.4;vector-effect:non-scaling-stroke}
-.v10-map-rows{position:relative;z-index:1;display:grid;grid-auto-rows:1fr;gap:0;min-height:340px}
+.v10-map-rows{position:relative;z-index:1;display:grid;grid-auto-rows:1fr;gap:0;min-height:300px}
 .v10-map-row{display:grid;gap:8px;align-items:center;justify-items:center;padding:9px 2px}
 .v10-node{width:100%;max-width:150px;min-height:58px;display:flex;flex-direction:column;justify-content:center;gap:2px;padding:7px 8px;text-align:left;border:1px solid #55716b;background:#10262dee;border-radius:10px}
 .v10-node-type{font-size:8px;letter-spacing:1.6px;font-weight:900;color:#e8bd70}
@@ -60,10 +63,28 @@
 .v10-map-cta{width:100%;min-height:46px;font-size:14px;font-weight:900;background:linear-gradient(#f5d78d,#dcae5f);color:#142329;border:1px solid #ffe6ab;box-shadow:0 4px 0 #785836}
 .v10-map-cta:hover{background:#ffe3a3}
 .v10-preview-empty{margin:0;font-size:11px;color:#a9bbb3}
+.v10-preview-locked{margin:0;padding:11px 12px;font-size:11px;line-height:1.5;color:#c7b58e;background:#0d2027;border:1px dashed #6d7f76;border-radius:9px;text-align:center}
+
+.v10-act{display:grid;gap:0}
+.v10-act-bar{width:100%;display:grid;grid-template-columns:auto 1fr auto;align-items:baseline;gap:9px;margin:2px 0;padding:10px 12px;text-align:left;background:#10262d;border:1px solid #4c6663;border-radius:10px}
+.v10-act-bar:focus-visible{outline:3px solid #ffe096;outline-offset:3px}
+.v10-act-name{font-size:13px;font-weight:900;letter-spacing:-.3px;color:#f2d48f}
+.v10-act-count{font-size:9px;color:#8ea39a}
+.v10-act-toggle{font-style:normal;font-size:10px;font-weight:900;color:#a9bbb3}
+.v10-act.is-open>.v10-act-bar{border-color:#89a79c;background:#14303a}
+.v10-act.is-shut>.v10-act-bar{opacity:.72}
+.v10-act-body{position:relative;padding:2px 0}
+.v10-act-link{margin:0;padding:7px 0 9px;text-align:center;font-size:9px;letter-spacing:1.4px;color:#718b79}
+.v10-act-link:before{content:'';display:block;width:1px;height:12px;margin:0 auto 5px;background:#718b79}
+
+/* fixture 전용. 프로덕션 번들에는 들어가지 않는 v10-fixture.jsx에서만 쓴다. */
+.v10-fixture{max-width:1180px;margin:auto;padding:14px 12px 40px;display:grid;gap:18px;color:#f4ecd8;font-family:'Noto Sans KR',system-ui,sans-serif;background:#07141b;min-height:100vh}
+.v10-fixture-block{display:grid;gap:10px}
+.v10-fixture-block>h2{margin:0;font-size:10px;letter-spacing:2.6px;font-weight:900;color:#e7bd70}
 
 @media(max-width:380px){
   .v10-map{padding:9px}
-  .v10-map-board,.v10-map-rows{min-height:300px}
+  .v10-map-rows{min-height:260px}
   .v10-node{min-height:52px;padding:6px;max-width:none}
   .v10-node-name{font-size:10px}
   .v10-hp-count b{font-size:19px}
@@ -72,7 +93,7 @@
 }
 @media(min-width:900px){
   .v10-map{grid-template-columns:1fr 320px;align-items:start;padding:18px;gap:18px}
-  .v10-map-board,.v10-map-rows{min-height:520px}
+  .v10-map-rows{min-height:420px}
   .v10-map-row{padding:13px 2px}
   .v10-node{max-width:190px;min-height:70px;padding:10px}
   .v10-node-name{font-size:13px}
@@ -81,7 +102,7 @@
 
 @media(prefers-reduced-motion:reduce){
   .v10-hp-ghost,.v10-hp-fill{transition:none!important}
-  .v10-hp-ghost,.v10-hp-damage{animation:none!important}
+  .v10-hp-ghost,.v10-hp-damage,.v10-hp-fill{animation:none!important}
 }
 .v10-reduced .v10-hp-ghost,.v10-reduced .v10-hp-fill{transition:none!important}
-.v10-reduced .v10-hp-ghost,.v10-reduced .v10-hp-damage{animation:none!important}
+.v10-reduced .v10-hp-ghost,.v10-reduced .v10-hp-damage,.v10-reduced .v10-hp-fill{animation:none!important}

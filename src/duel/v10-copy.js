@@ -40,9 +40,14 @@ export const NODE_TYPES={
 export const nodeType=type=>NODE_TYPES[type]||{label:'미정',title:'미정 구역',reward:'보상 미정',risk:'위험 미정'};
 
 export const MAP_CTA='이 경로로 간다';
-export const MAP_EMPTY='지도에서 갈 곳을 먼저 고른다.';
+export const MAP_EMPTY='칸을 고르면 무엇을 얻고 무엇을 지불하는지 먼저 보여준다.';
 export const MAP_DEAD_END='이후 갈래 없음';
-export const MAP_HINT='닿을 수 있는 칸만 고를 수 있다.';
+export const MAP_HINT='어느 칸이든 미리 볼 수 있고, 닿는 칸만 갈 수 있다.';
+export const MAP_LOCKED='아직 닿지 않는 칸이다. 미리 보기만 된다.';
+export const MAP_NEXT_ACT='다음 막으로 이어진다';
+export const actLabel=act=>`${act}막`;
+export const actToggleLabel=(act,open)=>`${actLabel(act)} ${open?'접기':'펼치기'}`;
+export const nodeSpeech=(name,reward,risk,open)=>`${name}. 보상 ${reward}. 위험 ${risk}. ${open?'갈 수 있다':'아직 갈 수 없다'}.`;
 
 const plain=value=>value==null||value===''?null:String(value);
 export const choiceText=choice=>{

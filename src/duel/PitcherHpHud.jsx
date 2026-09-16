@@ -17,7 +17,12 @@ export default function PitcherHpHud({name='투수',hp=0,maxHp=0,phase,lastDamag
       </header>
       <div className="v10-hp-bar" aria-hidden="true">
         {damage>0&&<i className="v10-hp-ghost" data-testid="v10-hp-ghost" style={{width:`${ghost}%`}}/>}
-        <i className="v10-hp-fill" style={{width:`${fill}%`}}/>
+        <i
+          key={`${cur}-${damage}`}
+          className={`v10-hp-fill${damage>0?' is-draining':''}`}
+          data-testid="v10-hp-fill"
+          style={{width:`${fill}%`,'--v10-hp-from':`${ghost}%`}}
+        />
         {HP_MARKS.map(mark=><u key={mark} className="v10-hp-mark" data-mark={mark} style={{left:`${mark*100}%`}}/>)}
       </div>
       <p className="v10-hp-count" aria-hidden="true"><b>{cur}</b><span>/ {max}</span>

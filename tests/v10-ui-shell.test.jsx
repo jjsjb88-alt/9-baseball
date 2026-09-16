@@ -51,10 +51,19 @@ describe('PitcherHpHud',()=>{
     expect(screen.getByTestId('v10-hp-ghost').style.width).toBe('70%');
   });
 
+  it('채움 막대가 직전 HP에서 현재 HP로 내려온다',()=>{
+    render(<PitcherHpHud name="좌완 선발" hp={62} maxHp={100} lastDamage={8}/>);
+    const fill=screen.getByTestId('v10-hp-fill');
+    expect(fill.classList.contains('is-draining')).toBe(true);
+    expect(fill.style.getPropertyValue('--v10-hp-from')).toBe('70%');
+    expect(fill.style.width).toBe('62%');
+  });
+
   it('damage 0이면 잔상도 피해 숫자도 없다',()=>{
     render(<PitcherHpHud name="좌완 선발" hp={70} maxHp={100} lastDamage={0}/>);
     expect(screen.queryByTestId('v10-hp-damage')).toBeNull();
     expect(screen.queryByTestId('v10-hp-ghost')).toBeNull();
+    expect(screen.getByTestId('v10-hp-fill').classList.contains('is-draining')).toBe(false);
   });
 
   it('현재 HP를 스크린 리더용 텍스트로 읽어준다',()=>{
@@ -131,6 +140,7 @@ describe('RunMap',()=>{
     expect(screen.getByTestId('v10-preview-reward').textContent).toBe('직구 대응 +1');
     expect(screen.getByTestId('v10-preview-risk').textContent).toBe('한 칸을 쓴다');
     expect(screen.getByTestId('v10-preview-next').textContent).toBe('장비점');
+    expect(screen.getByTestId('v10-map-cta')).toBeTruthy();
     expect(onSelect).not.toHaveBeenCalled();
   });
 
@@ -143,14 +153,46 @@ describe('RunMap',()=>{
     expect(onSelect).toHaveBeenCalledWith('n2');
   });
 
-  it('닿을 수 없는 노드는 눌러도 아무 일도 없다',()=>{
+  it('닿을 수 없는 노드도 미리 볼 수는 있고 갈 수는 없다',()=>{
     const onSelect=vi.fn();
     render(<RunMap {...mapProps({onSelect})}/>);
     const locked=screen.getByTestId('v10-node-n6');
     expect(locked.getAttribute('aria-disabled')).toBe('true');
     fireEvent.click(locked);
-    expect(screen.getByTestId('v10-preview-empty')).toBeTruthy();
+    expect(screen.getByTestId('v10-preview-reward').textContent).toBe('막 보상을 받는다');
+    expect(screen.queryByTestId('v10-map-cta')).toBeNull();
+    expect(screen.getByTestId('v10-preview-locked').textContent).toBe('아직 닿지 않는 칸이다. 미리 보기만 된다.');
     expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  it('칸마다 보상·위험·이동 가능 여부를 스크린 리더에 붙인다',()=>{
+    render(<RunMap {...mapProps()}/>);
+    const node=screen.getByTestId('v10-node-n1');
+    const speech=document.getElementById(node.getAttribute('aria-describedby'));
+    expect(speech.textContent).toBe('훈련장. 보상 직구 대응 +1. 위험 한 칸을 쓴다. 갈 수 있다.');
+    const locked=screen.getByTestId('v10-node-n6');
+    expect(document.getElementById(locked.getAttribute('aria-describedby')).textContent).toContain('아직 갈 수 없다');
+  });
+
+  it('포커스만 옮겨도 미리보기가 따라오고 live region으로 읽힌다',()=>{
+    const {container}=render(<RunMap {...mapProps()}/>);
+    expect(container.querySelector('.v10-preview-live').getAttribute('aria-live')).toBe('polite');
+    screen.getByTestId('v10-node-n0').focus();
+    fireEvent.keyDown(document.activeElement,{key:'ArrowDown'});
+    expect(screen.getByTestId('v10-preview-name').textContent).toBe('훈련장');
+    fireEvent.keyDown(document.activeElement,{key:'End'});
+    expect(document.activeElement).toBe(screen.getByTestId('v10-node-n3'));
+    expect(screen.getByTestId('v10-preview-name').textContent).toBe('벤치 휴식');
+    fireEvent.keyDown(document.activeElement,{key:'Home'});
+    expect(document.activeElement).toBe(screen.getByTestId('v10-node-n1'));
+  });
+
+  it('연결선을 노드 밖에서 끊어 그린다',()=>{
+    const {container}=render(<RunMap {...mapProps()}/>);
+    const line=[...container.querySelectorAll('.v10-map-edges line')][0];
+    const y1=Number(line.getAttribute('y1')),y2=Number(line.getAttribute('y2'));
+    expect(y1).toBeGreaterThan(100/6);
+    expect(y2).toBeLessThan(100/6*3);
   });
 
   it('방향키로 지도를 옮겨 다니고 포커스가 따라간다',()=>{
@@ -215,16 +257,36 @@ describe('엔진 출력 모양 수용',()=>{
     }
   });
 
+  it('지금 있는 막만 펴고 나머지는 접어 둔다',()=>{
+    const {nodes,edges}=engineMap();
+    const {container}=render(<RunMap nodes={nodes} edges={edges} currentNodeId="a1-entry" reachableIds={['a1-fork-a','a1-fork-b']}/>);
+    expect(container.querySelectorAll('.v10-map-row').length).toBe(5);
+    expect(container.querySelectorAll('.v10-node').length).toBe(7);
+    expect(screen.getByTestId('v10-act-1').getAttribute('aria-expanded')).toBe('true');
+    expect(screen.getByTestId('v10-act-2').getAttribute('aria-expanded')).toBe('false');
+    expect(screen.getByTestId('v10-act-3').getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('접힌 막을 펴고 다시 접을 수 있다',()=>{
+    const {nodes,edges}=engineMap();
+    const {container}=render(<RunMap nodes={nodes} edges={edges} currentNodeId="a1-entry" reachableIds={['a1-fork-a']}/>);
+    fireEvent.click(screen.getByTestId('v10-act-2'));
+    expect(container.querySelectorAll('.v10-node').length).toBe(14);
+    expect(screen.getByTestId('v10-node-a2-boss')).toBeTruthy();
+    fireEvent.click(screen.getByTestId('v10-act-1'));
+    expect(container.querySelectorAll('.v10-node').length).toBe(7);
+    expect(screen.queryByTestId('v10-node-a1-entry')).toBeNull();
+  });
+
   it('엔진 지도를 act·row·lane 그대로 그린다',()=>{
     const {nodes,edges}=engineMap();
     const {container}=render(<RunMap nodes={nodes} edges={edges} currentNodeId="a1-entry" reachableIds={['a1-fork-a','a1-fork-b']}/>);
     const rows=[...container.querySelectorAll('.v10-map-row')];
-    expect(rows.length).toBe(15);
     expect(Math.max(...rows.map(row=>row.querySelectorAll('.v10-node').length))).toBeLessThanOrEqual(3);
-    expect(container.querySelectorAll('.v10-node').length).toBe(21);
     expect(screen.getByTestId('v10-node-a1-entry').style.gridColumn).toBe('2');
     expect(screen.getByTestId('v10-node-a1-fork-a').style.gridColumn).toBe('1');
     expect(screen.getByTestId('v10-node-a1-fork-b').style.gridColumn).toBe('3');
+    expect(container.querySelectorAll('.v10-map-edges line').length).toBe(8);
   });
 
   it('엔진 노드의 name을 이름으로 쓴다',()=>{
@@ -248,25 +310,30 @@ describe('엔진 출력 모양 수용',()=>{
     expect(document.activeElement).toBe(screen.getByTestId('v10-node-a1-mid'));
   });
 
-  it('엔진이 reachableIds를 비워 보내면 아무 칸도 열리지 않는다',()=>{
+  it('엔진이 reachableIds를 비워 보내면 볼 수는 있어도 갈 칸이 없다',()=>{
     const {nodes,edges}=engineMap();
     const onSelect=vi.fn();
     const {container}=render(<RunMap nodes={nodes} edges={edges} currentNodeId="a1-entry" reachableIds={[]} onSelect={onSelect}/>);
     expect(container.querySelectorAll('.v10-node.is-open').length).toBe(0);
     fireEvent.click(screen.getByTestId('v10-node-a1-fork-a'));
-    expect(screen.getByTestId('v10-preview-empty')).toBeTruthy();
+    expect(screen.getByTestId('v10-preview-name').textContent).toBe('타격 훈련');
+    expect(screen.queryByTestId('v10-map-cta')).toBeNull();
     expect(onSelect).not.toHaveBeenCalled();
   });
 });
 
 describe('독립성',()=>{
-  const FILES=['PitcherHpHud.jsx','CombatResultSummary.jsx','RunMap.jsx','v10-copy.js'];
+  const FILES=['PitcherHpHud.jsx','CombatResultSummary.jsx','RunMap.jsx','v10-copy.js','v10-fixture.jsx'];
+  /* 금지 목록은 게임 로직 모듈이다. 상대 경로는 V10 UI 파일 안에서만 돌게 둔다. */
+  const GAME_MODULES=/^\.{1,2}\/.*(engine|cards|deck|policy|information|presentation|audio|haptics|ux)/;
+  const V10_FILES=/^\.\/v10-[a-z-]+\.(js|jsx|css)$/;
   it('엔진·카드·저장 모듈을 import하지 않는다',()=>{
     for(const file of FILES){
       const source=readFileSync(resolve(process.cwd(),'src/duel',file),'utf8');
       const imports=[...source.matchAll(/from\s+'([^']+)'/g)].map(match=>match[1]);
-      expect(imports.filter(path=>/engine|cards|deck|policy|information|presentation|audio|haptics|ux/.test(path))).toEqual([]);
-      expect(imports.every(path=>path==='react'||path==='./v10-copy.js'||path==='./v10-ui.css')).toBe(true);
+      const local=imports.filter(path=>path.startsWith('.'));
+      expect(local.filter(path=>GAME_MODULES.test(path))).toEqual([]);
+      expect(local.filter(path=>!V10_FILES.test(path)&&!/^\.\/(PitcherHpHud|CombatResultSummary|RunMap)\.jsx$/.test(path))).toEqual([]);
     }
   });
 
