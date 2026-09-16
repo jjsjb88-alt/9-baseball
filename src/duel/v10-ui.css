@@ -174,3 +174,7 @@
 .v10-zone.shade-3{background:#1f4249;border-color:#6f8f87}
 .v10-zone.is-covered{border-color:#5f9b86;box-shadow:inset 0 0 0 1px #5f9b8666}
 .v10-zone.is-aim{border-color:#ffe096;box-shadow:0 0 0 2px #ffe09655}
+/* 전투 화면에 얹는 V10 띠. V9 전광판 바로 위에 붙는다. */
+.v10-combat-hp{display:grid;gap:7px;padding:9px 10px 2px;background:#0b1c23}
+.v10-combat-hp .v10-hp{border-color:#5a7a72}
+@media(min-width:700px){.v10-combat-hp{grid-column:1/-1;grid-template-columns:1fr 1fr;align-items:start;padding:10px 12px 4px}}
