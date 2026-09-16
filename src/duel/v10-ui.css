@@ -158,8 +158,8 @@
   .v10-map-rows{min-height:280px}
   .v10-act-body{min-height:280px}
   .v10-node{width:min(86px,98%);min-height:67px}
-  .v10-node-core{width:43px;height:43px}
-  .v10-node-icon{width:27px;height:27px}
+  .v10-node-scene{width:84px;height:51px}
+  .v10-scene-emblem{width:19px;height:19px}
   .v10-node-name{max-width:84px;font-size:8px}
   .v10-node-badge{max-width:84px;font-size:5.5px}
   .v10-act-bar{grid-template-columns:30px auto 1fr auto;padding:6px 8px}
@@ -176,8 +176,8 @@
   .v10-map-rows{min-height:430px}
   .v10-map-row{padding:9px 2px}
   .v10-node{width:142px;min-height:86px}
-  .v10-node-core{width:57px;height:57px}
-  .v10-node-icon{width:34px;height:34px}
+  .v10-node-scene{width:108px;height:65px}
+  .v10-scene-emblem{width:23px;height:23px}
   .v10-node-name{max-width:136px;font-size:10px}
   .v10-node-badge{max-width:136px;font-size:7px}
   .v10-map-preview{position:sticky;top:66px}
