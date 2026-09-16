@@ -179,3 +179,7 @@
 .v10-combat-hp .v10-hp{border-color:#5a7a72}
 @media(min-width:700px){.v10-combat-hp{grid-column:1/-1;grid-template-columns:1fr 1fr;align-items:start;padding:10px 12px 4px}}
 .v10-empty-stop{max-width:520px;margin:14px auto;padding:13px 14px;font-size:12px;line-height:1.7;color:#d7c7a4;background:#0d2027;border:1px dashed #6d7f76;border-radius:10px}
+.v10-node.is-picked{box-shadow:0 0 0 3px #ffe096,0 8px 22px #0008;transform:translateY(-2px)}
+.v10-map-row:has(.is-picked) .v10-node:not(.is-picked){opacity:.4;filter:saturate(.35)}
+.v10-map-board:has(.is-picked) .v10-node.is-open:not(.is-picked){opacity:.55}
+.zone-outside{display:inline-block;margin-right:7px;padding:2px 7px;border-radius:999px;background:#1e3a44;border:1px solid #4f6f68;color:#ffdf72;font-size:9px;font-weight:900}

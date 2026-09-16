@@ -1071,3 +1071,29 @@
   .duel-combat>.scoreboard,.duel-combat>.zone-panel,.duel-combat>.pitch-read,.duel-combat>.duel-table,.duel-combat>.battle-ribbon{transition:none!important}
   .duel-combat.phase-battle.decision-swing>.zone-panel{animation:none!important}
 }
+
+/* ---- 선택 상태 대비 --------------------------------------------------------
+   플레이 피드백: "테두리 금색만으론 티가 안남", "Disabled 처리가 안되어있으면 햇갈림".
+   고른 쪽은 확실히 띄우고, 안 고른 쪽은 확실히 내리고, 못 고르는 쪽은 꺼진 것처럼 보이게 한다. */
+.opponent-route.selected{border-color:#ffd77c;background:linear-gradient(145deg,#27484d,#16303a);box-shadow:0 0 0 3px #ffd77c,0 12px 30px #0008;transform:translateY(-3px)}
+.opponent-route.danger.selected{border-color:#ffb877;background:linear-gradient(145deg,#4d312b,#20282c);box-shadow:0 0 0 3px #ffb877,0 12px 30px #0008}
+.opponent-route.selected:after{content:'이 상대로 정함';position:absolute;right:12px;top:12px;padding:4px 10px;border-radius:999px;background:#ffd77c;color:#15272c;font-size:9px;font-weight:900}
+.opponent-route.danger.selected:after{background:#ffb877}
+.branch-grid:has(.selected) .opponent-route:not(.selected){opacity:.34;filter:saturate(.3);transform:none;box-shadow:none}
+.branch-grid:has(.selected) .opponent-route:not(.selected):hover{opacity:.72;filter:none}
+
+.duel-card.selected{box-shadow:0 0 0 3px #ffd57f,0 10px 26px #0008;transform:translateY(-5px)}
+.duel-card.selected:after{content:'고름';position:absolute;right:5px;top:5px;padding:3px 7px;border-radius:999px;background:#1e5656;color:#ffe4a2;font-size:8px;font-weight:900;letter-spacing:.5px;z-index:2}
+.duel-hand:has(.selected) .duel-card:not(.selected),
+.reward-cards:has(.selected) .duel-card:not(.selected),
+.deck-list:has(.selected) .duel-card:not(.selected){opacity:.42;filter:saturate(.35)}
+.duel-card.unavailable{filter:grayscale(.6) saturate(.35);opacity:.38}
+.duel-card.unavailable:hover{transform:none}
+
+.facility-node.selected,.relic-card.selected{box-shadow:0 0 0 3px #ffd77c,0 10px 26px #0008;transform:translateY(-2px)}
+.facility-grid:has(.selected) .facility-node:not(.selected),
+.relic-offers:has(.selected) .relic-card:not(.selected){opacity:.36;filter:saturate(.3)}
+button:disabled{filter:grayscale(.5)}
+
+/* 골라야 할 것이 흐리면 "가려진 것"으로 읽힌다. 다음에 눌러야 할 버튼은 항상 가장 밝게. */
+.primary:disabled{opacity:.45;box-shadow:none;background:#2a3b3f;color:#93a6a0;border-color:#4f6560}
