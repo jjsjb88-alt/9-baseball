@@ -48,3 +48,4 @@ jobs:
         with:
           name: v10-map-visual-qa
           path: .qa-v10
+          include-hidden-files: true
