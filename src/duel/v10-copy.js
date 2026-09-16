@@ -29,20 +29,20 @@ export const RESULT_LABELS={choice:'내 선택',pitch:'실제 공',verdict:'야�
 export const RESULT_ORDER=['choice','pitch','verdict','hp'];
 
 export const NODE_TYPES={
-  battle:{label:'전투',title:'투수 상대',reward:'카드 한 장을 얻는다',risk:'아웃 카운트를 쓴다'},
-  elite:{label:'강적',title:'강적 투수',reward:'희귀 카드 한 장을 얻는다',risk:'아웃 카운트를 크게 쓴다'},
-  training:{label:'훈련',title:'훈련장',reward:'카드 한 장을 강화한다',risk:'한 칸을 쓴다'},
-  locker:{label:'라커룸',title:'라커룸',reward:'약한 카드를 뺀다',risk:'한 칸을 쓴다'},
-  shop:{label:'장비점',title:'장비점',reward:'장비 하나를 산다',risk:'모은 자금을 쓴다'},
-  rest:{label:'휴식',title:'벤치 휴식',reward:'아웃 카운트를 되돌린다',risk:'보상을 받지 못한다'},
-  boss:{label:'보스',title:'에이스 등판',reward:'막 보상을 받는다',risk:'한 번 지면 경기가 끝난다'},
+  battle:{label:'정규전',title:'선발 승부',reward:'카드 드래프트',risk:'3아웃 전에 투수 HP를 0으로 만든다'},
+  elite:{label:'강적',title:'라이벌 원정',reward:'보상 후보가 더 넓어진다',risk:'더 높은 HP와 투수 능력치를 상대한다'},
+  training:{label:'훈련',title:'타격 훈련',reward:'카드 한 장을 강화한다',risk:'즉시 카드 보상은 없다'},
+  locker:{label:'정리',title:'라커룸',reward:'카드 한 장을 제거한다',risk:'덱을 얇게 만드는 선택이다'},
+  shop:{label:'영입',title:'전력 보강',reward:'후보 중 카드 한 장을 추가한다',risk:'덱이 두꺼워질 수 있다'},
+  rest:{label:'휴식',title:'컨디션 회복',reward:'다음 경기 타격 기술 +8',risk:'즉시 카드 보상은 없다'},
+  boss:{label:'결정전',title:'에이스 결정전',reward:'다음 막으로 진출한다',risk:'패배하면 이번 런이 끝난다'},
 };
 export const nodeType=type=>NODE_TYPES[type]||{label:'미정',title:'미정 구역',reward:'보상 미정',risk:'위험 미정'};
 
-export const MAP_CTA='이 경로로 간다';
-export const MAP_EMPTY='지도에서 갈 곳을 먼저 고른다.';
-export const MAP_DEAD_END='이후 갈래 없음';
-export const MAP_HINT='닿을 수 있는 칸만 고를 수 있다.';
+export const MAP_CTA='이 원정으로 간다';
+export const MAP_EMPTY='빛나는 경로를 골라 상대를 스카우팅한다.';
+export const MAP_DEAD_END='여기가 마지막 승부';
+export const MAP_HINT='빛나는 노드만 선택할 수 있다. 상대와 보상을 먼저 읽고 결정한다.';
 
 const plain=value=>value==null||value===''?null:String(value);
 export const choiceText=choice=>{
