@@ -181,6 +181,27 @@ describe('V10 engine loop and save isolation',()=>{
     expect(readV10Duel(storage)).toEqual(s);
   });
 
+  it('ignores the legacy score target until pitcher HP actually reaches zero',()=>{
+    let s=createV10Duel(29);s=enterV10Node(s,'a1-entry');
+    const hp=s.pitcher.hp;s.battle.runs=99;
+    s.battle.pending={...s.battle.pending,zone:s.battle.aimZone,roll:.5,powerRoll:.5};
+    s=playV10Action(s,{type:'take'});
+    expect(s.phase).toBe('pitch');
+    expect(s.pitcher.hp).toBe(hp);
+    expect(s.victories).toBe(0);expect(s.routeHistory).toEqual([]);
+  });
+
+  it('finishes the run immediately when the act-three boss reaches zero HP',()=>{
+    let s=createV10Duel(31);
+    s.runMap.reachableIds=['a3-boss'];
+    s=enterV10Node(s,'a3-boss');expect(s.phase).toBe('battle');
+    s.pitcher={...s.pitcher,hp:12,phase:'critical'};
+    s.battle.pending={...s.battle.pending,zone:s.battle.aimZone,roll:0,powerRoll:.99};
+    s=playV10Action(s,{type:'card',id:'basic'});
+    expect(s.phase).toBe('won');expect(s.v10.runComplete).toBe(true);
+    expect(s.runMap.completedNodeIds).toContain('a3-boss');
+  });
+
   it('does not let a pure whiff policy defeat the pitcher before three outs',()=>{
     let s=createV10Duel(33);s=enterV10Node(s,'a1-entry');
     const initialHp=s.pitcher.hp;let guard=0;
