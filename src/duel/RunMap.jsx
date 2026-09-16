@@ -284,6 +284,7 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
                               className={`v10-node v10-node-${node.type||'unknown'}${canGo?' is-open':' is-locked'}${here?' is-here':''}${picked?' is-picked':''}${departingId===node.id?' is-departing':''}`}
                               data-testid={`v10-node-${node.id}`}
                               data-type={node.type}
+                              data-route={node.route||undefined}
                               aria-disabled={canGo?undefined:'true'}
                               aria-current={here?'step':undefined}
                               aria-describedby={`${node.id}-speech`}
