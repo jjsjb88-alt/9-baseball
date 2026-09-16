@@ -29,7 +29,7 @@ jobs:
         run: |
           pnpm exec vite --port 5199 --strictPort > /tmp/v10-vite.log 2>&1 &
           for i in {1..30}; do
-            if curl -fsS http://127.0.0.1:5199/9-baseball/v10-fixture.html >/dev/null; then exit 0; fi
+            if curl -fsS http://localhost:5199/9-baseball/v10-fixture.html >/dev/null; then exit 0; fi
             sleep 1
           done
           cat /tmp/v10-vite.log
@@ -39,8 +39,8 @@ jobs:
           mkdir -p .qa-v10
           CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
           test -n "$CHROME"
-          "$CHROME" --headless=new --no-sandbox --disable-gpu --hide-scrollbars --force-device-scale-factor=1 --window-size=390,844 --virtual-time-budget=2500 --screenshot=.qa-v10/v10-map-390x844.png http://127.0.0.1:5199/v10-fixture.html
-          "$CHROME" --headless=new --no-sandbox --disable-gpu --hide-scrollbars --force-device-scale-factor=1 --window-size=1280,900 --virtual-time-budget=2500 --screenshot=.qa-v10/v10-map-1280x900.png http://127.0.0.1:5199/v10-fixture.html
+          "$CHROME" --headless=new --no-sandbox --disable-gpu --hide-scrollbars --force-device-scale-factor=1 --window-size=390,844 --virtual-time-budget=2500 --screenshot=.qa-v10/v10-map-390x844.png http://localhost:5199/v10-fixture.html
+          "$CHROME" --headless=new --no-sandbox --disable-gpu --hide-scrollbars --force-device-scale-factor=1 --window-size=1280,900 --virtual-time-budget=2500 --screenshot=.qa-v10/v10-map-1280x900.png http://localhost:5199/v10-fixture.html
           test -s .qa-v10/v10-map-390x844.png
           test -s .qa-v10/v10-map-1280x900.png
       - name: Upload screenshots
