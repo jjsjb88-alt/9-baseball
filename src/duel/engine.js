@@ -211,6 +211,12 @@ function finishPA(s,label){const b=s.battle;b.results.push({batterId:currentBatt
 function finalize(s,before,kind,name,events,growthEvents=[]){
   const b=s.battle;s.last={kind,text:name,events,growthEvents,runs:b.runs-before.runs,outs:b.outs-before.outs};
   b.log=[name,...events,...b.log].slice(0,12);s.stats.outs+=b.outs-before.outs;
+  // V10 is a pitcher-HP duel. Runs still matter as baseball feedback, but can never
+  // short-circuit the fight or increment the legacy V9 victory/route counters.
+  if(s.version===10){
+    if(b.outs>=3)s.phase='lost';
+    return s;
+  }
   if(b.runs>=battleTarget(s)){
     s.victories++;
     if(s.build===DECKBUILDER_BUILD)s.routeHistory.push(s.route);
@@ -547,9 +553,15 @@ export function playV10Action(state,action){
     choice,actualPitch:r.zone,verdict:r.label,damage:applied.result.damage,hpAfter:applied.result.hpAfter,
   }};
   if(next.pitcher.hp<=0){
-    next.phase='reward';next.v10.rewardChoices=v10RewardPool(next);
+    const node=currentV10Node(next),finalBoss=node?.type==='boss'&&node.act===3;
     const events=[...(next.last?.events||[]),next.pitcher.name+' HP 0 · 강판'];
     next.last={...(next.last||{kind:'pitch',text:'투수 강판',runs:0,outs:0}),events};
+    if(finalBoss){
+      next.runMap=completeRunNode(next.runMap);
+      next.phase='won';next.v10={...next.v10,rewardChoices:[],runComplete:true,activeBattleBonus:null};
+    }else{
+      next.phase='reward';next.v10.rewardChoices=v10RewardPool(next);
+    }
   }else if(['reward','won'].includes(next.phase)){
     next.phase=next.battle.outs>=3?'lost':v10EndedPA(r)?'between':'pitch';
   }
