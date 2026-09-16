@@ -423,3 +423,124 @@ export function readDuel(storage){
   if(!s.last||typeof s.last.text!=='string'||!Array.isArray(s.last.events)||!s.last.events.every(t=>typeof t==='string'))fail();
   return s;
 }
+
+
+// ---- V10 additive run contract -------------------------------------------------
+// V9 remains untouched above. V10 UI must use these entry points so score-target
+// transitions cannot bypass pitcher HP or the deterministic run map.
+import {createPitcherHp,applyPitcherOutcome,pitcherSelector} from './pitcher-hp.js';
+import {createRunMap,selectRunNode,completeRunNode,getRunNode,isCombatNode,runMapSelector} from './run-map.js';
+import {V10_SAVE_KEY as V10_STORAGE_KEY,saveV10State,readV10State} from './v10-storage.js';
+
+const V10_UTILITY_PHASES=new Set(['training','locker','shop','rest']);
+const v10StageForNode=node=>node?.type==='boss'?Math.min(3,node.act):Math.min(2,Math.max(0,(node?.act||1)-1));
+const v10HpForNode=node=>({battle:72,elite:92,boss:120}[node?.type]||72)+Math.max(0,(node?.act||1)-1)*12;
+const v10RouteForNode=node=>{
+  const stage=v10StageForNode(node),choices=ROUTE_CHOICES[stage]||[];
+  return choices[node?.type==='battle'?0:Math.max(0,choices.length-1)]||null;
+};
+const v10RewardPool=s=>rewardChoices(s.stage,null,DECKBUILDER_BUILD,s.route).slice(0,3);
+const v10BasesForReveal=r=>r?.kind!=='hit'?0:r.label?.includes('홈런')?4:r.label?.includes('3루타')?3:r.label?.includes('2루타')?2:1;
+const v10EndedPA=r=>['hit','out','sacrifice'].includes(r?.kind)||r?.label==='볼넷';
+
+export function createV10Duel(seed=Date.now()>>>0){
+  const s=createDuel(seed,DECKBUILDER_BUILD);
+  s.version=10;s.phase='map';s.stage=0;s.route=null;s.routeHistory=[];s.victories=0;s.battle=null;s.last=null;
+  s.runMap=createRunMap(seed);s.pitcher=null;s.rewards=[];s.facilities=[];
+  s.v10={nodeId:null,lastCombat:null,rewardChoices:[],runComplete:false};
+  return s;
+}
+
+export function enterV10Node(state,nodeId){
+  if(state?.version!==10||state.phase!=='map')return state;
+  const selected=selectRunNode(state.runMap,nodeId);if(selected.error)return state;
+  const s=clone(state);s.runMap=selected.map;
+  const node=getRunNode(s.runMap,nodeId);if(!node)return state;
+  s.v10={...s.v10,nodeId,lastCombat:null,rewardChoices:[]};
+  if(!isCombatNode(node)){
+    s.phase=node.type;s.pitcher=null;s.battle=null;s.route=null;s.last=null;return s;
+  }
+  const stage=v10StageForNode(node),route=v10RouteForNode(node);if(!route)return state;
+  s.stage=stage;s.route=route.id;s.phase='map';s.battle=null;
+  const started=startBattle(s);
+  started.pitcher=createPitcherHp({
+    name:route.name,maxHp:v10HpForNode(node),seed:(node.seed^started.initialSeed)>>>0,style:STAGES[stage].style,
+  });
+  started.v10={...started.v10,nodeId:node.id,lastCombat:null,rewardChoices:[]};
+  return started;
+}
+
+export function completeV10UtilityNode(state){
+  if(state?.version!==10||!V10_UTILITY_PHASES.has(state.phase))return state;
+  const s=clone(state);s.runMap=completeRunNode(s.runMap);
+  s.phase='map';s.v10={...s.v10,nodeId:null};s.last=null;return s;
+}
+
+export function playV10Action(state,action){
+  if(state?.version!==10||state.phase!=='battle'||!state.pitcher||state.pitcher.hp<=0||!action)return state;
+  const beforePitches=state.stats.pitches;
+  const choice=action.type==='take'?'take':action.type==='card'
+    ?(action.id==='basic'?'basic':card(state,action.id)?.kind||String(action.id||'')):'';
+  if(!choice)return state;
+  let next=action.type==='take'?endTurn(state):action.type==='card'?playCard(state,action.id):state;
+  if(next===state)return state;
+  if(next.stats.pitches===beforePitches){
+    if(['reward','won'].includes(next.phase)&&next.pitcher?.hp>0)next.phase='battle';
+    return next;
+  }
+  const r=next.battle?.revealed;if(!r)return next;
+  const applied=applyPitcherOutcome(next.pitcher,{
+    kind:r.kind,label:r.label,bases:v10BasesForReveal(r),zone:r.zone,aimZone:r.aimZone,
+    covered:Array.isArray(r.coverage)&&r.coverage.includes(r.zone),
+  },{pitchId:next.stats.pitches});
+  next.pitcher=applied.pitcher;
+  next.v10={...next.v10,lastCombat:{
+    choice,actualPitch:r.zone,verdict:r.label,damage:applied.result.damage,hpAfter:applied.result.hpAfter,
+  }};
+  if(next.pitcher.hp<=0){
+    next.phase='reward';next.v10.rewardChoices=v10RewardPool(next);
+    const events=[...(next.last?.events||[]),next.pitcher.name+' HP 0 · 강판'];
+    next.last={...(next.last||{kind:'pitch',text:'투수 강판',runs:0,outs:0}),events};
+  }else if(['reward','won'].includes(next.phase)){
+    next.phase=next.battle.outs>=3?'lost':v10EndedPA(r)?'between':'pitch';
+  }
+  return next;
+}
+
+export function advanceV10Pitch(state){
+  if(state?.version!==10||state.phase!=='pitch'||!state.pitcher||state.pitcher.hp<=0)return state;
+  return advancePitch(state);
+}
+
+export function advanceV10Batter(state){
+  if(state?.version!==10||state.phase!=='between'||!state.pitcher||state.pitcher.hp<=0)return state;
+  return advanceBatter(state);
+}
+
+export function claimV10Reward(state,action){
+  if(state?.version!==10||state.phase!=='reward'||state.pitcher?.hp!==0||!action)return state;
+  const pool=state.v10?.rewardChoices||[];
+  if(action.type==='add'&&!pool.includes(action.kind))return state;
+  if(!['add','skip'].includes(action.type))return state;
+  const s=clone(state);
+  if(action.type==='add'){
+    const moved=applyRewardToDeck(s.deck,{type:'add',kind:action.kind},s.nextId);
+    s.deck=moved.deck;s.nextId=moved.nextId;
+  }
+  s.rewards.push({nodeId:s.runMap.currentNodeId,type:action.type,...(action.type==='add'?{kind:action.kind}:{})});
+  s.runMap=completeRunNode(s.runMap);
+  const here=getRunNode(s.runMap,s.runMap.currentNodeId);
+  const finished=here?.type==='boss'&&here.act===3&&s.runMap.reachableIds.length===0;
+  s.phase=finished?'won':'map';s.battle=null;s.pitcher=null;s.route=null;s.last=null;
+  s.v10={...s.v10,nodeId:null,lastCombat:null,rewardChoices:[],runComplete:finished};
+  return s;
+}
+
+export const v10RewardOptions=state=>state?.version===10?[...(state.v10?.rewardChoices||[])]:[];
+export const selectV10Pitcher=state=>state?.version===10?pitcherSelector(state.pitcher):null;
+export const selectV10Combat=state=>state?.version===10&&state.v10?.lastCombat?{...state.v10.lastCombat}:null;
+export const selectV10Map=state=>state?.version===10?runMapSelector(state.runMap):null;
+
+export const V10_SAVE_KEY=V10_STORAGE_KEY;
+export function saveV10Duel(storage,state){saveV10State(storage,state);}
+export function readV10Duel(storage){return readV10State(storage);}
