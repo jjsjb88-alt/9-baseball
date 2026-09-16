@@ -1097,3 +1097,9 @@ button:disabled{filter:grayscale(.5)}
 
 /* 골라야 할 것이 흐리면 "가려진 것"으로 읽힌다. 다음에 눌러야 할 버튼은 항상 가장 밝게. */
 .primary:disabled{opacity:.45;box-shadow:none;background:#2a3b3f;color:#93a6a0;border-color:#4f6560}
+
+/* .duel-map:before는 화면 전체를 덮는 95% 어두운 그라데이션이다. 예전엔 map-copy와 map-route만
+   그 위로 올렸던 탓에, 나중에 들어온 상대 선택 패널과 그 CTA가 통째로 그 밑에 깔려 있었다.
+   금색 버튼이 어두운 얼룩으로 보이던 원인. 지도 화면의 모든 내용은 오버레이 위에 둔다. */
+.duel-map>*{position:relative;z-index:2}
+.duel-map:before{z-index:1}
