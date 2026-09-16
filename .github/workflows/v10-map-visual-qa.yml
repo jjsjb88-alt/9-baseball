@@ -29,7 +29,7 @@ jobs:
         run: |
           pnpm exec vite --port 5199 --strictPort > /tmp/v10-vite.log 2>&1 &
           for i in {1..30}; do
-            if curl -fsS http://127.0.0.1:5199/v10-fixture.html >/dev/null; then exit 0; fi
+            if curl -fsS http://127.0.0.1:5199/9-baseball/v10-fixture.html >/dev/null; then exit 0; fi
             sleep 1
           done
           cat /tmp/v10-vite.log
