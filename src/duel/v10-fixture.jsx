@@ -17,6 +17,7 @@ const UTILITY={
   shop:{effect:'전력 보강',detail:'다음 승부 전에 카드·장비 선택지를 확보하는 구간입니다.',risk:'낮음',reward:'선택지 확장'},
   rest:{effect:'컨디션 회복',detail:'다음 전투에서 타선의 타격 기술 +8. 강행군을 끊고 다음 투수를 안정적으로 공략합니다.',risk:'최저',reward:'다음 전투 타격 +8'},
 };
+const ARCHETYPE_KEYS={'바깥쪽 제구형':'outside','낮은 싱커형':'sinker','높은 공 수비형':'high','반대 코스 승부형':'closer'};
 const FOES={
   'a1-entry':['윤태성','바깥쪽 제구형',72,'바깥 코스 비중이 높아 좁은 노림을 흔듭니다.','보통','기본 카드 드래프트'],
   'a1-road':['민재호','낮은 싱커형',92,'낮은 3분할을 오래 압박하고 병살 위험을 만듭니다.','높음','추가 후보가 붙는 카드 드래프트'],
@@ -47,7 +48,7 @@ function buildNode(act,[key,row,lane,type,route]){
   const foe=FOES[id];
   if(foe){
     const [name,archetype,maxHp,threat,risk,reward]=foe;
-    return {...base,opponent:{name,archetype,maxHp,threat},risk,reward,preview:`${name} · ${archetype} · HP ${maxHp}`};
+    return {...base,opponent:{name,archetype,archetypeKey:ARCHETYPE_KEYS[archetype],maxHp,threat},risk,reward,preview:`${name} · ${archetype} · HP ${maxHp}`};
   }
   const utility=UTILITY[type]||UTILITY.training;
   return {...base,utility,risk:utility.risk,reward:utility.reward,preview:`${utility.effect} · ${utility.detail}`};
@@ -72,6 +73,9 @@ export const HP_STATES=[
 
 export default function V10Fixture(){
   const {nodes,edges}=engineRunMap();
+  const mapOnly=typeof window!=='undefined'&&new URLSearchParams(window.location.search).get('map')==='1';
+  const map=<RunMap nodes={nodes} edges={edges} currentNodeId="a1-entry" reachableIds={['a1-develop','a1-road']} onSelect={id=>console.log('select',id)}/>;
+  if(mapOnly)return <main className="v10-fixture v10-fixture-map-only">{map}</main>;
   return (
     <main className="v10-fixture">
       <section className="v10-fixture-block">
@@ -84,7 +88,7 @@ export default function V10Fixture(){
       </section>
       <section className="v10-fixture-block">
         <h2>경로 지도</h2>
-        <RunMap nodes={nodes} edges={edges} currentNodeId="a1-entry" reachableIds={['a1-develop','a1-road']} onSelect={id=>console.log('select',id)}/>
+        {map}
       </section>
     </main>
   );
