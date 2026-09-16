@@ -1,0 +1,50 @@
+name: V10 Map Visual QA
+
+on:
+  push:
+    branches:
+      - codex/v10-map-magnum-slice
+
+permissions:
+  contents: read
+
+jobs:
+  screenshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Start fixture server
+        run: |
+          pnpm exec vite --port 5199 --strictPort > /tmp/v10-vite.log 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:5199/v10-fixture.html >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/v10-vite.log
+          exit 1
+      - name: Capture real browser renders
+        run: |
+          mkdir -p .qa-v10
+          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
+          test -n "$CHROME"
+          "$CHROME" --headless=new --no-sandbox --disable-gpu --hide-scrollbars --force-device-scale-factor=1 --window-size=390,844 --virtual-time-budget=2500 --screenshot=.qa-v10/v10-map-390x844.png http://127.0.0.1:5199/v10-fixture.html
+          "$CHROME" --headless=new --no-sandbox --disable-gpu --hide-scrollbars --force-device-scale-factor=1 --window-size=1280,900 --virtual-time-budget=2500 --screenshot=.qa-v10/v10-map-1280x900.png http://127.0.0.1:5199/v10-fixture.html
+          test -s .qa-v10/v10-map-390x844.png
+          test -s .qa-v10/v10-map-1280x900.png
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: v10-map-visual-qa
+          path: .qa-v10
