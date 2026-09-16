@@ -29,20 +29,23 @@ beforeEach(()=>localStorage.clear());
 afterEach(()=>cleanup());
 
 describe('V9 main-run UI',()=>{
-  it('presents the neutral deck as the main run and finished archetypes as showcases',()=>{
+  it('presents every V9 deck as a tutorial now that the main run is the pitcher-HP run',()=>{
     render(<Duel/>);
     const starter=screen.getByRole('button',{name:/무명 타선/});
     expect(starter.getAttribute('aria-pressed')).toBe('true');
-    expect(within(starter).getByText('MAIN RUN')).toBeTruthy();
+    expect(within(starter).getByText('튜토리얼 · 덱 만들기')).toBeTruthy();
     for(const name of ['몸쪽 장타','바깥 연결','끈질긴 컨택']){
       const button=screen.getByRole('button',{name:new RegExp(name)});
-      expect(within(button).getByText('완성형 체험')).toBeTruthy();
+      expect(within(button).getByText('튜토리얼 · 완성형 체험')).toBeTruthy();
     }
+    /* 메인런은 따로, 그리고 제일 밝게 들어간다. */
+    const main=screen.getByRole('button',{name:/MAIN RUN 시작/});
+    expect(main.classList.contains('primary')).toBe(true);
   });
 
   it('makes the map an actual opponent choice before a main-run battle',()=>{
     render(<Duel/>);
-    fireEvent.click(screen.getByRole('button',{name:'새 런 시작'}));
+    fireEvent.click(screen.getByRole('button',{name:'튜토리얼 시작'}));
     const routes=screen.getByRole('region',{name:'상대 경로 선택'});
     expect(routes).toBeTruthy();
     expect(screen.queryByRole('button',{name:'이 상대와 승부 시작'})).toBeNull();

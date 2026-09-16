@@ -3,9 +3,9 @@ import React from 'react';
 import {render,screen,fireEvent,cleanup,act} from '@testing-library/react';
 import {afterEach,beforeEach,describe,it,expect,vi} from 'vitest';
 import Duel from '../src/duel/App.jsx';
-import {createDuel,startBattle,chooseRoute,playCard,advanceBatter,readDuel,saveDuel} from '../src/duel/engine.js';
+import {createDuel,startBattle,chooseRoute,playCard,advanceBatter,readDuel,saveDuel,createV10Duel,enterV10Node,saveV10Duel} from '../src/duel/engine.js';
 import {planAction} from '../src/duel/policy.js';
-import {CARDS,ZONES,DECKBUILDER_BUILD,ROUTE_CHOICES} from '../src/duel/cards.js';
+import {BUILDS,CARDS,ZONES,DECKBUILDER_BUILD,ROUTE_CHOICES} from '../src/duel/cards.js';
 beforeEach(()=>{localStorage.clear();vi.useFakeTimers()});
 afterEach(()=>{cleanup();vi.useRealTimers();vi.unstubAllGlobals()});
 const finish=()=>act(()=>vi.runAllTimers());
@@ -14,13 +14,23 @@ function begin(zone=5,roll=.5){
   const s=startBattle(createDuel(1,'away'));s.battle.pending={zone,roll,powerRoll:.95};
   saveDuel(localStorage,s);render(<Duel/>);fireEvent.click(screen.getByRole('button',{name:'이어하기'}));dismiss();
 }
+/* 연출을 다 쓰는 건 이제 메인런, 곧 투수 HP 런뿐이다. 시네마 계약은 그쪽에서 확인한다.
+   덱은 같은 카드를 쓰려고 완성형 체험 덱으로 갈아 끼운다. */
+function beginV10(zone=5,roll=.5,build='away'){
+  let s=createV10Duel(1);
+  s.build=build;s.deck=BUILDS[build].cards.map((kind,i)=>({id:'c'+i,kind}));s.nextId=BUILDS[build].cards.length;
+  s=enterV10Node(s,'a1-entry');
+  s.battle.pending={zone,roll,powerRoll:.95};
+  saveV10Duel(localStorage,s);
+  render(<Duel/>);fireEvent.click(screen.getByRole('button',{name:'MAIN RUN 이어하기',exact:true}));
+}
 function useCard(kind){fireEvent.click(screen.getByRole('button',{name:CARDS[kind].type==='skill'?'준비하기':'스윙하기',exact:true}));fireEvent.click(screen.getAllByRole('button',{name:CARDS[kind].name,exact:true})[0]);fireEvent.click(screen.getByTestId('execute-action'));finish();}
 describe('9-zone strategic UI',()=>{
   it('selects a distinct starter deck and trial seed without overwriting legacy saves',()=>{
     localStorage.setItem('9zone-lineup-v3','legacy');render(<Duel/>);
     fireEvent.click(screen.getByRole('button',{name:/몸쪽 장타/}));
     fireEvent.change(screen.getByLabelText('비교용 시드'),{target:{value:'42'}});
-    fireEvent.click(screen.getByRole('button',{name:'새 런 시작'}));
+    fireEvent.click(screen.getByRole('button',{name:'튜토리얼 시작'}));
     expect(readDuel(localStorage).build).toBe('pull');expect(readDuel(localStorage).initialSeed).toBe(42);expect(localStorage.getItem('9zone-lineup-v3')).toBe('legacy');
   });
   it('tour walks six real targets; escape dismisses and does not reopen',()=>{
@@ -78,14 +88,13 @@ describe('9-zone strategic UI',()=>{
     const saved=readDuel(localStorage);cleanup();render(<Duel/>);fireEvent.click(screen.getByRole('button',{name:'이어하기'}));expect(readDuel(localStorage)).toEqual(saved);
     fireEvent.click(screen.getByRole('button',{name:'다음 타자 입장 · 2번 이민준'}));expect(readDuel(localStorage).battle.batterIndex).toBe(1);
   });
-  it('runs the full cinema presentation inside the neutral MAIN RUN battle, not only in the lab',()=>{
-    let s=createDuel(19,DECKBUILDER_BUILD);
-    s=chooseRoute(s,ROUTE_CHOICES[0][0].id);
-    s=startBattle(s);
+  it('runs the full cinema presentation inside the MAIN RUN pitcher-HP battle, not only in the lab',()=>{
+    let s=createV10Duel(19);
+    s=enterV10Node(s,'a1-entry');
     s.battle.pending={zone:s.battle.aimZone,roll:.1,powerRoll:.99};
-    saveDuel(localStorage,s);
+    saveV10Duel(localStorage,s);
     render(<Duel/>);
-    fireEvent.click(screen.getByRole('button',{name:'이어하기'}));dismiss();
+    fireEvent.click(screen.getByRole('button',{name:'MAIN RUN 이어하기',exact:true}));
     fireEvent.click(screen.getByRole('button',{name:'스윙하기',exact:true}));
     fireEvent.click(screen.getByRole('button',{name:'BASIC SWING',exact:true}));
     fireEvent.click(screen.getByTestId('execute-action'));
@@ -101,8 +110,26 @@ describe('9-zone strategic UI',()=>{
     finish();
   });
 
-  it('mounts Pixel Cinema Renderer 2.0 as the live spatial arena with safe fallback',()=>{
+  it('keeps tutorial runs on a plain readout instead of the cinema',()=>{
     begin();
+    const arena=screen.getByRole('region',{name:'승부 구장'});
+    /* 구장과 스프라이트는 정보라서 남는다. 구경거리 레이어만 뺀다. */
+    expect(arena.querySelector('canvas.arena-renderer2')).toBeTruthy();
+    expect(arena.querySelector('.pixel-cinema')).toBeNull();
+    expect(arena.querySelector('canvas.pixel-vfx-canvas')).toBeNull();
+    fireEvent.click(screen.getByRole('button',{name:'스윙하기',exact:true}));
+    fireEvent.click(screen.getByRole('button',{name:'밀어치기',exact:true}));
+    fireEvent.click(screen.getByTestId('execute-action'));
+    expect([...arena.classList].some(c=>c.startsWith('shake-'))).toBe(false);
+    expect(document.querySelector('.slowmo-mark')).toBeNull();
+    /* 튜토리얼은 연출이 순식간에 끝나고 결과로 간다. */
+    act(()=>vi.advanceTimersByTime(60));
+    expect([...arena.classList].some(c=>c.startsWith('fx-stage-'))).toBe(false);
+    finish();
+  });
+
+  it('mounts Pixel Cinema Renderer 2.0 as the live spatial arena with safe fallback',()=>{
+    beginV10();
     const arena=screen.getByRole('region',{name:'승부 구장'});
     expect(arena.classList.contains('renderer2-host')).toBe(true);
     expect(arena.querySelector('canvas.arena-renderer2')).toBeTruthy();
@@ -110,7 +137,7 @@ describe('9-zone strategic UI',()=>{
   });
 
   it('animates full-pose pixel actors and overlays the tactical read trace',()=>{
-    begin();
+    beginV10();
     fireEvent.click(screen.getByRole('button',{name:'스윙하기',exact:true}));
     fireEvent.click(screen.getByRole('button',{name:'밀어치기',exact:true}));
     fireEvent.click(screen.getByTestId('execute-action'));
@@ -125,7 +152,7 @@ describe('9-zone strategic UI',()=>{
   });
 
   it('uses selective slow motion for a one-zone miss instead of every whiff',()=>{
-    begin(0,.99);
+    beginV10(0,.99);
     fireEvent.click(screen.getByRole('button',{name:'한가운데',exact:true}));
     fireEvent.click(screen.getByRole('button',{name:'스윙하기',exact:true}));
     fireEvent.click(screen.getByRole('button',{name:'밀어치기',exact:true}));

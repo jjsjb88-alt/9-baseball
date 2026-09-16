@@ -58,7 +58,7 @@ describe('growth reward and in-game controls',()=>{
   });
   it('older local saves are not overwritten by a new v9 run',()=>{
     localStorage.setItem('9zone-zones-v5','keep-v5');localStorage.setItem('9zone-growth-v6','keep-v6');localStorage.setItem('9zone-deck-v7','keep-v7');localStorage.setItem('9zone-read-v8','keep-v8');
-    render(<Duel/>);fireEvent.click(screen.getByRole('button',{name:'새 런 시작'}));
+    render(<Duel/>);fireEvent.click(screen.getByRole('button',{name:'튜토리얼 시작'}));
     expect(readDuel(localStorage).version).toBe(9);
     expect(localStorage.getItem('9zone-zones-v5')).toBe('keep-v5');expect(localStorage.getItem('9zone-growth-v6')).toBe('keep-v6');
     expect(localStorage.getItem('9zone-deck-v7')).toBe('keep-v7');expect(localStorage.getItem('9zone-read-v8')).toBe('keep-v8');
