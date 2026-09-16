@@ -79,9 +79,12 @@ export default function V10App({onExit}){
       {error&&<p className="v10-save-error" role="alert">{error}</p>}
 
       {s.phase==='map'&&(
-        <main className="v10-screen">
-          <span className="eyebrow">경로 선택</span>
-          <h1>어디로 갈까.</h1>
+        <main className="v10-screen v10-map-screen stadium">
+          <div className="v10-map-intro">
+            <span className="eyebrow">HOMEBOUND / ROAD TO THE SHOW</span>
+            <h1>다음 원정을 고른다.</h1>
+            <p>쉬운 길은 덱을 다듬고, 위험한 길은 더 큰 보상을 연다. 상대 투수와 이후 경로까지 읽고 결정하세요.</p>
+          </div>
           <RunMap {...selectV10Map(s)} onSelect={id=>push(enterV10Node(s,id))}/>
         </main>
       )}
