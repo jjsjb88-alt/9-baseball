@@ -32,6 +32,76 @@ function MapIcon({type}){
   </svg>;
 }
 
+const ZONE_HEAT={
+  outside:[2,5,8],
+  sinker:[6,7,8],
+  high:[0,1,2],
+  closer:[0,2,4,6,8],
+};
+function ZoneFingerprint({opponent,compact=false}){
+  if(!opponent)return null;
+  const hot=new Set(ZONE_HEAT[opponent.archetypeKey]||[4]);
+  return <span className={compact?'v10-zone-fingerprint is-compact':'v10-zone-fingerprint'} aria-label={`${opponent.archetype||'투수'} 주요 승부 존`}>
+    {Array.from({length:9},(_,i)=><i key={i} className={hot.has(i)?'hot':''}/>)}
+  </span>;
+}
+
+function PixelDiorama({type,opponent}){
+  const hostile=type==='elite'||type==='boss';
+  return <svg className="v10-diorama-art" viewBox="0 0 96 58" aria-hidden="true" shapeRendering="crispEdges">
+    <rect x="0" y="0" width="96" height="58" fill="none"/>
+    {type==='battle'&&<>
+      <rect x="4" y="35" width="88" height="3" className="px-ground"/>
+      <rect x="9" y="22" width="18" height="11" className="px-stand"/><rect x="69" y="22" width="18" height="11" className="px-stand"/>
+      <rect x="13" y="19" width="10" height="2" className="px-light"/><rect x="73" y="19" width="10" height="2" className="px-light"/>
+      <rect x="45" y="27" width="6" height="9" className="px-player"/><rect x="42" y="31" width="3" height="2" className="px-player"/>
+      <rect x="20" y="41" width="56" height="2" className="px-dirt"/><rect x="46" y="40" width="4" height="4" transform="rotate(45 48 42)" className="px-base"/>
+    </>}
+    {type==='elite'&&<>
+      <rect x="3" y="36" width="90" height="3" className="px-ground"/>
+      <rect x="5" y="14" width="22" height="18" className="px-stand hostile"/><rect x="69" y="14" width="22" height="18" className="px-stand hostile"/>
+      <rect x="10" y="9" width="12" height="3" className="px-danger"/><rect x="74" y="9" width="12" height="3" className="px-danger"/>
+      <rect x="45" y="20" width="7" height="15" className="px-player hostile"/><rect x="40" y="24" width="5" height="3" className="px-player hostile"/>
+      <rect x="17" y="42" width="62" height="2" className="px-dirt"/><rect x="46" y="41" width="4" height="4" transform="rotate(45 48 43)" className="px-base"/>
+      <rect x="28" y="5" width="40" height="4" className="px-danger dim"/>
+    </>}
+    {type==='training'&&<>
+      <rect x="13" y="12" width="70" height="33" className="px-cage"/><path d="M18 16v25M29 16v25M40 16v25M51 16v25M62 16v25M73 16v25M16 21h64M16 29h64M16 37h64" className="px-net"/>
+      <rect x="65" y="21" width="10" height="10" className="px-target"/><rect x="68" y="24" width="4" height="4" className="px-target-core"/>
+      <rect x="29" y="27" width="5" height="13" className="px-player"/><rect x="34" y="25" width="16" height="3" transform="rotate(-32 34 25)" className="px-bat"/>
+      <rect x="8" y="46" width="80" height="3" className="px-ground"/>
+    </>}
+    {type==='locker'&&<>
+      <rect x="12" y="12" width="19" height="34" className="px-locker"/><rect x="33" y="12" width="19" height="34" className="px-locker"/><rect x="54" y="12" width="19" height="34" className="px-locker"/>
+      <rect x="17" y="18" width="9" height="2" className="px-metal"/><rect x="38" y="18" width="9" height="2" className="px-metal"/><rect x="59" y="18" width="9" height="2" className="px-metal"/>
+      <rect x="24" y="30" width="2" height="2" className="px-light"/><rect x="45" y="30" width="2" height="2" className="px-light"/><rect x="66" y="30" width="2" height="2" className="px-light"/>
+      <rect x="20" y="48" width="56" height="4" className="px-bench"/>
+    </>}
+    {type==='shop'&&<>
+      <rect x="9" y="14" width="78" height="34" className="px-shop"/>
+      <rect x="14" y="20" width="68" height="3" className="px-shelf"/><rect x="14" y="33" width="68" height="3" className="px-shelf"/>
+      <rect x="20" y="13" width="3" height="18" transform="rotate(22 20 13)" className="px-bat"/><rect x="29" y="13" width="3" height="18" transform="rotate(22 29 13)" className="px-bat"/>
+      <rect x="49" y="25" width="9" height="7" className="px-glove"/><rect x="64" y="25" width="10" height="6" className="px-gear"/>
+      <rect x="24" y="38" width="16" height="8" className="px-box"/><rect x="55" y="39" width="18" height="7" className="px-box"/>
+    </>}
+    {type==='rest'&&<>
+      <rect x="7" y="36" width="82" height="3" className="px-ground"/><rect x="18" y="31" width="47" height="5" className="px-bench"/><rect x="23" y="36" width="3" height="9" className="px-bench"/><rect x="58" y="36" width="3" height="9" className="px-bench"/>
+      <rect x="70" y="26" width="12" height="17" className="px-cooler"/><rect x="72" y="29" width="8" height="3" className="px-light"/>
+      <path d="M76 6h7c-6 3-8 10-4 16-8-1-12-10-7-16z" className="px-moon"/>
+      <rect x="13" y="12" width="2" height="2" className="px-star"/><rect x="26" y="7" width="2" height="2" className="px-star"/><rect x="57" y="13" width="2" height="2" className="px-star"/>
+    </>}
+    {type==='boss'&&<>
+      <rect x="4" y="9" width="88" height="35" className="px-scoreboard hostile"/>
+      <rect x="9" y="14" width="78" height="5" className="px-danger"/>
+      <rect x="12" y="23" width="24" height="15" className="px-board-cell"/><rect x="60" y="23" width="24" height="15" className="px-board-cell"/>
+      <rect x="44" y="22" width="8" height="17" className="px-player hostile"/><rect x="38" y="26" width="6" height="3" className="px-player hostile"/>
+      <rect x="30" y="48" width="36" height="3" className="px-gold"/><rect x="45" y="43" width="6" height="6" transform="rotate(45 48 46)" className="px-base"/>
+      <rect x="19" y="5" width="58" height="2" className="px-gold dim"/>
+    </>}
+    {hostile&&<rect x="2" y="53" width="92" height="2" className="px-danger dim"/>}
+  </svg>;
+}
+
 const depthOf=node=>{
   const depth=int(node?.depth);if(depth!==null)return depth;
   const act=int(node?.act),row=int(node?.row);
@@ -216,10 +286,12 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
                               style={row.lanes?{gridColumn:int(node.lane)+1}:undefined}
                             >
                               {detail.route&&<span className="v10-node-route" data-testid={`v10-node-route-${node.id}`}>{detail.route}</span>}
-                              <span className="v10-node-core">
+                              <span className="v10-node-scene">
                                 <span className="v10-node-glow" aria-hidden="true"/>
-                                <span className="v10-node-icon"><MapIcon type={node.type}/></span>
-                                {here&&<em className="v10-node-here">NOW</em>}
+                                <PixelDiorama type={node.type} opponent={node.opponent}/>
+                                {node.opponent&&<ZoneFingerprint opponent={node.opponent} compact/>}
+                                <span className="v10-scene-emblem"><MapIcon type={node.type}/></span>
+                                {here&&<em className="v10-node-here">YOU</em>}
                               </span>
                               <span className="v10-node-copy">
                                 <span className="v10-node-type">{type.label}</span>
@@ -246,7 +318,11 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
         <div className="v10-preview-live" aria-live="polite">
           {preview?(
             <>
-              <div className={`v10-preview-icon v10-preview-icon-${preview.type}`}><MapIcon type={preview.type}/></div>
+              <div className={`v10-preview-diorama v10-preview-diorama-${preview.type}`}>
+                <PixelDiorama type={preview.type} opponent={preview.opponent}/>
+                {preview.opponent&&<ZoneFingerprint opponent={preview.opponent}/>}
+                <span className="v10-preview-emblem"><MapIcon type={preview.type}/></span>
+              </div>
               <span className="v10-preview-type">{previewType.label}</span>
               <h3 className="v10-preview-name" data-testid="v10-preview-name">{nodeName(preview)||previewType.title}</h3>
               {previewDetail.facing&&<p className="v10-preview-facing" data-testid="v10-preview-facing">{previewDetail.facing}</p>}
