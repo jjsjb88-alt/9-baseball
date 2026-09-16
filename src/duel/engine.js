@@ -151,8 +151,8 @@ export function pitchClue(s){
 }
 export function matchup(s,id='basic',zone=s.battle.aimZone){
   const b=s.battle,k=id==='basic'?'basic':card(s,id)?.kind;
-  const base=BUILDS[s.build].stats,player=b.batterIndex;
-  const hitter={technique:base.technique+[0,4,-2,2,-3,1,3,-1,0][player]+b.aim*8+b.relayActive*10,
+  const base=BUILDS[s.build].stats,player=b.batterIndex,v10Technique=s.version===10?(s.v10?.activeBattleBonus?.technique||0):0;
+  const hitter={technique:base.technique+[0,4,-2,2,-3,1,3,-1,0][player]+b.aim*8+b.relayActive*10+v10Technique,
     power:base.power+[0,-3,5,-1,4,0,-4,2,1][player]+b.aim*5,luck:base.luck};
   const pitcher=pitcherProfile(s);
   const familiarity=BUILDS[s.build].zones.includes(zone)?12:0;
@@ -448,9 +448,17 @@ const v10RouteForNode=node=>{
   const stage=v10StageForNode(node),choices=ROUTE_CHOICES[stage]||[];
   return choices[node?.type==='battle'?0:Math.max(0,choices.length-1)]||null;
 };
+const currentV10Node=s=>getRunNode(s.runMap,s.v10?.nodeId);
 const v10RewardPool=s=>{
-  const node=getRunNode(s.runMap,s.v10?.nodeId),tier=node?.opponent?.rewardTier||1;
+  const node=currentV10Node(s),tier=node?.opponent?.rewardTier||1;
   return rewardChoices(s.stage,null,DECKBUILDER_BUILD,s.route).slice(0,tier>=2?4:3);
+};
+const v10ShopPool=s=>{
+  const node=currentV10Node(s),stage=v10StageForNode(node),route=(ROUTE_CHOICES[stage]||[])[0];
+  const pool=[...new Set(rewardChoices(stage,null,DECKBUILDER_BUILD,route?.id||null))];
+  if(!pool.length)return [];
+  const offset=(node?.seed||0)%pool.length;
+  return [...pool.slice(offset),...pool.slice(0,offset)].slice(0,3);
 };
 const v10BasesForReveal=r=>r?.kind!=='hit'?0:r.label?.includes('홈런')?4:r.label?.includes('3루타')?3:r.label?.includes('2루타')?2:1;
 const v10EndedPA=r=>['hit','out','sacrifice'].includes(r?.kind)||r?.label==='볼넷';
@@ -459,7 +467,8 @@ export function createV10Duel(seed=Date.now()>>>0){
   const s=createDuel(seed,DECKBUILDER_BUILD);
   s.version=10;s.phase='map';s.stage=0;s.route=null;s.routeHistory=[];s.victories=0;s.battle=null;s.last=null;
   s.runMap=createRunMap(seed);s.pitcher=null;s.rewards=[];s.facilities=[];
-  s.v10={nodeId:null,opponent:null,lastCombat:null,rewardChoices:[],runComplete:false};
+  s.v10={nodeId:null,opponent:null,lastCombat:null,rewardChoices:[],runComplete:false,
+    nextBattleBonus:null,activeBattleBonus:null,utilityHistory:[]};
   return s;
 }
 
@@ -468,7 +477,9 @@ export function enterV10Node(state,nodeId){
   const selected=selectRunNode(state.runMap,nodeId);if(selected.error)return state;
   const s=clone(state);s.runMap=selected.map;
   const node=getRunNode(s.runMap,nodeId);if(!node)return state;
-  s.v10={...s.v10,nodeId,opponent:isCombatNode(node)?clone(node.opponent):null,lastCombat:null,rewardChoices:[]};
+  const activeBattleBonus=isCombatNode(node)&&s.v10?.nextBattleBonus?clone(s.v10.nextBattleBonus):null;
+  s.v10={...s.v10,nodeId,opponent:isCombatNode(node)?clone(node.opponent):null,lastCombat:null,rewardChoices:[],
+    activeBattleBonus,nextBattleBonus:isCombatNode(node)?null:s.v10?.nextBattleBonus||null};
   if(!isCombatNode(node)){
     s.phase=node.type;s.pitcher=null;s.battle=null;s.route=null;s.last=null;return s;
   }
@@ -482,10 +493,36 @@ export function enterV10Node(state,nodeId){
   return started;
 }
 
-export function completeV10UtilityNode(state){
-  if(state?.version!==10||!V10_UTILITY_PHASES.has(state.phase))return state;
-  const s=clone(state);s.runMap=completeRunNode(s.runMap);
-  s.phase='map';s.v10={...s.v10,nodeId:null,opponent:null};s.last=null;return s;
+export function v10UtilityOptions(state){
+  if(state?.version!==10||!V10_UTILITY_PHASES.has(state.phase))return [];
+  if(state.phase==='training')return state.deck.filter(canUpgrade).map(c=>({type:'upgrade',id:c.id,kind:c.kind,name:CARDS[c.kind].name}));
+  if(state.phase==='locker')return state.deck.length<=DECK_MIN?[]:state.deck.map(c=>({type:'remove',id:c.id,kind:c.kind,name:CARDS[c.kind].name}));
+  if(state.phase==='shop')return state.deck.length>=DECK_MAX?[]:v10ShopPool(state).map(kind=>({type:'add',kind,name:CARDS[kind].name}));
+  if(state.phase==='rest')return [{type:'rest',technique:8,name:'컨디션 회복'}];
+  return [];
+}
+
+function v10UtilityProblem(state,action){
+  if(!action||action.type==='skip')return null;
+  const options=v10UtilityOptions(state);
+  if(state.phase==='training')return options.some(o=>o.type==='upgrade'&&o.id===action.id)?null:'강화할 수 없는 카드입니다.';
+  if(state.phase==='locker')return options.some(o=>o.type==='remove'&&o.id===action.id)?null:'정리할 수 없는 카드입니다.';
+  if(state.phase==='shop')return options.some(o=>o.type==='add'&&o.kind===action.kind)?null:'이번 상점의 카드가 아닙니다.';
+  if(state.phase==='rest')return action.type==='rest'?null:'휴식 효과를 선택할 수 없습니다.';
+  return '알 수 없는 경로 행동입니다.';
+}
+
+export function completeV10UtilityNode(state,action={type:'skip'}){
+  if(state?.version!==10||!V10_UTILITY_PHASES.has(state.phase)||v10UtilityProblem(state,action))return state;
+  const s=clone(state),nodeId=s.runMap.currentNodeId,kind=s.phase;
+  if(action.type==='upgrade')s.deck=applyRewardToDeck(s.deck,{type:'upgrade',id:action.id},s.nextId).deck;
+  else if(action.type==='remove')s.deck=applyRewardToDeck(s.deck,{type:'remove',id:action.id},s.nextId).deck;
+  else if(action.type==='add'){
+    const moved=applyRewardToDeck(s.deck,{type:'add',kind:action.kind},s.nextId);s.deck=moved.deck;s.nextId=moved.nextId;
+  }else if(action.type==='rest')s.v10.nextBattleBonus={technique:8,source:'rest'};
+  s.v10.utilityHistory=[...(s.v10.utilityHistory||[]),{nodeId,kind,action:clone(action)}];
+  s.runMap=completeRunNode(s.runMap);
+  s.phase='map';s.v10={...s.v10,nodeId:null,opponent:null,activeBattleBonus:null};s.last=null;return s;
 }
 
 export function playV10Action(state,action){
@@ -544,7 +581,7 @@ export function claimV10Reward(state,action){
   const here=getRunNode(s.runMap,s.runMap.currentNodeId);
   const finished=here?.type==='boss'&&here.act===3&&s.runMap.reachableIds.length===0;
   s.phase=finished?'won':'map';s.battle=null;s.pitcher=null;s.route=null;s.last=null;
-  s.v10={...s.v10,nodeId:null,opponent:null,lastCombat:null,rewardChoices:[],runComplete:finished};
+  s.v10={...s.v10,nodeId:null,opponent:null,lastCombat:null,rewardChoices:[],runComplete:finished,activeBattleBonus:null};
   return s;
 }
 
