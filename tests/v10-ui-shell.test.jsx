@@ -199,7 +199,7 @@ describe('RunMap',()=>{
     expect(screen.getByTestId('v10-preview-name').textContent).toBe('훈련장');
     fireEvent.keyDown(document.activeElement,{key:'End'});
     expect(document.activeElement).toBe(screen.getByTestId('v10-node-n3'));
-    expect(screen.getByTestId('v10-preview-name').textContent).toBe('컨디션 회복');
+    expect(screen.getByTestId('v10-preview-name').textContent).toBe('벤치 휴식');
     fireEvent.keyDown(document.activeElement,{key:'Home'});
     expect(document.activeElement).toBe(screen.getByTestId('v10-node-n1'));
   });
@@ -209,7 +209,7 @@ describe('RunMap',()=>{
     const path=container.querySelector('.v10-map-edges .v10-edge');
     expect(path?.tagName.toLowerCase()).toBe('path');
     expect(path?.getAttribute('d')).toContain(' C ');
-    const nums=path.getAttribute('d').match(/-?\\d+(?:\\.\\d+)?/g).map(Number);
+    const nums=path.getAttribute('d').match(/-?\d+(?:\.\d+)?/g).map(Number);
     expect(nums[1]).toBeGreaterThan(100/6);
     expect(nums.at(-1)).toBeLessThan(100/6*3);
   });
