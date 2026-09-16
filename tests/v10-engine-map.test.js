@@ -3,9 +3,10 @@ import {PITCHER_DAMAGE,createPitcherHp,pitcherPhase,damageForOutcome,applyPitche
 import {createRunMap,actHasBossPath,validateRunMap,selectRunNode,getRunNode} from '../src/duel/run-map.js';
 import {SAVE_KEY} from '../src/duel/cards.js';
 import {
-  createDuel,startBattle,swingOdds,
+  createDuel,startBattle,swingOdds,matchup,
   createV10Duel,enterV10Node,playV10Action,advanceV10Pitch,advanceV10Batter,
-  claimV10Reward,v10RewardOptions,selectV10Pitcher,selectV10Combat,selectV10Map,
+  claimV10Reward,v10RewardOptions,v10UtilityOptions,completeV10UtilityNode,
+  selectV10Pitcher,selectV10Combat,selectV10Map,
   saveV10Duel,readV10Duel,V10_SAVE_KEY,
 } from '../src/duel/engine.js';
 
@@ -131,6 +132,43 @@ describe('V10 engine loop and save isolation',()=>{
     s=enterV10Node(s,nextCombat);
     expect(s.phase).toBe('battle');expect(s.pitcher.hp).toBe(s.pitcher.maxHp);
     expect(s.pitcher.maxHp).toBeGreaterThan(firstMax);
+  });
+
+  it('makes training, locker, shop and rest nodes change the run instead of acting as decoration',()=>{
+    const arm=(type,seed=17)=>{
+      const s=createV10Duel(seed),node=s.runMap.nodes.find(n=>n.type===type);
+      expect(node).toBeTruthy();
+      s.phase=type;s.runMap.currentNodeId=node.id;s.runMap.reachableIds=[];s.v10.nodeId=node.id;
+      return {s,node};
+    };
+
+    let x=arm('training').s,opts=v10UtilityOptions(x);
+    expect(opts.length).toBeGreaterThan(0);
+    const upgrade=opts[0];x=completeV10UtilityNode(x,upgrade);
+    expect(x.deck.find(c=>c.id===upgrade.id).plus).toBe(true);
+    expect(x.v10.utilityHistory.at(-1).kind).toBe('training');
+
+    x=arm('locker').s;x.deck=[...x.deck,{id:'c9',kind:'slug'}];x.nextId=10;
+    opts=v10UtilityOptions(x);expect(opts.length).toBeGreaterThan(0);
+    const remove=opts.find(o=>o.id==='c9')||opts[0],beforeRemove=x.deck.length;
+    x=completeV10UtilityNode(x,remove);expect(x.deck.length).toBe(beforeRemove-1);
+
+    x=arm('shop').s;opts=v10UtilityOptions(x);expect(opts.length).toBeGreaterThan(0);
+    const add=opts[0],beforeAdd=x.deck.length;x=completeV10UtilityNode(x,add);
+    expect(x.deck.length).toBe(beforeAdd+1);expect(x.deck.at(-1).kind).toBe(add.kind);
+
+    x=createV10Duel(19);
+    const rest=x.runMap.nodes.find(n=>n.type==='rest'&&x.runMap.edges.some(e=>e.from===n.id&&['battle','elite','boss'].includes(getRunNode(x.runMap,e.to)?.type)));
+    expect(rest).toBeTruthy();
+    x.phase='rest';x.runMap.currentNodeId=rest.id;x.runMap.reachableIds=[];x.v10.nodeId=rest.id;
+    x=completeV10UtilityNode(x,{type:'rest'});
+    expect(x.v10.nextBattleBonus).toMatchObject({technique:8,source:'rest'});
+    const combatId=x.runMap.reachableIds.find(id=>['battle','elite','boss'].includes(getRunNode(x.runMap,id)?.type));
+    expect(combatId).toBeTruthy();
+    x=enterV10Node(x,combatId);expect(x.v10.activeBattleBonus.technique).toBe(8);
+    const boosted=matchup(x,'basic').hitter.technique;
+    const plain={...x,v10:{...x.v10,activeBattleBonus:null}};
+    expect(boosted-matchup(plain,'basic').hitter.technique).toBe(8);
   });
 
   it('round-trips V10 under a new key without touching V9 save data',()=>{
