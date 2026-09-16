@@ -167,6 +167,8 @@
 .v10-fixture{max-width:1180px;margin:auto;padding:14px 12px 40px;display:grid;gap:18px;color:#f4ecd8;font-family:'Noto Sans KR',system-ui,sans-serif;background:#07141b;min-height:100vh}
 .v10-fixture-block{display:grid;gap:10px}
 .v10-fixture-block>h2{margin:0;font-size:10px;letter-spacing:2.6px;font-weight:900;color:#e7bd70}
+.v10-fixture-map-only{max-width:none;padding:0;background:#07141b}
+.v10-fixture-map-only>.v10-map{min-height:100vh}
 
 .v10-map-row[data-lanes="4"] .v10-node{width:min(82px,98%)}
 .v10-map-row[data-lanes="4"] .v10-node-name{max-width:80px;font-size:8px}
