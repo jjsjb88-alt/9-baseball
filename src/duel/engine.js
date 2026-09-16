@@ -466,7 +466,14 @@ const v10ShopPool=s=>{
   const offset=(node?.seed||0)%pool.length;
   return [...pool.slice(offset),...pool.slice(0,offset)].slice(0,3);
 };
-const v10BasesForReveal=r=>r?.kind!=='hit'?0:r.label?.includes('홈런')?4:r.label?.includes('3루타')?3:r.label?.includes('2루타')?2:1;
+const v10BasesForReveal=r=>{
+  if(r?.kind!=='hit')return 0;
+  if(Number.isInteger(r.bases))return r.bases;
+  const label=String(r.label||'');
+  return label.includes('홈런')?4:label.includes('3루타')?3:label.includes('2루타')?2:1;
+};
+const v10ZoneLabel=zone=>zone===9?'존 밖':ZONES[zone]||'코스 미확인';
+const v10ChoiceLabel=choice=>choice==='take'?'한 구 지켜보기':choice==='basic'?'기본 스윙':CARDS[choice]?.name||String(choice||'');
 const v10EndedPA=r=>['hit','out','sacrifice'].includes(r?.kind)||r?.label==='볼넷';
 
 export function createV10Duel(seed=Date.now()>>>0){
@@ -476,6 +483,17 @@ export function createV10Duel(seed=Date.now()>>>0){
   s.v10={nodeId:null,opponent:null,lastCombat:null,rewardChoices:[],runComplete:false,
     nextBattleBonus:null,activeBattleBonus:null,utilityHistory:[]};
   return s;
+}
+
+export function v10NodeProblem(state,nodeId){
+  if(state?.version!==10)return 'V10 런이 아닙니다.';
+  if(state.phase!=='map')return '지금은 지도에서 이동할 수 없습니다.';
+  const node=getRunNode(state.runMap,nodeId);
+  if(!node)return '지도에 없는 칸입니다.';
+  if(state.runMap.completedNodeIds.includes(nodeId))return '이미 지나온 칸입니다.';
+  if(!state.runMap.reachableIds?.includes(nodeId))return '아직 닿지 않는 칸입니다.';
+  if(isCombatNode(node)&&!v10RouteForNode(node))return '상대 정보를 불러오지 못했습니다.';
+  return null;
 }
 
 export function enterV10Node(state,nodeId){
@@ -550,7 +568,9 @@ export function playV10Action(state,action){
   },{pitchId:next.stats.pitches});
   next.pitcher=applied.pitcher;
   next.v10={...next.v10,lastCombat:{
-    choice,actualPitch:r.zone,verdict:r.label,damage:applied.result.damage,hpAfter:applied.result.hpAfter,
+    choice,choiceLabel:v10ChoiceLabel(choice),aimZone:r.aimZone,aimLabel:v10ZoneLabel(r.aimZone),
+    actualPitch:r.zone,pitchLabel:v10ZoneLabel(r.zone),pitchName:next.battle?.intent?.name||'',
+    verdict:r.label,damage:applied.result.damage,hpAfter:applied.result.hpAfter,
   }};
   if(next.pitcher.hp<=0){
     const node=currentV10Node(next),finalBoss=node?.type==='boss'&&node.act===3;

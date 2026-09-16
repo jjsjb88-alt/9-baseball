@@ -19,6 +19,10 @@ export function validateV10State(s){
   if(last!==null&&last!==undefined){
     if(typeof last.choice!=='string'||!Number.isInteger(last.actualPitch)||last.actualPitch<0||last.actualPitch>9
       ||typeof last.verdict!=='string'||!Number.isInteger(last.damage)||last.damage<0||!Number.isInteger(last.hpAfter)||last.hpAfter<0)return false;
+    /* 표시용 이름은 나중에 붙었다. 있으면 문자열이어야 하고, 없는 예전 기록도 그대로 읽는다. */
+    const labels=['choiceLabel','aimLabel','pitchLabel','pitchName'];
+    if(labels.some(key=>last[key]!==undefined&&typeof last[key]!=='string'))return false;
+    if(last.aimZone!==undefined&&(!Number.isInteger(last.aimZone)||last.aimZone<0||last.aimZone>9))return false;
   }
   return true;
 }

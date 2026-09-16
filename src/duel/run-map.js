@@ -22,7 +22,10 @@ const ARCHETYPES=[
   {key:'high',label:'높은 공 수비형',style:'deep',threat:'높은 공과 깊은 수비로 장타 기대값을 낮춥니다.',zoneOpen:5,zoneMax:8},
   {key:'closer',label:'반대 코스 승부형',style:'closer',threat:'이전 노림 반대편을 찌르며 2스트라이크에 존을 넓힙니다.',zoneOpen:7,zoneMax:9},
 ];
-const NAMES=['윤태성','민재호','강도윤','박현우','이시훈','최준혁','김태겸','한지우','오세민','정우찬','임건호','서재윤'];
+/* 한 런의 전투 칸은 최대 23개다. 이름 풀은 그보다 넉넉해야 한 런 안에서 겹치지 않는다. */
+const NAMES=['윤태성','민재호','강도윤','박현우','이시훈','최준혁','김태겸','한지우','오세민','정우찬',
+  '임건호','서재윤','노경환','백승호','류지환','문성주','조현성','신동하','황인우','고태원',
+  '남기웅','배정후','심규빈','전우영','권재민','유상혁','장민석','차도훈','표세진','홍기준'];
 
 function makeOpponent(seed,act,type,row,lane,route){
   const salt=act*101+row*17+lane*7+(type==='elite'?31:type==='boss'?67:0);
@@ -166,12 +169,22 @@ function buildAct(seed,act){
   return {nodes,edges};
 }
 
+/* 이름 풀이 전투 칸보다 짧다. 시드에서 시작점을 정해 돌려 쓰되, 한 바퀴 안에서는 겹치지 않게 한다. */
+function nameOpponents(seed,nodes){
+  const combat=nodes.filter(n=>COMBAT_TYPES.has(n.type)&&n.opponent);
+  const offset=mix((seed>>>0)^0x51ed270b)%NAMES.length;
+  combat.forEach((node,index)=>{node.opponent.name=NAMES[(offset+index)%NAMES.length];});
+  return nodes;
+}
+
 export function createRunMap(seed=0){
   const nodes=[],edges=[];
   for(let act=1;act<=3;act++){
     const built=buildAct(seed,act);nodes.push(...built.nodes);edges.push(...built.edges);
     if(act<3)edges.push({from:`a${act}-boss`,to:`a${act+1}-entry`});
   }
+  nameOpponents(seed,nodes);
+  for(const node of nodes)if(node.opponent)node.preview=`${node.opponent.name} · ${node.opponent.archetype} · HP ${node.opponent.maxHp}`;
   return {seed:seed>>>0,nodes,edges,currentNodeId:null,completedNodeIds:[],reachableIds:['a1-entry']};
 }
 
@@ -201,6 +214,21 @@ export function actHasBossPath(map,act){
   return pathExists(map,`a${act}-entry`,`a${act}-boss`,act);
 }
 
+/* 고른 칸이 막다른 길이면 지도에서 갈 곳이 사라진다. 모든 칸이 그 막의 보스까지 닿는지 본다. */
+export function everyNodeReachesBoss(map,act){
+  const target=`a${act}-boss`;
+  return map.nodes.filter(n=>n.act===act&&n.id!==target).every(n=>pathExists(map,n.id,target,act));
+}
+
+/* 갈 수 있는 칸은 저장에 적힌 대로가 아니라 진행에서 따라 나와야 한다. */
+export function reachableMatchesProgress(map){
+  const last=map.completedNodeIds[map.completedNodeIds.length-1];
+  const expected=last?map.edges.filter(e=>e.from===last).map(e=>e.to):['a1-entry'];
+  const open=map.currentNodeId&&!map.completedNodeIds.includes(map.currentNodeId);
+  if(open)return map.reachableIds.length===0;
+  return map.reachableIds.length===expected.length&&map.reachableIds.every(id=>expected.includes(id));
+}
+
 export function validateRunMap(map){
   if(!map||!Number.isInteger(map.seed)||!Array.isArray(map.nodes)||!Array.isArray(map.edges)
     ||!Array.isArray(map.completedNodeIds)||!Array.isArray(map.reachableIds))return false;
@@ -220,7 +248,8 @@ export function validateRunMap(map){
   if(map.completedNodeIds.some(id=>!set.has(id))||map.reachableIds.some(id=>!set.has(id))
     ||new Set(map.completedNodeIds).size!==map.completedNodeIds.length||new Set(map.reachableIds).size!==map.reachableIds.length)return false;
   if(map.reachableIds.some(id=>map.completedNodeIds.includes(id)))return false;
-  for(let act=1;act<=3;act++)if(!actHasBossPath(map,act))return false;
+  for(let act=1;act<=3;act++)if(!actHasBossPath(map,act)||!everyNodeReachesBoss(map,act))return false;
+  if(!reachableMatchesProgress(map))return false;
   return true;
 }
 

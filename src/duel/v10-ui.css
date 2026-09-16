@@ -178,3 +178,4 @@
 .v10-combat-hp{display:grid;gap:7px;padding:9px 10px 2px;background:#0b1c23}
 .v10-combat-hp .v10-hp{border-color:#5a7a72}
 @media(min-width:700px){.v10-combat-hp{grid-column:1/-1;grid-template-columns:1fr 1fr;align-items:start;padding:10px 12px 4px}}
+.v10-empty-stop{max-width:520px;margin:14px auto;padding:13px 14px;font-size:12px;line-height:1.7;color:#d7c7a4;background:#0d2027;border:1px dashed #6d7f76;border-radius:10px}
