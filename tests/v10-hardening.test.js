@@ -1,6 +1,7 @@
 // V10 엔진을 통합에서 조인 부분. Codex 원본 테스트는 v10-engine-map.test.js가 계속 지킨다.
 import {describe,it,expect} from 'vitest';
-import {createRunMap,validateRunMap,everyNodeReachesBoss,reachableMatchesProgress,selectRunNode,completeRunNode} from '../src/duel/run-map.js';
+import {ACT_ESCALATION,createRunMap,validateRunMap,everyNodeReachesBoss,reachableMatchesProgress,selectRunNode,completeRunNode} from '../src/duel/run-map.js';
+import {actDelta,actStats} from '../src/duel/v10-copy.js';
 import {createV10Duel,enterV10Node,playV10Action,advanceV10Pitch,advanceV10Batter,setAimZone,v10NodeProblem,selectV10Combat} from '../src/duel/engine.js';
 import {validateV10State} from '../src/duel/v10-storage.js';
 
@@ -100,5 +101,68 @@ describe('지도 이동 문제', ()=>{
     expect(v10NodeProblem(s,'없는칸')).toBe('지도에 없는 칸입니다.');
     const inFight=enterV10Node(s,'a1-entry');
     expect(v10NodeProblem(inFight,'a1-entry')).toBe('지금은 지도에서 이동할 수 없습니다.');
+  });
+});
+
+describe('막 난도 에스컬레이션', ()=>{
+  it('막이 올라갈수록 HP · 기본기 · 코스가 함께 는다',()=>{
+    const steps=[1,2,3].map(act=>ACT_ESCALATION[act]);
+    for(let i=1;i<steps.length;i++){
+      expect(steps[i].hp).toBeGreaterThan(steps[i-1].hp);
+      expect(steps[i].stat).toBeGreaterThan(steps[i-1].stat);
+      expect(steps[i].zone).toBeGreaterThan(steps[i-1].zone);
+    }
+  });
+
+  it('같은 종류의 칸은 뒷막일수록 반드시 더 두껍다',()=>{
+    for(const seed of SEEDS.slice(0,40)){
+      const nodes=createRunMap(seed).nodes.filter(n=>n.opponent);
+      for(const type of ['battle','elite','boss']){
+        const byAct=[1,2,3].map(act=>nodes.filter(n=>n.type===type&&n.act===act).map(n=>n.opponent.maxHp));
+        for(let act=1;act<3;act++){
+          if(!byAct[act-1].length||!byAct[act].length)continue;
+          expect(Math.min(...byAct[act])).toBeGreaterThan(Math.min(...byAct[act-1]));
+        }
+      }
+    }
+  });
+
+  it('같은 유형의 투수는 뒷막일수록 코스를 더 많이 쓴다',()=>{
+    /* 막마다 뽑히는 유형이 달라 관측 최소값은 흔들린다. 같은 유형끼리만 비교한다. */
+    for(const seed of SEEDS.slice(0,40)){
+      const nodes=createRunMap(seed).nodes.filter(n=>n.opponent);
+      const byKey=new Map();
+      for(const node of nodes){
+        const key=node.opponent.archetypeKey;
+        if(!byKey.has(key))byKey.set(key,new Map());
+        byKey.get(key).set(node.act,node.opponent.zoneOpen);
+      }
+      for(const acts of byKey.values())
+        for(const act of [2,3]){
+          if(!acts.has(act)||!acts.has(act-1))continue;
+          const prev=acts.get(act-1),now=acts.get(act);
+          /* 9에서 잘리는 경우만 같을 수 있다. */
+          if(prev>=9)expect(now).toBe(9);else expect(now).toBeGreaterThan(prev);
+        }
+      for(const node of nodes)expect(node.opponent.zoneOpen).toBeLessThanOrEqual(node.opponent.zoneMax);
+    }
+  });
+
+  it('막마다 무엇이 올랐는지 시드와 무관하게 같은 문구로 나온다',()=>{
+    const say=seed=>{
+      const nodes=createRunMap(seed).nodes;
+      const stats=act=>actStats(nodes.filter(n=>n.act===act));
+      const base=stats(1);
+      return [2,3].map(act=>actDelta(stats(act),base));
+    };
+    const first=say(SEEDS[0]);
+    expect(first[0]).toBe('상대 HP +16 · 쓰는 코스 +1 · 투수 기본기 +4');
+    expect(first[1]).toBe('상대 HP +36 · 쓰는 코스 +2 · 투수 기본기 +9');
+    for(const seed of SEEDS.slice(1,30))expect(say(seed)).toEqual(first);
+    expect(actDelta(actStats(createRunMap(7).nodes.filter(n=>n.act===1)),actStats(createRunMap(7).nodes.filter(n=>n.act===1)))).toBe(null);
+  });
+
+  it('난도가 올라도 지도 계약은 그대로다',()=>{
+    for(const seed of SEEDS.slice(0,40))expect(validateRunMap(createRunMap(seed))).toBe(true);
   });
 });

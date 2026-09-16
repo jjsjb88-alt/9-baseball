@@ -1,5 +1,5 @@
 import React,{useCallback,useEffect,useMemo,useRef,useState} from 'react';
-import {MAP_CTA,MAP_DEAD_END,MAP_EMPTY,MAP_HINT,MAP_LOCKED,MAP_NEXT_ACT,actLabel,actToggleLabel,nodeDetail,nodeSpeech,nodeType,useReducedMotion} from './v10-copy.js';
+import {MAP_CTA,MAP_DEAD_END,MAP_EMPTY,MAP_HINT,MAP_LOCKED,MAP_NEXT_ACT,actDelta,actLabel,actRange,actStats,actToggleLabel,nodeDetail,nodeSpeech,nodeType,useReducedMotion} from './v10-copy.js';
 import './v10-ui.css';
 
 const MAX_PER_ROW=4;
@@ -132,10 +132,13 @@ function layoutAct(items){
 function buildActs(nodes){
   const list=Array.isArray(nodes)?nodes:[];
   const keys=[...new Set(list.map(actOf))].sort((a,b)=>(a??0)-(b??0));
-  return keys.map(key=>{
+  const built=keys.map(key=>{
     const items=list.filter(node=>actOf(node)===key);
-    return {key,...layoutAct(items),items};
+    return {key,...layoutAct(items),items,stats:actStats(items)};
   });
+  const base=built[0]?.stats||null;
+  for(const act of built)act.delta=actDelta(act.stats,base);
+  return built;
 }
 
 function trim(a,b,rowCount){
@@ -251,7 +254,8 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
                 >
                   <span className="v10-act-number">0{act.key}</span>
                   <span className="v10-act-name">{actLabel(act.key)}</span>
-                  <small className="v10-act-count">{act.key===currentAct?'NOW PLAYING · ':''}{act.items.length} STOPS</small>
+                  <small className="v10-act-count">{act.key===currentAct?'NOW PLAYING · ':''}{act.items.length} STOPS{actRange(act.stats)?' · '+actRange(act.stats):''}</small>
+                  {act.delta&&<em className="v10-act-step" data-testid={`v10-act-step-${act.key}`}>{act.delta}</em>}
                   <em className="v10-act-toggle">{open?'−':'+'}</em>
                 </button>
               )}

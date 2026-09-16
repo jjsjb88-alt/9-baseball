@@ -27,18 +27,30 @@ const NAMES=['윤태성','민재호','강도윤','박현우','이시훈','최준
   '임건호','서재윤','노경환','백승호','류지환','문성주','조현성','신동하','황인우','고태원',
   '남기웅','배정후','심규빈','전우영','권재민','유상혁','장민석','차도훈','표세진','홍기준'];
 
+/* 막마다 무엇이 어려워지는지 한 곳에 적는다. 화면도 이 표를 그대로 읽어 플레이어에게 보여준다.
+   hp는 끌어내릴 양, stat은 투수 기본기, zone은 쓰는 코스 수. 코스가 넓어지는 게 읽기를 가장 어렵게 만든다. */
+export const ACT_ESCALATION={
+  1:{name:'개막',hp:0,stat:0,zone:0,note:'기본 전력. 읽기가 통하는 구간.'},
+  2:{name:'중반',hp:16,stat:4,zone:1,note:'투수가 코스를 하나 더 쓴다. HP도 두꺼워진다.'},
+  3:{name:'결승',hp:36,stat:9,zone:2,note:'코스 둘이 더 열리고 전력이 최대. 한 타석이 비싸다.'},
+};
+export const actEscalation=act=>ACT_ESCALATION[act]||ACT_ESCALATION[1];
+
 function makeOpponent(seed,act,type,row,lane,route){
   const salt=act*101+row*17+lane*7+(type==='elite'?31:type==='boss'?67:0);
   const archetype=sample(seed,salt,ARCHETYPES);
-  const base={battle:72,elite:92,boss:120}[type]+(act-1)*12;
+  const step=actEscalation(act);
+  const base={battle:72,elite:92,boss:120}[type]+step.hp;
   const routeBonus=route==='gauntlet'||route==='ace'?8:route==='playoff'?4:0;
   const maxHp=base+routeBonus;
   const rewardTier=type==='boss'?3:type==='elite'?2:1;
   return {
     name:sample(seed,salt+13,NAMES),archetype:archetype.label,archetypeKey:archetype.key,style:archetype.style,
-    maxHp,statBonus:(type==='battle'?0:type==='elite'?6:10)+(act-1)*3+Math.floor(routeBonus/2),
-    zoneOpen:Math.min(9,archetype.zoneOpen+(act===3?1:0)),zoneMax:Math.min(9,archetype.zoneMax+(act===3?1:0)),
-    threat:archetype.threat,rewardTier,
+    maxHp,statBonus:(type==='battle'?0:type==='elite'?6:10)+step.stat+Math.floor(routeBonus/2),
+    zoneOpen:Math.min(9,archetype.zoneOpen+step.zone),zoneMax:Math.min(9,archetype.zoneMax+step.zone),
+    threat:archetype.threat,rewardTier,act,actName:step.name,
+    /* 화면이 막 난도를 추론하지 않게, 이 막에서 무엇이 얼마나 올랐는지 그대로 실어 보낸다. */
+    escalation:{name:step.name,hp:step.hp,stat:step.stat,zone:step.zone,note:step.note},
     risk:rewardTier===3?'최종':rewardTier===2?'높음':routeBonus?'중상':'보통',
     reward:rewardTier===1?'기본 카드 드래프트':rewardTier===2?'추가 후보가 붙는 카드 드래프트':'막 돌파 보상',
   };

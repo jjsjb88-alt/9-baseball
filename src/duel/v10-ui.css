@@ -54,7 +54,7 @@
 .v10-map-skyline{position:absolute;z-index:0;left:0;right:0;top:0;height:56px;display:flex;justify-content:space-around;pointer-events:none;opacity:.55}
 .v10-map-skyline i{width:68px;height:52px;background:radial-gradient(circle at 50% 0,#fff3be42,transparent 64%);filter:blur(.2px)}
 .v10-act{position:relative;z-index:1}
-.v10-act-bar{position:relative;z-index:4;width:100%;display:grid;grid-template-columns:34px auto 1fr auto;align-items:center;gap:8px;padding:7px 10px;text-align:left;border:0;border-radius:0;background:#10191ae8;border-top:1px solid #4e5d51;border-bottom:2px solid #6d674e;box-shadow:0 4px 16px #0007}
+.v10-act-bar{position:relative;z-index:4;width:100%;display:grid;grid-template-columns:34px auto 1fr auto auto;align-items:center;gap:8px;padding:7px 10px;text-align:left;border:0;border-radius:0;background:#10191ae8;border-top:1px solid #4e5d51;border-bottom:2px solid #6d674e;box-shadow:0 4px 16px #0007}
 .v10-act-bar:hover{background:#142124}
 .v10-act-bar:focus-visible{outline:3px solid #ffe096;outline-offset:-3px}
 .v10-act-number{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:20px;font-weight:1000;line-height:1;color:#ffdf72;text-shadow:0 0 8px #d9992450}
@@ -289,3 +289,43 @@
 .v10-map-row>.v10-node{min-width:0}
 .v10-node-name,.v10-node-badge,.v10-node-route{max-width:100%}
 .v10-map-board,.v10-act-body,.v10-map-rows{max-width:100%;overflow-x:clip}
+
+/* ---- 막마다 분위기 ---------------------------------------------------------
+   같은 구장 위에 아이콘만 바뀌면 3막이 1막과 같은 밤이 된다. 막이 갈수록 해가 지고
+   조명이 세지고 공기가 붉어지게 한다. 배경 이미지는 하나로 두고 공기만 바꾼다. */
+.v10-act-body:after{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;mix-blend-mode:screen;opacity:.85}
+.v10-act[data-act="1"] .v10-act-body:after{background:
+  linear-gradient(180deg,#ff9d4a1f 0%,#ffd07a12 34%,transparent 72%),
+  radial-gradient(ellipse at 50% 0%,#ffbe6b24 0 28%,transparent 64%)}
+.v10-act[data-act="2"] .v10-act-body:after{background:
+  linear-gradient(180deg,#123c7a33 0%,#0d2b5624 40%,transparent 78%),
+  radial-gradient(ellipse at 18% 4%,#cfe6ff33 0 15%,transparent 48%),
+  radial-gradient(ellipse at 82% 4%,#cfe6ff33 0 15%,transparent 48%)}
+.v10-act[data-act="3"] .v10-act-body:after{background:
+  linear-gradient(180deg,#6c123a3d 0%,#3a0f2e2b 44%,transparent 82%),
+  radial-gradient(ellipse at 50% 2%,#ff9ec733 0 18%,transparent 56%),
+  radial-gradient(ellipse at 50% 100%,#ffd07a1f 0 22%,transparent 60%)}
+.v10-act[data-act="2"] .v10-act-body{filter:saturate(1.06) contrast(1.04)}
+.v10-act[data-act="3"] .v10-act-body{filter:saturate(1.14) contrast(1.1)}
+.v10-act[data-act="2"] .v10-node-glow{background:radial-gradient(ellipse,#8fd0ff3a 0 20%,transparent 67%)}
+.v10-act[data-act="3"] .v10-node-glow{background:radial-gradient(ellipse,#ff9a7a44 0 20%,transparent 67%)}
+.v10-act[data-act="2"]>.v10-act-bar{border-bottom-color:#4a6f96}
+.v10-act[data-act="3"]>.v10-act-bar{border-bottom-color:#964a6a}
+.v10-act[data-act="2"] .v10-act-number{color:#bfe0ff;text-shadow:0 0 8px #3f7fbf50}
+.v10-act[data-act="3"] .v10-act-number{color:#ffb3c9;text-shadow:0 0 8px #bf3f6a50}
+
+/* 막이 무엇 때문에 어려워지는지 막대에 적는다. */
+.v10-act-step{justify-self:end;font-style:normal;font-size:8px;letter-spacing:.3px;font-weight:900;padding:3px 7px;border-radius:999px;background:#2a1f1c;border:1px solid #8a6450;color:#ffc59c;white-space:nowrap}
+.v10-act[data-act="3"] .v10-act-step{background:#33161f;border-color:#a3566d;color:#ffc2d4}
+@media(max-width:380px){.v10-act-step{font-size:7px;padding:2px 5px}}
+
+/* 잠긴 칸은 아직 못 가는 칸이지 못 읽는 칸이 아니다. 앞 막을 미리 펴 보는 게 지도의 일이라
+   글자는 배경에서 떨어뜨리고, 흐리기는 디오라마 쪽에만 건다. */
+.v10-node-copy{padding:2px 5px 3px;border-radius:7px;background:linear-gradient(180deg,#05121899,#05121866);backdrop-filter:blur(1.5px)}
+.v10-node-name{text-shadow:0 1px 0 #04101499,0 2px 4px #041014cc}
+.v10-node-badge{text-shadow:0 1px 3px #041014cc}
+.v10-node-type{text-shadow:0 1px 2px #041014cc}
+.v10-node.is-locked{opacity:1;filter:none}
+.v10-node.is-locked .v10-node-scene{opacity:.5;filter:grayscale(.45) saturate(.5)}
+.v10-node.is-locked .v10-node-copy{opacity:.78}
+.v10-node.is-locked .v10-node-route{opacity:.62}

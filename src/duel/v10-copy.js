@@ -101,3 +101,35 @@ export function useReducedMotion(){
   },[]);
   return reduced;
 }
+
+/* 막이 어려워지는 걸 말로만 하지 않는다. 그 막 노드가 들고 온 상대 수치에서 직접 읽어
+   1막 대비 무엇이 늘었는지 적는다. 엔진을 import하지 않고 props만 본다. */
+export function actStats(items){
+  const foes=(items||[]).map(node=>node?.opponent).filter(Boolean);
+  if(!foes.length)return null;
+  const hp=foes.map(foe=>foe.maxHp).filter(Number.isFinite);
+  /* 코스 폭은 상한 9에서 잘리므로 최대치로 재면 막 차이가 안 보인다. 타석이 열릴 때
+     실제로 마주하는 시작 코스 수의 하한으로 잰다. */
+  const zone=foes.map(foe=>foe.zoneOpen).filter(Number.isFinite);
+  if(!hp.length)return null;
+  return {fights:foes.length,hpMin:Math.min(...hp),hpMax:Math.max(...hp),zoneOpen:zone.length?Math.min(...zone):null,
+    step:foes.find(foe=>foe.escalation)?.escalation||null};
+}
+export function actDelta(stats,base){
+  if(!stats||!base)return null;
+  const parts=[];
+  /* 엔진이 단계값을 주면 그걸 쓴다. 관측값으로 빼면 아키타입 뽑기 운이 섞여 막마다 숫자가 흔들린다. */
+  const step=stats.step,baseStep=base.step;
+  if(step&&baseStep){
+    if(step.hp>baseStep.hp)parts.push(`상대 HP +${step.hp-baseStep.hp}`);
+    if(step.zone>baseStep.zone)parts.push(`쓰는 코스 +${step.zone-baseStep.zone}`);
+    if(step.stat>baseStep.stat)parts.push(`투수 기본기 +${step.stat-baseStep.stat}`);
+  }else{
+    const hp=stats.hpMin-base.hpMin;
+    if(hp>0)parts.push(`상대 HP +${hp}`);
+    if(stats.zoneOpen!=null&&base.zoneOpen!=null&&stats.zoneOpen>base.zoneOpen)parts.push(`시작 코스 +${stats.zoneOpen-base.zoneOpen}`);
+  }
+  return parts.join(' · ')||null;
+}
+export const actNote=stats=>stats?.step?.note||null;
+export const actRange=stats=>stats?`HP ${stats.hpMin}~${stats.hpMax}`:null;
