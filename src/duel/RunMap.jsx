@@ -17,7 +17,7 @@ const actTitle=act=>act===1?'1막 · 개막 원정':act===2?'2막 · 승부처':
 function NodeGlyph({type}){
   const common={viewBox:'0 0 48 48','aria-hidden':'true',focusable:'false',className:'v10-node-glyph'};
   if(type==='battle')return <svg {...common}><circle cx="24" cy="24" r="14"/><path d="M14 18c4 2 6 6 6 12M34 18c-4 2-6 6-6 12"/><path d="M13 14l-4 20M35 14l4 20"/></svg>;
-  if(type==='elite')return <svg {...common}><path d="M24 5l5.2 10.5 11.6 1.7-8.4 8.1 2 11.5L24 31.4l-10.4 5.4 2-11.5-8.4-8.1 11.6-1.7z"/><path d="M18 25l4 4 8-10"/></svg>;
+  if(type==='elite')return <svg {...common}><path d="M11 39L35 9M37 39L13 9"/><path d="M31 8l5 1 2 5M17 8l-5 1-2 5"/><circle cx="24" cy="24" r="7"/><path d="M19 22c2 1 3 3 3 6M29 22c-2 1-3 3-3 6"/></svg>;
   if(type==='training')return <svg {...common}><circle cx="24" cy="24" r="15"/><circle cx="24" cy="24" r="8"/><circle cx="24" cy="24" r="2.5"/><path d="M8 40L39 9"/><path d="M33 8l7 1-1 7"/></svg>;
   if(type==='locker')return <svg {...common}><rect x="11" y="7" width="26" height="34" rx="3"/><path d="M24 7v34M15 14h5M28 14h5M19 29h2M27 29h2"/><circle cx="21" cy="29" r="1"/><circle cx="27" cy="29" r="1"/></svg>;
   if(type==='shop')return <svg {...common}><path d="M10 18h28l-3 22H13z"/><path d="M16 18c0-7 3-11 8-11s8 4 8 11"/><path d="M19 29h10M24 24v10"/></svg>;
@@ -121,7 +121,7 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
       <div className="v10-map-shell">
         <div className="v10-map-board" style={{'--v10-row-count':Math.max(rows.length,1)}}>
           <div className="v10-stadium-lights" aria-hidden="true"><i/><i/><i/><i/></div>
-          {actMarkers.map(({act,index,label})=><div key={act} className="v10-act-stamp" style={{top:`calc((${index} + .08) / var(--v10-row-count) * 100%)`}}><span>{label}</span></div>)}
+          {actMarkers.map(({act,index,label})=><div key={act} className="v10-act-stamp" style={{top:`${((index+.08)/Math.max(rows.length,1))*100}%`}}><span>{label}</span></div>)}
           <svg className="v10-map-edges" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
             <defs>
               <linearGradient id="v10-road" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#7b8d87"/><stop offset="1" stopColor="#41544f"/></linearGradient>
