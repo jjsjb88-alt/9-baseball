@@ -236,6 +236,67 @@ function engineMap(){
   return {nodes,edges};
 }
 
+describe('엔진이 준 상세를 지도에 쓴다',()=>{
+  const rich=()=>({
+    nodes:[
+      {id:'a1-entry',act:1,row:0,lane:1,type:'battle',name:'정규 승부',route:'steady',routeLabel:'안정 루트',
+        opponent:{name:'윤태성',archetype:'바깥쪽 제구형',maxHp:72,threat:'바깥 코스 비중이 높아 좁은 노림을 흔듭니다.'},
+        risk:'보통',reward:'기본 카드 드래프트',preview:'윤태성 · 바깥쪽 제구형 · HP 72'},
+      {id:'a1-road',act:1,row:1,lane:3,type:'elite',name:'강적 승부',route:'gauntlet',routeLabel:'강행군',
+        opponent:{name:'민재호',archetype:'낮은 싱커형',maxHp:92,threat:'낮은 3분할을 오래 압박합니다.'},
+        risk:'높음',reward:'추가 후보가 붙는 카드 드래프트',preview:'민재호 · 낮은 싱커형 · HP 92'},
+      {id:'a1-rest',act:1,row:1,lane:0,type:'rest',name:'휴식일',route:'development',routeLabel:'육성 루트',
+        utility:{effect:'컨디션 회복',detail:'다음 전투에서 타선의 타격 기술 +8.'},risk:'최저',reward:'다음 전투 타격 +8',
+        preview:'컨디션 회복 · 다음 전투에서 타선의 타격 기술 +8.'},
+    ],
+    edges:[{from:'a1-entry',to:'a1-road'},{from:'a1-entry',to:'a1-rest'}],
+  });
+
+  it('노드에 루트 이름과 상대 요약을 붙인다',()=>{
+    const {nodes,edges}=rich();
+    render(<RunMap nodes={nodes} edges={edges} currentNodeId="a1-entry" reachableIds={['a1-road','a1-rest']}/>);
+    expect(screen.getByTestId('v10-node-route-a1-road').textContent).toBe('강행군');
+    expect(screen.getByTestId('v10-node-badge-a1-road').textContent).toBe('민재호 · HP 92');
+    expect(screen.getByTestId('v10-node-badge-a1-rest').textContent).toBe('컨디션 회복');
+  });
+
+  it('미리보기에 상대와 위협 설명을 그대로 옮긴다',()=>{
+    const {nodes,edges}=rich();
+    render(<RunMap nodes={nodes} edges={edges} currentNodeId="a1-entry" reachableIds={['a1-road','a1-rest']}/>);
+    fireEvent.click(screen.getByTestId('v10-node-a1-road'));
+    expect(screen.getByTestId('v10-preview-facing').textContent).toBe('민재호 · 낮은 싱커형 · HP 92');
+    expect(screen.getByTestId('v10-preview-reward').textContent).toBe('추가 후보가 붙는 카드 드래프트');
+    expect(screen.getByTestId('v10-preview-risk').textContent).toBe('높음');
+    expect(screen.getByTestId('v10-preview-why').textContent).toBe('낮은 3분할을 오래 압박합니다.');
+  });
+
+  it('상세가 없는 노드는 타입 기본 문구로 떨어진다',()=>{
+    render(<RunMap {...mapProps()}/>);
+    fireEvent.click(screen.getByTestId('v10-node-n2'));
+    expect(screen.queryByTestId('v10-preview-facing')).toBeNull();
+    expect(screen.queryByTestId('v10-preview-why')).toBeNull();
+    expect(screen.getByTestId('v10-preview-reward').textContent).toBe('희귀 카드 한 장을 얻는다');
+  });
+
+  it('스크린 리더 문구에 루트와 상대를 함께 넣는다',()=>{
+    const {nodes,edges}=rich();
+    render(<RunMap nodes={nodes} edges={edges} currentNodeId="a1-entry" reachableIds={['a1-road']}/>);
+    const node=screen.getByTestId('v10-node-a1-road');
+    expect(document.getElementById(node.getAttribute('aria-describedby')).textContent)
+      .toBe('강행군 강적 승부. 상대 민재호 · HP 92. 보상 추가 후보가 붙는 카드 드래프트. 위험 높음. 갈 수 있다.');
+  });
+
+  it('한 줄에 네 칸이 와도 칸 번호를 지킨다',()=>{
+    const nodes=[0,1,2,3].map(lane=>({id:`n${lane}`,act:1,row:1,lane,type:'battle',name:'정규 승부'}));
+    const {container}=render(<RunMap nodes={[{id:'top',act:1,row:0,lane:1,type:'battle',name:'정규 승부'},...nodes]}
+      edges={nodes.map(n=>({from:'top',to:n.id}))} currentNodeId="top" reachableIds={nodes.map(n=>n.id)}/>);
+    const row=[...container.querySelectorAll('.v10-map-row')][1];
+    expect(row.dataset.lanes).toBe('4');
+    expect(row.querySelectorAll('.v10-node').length).toBe(4);
+    expect(screen.getByTestId('v10-node-n3').style.gridColumn).toBe('4');
+  });
+});
+
 describe('엔진 출력 모양 수용',()=>{
   it('엔진 phase 이름을 그대로 받아 국면 라벨로 옮긴다',()=>{
     const cases=[['steady','정상'],['pressured','흔들림'],['critical','몰림'],['defeated','강판']];

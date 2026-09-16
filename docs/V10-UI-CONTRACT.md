@@ -43,7 +43,9 @@
   - 층: `depth`가 있으면 그걸 쓴다. 없고 `act`와 `row`가 같이 있으면 `act * 100 + row`로 합쳐 한 줄로 편다. 엔진 지도는 3막 × 5줄 = 15줄 21노드가 된다.
   - 칸: 모든 노드에 정수 `lane`이 있으면 칸 번호를 그대로 쓴다. 칸 수는 지도 전체에서 한 번만 세므로, 한 줄에 노드가 하나뿐이어도 가운데 칸에 그대로 남는다. `lane`이 없으면 배열 순서대로 균등 배치한다.
   - 이름은 `label`, 없으면 `name`, 그것도 없으면 `NODE_TYPES` 기본 제목.
-  - `reward` / `risk`가 없으면 `NODE_TYPES` 기본 문구를 쓴다. 엔진 노드에는 아직 이 두 필드가 없다.
+  - `reward` / `risk`가 없으면 `NODE_TYPES` 기본 문구를 쓴다.
+  - 엔진이 주면 그대로 쓰는 상세 필드: `routeLabel`(칸에 붙는 루트 꼬리표), `opponent.name` + `opponent.maxHp`(칸에 붙는 상대 요약), `utility.effect`(같은 자리, 비전투 칸), `preview`(미리보기 `상대` 줄), `opponent.threat` 또는 `utility.detail`(미리보기 아래 설명). 없으면 그 줄을 아예 그리지 않는다.
+  - 한 줄에 네 칸까지 온다. 좁은 화면에서는 글자를 줄이고 루트 꼬리표를 숨겨 넷을 그대로 세운다.
 - `edges`: `[{from, to}]` 배열. 노드 id 쌍이다.
 - 배치: 같은 `depth`를 한 줄에 놓되 **한 줄 최대 4개**로 끊는다. 5개 이상이면 다음 줄로 넘긴다.
 - 연결선은 `viewBox="0 0 100 100"` SVG 오버레이로 그린다. 노드 좌표는 줄/칸 인덱스에서 바로 계산하므로 DOM 측정 없이도 정확하다. `currentNodeId`에서 나가는 reachable 간선은 `.v10-edge-live`로 강조한다.
@@ -70,6 +72,26 @@ npm install --no-save playwright
 npx vite --port 5199 --strictPort &
 node scripts/v10-ui-shot.mjs .qa-v10
 ```
+
+## 통합 전에 반드시 맞춰야 하는 것
+
+엔진의 `selectV10Combat()`은 지금 이 모양을 돌려준다.
+
+```
+{choice:'contact', actualPitch:7, verdict:'2루타', damage:18, hpAfter:54}
+```
+
+`CombatResultSummary`는 `choice`와 `actualPitch`를 **화면에 그대로 적는다.** 위 값을 그냥 넘기면
+`내 선택: contact`, `실제 공: 7`이 찍힌다. `v10-storage.js`의 `validateV10State()`가
+`actualPitch`를 0~9 정수로, `choice`를 문자열로 **강제**하고 있어 저장 계약도 이 모양에 묶여 있다.
+
+통합(#6)에서 둘 중 하나를 해야 한다.
+
+1. 연결부에서 `{card: CARDS[choice].name, zone: ZONES[aimZone]}`와 `{type, zone: ZONES[actualPitch]}`로 옮긴다. UI는 그대로 둔다.
+2. 엔진이 `lastCombat`에 표시용 이름을 같이 실어 보낸다. 저장 검증도 같이 늘린다.
+
+UI 쪽은 1번을 가정하고 있다. `zone` 이름표(`ZONES`)는 `cards.js`에 있고 이 셸은 그걸 import하지 않으므로,
+옮기는 일은 UI 파일 안에서 할 수 없다.
 
 ## 카피
 

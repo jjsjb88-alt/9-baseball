@@ -42,7 +42,10 @@
 .v10-map-rows{position:relative;z-index:1;display:grid;grid-auto-rows:1fr;gap:0;min-height:300px}
 .v10-map-row{display:grid;gap:8px;align-items:center;justify-items:center;padding:9px 2px}
 .v10-node{width:100%;max-width:150px;min-height:58px;display:flex;flex-direction:column;justify-content:center;gap:2px;padding:7px 8px;text-align:left;border:1px solid #55716b;background:#10262dee;border-radius:10px}
-.v10-node-type{font-size:8px;letter-spacing:1.6px;font-weight:900;color:#e8bd70}
+.v10-node-head{display:flex;align-items:baseline;gap:5px;min-width:0}
+.v10-node-type{font-size:8px;letter-spacing:1.6px;font-weight:900;color:#e8bd70;white-space:nowrap}
+.v10-node-route{font-size:7px;padding:1px 5px;border-radius:999px;background:#1d3a3f;color:#9fc9c2;border:1px solid #3f5f5a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.v10-node-badge{font-size:8px;line-height:1.35;color:#b6c8be;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .v10-node-name{font-size:11px;line-height:1.3;letter-spacing:-.3px;word-break:keep-all}
 .v10-node-here{font-style:normal;font-size:8px;color:#9fe0b8}
 .v10-node.is-locked{opacity:.5;cursor:not-allowed;filter:saturate(.45)}
@@ -60,6 +63,7 @@
 .v10-preview-lines>div{display:grid;grid-template-columns:56px 1fr;gap:8px;align-items:baseline}
 .v10-preview-lines dt{font-size:9px;letter-spacing:1.4px;font-weight:900;color:#a9bbb3}
 .v10-preview-lines dd{margin:0;font-size:12px;line-height:1.5;word-break:keep-all}
+.v10-preview-why{margin:0 0 12px;padding:9px 10px;font-size:11px;line-height:1.6;color:#d7c7a4;background:#0d2027;border-left:3px solid #c8a463;border-radius:0 7px 7px 0;word-break:keep-all}
 .v10-map-cta{width:100%;min-height:46px;font-size:14px;font-weight:900;background:linear-gradient(#f5d78d,#dcae5f);color:#142329;border:1px solid #ffe6ab;box-shadow:0 4px 0 #785836}
 .v10-map-cta:hover{background:#ffe3a3}
 .v10-preview-empty{margin:0;font-size:11px;color:#a9bbb3}
@@ -82,8 +86,16 @@
 .v10-fixture-block{display:grid;gap:10px}
 .v10-fixture-block>h2{margin:0;font-size:10px;letter-spacing:2.6px;font-weight:900;color:#e7bd70}
 
+/* 엔진 지도는 한 줄에 네 칸까지 온다. 좁은 화면에서는 글자를 줄여서 넷을 그대로 세운다. */
+.v10-map-row[data-lanes="4"] .v10-node{padding:6px;min-height:54px;gap:1px}
+.v10-map-row[data-lanes="4"] .v10-node-name{font-size:10px}
+.v10-map-row[data-lanes="4"] .v10-node-route{font-size:6px;padding:1px 4px}
+.v10-map-row[data-lanes="4"] .v10-node-badge{font-size:7px}
+
 @media(max-width:380px){
   .v10-map{padding:9px}
+  .v10-map-row{gap:5px}
+  .v10-map-row[data-lanes="4"] .v10-node-route{display:none}
   .v10-map-rows{min-height:260px}
   .v10-node{min-height:52px;padding:6px;max-width:none}
   .v10-node-name{font-size:10px}

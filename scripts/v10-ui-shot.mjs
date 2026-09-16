@@ -23,7 +23,7 @@ for(const [name,width,height] of SIZES){
   page.on('pageerror',error=>errors.push(String(error)));
   await page.goto(url,{waitUntil:'networkidle'});
   await page.waitForSelector('.v10-map');
-  await page.click('[data-testid="v10-node-a1-fork-b"]');
+  await page.click('[data-testid="v10-node-a1-road"]');
   await page.waitForTimeout(250);
   await page.screenshot({path:`${out}/v10-${name}.png`,fullPage:true});
   await page.close();

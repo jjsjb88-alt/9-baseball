@@ -47,7 +47,26 @@ export const MAP_LOCKED='아직 닿지 않는 칸이다. 미리 보기만 된다
 export const MAP_NEXT_ACT='다음 막으로 이어진다';
 export const actLabel=act=>`${act}막`;
 export const actToggleLabel=(act,open)=>`${actLabel(act)} ${open?'접기':'펼치기'}`;
-export const nodeSpeech=(name,reward,risk,open)=>`${name}. 보상 ${reward}. 위험 ${risk}. ${open?'갈 수 있다':'아직 갈 수 없다'}.`;
+export const nodeSpeech=(parts,open)=>[
+  parts.route?`${parts.route} ${parts.name}`:parts.name,
+  parts.sub?`상대 ${parts.sub}`:null,
+  `보상 ${parts.reward}`,`위험 ${parts.risk}`,
+  open?'갈 수 있다':'아직 갈 수 없다',
+].filter(Boolean).join('. ')+'.';
+
+/* 엔진 노드가 들고 오는 상세를 화면 문구로 정리한다. 없으면 타입 기본값으로 떨어진다. */
+export function nodeDetail(node,type){
+  const opponent=node?.opponent,utility=node?.utility;
+  const hp=Number.isFinite(opponent?.maxHp)?`HP ${opponent.maxHp}`:null;
+  return {
+    route:node?.routeLabel||null,
+    badge:opponent?[opponent.name,hp].filter(Boolean).join(' · '):utility?.effect||null,
+    facing:node?.preview||(opponent?[opponent.name,opponent.archetype,hp].filter(Boolean).join(' · '):null),
+    why:opponent?.threat||utility?.detail||null,
+    reward:node?.reward||type.reward,
+    risk:node?.risk||type.risk,
+  };
+}
 
 const plain=value=>value==null||value===''?null:String(value);
 export const choiceText=choice=>{

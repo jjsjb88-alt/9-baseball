@@ -1,5 +1,5 @@
 import React,{useCallback,useEffect,useMemo,useRef,useState} from 'react';
-import {MAP_CTA,MAP_DEAD_END,MAP_EMPTY,MAP_HINT,MAP_LOCKED,MAP_NEXT_ACT,actLabel,actToggleLabel,nodeSpeech,nodeType,useReducedMotion} from './v10-copy.js';
+import {MAP_CTA,MAP_DEAD_END,MAP_EMPTY,MAP_HINT,MAP_LOCKED,MAP_NEXT_ACT,actLabel,actToggleLabel,nodeDetail,nodeSpeech,nodeType,useReducedMotion} from './v10-copy.js';
 import './v10-ui.css';
 
 const MAX_PER_ROW=4;
@@ -117,6 +117,7 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
 
   const preview=previewId?byId.get(previewId):null;
   const previewType=preview?nodeType(preview.type):null;
+  const previewDetail=preview?nodeDetail(preview,previewType):null;
   const previewOpen=!!preview&&reachable.has(preview.id);
   const nextLabels=preview?(edges||[]).filter(edge=>edge.from===preview.id).map(edge=>{
     const node=byId.get(edge.to);
@@ -158,10 +159,9 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
                   </svg>
                   <div className="v10-map-rows">
                     {act.rows.map((row,r)=>(
-                      <div className="v10-map-row" key={`row-${r}`} data-depth={row.depth} style={{gridTemplateColumns:`repeat(${row.lanes||row.items.length},1fr)`}}>
+                      <div className="v10-map-row" key={`row-${r}`} data-depth={row.depth} data-lanes={row.lanes||row.items.length} style={{gridTemplateColumns:`repeat(${row.lanes||row.items.length},1fr)`}}>
                         {row.items.map(node=>{
-                          const type=nodeType(node.type),name=nodeName(node)||type.title;
-                          const reward=node.reward||type.reward,risk=node.risk||type.risk;
+                          const type=nodeType(node.type),name=nodeName(node)||type.title,detail=nodeDetail(node,type);
                           const canGo=reachable.has(node.id),here=node.id===currentNodeId;
                           return (
                             <button
@@ -180,10 +180,14 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
                               onKeyDown={event=>onKeyDown(event,act,node.id)}
                               style={row.lanes?{gridColumn:int(node.lane)+1}:undefined}
                             >
-                              <span className="v10-node-type">{type.label}</span>
+                              <span className="v10-node-head">
+                                <span className="v10-node-type">{type.label}</span>
+                                {detail.route&&<span className="v10-node-route" data-testid={`v10-node-route-${node.id}`}>{detail.route}</span>}
+                              </span>
                               <strong className="v10-node-name">{name}</strong>
+                              {detail.badge&&<span className="v10-node-badge" data-testid={`v10-node-badge-${node.id}`}>{detail.badge}</span>}
                               {here&&<em className="v10-node-here">지금 여기</em>}
-                              <span className="v10-sr-only" id={`${node.id}-speech`}>{nodeSpeech(name,reward,risk,canGo)}</span>
+                              <span className="v10-sr-only" id={`${node.id}-speech`}>{nodeSpeech({name,route:detail.route,sub:detail.badge,reward:detail.reward,risk:detail.risk},canGo)}</span>
                             </button>
                           );
                         })}
@@ -202,13 +206,15 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
         <div className="v10-preview-live" aria-live="polite">
           {preview?(
             <>
-              <span className="v10-preview-type">{previewType.label}</span>
+              <span className="v10-preview-type">{previewType.label}{previewDetail.route?` · ${previewDetail.route}`:''}</span>
               <h3 className="v10-preview-name" data-testid="v10-preview-name">{nodeName(preview)||previewType.title}</h3>
               <dl className="v10-preview-lines">
-                <div><dt>보상</dt><dd data-testid="v10-preview-reward">{preview.reward||previewType.reward}</dd></div>
-                <div><dt>위험</dt><dd data-testid="v10-preview-risk">{preview.risk||previewType.risk}</dd></div>
+                {previewDetail.facing&&<div><dt>상대</dt><dd data-testid="v10-preview-facing">{previewDetail.facing}</dd></div>}
+                <div><dt>보상</dt><dd data-testid="v10-preview-reward">{previewDetail.reward}</dd></div>
+                <div><dt>위험</dt><dd data-testid="v10-preview-risk">{previewDetail.risk}</dd></div>
                 <div><dt>이후 경로</dt><dd data-testid="v10-preview-next">{nextLabels.length?nextLabels.join(' · '):MAP_DEAD_END}</dd></div>
               </dl>
+              {previewDetail.why&&<p className="v10-preview-why" data-testid="v10-preview-why">{previewDetail.why}</p>}
               {previewOpen
                 ?<button type="button" className="v10-map-cta" data-testid="v10-map-cta" onClick={()=>onSelect?.(preview.id)}>{MAP_CTA}</button>
                 :<p className="v10-preview-locked" data-testid="v10-preview-locked">{MAP_LOCKED}</p>}
