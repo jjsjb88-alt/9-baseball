@@ -34,6 +34,11 @@
 .v10-result-value{font-size:13px;line-height:1.45;color:#f2ead6;word-break:keep-all}
 .v10-result-row[data-row="hp"] .v10-result-value{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#ffdf72}
 
+.v10-map-screen{position:relative;min-height:calc(100vh - 52px);background-position:center 42%;background-size:cover;isolation:isolate}
+.v10-map-screen:before{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,#071923c2 0%,#07192398 28%,#071923d8 100%);pointer-events:none}
+.v10-map-intro{position:relative;z-index:2;max-width:720px;padding:7px 4px 2px}
+.v10-map-intro h1{margin:6px 0 5px;font-size:clamp(28px,7vw,48px);line-height:1.04;letter-spacing:-2px;text-shadow:3px 3px #06151c}
+.v10-map-intro p{margin:0;max-width:640px;font-size:10px;line-height:1.7;color:#c3d0c8}
 .v10-map{--map-gold:#f0cc84;--map-mint:#8fd0b6;--map-danger:#e79a72;display:grid;gap:12px;position:relative;color:#f4ecd8}
 .v10-map-board{position:relative;overflow:hidden;border-top:1px solid #6c725d;border-bottom:1px solid #4f5f55;background:
   linear-gradient(180deg,#07182094 0%,#071920c4 58%,#06161ced 100%),
