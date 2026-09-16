@@ -133,15 +133,39 @@ describe('RunMap',()=>{
     expect(container.querySelectorAll('.v10-edge-live').length).toBe(3);
   });
 
-  it('노드는 카드 상자가 아니라 픽셀 다이아몬드 엠블럼으로 렌더된다',()=>{
+  it('노드는 카드 상자가 아니라 서로 다른 픽셀 장소 디오라마로 렌더된다',()=>{
     const {container}=render(<RunMap {...mapProps()}/>);
-    expect(container.querySelectorAll('.v10-node-core').length).toBe(NODES.length);
+    expect(container.querySelectorAll('.v10-node-scene').length).toBe(NODES.length);
     expect(container.querySelectorAll('.v10-map-icon').length).toBeGreaterThanOrEqual(NODES.length);
     for(const node of NODES){
       const button=screen.getByTestId(`v10-node-${node.id}`);
-      expect(button.querySelector('.v10-node-core')).toBeTruthy();
+      expect(button.querySelector('.v10-node-scene')).toBeTruthy();
       expect(button.querySelector('.v10-map-icon')).toBeTruthy();
     }
+  });
+
+  it('전투 노드는 9존 성향 지문을 지도와 스카우팅 패널에 보여준다',()=>{
+    const richNodes=[
+      {id:'a',type:'battle',depth:0,label:'선발전',opponent:{name:'싱커맨',archetype:'낮은 싱커형',archetypeKey:'sinker',maxHp:72}},
+      {id:'b',type:'elite',depth:1,label:'강적',opponent:{name:'하이볼',archetype:'높은 공 수비형',archetypeKey:'high',maxHp:92}},
+    ];
+    const {container}=render(<RunMap nodes={richNodes} edges={[{from:'a',to:'b'}]} currentNodeId="a" reachableIds={['b']}/>);
+    expect(container.querySelectorAll('.v10-zone-fingerprint.is-compact').length).toBe(2);
+    expect(screen.getByTestId('v10-node-a').querySelectorAll('.v10-zone-fingerprint .hot').length).toBe(3);
+    fireEvent.click(screen.getByTestId('v10-node-b'));
+    expect(container.querySelector('.v10-preview-diorama .v10-zone-fingerprint')).toBeTruthy();
+    expect(container.querySelectorAll('.v10-preview-diorama .v10-zone-fingerprint .hot').length).toBe(3);
+  });
+
+  it('훈련·휴식·영입·라커룸은 같은 아이콘이 아니라 각 장소 장면을 가진다',()=>{
+    render(<RunMap {...mapProps()}/>);
+    for(const id of ['n1','n3','n4','n5']){
+      expect(screen.getByTestId(`v10-node-${id}`).querySelector('.v10-diorama-art')).toBeTruthy();
+    }
+    expect(screen.getByTestId('v10-node-n1').querySelector('.px-cage')).toBeTruthy();
+    expect(screen.getByTestId('v10-node-n3').querySelector('.px-moon')).toBeTruthy();
+    expect(screen.getByTestId('v10-node-n4').querySelector('.px-shop')).toBeTruthy();
+    expect(screen.getByTestId('v10-node-n5').querySelector('.px-locker')).toBeTruthy();
   });
 
   it('현재 노드에서 갈 수 있는 경로만 황금 곡선으로 강조한다',()=>{
