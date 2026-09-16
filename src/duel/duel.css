@@ -1112,3 +1112,19 @@ button:disabled{filter:grayscale(.5)}
 .drawer-watch{min-height:40px;padding:9px 13px;font-size:12px;font-weight:800;white-space:nowrap;background:#3b3425;border-color:#a2874f;color:#ffe3a3}
 .drawer-watch:hover:not(:disabled){background:#4b4230;border-color:#ffd77c}
 @media(max-width:380px){.drawer-escape{grid-template-columns:1fr}.drawer-watch{width:100%}}
+
+/* 타이틀 차례. 메인런이 먼저 크게 오고, 튜토리얼은 그 아래 작게 붙는다. */
+.title-main{position:relative;margin:22px 0 18px;padding:20px 18px;border:1px solid #f0c66f;border-radius:16px;background:linear-gradient(150deg,#2a4a4fdd,#14303add);box-shadow:0 0 0 1px #f0c66f2e,0 16px 40px #04121899}
+.title-main-tag{display:inline-block;padding:4px 10px;border-radius:999px;background:#ffd77c;color:#15272c;font-size:10px;font-weight:900;letter-spacing:2px}
+.title-main h2{margin:11px 0 8px;font-size:clamp(24px,7vw,36px);line-height:1.12;letter-spacing:-1.4px;color:#ffeec1}
+.title-main p{margin:0;font-size:12px;line-height:1.75;color:#d6e2da}
+.title-main-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}
+.title-main-actions button{flex:1 1 150px;min-height:52px;font-size:16px;font-weight:900}
+.title-tutorial{margin-top:22px;padding-top:16px;border-top:1px solid #3d5854;opacity:.88}
+.title-tutorial>p{margin:6px 0 12px;font-size:11px;line-height:1.7;color:#a9bbb3}
+.title-tutorial .title-actions{margin:14px 0 0}
+.title-tutorial .title-actions button{padding:10px 16px;font-size:12px}
+@media(min-width:700px){
+  .title-main{padding:26px 24px}
+  .title-main-actions button{flex:0 1 auto;min-width:190px}
+}
