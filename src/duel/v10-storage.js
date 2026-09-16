@@ -7,7 +7,11 @@ const PHASES=new Set(['map','battle','pitch','between','reward','lost','won','tr
 export function validateV10State(s){
   if(!s||s.version!==10||!Number.isInteger(s.initialSeed)||!PHASES.has(s.phase)||!validateRunMap(s.runMap))return false;
   if(!Array.isArray(s.deck)||s.deck.some(c=>!c||typeof c.id!=='string'||typeof c.kind!=='string'))return false;
-  if(!Array.isArray(s.rewards)||!s.v10||typeof s.v10!=='object')return false;
+  if(!Array.isArray(s.rewards)||!s.v10||typeof s.v10!=='object'||!Array.isArray(s.v10.utilityHistory))return false;
+  const validBonus=b=>b===null||b===undefined||(b&&Number.isInteger(b.technique)&&b.technique>=0&&b.technique<=100&&typeof b.source==='string');
+  if(!validBonus(s.v10.nextBattleBonus)||!validBonus(s.v10.activeBattleBonus))return false;
+  if(s.v10.nodeId!==null&&s.v10.nodeId!==undefined&&typeof s.v10.nodeId!=='string')return false;
+  if(s.v10.utilityHistory.some(h=>!h||typeof h.nodeId!=='string'||typeof h.kind!=='string'||!h.action||typeof h.action.type!=='string'))return false;
   if(s.pitcher!==null&&s.pitcher!==undefined&&!isPitcherHp(s.pitcher))return false;
   if(['battle','pitch','between','reward','lost'].includes(s.phase)&&!isPitcherHp(s.pitcher))return false;
   if(s.phase==='reward'&&s.pitcher?.hp!==0)return false;
