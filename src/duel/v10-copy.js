@@ -7,20 +7,23 @@ export const PHASES={
   pulled:{label:'강판',note:'마운드를 내려간다'},
 };
 export const PHASE_ORDER=['steady','shaky','cornered','pulled'];
+/* 엔진(pitcher-hp.js)이 쓰는 이름을 UI 이름으로 받아준다. */
+export const PHASE_ALIASES={steady:'steady',pressured:'shaky',critical:'cornered',defeated:'pulled'};
 export const HP_MARKS=[.6,.3];
 
+export const normalizePhase=phase=>PHASES[phase]?phase:PHASE_ALIASES[phase]||null;
 export const phaseFor=(hp,maxHp)=>{
   const max=Number(maxHp)||0,cur=Math.max(0,Math.min(max,Number(hp)||0));
   if(max<=0||cur<=0)return 'pulled';
   const r=cur/max;
   return r>.6?'steady':r>.3?'shaky':'cornered';
 };
-export const phaseLabel=phase=>PHASES[phase]?.label||PHASES.steady.label;
+export const phaseLabel=phase=>PHASES[normalizePhase(phase)]?.label||PHASES.steady.label;
 
 export const VERDICTS={
-  hit:'안타',single:'안타',double:'2루타',triple:'3루타',homer:'홈런',grandSlam:'만루 홈런',
-  foul:'파울',whiff:'헛스윙',called:'루킹 스트라이크',strikeout:'삼진',
-  ball:'볼',walk:'볼넷',out:'범타 아웃',sacrifice:'희생타',near:'한 칸 차이',
+  hit:'안타',single:'안타',double:'2루타',triple:'3루타',homer:'홈런',homeRun:'홈런',grandSlam:'만루 홈런',
+  foul:'파울',hardFoul:'빗맞은 파울',whiff:'헛스윙',called:'루킹 스트라이크',calledStrike:'루킹 스트라이크',strikeout:'삼진',
+  ball:'볼',walk:'볼넷',out:'범타 아웃',inPlayOut:'범타 아웃',sacrifice:'희생타',near:'한 칸 차이',nearMiss:'한 칸 차이',
 };
 export const RESULT_LABELS={choice:'내 선택',pitch:'실제 공',verdict:'야구 판정',hp:'투수 HP'};
 export const RESULT_ORDER=['choice','pitch','verdict','hp'];

@@ -1,5 +1,5 @@
 import React from 'react';
-import {HP_MARKS,PHASES,phaseFor,useReducedMotion} from './v10-copy.js';
+import {HP_MARKS,PHASES,normalizePhase,phaseFor,useReducedMotion} from './v10-copy.js';
 import './v10-ui.css';
 
 const clamp=(value,max)=>Math.max(0,Math.min(max,Number(value)||0));
@@ -7,7 +7,7 @@ const clamp=(value,max)=>Math.max(0,Math.min(max,Number(value)||0));
 export default function PitcherHpHud({name='투수',hp=0,maxHp=0,phase,lastDamage=0}){
   const reduced=useReducedMotion();
   const max=Math.max(0,Number(maxHp)||0),cur=clamp(hp,max),damage=Math.max(0,Number(lastDamage)||0);
-  const before=Math.min(max,cur+damage),state=PHASES[phase]?phase:phaseFor(cur,max),info=PHASES[state];
+  const before=Math.min(max,cur+damage),state=normalizePhase(phase)||phaseFor(cur,max),info=PHASES[state];
   const fill=max?cur/max*100:0,ghost=max?before/max*100:0;
   return (
     <section className={`v10-hp v10-hp-${state}${reduced?' v10-reduced':''}`} data-phase={state} data-reduced={reduced?'true':'false'} aria-label="투수 체력">

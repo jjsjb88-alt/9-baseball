@@ -3,20 +3,33 @@ import {MAP_CTA,MAP_DEAD_END,MAP_EMPTY,MAP_HINT,nodeType,useReducedMotion} from 
 import './v10-ui.css';
 
 const MAX_PER_ROW=4;
-const depthOf=node=>Number(node?.depth??node?.act??0)||0;
+const int=value=>Number.isInteger(Number(value))?Number(value):null;
+/* 엔진 지도는 층을 act(1~3) + row(0~4)로 쪼개 준다. 둘 다 있으면 합쳐서 한 줄로 편다. */
+const depthOf=node=>{
+  const depth=int(node?.depth);if(depth!==null)return depth;
+  const act=int(node?.act),row=int(node?.row);
+  if(act!==null&&row!==null)return act*100+row;
+  return act??row??0;
+};
+const nodeName=node=>node?.label||node?.name||null;
 
 function layout(nodes){
   const list=Array.isArray(nodes)?nodes:[];
   const depths=[...new Set(list.map(depthOf))].sort((a,b)=>a-b);
+  /* 칸 번호는 지도 전체에서 한 번만 센다. 한 줄에 한 칸만 차 있어도 가운데가 밀리지 않게 한다. */
+  const laned=list.length>0&&list.every(node=>int(node?.lane)!==null);
+  const lanes=laned?Math.max(...list.map(node=>int(node.lane)))+1:0;
   const rows=[];
   for(const depth of depths){
     const layer=list.filter(node=>depthOf(node)===depth);
-    for(let i=0;i<layer.length;i+=MAX_PER_ROW)rows.push({depth,items:layer.slice(i,i+MAX_PER_ROW)});
+    if(lanes>0&&lanes<=MAX_PER_ROW){rows.push({depth,lanes,items:layer});continue;}
+    for(let i=0;i<layer.length;i+=MAX_PER_ROW)rows.push({depth,lanes:0,items:layer.slice(i,i+MAX_PER_ROW)});
   }
   const spots=new Map();
-  rows.forEach((row,r)=>row.items.forEach((node,c)=>spots.set(node.id,{
-    x:(c+.5)/row.items.length*100,y:(r+.5)/Math.max(1,rows.length)*100,row:r,col:c,
-  })));
+  rows.forEach((row,r)=>row.items.forEach((node,c)=>{
+    const slots=row.lanes||row.items.length,col=row.lanes?int(node.lane):c;
+    spots.set(node.id,{x:(col+.5)/slots*100,y:(r+.5)/Math.max(1,rows.length)*100,row:r,col});
+  }));
   return {rows,spots};
 }
 
@@ -39,16 +52,16 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
     refs.current.get(cursor)?.focus();
   },[cursor]);
 
+  /* lane이 있는 지도는 배열 순서와 칸 번호가 다르다. 이동은 항상 칸 번호로 센다. */
   const step=useCallback((fromId,dRow,dCol)=>{
     const from=spots.get(fromId);if(!from)return;
     const row=rows[from.row+dRow];
-    if(dRow){
-      if(!row)return;
-      const target=row.items[Math.min(from.col,row.items.length-1)];
-      if(target){moved.current=true;setCursorId(target.id)}
-      return;
-    }
-    const target=rows[from.row]?.items[from.col+dCol];
+    if(!row)return;
+    const seats=row.items.map(node=>({id:node.id,col:spots.get(node.id)?.col??0}));
+    const target=dRow
+      ?seats.reduce((best,seat)=>Math.abs(seat.col-from.col)<Math.abs(best.col-from.col)?seat:best,seats[0])
+      :seats.filter(seat=>dCol>0?seat.col>from.col:seat.col<from.col)
+        .sort((a,b)=>dCol>0?a.col-b.col:b.col-a.col)[0];
     if(target){moved.current=true;setCursorId(target.id)}
   },[rows,spots]);
 
@@ -70,7 +83,7 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
   const previewType=preview?nodeType(preview.type):null;
   const nextLabels=preview?(edges||[]).filter(edge=>edge.from===preview.id).map(edge=>{
     const node=byId.get(edge.to);
-    return node?node.label||nodeType(node.type).title:edge.to;
+    return node?nodeName(node)||nodeType(node.type).title:edge.to;
   }):[];
 
   return (
@@ -86,7 +99,7 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
         </svg>
         <div className="v10-map-rows" role="group" aria-describedby="v10-map-hint">
           {rows.map((row,r)=>(
-            <div className="v10-map-row" key={`row-${r}`} data-depth={row.depth} style={{gridTemplateColumns:`repeat(${row.items.length},1fr)`}}>
+            <div className="v10-map-row" key={`row-${r}`} data-depth={row.depth} style={{gridTemplateColumns:`repeat(${row.lanes||row.items.length},1fr)`}}>
               {row.items.map(node=>{
                 const type=nodeType(node.type),open=reachable.has(node.id),here=node.id===currentNodeId;
                 return (
@@ -104,9 +117,10 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
                     onClick={()=>pick(node)}
                     onFocus={()=>setCursorId(node.id)}
                     onKeyDown={event=>onKeyDown(event,node.id)}
+                    style={row.lanes?{gridColumn:int(node.lane)+1}:undefined}
                   >
                     <span className="v10-node-type">{type.label}</span>
-                    <strong className="v10-node-name">{node.label||type.title}</strong>
+                    <strong className="v10-node-name">{nodeName(node)||type.title}</strong>
                     {here&&<em className="v10-node-here">지금 여기</em>}
                   </button>
                 );
@@ -120,7 +134,7 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
         {preview?(
           <>
             <span className="v10-preview-type">{previewType.label}</span>
-            <h3 className="v10-preview-name">{preview.label||previewType.title}</h3>
+            <h3 className="v10-preview-name">{nodeName(preview)||previewType.title}</h3>
             <dl className="v10-preview-lines">
               <div><dt>보상</dt><dd data-testid="v10-preview-reward">{preview.reward||previewType.reward}</dd></div>
               <div><dt>위험</dt><dd data-testid="v10-preview-risk">{preview.risk||previewType.risk}</dd></div>

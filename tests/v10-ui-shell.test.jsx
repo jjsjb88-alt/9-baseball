@@ -179,6 +179,86 @@ describe('RunMap',()=>{
   });
 });
 
+/* codex/v10-engine-map의 createRunMap / pitcherSelector 출력 모양을 그대로 베낀 fixture.
+   엔진을 import하지 않고, 통합 이슈 #6에서 맞물릴 형태만 확인한다. */
+const ENGINE_LABELS={battle:'정규 승부',elite:'강적 승부',training:'타격 훈련',locker:'라커룸',shop:'장비 상점',rest:'휴식일',boss:'막 보스'};
+function engineMap(){
+  const nodes=[],edges=[],plan=[['entry',0,1,'battle'],['fork-a',1,0,'training'],['fork-b',1,2,'elite'],['mid',2,1,'battle'],['late-a',3,0,'shop'],['late-b',3,2,'rest'],['boss',4,1,'boss']];
+  for(let act=1;act<=3;act++){
+    for(const [key,row,lane,type] of plan)nodes.push({id:`a${act}-${key}`,act,row,lane,type,name:ENGINE_LABELS[type],seed:act});
+    const id=k=>`a${act}-${k}`;
+    edges.push({from:id('entry'),to:id('fork-a')},{from:id('entry'),to:id('fork-b')},{from:id('fork-a'),to:id('mid')},{from:id('fork-b'),to:id('mid')},
+      {from:id('mid'),to:id('late-a')},{from:id('mid'),to:id('late-b')},{from:id('late-a'),to:id('boss')},{from:id('late-b'),to:id('boss')});
+    if(act<3)edges.push({from:id('boss'),to:`a${act+1}-entry`});
+  }
+  return {nodes,edges};
+}
+
+describe('엔진 출력 모양 수용',()=>{
+  it('엔진 phase 이름을 그대로 받아 국면 라벨로 옮긴다',()=>{
+    const cases=[['steady','정상'],['pressured','흔들림'],['critical','몰림'],['defeated','강판']];
+    for(const [phase,label] of cases){
+      const {unmount}=render(<PitcherHpHud name="상대 투수" hp={40} maxHp={72} phase={phase}/>);
+      expect(screen.getByTestId('v10-hp-phase').textContent).toBe(label);
+      unmount();
+    }
+  });
+
+  it('엔진 피해 키를 한국어 판정으로 옮긴다',()=>{
+    const cases=[['homeRun','홈런'],['single','안타'],['triple','3루타'],['inPlayOut','범타 아웃'],['nearMiss','한 칸 차이'],['hardFoul','빗맞은 파울'],['calledStrike','루킹 스트라이크'],['walk','볼넷']];
+    for(const [key,label] of cases){
+      const {unmount}=render(<CombatResultSummary choice="밀어치기" actualPitch="직구" verdict={key} damage={2} hpAfter={50}/>);
+      const text=screen.getByTestId('v10-result-verdict').textContent;
+      expect(text).toBe(label);
+      expect(text).not.toMatch(/[A-Za-z]/);
+      unmount();
+    }
+  });
+
+  it('엔진 지도를 act·row·lane 그대로 그린다',()=>{
+    const {nodes,edges}=engineMap();
+    const {container}=render(<RunMap nodes={nodes} edges={edges} currentNodeId="a1-entry" reachableIds={['a1-fork-a','a1-fork-b']}/>);
+    const rows=[...container.querySelectorAll('.v10-map-row')];
+    expect(rows.length).toBe(15);
+    expect(Math.max(...rows.map(row=>row.querySelectorAll('.v10-node').length))).toBeLessThanOrEqual(3);
+    expect(container.querySelectorAll('.v10-node').length).toBe(21);
+    expect(screen.getByTestId('v10-node-a1-entry').style.gridColumn).toBe('2');
+    expect(screen.getByTestId('v10-node-a1-fork-a').style.gridColumn).toBe('1');
+    expect(screen.getByTestId('v10-node-a1-fork-b').style.gridColumn).toBe('3');
+  });
+
+  it('엔진 노드의 name을 이름으로 쓴다',()=>{
+    const {nodes,edges}=engineMap();
+    render(<RunMap nodes={nodes} edges={edges} currentNodeId="a1-entry" reachableIds={['a1-fork-b']}/>);
+    expect(within(screen.getByTestId('v10-node-a1-fork-b')).getByText('강적 승부')).toBeTruthy();
+    fireEvent.click(screen.getByTestId('v10-node-a1-fork-b'));
+    expect(screen.getByTestId('v10-preview-next').textContent).toBe('정규 승부');
+  });
+
+  it('lane 지도에서도 방향키가 칸 번호를 따라간다',()=>{
+    const {nodes,edges}=engineMap();
+    render(<RunMap nodes={nodes} edges={edges} currentNodeId="a1-entry" reachableIds={['a1-fork-a','a1-fork-b']}/>);
+    const start=screen.getByTestId('v10-node-a1-entry');
+    start.focus();
+    fireEvent.keyDown(start,{key:'ArrowDown'});
+    expect(document.activeElement).toBe(screen.getByTestId('v10-node-a1-fork-a'));
+    fireEvent.keyDown(document.activeElement,{key:'ArrowRight'});
+    expect(document.activeElement).toBe(screen.getByTestId('v10-node-a1-fork-b'));
+    fireEvent.keyDown(document.activeElement,{key:'ArrowDown'});
+    expect(document.activeElement).toBe(screen.getByTestId('v10-node-a1-mid'));
+  });
+
+  it('엔진이 reachableIds를 비워 보내면 아무 칸도 열리지 않는다',()=>{
+    const {nodes,edges}=engineMap();
+    const onSelect=vi.fn();
+    const {container}=render(<RunMap nodes={nodes} edges={edges} currentNodeId="a1-entry" reachableIds={[]} onSelect={onSelect}/>);
+    expect(container.querySelectorAll('.v10-node.is-open').length).toBe(0);
+    fireEvent.click(screen.getByTestId('v10-node-a1-fork-a'));
+    expect(screen.getByTestId('v10-preview-empty')).toBeTruthy();
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+});
+
 describe('독립성',()=>{
   const FILES=['PitcherHpHud.jsx','CombatResultSummary.jsx','RunMap.jsx','v10-copy.js'];
   it('엔진·카드·저장 모듈을 import하지 않는다',()=>{
