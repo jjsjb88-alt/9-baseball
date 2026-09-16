@@ -110,6 +110,21 @@ describe('9-zone strategic UI',()=>{
     finish();
   });
 
+  it('lets a swing be taken back, or turned into a watch, from inside the drawer',()=>{
+    begin();
+    fireEvent.click(screen.getByRole('button',{name:'스윙하기',exact:true}));
+    /* 존 밖으로 올 것 같으면 카드 고르다 말고 빠져나올 수 있어야 한다. */
+    const back=screen.getByRole('button',{name:'← 돌아가기'});
+    fireEvent.click(back);
+    expect(screen.getByRole('button',{name:'스윙하기',exact:true})).toBeTruthy();
+    expect(screen.queryByRole('button',{name:'← 돌아가기'})).toBeNull();
+    fireEvent.click(screen.getByRole('button',{name:'스윙하기',exact:true}));
+    const before=readDuel(localStorage).stats.pitches;
+    fireEvent.click(screen.getByRole('button',{name:'한 구 지켜보기',exact:true}));
+    finish();
+    expect(readDuel(localStorage).stats.pitches).toBe(before+1);
+  });
+
   it('keeps tutorial runs on a plain readout instead of the cinema',()=>{
     begin();
     const arena=screen.getByRole('region',{name:'승부 구장'});

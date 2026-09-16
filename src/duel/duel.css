@@ -1103,3 +1103,12 @@ button:disabled{filter:grayscale(.5)}
    금색 버튼이 어두운 얼룩으로 보이던 원인. 지도 화면의 모든 내용은 오버레이 위에 둔다. */
 .duel-map>*{position:relative;z-index:2}
 .duel-map:before{z-index:1}
+
+/* 카드 드로어의 탈출구. 뒤로가기가 9px짜리로 화면 밖에 있어서 존 밖 볼을 기다릴 방법이 없었다. */
+.drawer-back{font-size:11px!important;padding:9px 12px!important;min-height:38px;border-radius:9px;background:#24404a;border-color:#7b968f;color:#e8f0e6;font-weight:800;white-space:nowrap}
+.drawer-back:hover:not(:disabled){background:#2e525e;border-color:#d6b979}
+.drawer-escape{display:grid;grid-template-columns:1fr auto;align-items:center;gap:9px;margin:8px 0 2px;padding:9px 10px;background:#11282f;border:1px dashed #5b7c74;border-radius:10px}
+.drawer-escape span{font-size:10px;line-height:1.5;color:#a9bbb3}
+.drawer-watch{min-height:40px;padding:9px 13px;font-size:12px;font-weight:800;white-space:nowrap;background:#3b3425;border-color:#a2874f;color:#ffe3a3}
+.drawer-watch:hover:not(:disabled){background:#4b4230;border-color:#ffd77c}
+@media(max-width:380px){.drawer-escape{grid-template-columns:1fr}.drawer-watch{width:100%}}
