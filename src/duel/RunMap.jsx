@@ -3,11 +3,35 @@ import {MAP_CTA,MAP_DEAD_END,MAP_EMPTY,MAP_HINT,MAP_LOCKED,MAP_NEXT_ACT,actLabel
 import './v10-ui.css';
 
 const MAX_PER_ROW=4;
-/* 줄 높이 대비 노드가 차지하는 비율의 절반. 연결선을 이만큼 물려서 노드 밑으로 지나가지 않게 한다. */
-const EDGE_TRIM=.38;
-
+const EDGE_TRIM=.29;
 const int=value=>Number.isInteger(Number(value))?Number(value):null;
-/* 엔진 지도는 층을 act(1~3) + row(0~4)로 쪼개 준다. 둘 다 있으면 합쳐서 한 줄로 편다. */
+
+const MAP_ART={
+  battle:'ball',
+  elite:'comet',
+  training:'target',
+  locker:'book',
+  shop:'spark',
+  rest:'moon',
+  boss:'diamond',
+};
+const PIXEL_PATHS={
+  ball:'M10 5H22L27 10V22L22 27H10L5 22V10ZM10 10V22H12V10ZM20 10V22H22V10Z',
+  comet:'M3 5L19 11L25 11L29 15V23L23 29H15L11 25L9 17ZM15 17V23H23V17Z',
+  target:'M5 5H27V27H5ZM9 9V23H23V9ZM13 13H19V19H13Z',
+  book:'M4 7H14L16 9L18 7H28V25H18L16 27L14 25H4Z',
+  spark:'M18 2L6 19H14L12 30L27 12H18Z',
+  moon:'M15 3H21L17 7V17L23 23H29L25 28H13L5 20V10L10 5Z',
+  diamond:'M16 3L29 16L16 29L3 16ZM16 9L9 16L16 23L23 16Z',
+};
+
+function MapIcon({type}){
+  const art=MAP_ART[type]||'ball';
+  return <svg className="v10-map-icon" viewBox="0 0 32 32" aria-hidden="true" shapeRendering="crispEdges">
+    <path fill="currentColor" fillRule="evenodd" d={PIXEL_PATHS[art]}/>
+  </svg>;
+}
+
 const depthOf=node=>{
   const depth=int(node?.depth);if(depth!==null)return depth;
   const act=int(node?.act),row=int(node?.row);
@@ -17,7 +41,6 @@ const depthOf=node=>{
 const actOf=node=>int(node?.act);
 const nodeName=node=>node?.label||node?.name||null;
 
-/* 한 막 안에서만 줄과 칸을 센다. 막마다 제 SVG를 쓰므로 접힌 막이 좌표를 흔들지 않는다. */
 function layoutAct(items){
   const depths=[...new Set(items.map(depthOf))].sort((a,b)=>a-b);
   const laned=items.length>0&&items.every(node=>int(node?.lane)!==null);
@@ -45,12 +68,15 @@ function buildActs(nodes){
   });
 }
 
-/* 노드 중심끼리 이은 선을 양 끝에서 물려 잘라 노드 상자 밖에서만 보이게 한다. */
 function trim(a,b,rowCount){
   const dx=b.x-a.x,dy=b.y-a.y,span=Math.abs(dy);
   if(!span)return {x1:a.x,y1:a.y,x2:b.x,y2:b.y};
-  const k=Math.min(.45,EDGE_TRIM*(100/Math.max(1,rowCount))/span);
+  const k=Math.min(.42,EDGE_TRIM*(100/Math.max(1,rowCount))/span);
   return {x1:a.x+dx*k,y1:a.y+dy*k,x2:b.x-dx*k,y2:b.y-dy*k};
+}
+function roadPath(a,b,rowCount){
+  const p=trim(a,b,rowCount),mid=(p.y1+p.y2)/2;
+  return `M ${p.x1} ${p.y1} C ${p.x1} ${mid}, ${p.x2} ${mid}, ${p.x2} ${p.y2}`;
 }
 
 export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableIds=[],onSelect}){
@@ -67,8 +93,6 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
   const refs=useRef(new Map());
   const moved=useRef(false);
 
-  /* 지금 있는 막과 갈 수 있는 칸이 있는 막을 편다. 막 보스를 깨면 다음 칸이 다음 막에 있어서,
-     지금 막만 펴면 하나뿐인 갈 곳이 접힌 채로 숨는다. flipped는 사람이 그 기본을 뒤집은 막이다. */
   const liveActs=useMemo(()=>{
     const keys=new Set();
     const currentKey=actOf(byId.get(currentNodeId));
@@ -95,8 +119,6 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
   },[cursor]);
 
   const go=id=>{moved.current=true;setCursorId(id)};
-
-  /* lane이 있는 지도는 배열 순서와 칸 번호가 다르다. 이동은 항상 칸 번호로 센다. */
   const move=useCallback((act,fromId,key)=>{
     const from=act.spots.get(fromId);if(!from)return;
     const seatsOf=row=>row.items.map(node=>({id:node.id,col:act.spots.get(node.id)?.col??0})).sort((a,b)=>a.col-b.col);
@@ -120,8 +142,6 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
     event.preventDefault();
     move(act,id,event.key);
   };
-
-  /* 어느 칸이든 미리 보게 둔다. 갈 수 있는지는 CTA가 정한다. */
   const look=id=>{setCursorId(id);setPreviewId(id)};
 
   const preview=previewId?byId.get(previewId):null;
@@ -136,9 +156,9 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
   return (
     <section className={`v10-map${reduced?' v10-reduced':''}`} data-reduced={reduced?'true':'false'} aria-label="경로 지도">
       <div className="v10-map-board">
+        <div className="v10-map-skyline" aria-hidden="true"><i/><i/><i/><i/><i/></div>
         {acts.map((act,actIndex)=>{
-          const open=isOpen(act.key);
-          const last=actIndex===acts.length-1;
+          const open=isOpen(act.key),last=actIndex===acts.length-1;
           return (
             <div className={`v10-act${open?' is-open':' is-shut'}`} key={`act-${act.key??'all'}`} data-act={act.key??undefined}>
               {multiAct&&(
@@ -150,20 +170,26 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
                   aria-label={actToggleLabel(act.key,open)}
                   onClick={()=>toggleAct(act.key)}
                 >
+                  <span className="v10-act-number">0{act.key}</span>
                   <span className="v10-act-name">{actLabel(act.key)}</span>
-                  <small className="v10-act-count">{act.items.length}칸{act.key===currentAct?' · 지금 이 막':''}</small>
-                  <em className="v10-act-toggle">{open?'접기':'펼치기'}</em>
+                  <small className="v10-act-count">{act.key===currentAct?'NOW PLAYING · ':''}{act.items.length} STOPS</small>
+                  <em className="v10-act-toggle">{open?'−':'+'}</em>
                 </button>
               )}
               {open&&(
                 <div className="v10-act-body">
                   <svg className="v10-map-edges" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+                    <defs>
+                      <filter id={`road-glow-${act.key??'all'}`}><feGaussianBlur stdDeviation=".7" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                    </defs>
                     {(edges||[]).map(edge=>{
                       const a=act.spots.get(edge.from),b=act.spots.get(edge.to);
                       if(!a||!b)return null;
                       const live=reachable.has(edge.to)&&edge.from===currentNodeId;
-                      const cut=trim(a,b,act.rows.length);
-                      return <line key={`${edge.from}-${edge.to}`} {...cut} className={live?'v10-edge v10-edge-live':'v10-edge'}/>;
+                      return <g key={`${edge.from}-${edge.to}`} className={live?'v10-road is-live':'v10-road'}>
+                        <path d={roadPath(a,b,act.rows.length)} className="v10-edge-shadow"/>
+                        <path d={roadPath(a,b,act.rows.length)} className={live?'v10-edge v10-edge-live':'v10-edge'} filter={live?`url(#road-glow-${act.key??'all'})`:undefined}/>
+                      </g>;
                     })}
                   </svg>
                   <div className="v10-map-rows">
@@ -171,13 +197,13 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
                       <div className="v10-map-row" key={`row-${r}`} data-depth={row.depth} data-lanes={row.lanes||row.items.length} style={{gridTemplateColumns:`repeat(${row.lanes||row.items.length},1fr)`}}>
                         {row.items.map(node=>{
                           const type=nodeType(node.type),name=nodeName(node)||type.title,detail=nodeDetail(node,type);
-                          const canGo=reachable.has(node.id),here=node.id===currentNodeId;
+                          const canGo=reachable.has(node.id),here=node.id===currentNodeId,picked=previewId===node.id;
                           return (
                             <button
                               key={node.id}
                               type="button"
                               ref={element=>{element?refs.current.set(node.id,element):refs.current.delete(node.id)}}
-                              className={`v10-node v10-node-${node.type||'unknown'}${canGo?' is-open':' is-locked'}${here?' is-here':''}${previewId===node.id?' is-picked':''}`}
+                              className={`v10-node v10-node-${node.type||'unknown'}${canGo?' is-open':' is-locked'}${here?' is-here':''}${picked?' is-picked':''}`}
                               data-testid={`v10-node-${node.id}`}
                               data-type={node.type}
                               aria-disabled={canGo?undefined:'true'}
@@ -189,13 +215,17 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
                               onKeyDown={event=>onKeyDown(event,act,node.id)}
                               style={row.lanes?{gridColumn:int(node.lane)+1}:undefined}
                             >
-                              <span className="v10-node-head">
-                                <span className="v10-node-type">{type.label}</span>
-                                {detail.route&&<span className="v10-node-route" data-testid={`v10-node-route-${node.id}`}>{detail.route}</span>}
+                              {detail.route&&<span className="v10-node-route" data-testid={`v10-node-route-${node.id}`}>{detail.route}</span>}
+                              <span className="v10-node-core">
+                                <span className="v10-node-glow" aria-hidden="true"/>
+                                <span className="v10-node-icon"><MapIcon type={node.type}/></span>
+                                {here&&<em className="v10-node-here">NOW</em>}
                               </span>
-                              <strong className="v10-node-name">{name}</strong>
-                              {detail.badge&&<span className="v10-node-badge" data-testid={`v10-node-badge-${node.id}`}>{detail.badge}</span>}
-                              {here&&<em className="v10-node-here">지금 여기</em>}
+                              <span className="v10-node-copy">
+                                <span className="v10-node-type">{type.label}</span>
+                                <strong className="v10-node-name">{name}</strong>
+                                {detail.badge&&<span className="v10-node-badge" data-testid={`v10-node-badge-${node.id}`}>{detail.badge}</span>}
+                              </span>
                               <span className="v10-sr-only" id={`${node.id}-speech`}>{nodeSpeech({name,route:detail.route,sub:detail.badge,reward:detail.reward,risk:detail.risk},canGo)}</span>
                             </button>
                           );
@@ -205,30 +235,36 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
                   </div>
                 </div>
               )}
-              {multiAct&&!last&&<p className="v10-act-link" aria-hidden="true">{MAP_NEXT_ACT}</p>}
+              {multiAct&&!last&&<p className="v10-act-link" aria-hidden="true"><i/>{MAP_NEXT_ACT}<i/></p>}
             </div>
           );
         })}
       </div>
       <aside className="v10-map-preview" data-testid="v10-map-preview">
+        <div className="v10-preview-scoreline"><span>SCOUTING REPORT</span><b>{previewDetail?.route||'NEXT STOP'}</b></div>
         <p className="v10-map-hint" id="v10-map-hint">{MAP_HINT}</p>
         <div className="v10-preview-live" aria-live="polite">
           {preview?(
             <>
-              <span className="v10-preview-type">{previewType.label}{previewDetail.route?` · ${previewDetail.route}`:''}</span>
+              <div className={`v10-preview-icon v10-preview-icon-${preview.type}`}><MapIcon type={preview.type}/></div>
+              <span className="v10-preview-type">{previewType.label}</span>
               <h3 className="v10-preview-name" data-testid="v10-preview-name">{nodeName(preview)||previewType.title}</h3>
+              {previewDetail.facing&&<p className="v10-preview-facing" data-testid="v10-preview-facing">{previewDetail.facing}</p>}
+              {previewDetail.why&&<p className="v10-preview-why" data-testid="v10-preview-why">{previewDetail.why}</p>}
               <dl className="v10-preview-lines">
-                {previewDetail.facing&&<div><dt>상대</dt><dd data-testid="v10-preview-facing">{previewDetail.facing}</dd></div>}
                 <div><dt>보상</dt><dd data-testid="v10-preview-reward">{previewDetail.reward}</dd></div>
                 <div><dt>위험</dt><dd data-testid="v10-preview-risk">{previewDetail.risk}</dd></div>
-                <div><dt>이후 경로</dt><dd data-testid="v10-preview-next">{nextLabels.length?nextLabels.join(' · '):MAP_DEAD_END}</dd></div>
+                <div><dt>이후</dt><dd data-testid="v10-preview-next">{nextLabels.length?nextLabels.join(' · '):MAP_DEAD_END}</dd></div>
               </dl>
-              {previewDetail.why&&<p className="v10-preview-why" data-testid="v10-preview-why">{previewDetail.why}</p>}
               {previewOpen
-                ?<button type="button" className="v10-map-cta" data-testid="v10-map-cta" onClick={()=>onSelect?.(preview.id)}>{MAP_CTA}</button>
+                ?<button type="button" className="v10-map-cta primary" data-testid="v10-map-cta" onClick={()=>onSelect?.(preview.id)}>{MAP_CTA}<b aria-hidden="true">→</b></button>
                 :<p className="v10-preview-locked" data-testid="v10-preview-locked">{MAP_LOCKED}</p>}
             </>
-          ):<p className="v10-preview-empty" data-testid="v10-preview-empty">{MAP_EMPTY}</p>}
+          ):<div className="v10-preview-empty" data-testid="v10-preview-empty">
+            <span className="v10-empty-diamond"><MapIcon type="battle"/></span>
+            <strong>{MAP_EMPTY}</strong>
+            <small>노드를 누르면 상대·보상·위험이 전광판처럼 펼쳐집니다.</small>
+          </div>}
         </div>
       </aside>
     </section>
