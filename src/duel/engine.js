@@ -11,12 +11,20 @@ function shuffle(s,a){for(let i=a.length-1;i>0;i--){const j=Math.floor(unit(s,'s
 function draw(s,n){const b=s.battle;while(n-->0&&b.hand.length<9){if(!b.draw.length)b.draw=shuffle(s,b.discard.splice(0));if(!b.draw.length)break;b.hand.push(b.draw.pop());}}
 
 // PUBLIC is the actual sampling distribution. No false odds, no input-dependent reroll.
+// V10 opponents advertise their actual pitch identity on the map; V9 keeps stage defaults.
+const v10Opponent=s=>s?.version===10?s.v10?.opponent:null;
+const livePitchConfig=s=>{
+  const base=STAGES[s.stage],opponent=v10Opponent(s);
+  return {style:opponent?.style||base.style,zoneOpen:opponent?.zoneOpen??base.zoneOpen,zoneMax:opponent?.zoneMax??base.zoneMax};
+};
 // A pitcher's live zones. Opens narrow, widens every WIDEN_EVERY plate appearances, reaches wider at two strikes.
-export const repertoireWidth=s=>Math.min(STAGES[s.stage].zoneMax,
-  STAGES[s.stage].zoneOpen+Math.floor((s.battle.turn-1)/WIDEN_EVERY));
+export const repertoireWidth=s=>{
+  const cfg=livePitchConfig(s);
+  return Math.min(cfg.zoneMax,cfg.zoneOpen+Math.floor((s.battle.turn-1)/WIDEN_EVERY));
+};
 export function repertoire(s){
-  const count=Math.min(9,repertoireWidth(s)+(s.battle.strikes===2?PUTAWAY_REACH:0));
-  return ZONE_ORDER[STAGES[s.stage].style].slice(0,count).sort((a,z)=>a-z);
+  const cfg=livePitchConfig(s),count=Math.min(9,repertoireWidth(s)+(s.battle.strikes===2?PUTAWAY_REACH:0));
+  return ZONE_ORDER[cfg.style].slice(0,count).sort((a,z)=>a-z);
 }
 // Information is earned. A lower level hides digits; it never shows a false number.
 export function readLevel(s){
@@ -28,11 +36,12 @@ export function readLevel(s){
 export const activeRoute=s=>s?.build===DECKBUILDER_BUILD?routeChoice(s.stage,s.route):null;
 export const battleTarget=s=>STAGES[s.stage].target+(activeRoute(s)?.targetDelta||0);
 export const pitcherProfile=s=>{
-  const base=STAGES[s.stage].stats,bonus=activeRoute(s)?.statBonus||0;
+  const base=STAGES[s.stage].stats,routeBonus=s.version===10?0:(activeRoute(s)?.statBonus||0),opponentBonus=v10Opponent(s)?.statBonus||0;
+  const bonus=routeBonus+opponentBonus;
   return {stuff:base.stuff+bonus,movement:base.movement+bonus,command:base.command+bonus};
 };
 export function baseIntent(s){
-  const b=s.battle,style=STAGES[s.stage].style;
+  const b=s.battle,cfg=livePitchConfig(s),style=cfg.style;
   let weights=[5,6,10,7,8,15,5,7,12,25],name='바깥쪽 승부',detail='루키는 바깥쪽을 선호합니다. 2스트라이크에서는 몸쪽 비중이 높아집니다.';
   if(style==='sinker'){weights=[3,3,4,5,5,8,17,16,17,22];name='낮은 싱커';detail='낮은 공을 선호합니다. 높은 변화량이 타구 질을 낮추지만 존 적중 안타를 취소하지는 않습니다.';}
   if(style==='deep'){weights=[10,12,10,7,9,7,6,6,6,27];name='높은 공 · 외야 후퇴';detail='높은 공으로 뜬공을 유도합니다. 홈런 외 장타는 단타로 억제됩니다.';}
@@ -47,10 +56,10 @@ export function baseIntent(s){
   const live=repertoire(s),width=repertoireWidth(s);
   for(let z=0;z<9;z++)if(!live.includes(z))weights[z]=0;
   detail+=` 지금은 ${live.length}존만 씁니다`+(b.strikes===2&&live.length>width?` (2스트라이크로 ${live.length-width}존 확장)`:'')
-    +(width<STAGES[s.stage].zoneMax?` · ${WIDEN_EVERY}타석마다 넓어집니다.`:' · 더 넓어지지 않습니다.');
+    +(width<cfg.zoneMax?` · ${WIDEN_EVERY}타석마다 넓어집니다.`:' · 더 넓어지지 않습니다.');
   const total=weights.reduce((a,x)=>a+x,0);
   return {kind:style==='sinker'?'sinker':style==='deep'?'deep':b.strikes===2?'putaway':'fastball',name,detail,
-    repertoire:live,width,maxWidth:STAGES[s.stage].zoneMax,probabilities:weights.map(x=>x/total)};
+    repertoire:live,width,maxWidth:cfg.zoneMax,probabilities:weights.map(x=>x/total)};
 }
 function dealPitch(s){
   const b=s.battle;b.intent=baseIntent(s);let r=unit(s,'pitchSeed'),zone=9;
@@ -294,7 +303,7 @@ export function advanceBatter(state){
   s.phase='battle';draw(s,Math.max(0,5-b.hand.length));dealPitch(s);
   const widthAfter=repertoireWidth(s),entry=(index+1)+'번 '+currentBatter(s).name+' 타석 입장',events=[];
   if(widthAfter>widthBefore){
-    const opened=ZONE_ORDER[STAGES[s.stage].style].slice(widthBefore,widthAfter).map(z=>ZONES[z]).join(' · ');
+    const opened=ZONE_ORDER[livePitchConfig(s).style].slice(widthBefore,widthAfter).map(z=>ZONES[z]).join(' · ');
     events.push('투수 레퍼토리 확장 · '+widthBefore+'→'+widthAfter+'존 · '+opened+' 추가');
   }
   s.last={kind:events.length?'repertoire':'entry',text:entry,events,runs:0,outs:0};
@@ -434,12 +443,15 @@ import {V10_SAVE_KEY as V10_STORAGE_KEY,saveV10State,readV10State} from './v10-s
 
 const V10_UTILITY_PHASES=new Set(['training','locker','shop','rest']);
 const v10StageForNode=node=>node?.type==='boss'?Math.min(3,node.act):Math.min(2,Math.max(0,(node?.act||1)-1));
-const v10HpForNode=node=>({battle:72,elite:92,boss:120}[node?.type]||72)+Math.max(0,(node?.act||1)-1)*12;
+const v10HpForNode=node=>node?.opponent?.maxHp||(({battle:72,elite:92,boss:120}[node?.type]||72)+Math.max(0,(node?.act||1)-1)*12);
 const v10RouteForNode=node=>{
   const stage=v10StageForNode(node),choices=ROUTE_CHOICES[stage]||[];
   return choices[node?.type==='battle'?0:Math.max(0,choices.length-1)]||null;
 };
-const v10RewardPool=s=>rewardChoices(s.stage,null,DECKBUILDER_BUILD,s.route).slice(0,3);
+const v10RewardPool=s=>{
+  const node=getRunNode(s.runMap,s.v10?.nodeId),tier=node?.opponent?.rewardTier||1;
+  return rewardChoices(s.stage,null,DECKBUILDER_BUILD,s.route).slice(0,tier>=2?4:3);
+};
 const v10BasesForReveal=r=>r?.kind!=='hit'?0:r.label?.includes('홈런')?4:r.label?.includes('3루타')?3:r.label?.includes('2루타')?2:1;
 const v10EndedPA=r=>['hit','out','sacrifice'].includes(r?.kind)||r?.label==='볼넷';
 
@@ -447,7 +459,7 @@ export function createV10Duel(seed=Date.now()>>>0){
   const s=createDuel(seed,DECKBUILDER_BUILD);
   s.version=10;s.phase='map';s.stage=0;s.route=null;s.routeHistory=[];s.victories=0;s.battle=null;s.last=null;
   s.runMap=createRunMap(seed);s.pitcher=null;s.rewards=[];s.facilities=[];
-  s.v10={nodeId:null,lastCombat:null,rewardChoices:[],runComplete:false};
+  s.v10={nodeId:null,opponent:null,lastCombat:null,rewardChoices:[],runComplete:false};
   return s;
 }
 
@@ -456,7 +468,7 @@ export function enterV10Node(state,nodeId){
   const selected=selectRunNode(state.runMap,nodeId);if(selected.error)return state;
   const s=clone(state);s.runMap=selected.map;
   const node=getRunNode(s.runMap,nodeId);if(!node)return state;
-  s.v10={...s.v10,nodeId,lastCombat:null,rewardChoices:[]};
+  s.v10={...s.v10,nodeId,opponent:isCombatNode(node)?clone(node.opponent):null,lastCombat:null,rewardChoices:[]};
   if(!isCombatNode(node)){
     s.phase=node.type;s.pitcher=null;s.battle=null;s.route=null;s.last=null;return s;
   }
@@ -464,16 +476,16 @@ export function enterV10Node(state,nodeId){
   s.stage=stage;s.route=route.id;s.phase='map';s.battle=null;
   const started=startBattle(s);
   started.pitcher=createPitcherHp({
-    name:route.name,maxHp:v10HpForNode(node),seed:(node.seed^started.initialSeed)>>>0,style:STAGES[stage].style,
+    name:node.opponent?.name||route.name,maxHp:v10HpForNode(node),seed:(node.seed^started.initialSeed)>>>0,style:node.opponent?.style||STAGES[stage].style,
   });
-  started.v10={...started.v10,nodeId:node.id,lastCombat:null,rewardChoices:[]};
+  started.v10={...started.v10,nodeId:node.id,opponent:clone(node.opponent),lastCombat:null,rewardChoices:[]};
   return started;
 }
 
 export function completeV10UtilityNode(state){
   if(state?.version!==10||!V10_UTILITY_PHASES.has(state.phase))return state;
   const s=clone(state);s.runMap=completeRunNode(s.runMap);
-  s.phase='map';s.v10={...s.v10,nodeId:null};s.last=null;return s;
+  s.phase='map';s.v10={...s.v10,nodeId:null,opponent:null};s.last=null;return s;
 }
 
 export function playV10Action(state,action){
@@ -532,7 +544,7 @@ export function claimV10Reward(state,action){
   const here=getRunNode(s.runMap,s.runMap.currentNodeId);
   const finished=here?.type==='boss'&&here.act===3&&s.runMap.reachableIds.length===0;
   s.phase=finished?'won':'map';s.battle=null;s.pitcher=null;s.route=null;s.last=null;
-  s.v10={...s.v10,nodeId:null,lastCombat:null,rewardChoices:[],runComplete:finished};
+  s.v10={...s.v10,nodeId:null,opponent:null,lastCombat:null,rewardChoices:[],runComplete:finished};
   return s;
 }
 
