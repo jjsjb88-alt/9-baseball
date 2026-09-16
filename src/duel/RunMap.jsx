@@ -222,7 +222,8 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
     departTimer.current=setTimeout(()=>onSelect?.(preview.id),680);
   };
 
-  const preview=previewId?byId.get(previewId):null;
+  const activePreviewId=previewId&&byId.has(previewId)?previewId:(reachableIds?.[0]||currentNodeId||null);
+  const preview=activePreviewId?byId.get(activePreviewId):null;
   const previewType=preview?nodeType(preview.type):null;
   const previewDetail=preview?nodeDetail(preview,previewType):null;
   const previewOpen=!!preview&&reachable.has(preview.id);
@@ -275,7 +276,7 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
                       <div className="v10-map-row" key={`row-${r}`} data-depth={row.depth} data-lanes={row.lanes||row.items.length} style={{gridTemplateColumns:`repeat(${row.lanes||row.items.length},1fr)`}}>
                         {row.items.map(node=>{
                           const type=nodeType(node.type),name=nodeName(node)||type.title,detail=nodeDetail(node,type);
-                          const canGo=reachable.has(node.id),here=node.id===currentNodeId,picked=previewId===node.id;
+                          const canGo=reachable.has(node.id),here=node.id===currentNodeId,picked=activePreviewId===node.id;
                           return (
                             <button
                               key={node.id}
