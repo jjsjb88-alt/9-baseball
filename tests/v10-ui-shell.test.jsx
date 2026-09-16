@@ -168,6 +168,18 @@ describe('RunMap',()=>{
     expect(screen.getByTestId('v10-node-n5').querySelector('.px-locker')).toBeTruthy();
   });
 
+  it('원정 확정 중에는 선택 노드만 남고 지도에 travelling 상태를 건다',()=>{
+    vi.useFakeTimers();
+    try{
+      render(<RunMap {...mapProps({onSelect:vi.fn()})}/>);
+      fireEvent.click(screen.getByTestId('v10-node-n1'));
+      fireEvent.click(screen.getByTestId('v10-map-cta'));
+      expect(document.querySelector('.v10-map').classList.contains('is-travelling')).toBe(true);
+      expect(screen.getByTestId('v10-node-n1').classList.contains('is-departing')).toBe(true);
+      vi.advanceTimersByTime(680);
+    }finally{vi.useRealTimers()}
+  });
+
   it('현재 노드에서 갈 수 있는 경로만 황금 곡선으로 강조한다',()=>{
     const {container}=render(<RunMap {...mapProps()}/>);
     expect(container.querySelectorAll('.v10-edge-live').length).toBe(3);
@@ -185,13 +197,18 @@ describe('RunMap',()=>{
     expect(onSelect).not.toHaveBeenCalled();
   });
 
-  it('CTA를 눌러야 경로가 확정된다',()=>{
-    const onSelect=vi.fn();
-    render(<RunMap {...mapProps({onSelect})}/>);
-    fireEvent.click(screen.getByTestId('v10-node-n2'));
-    fireEvent.click(screen.getByTestId('v10-map-cta'));
-    expect(screen.getByTestId('v10-map-cta').textContent).toContain('이 원정으로 간다');
-    expect(onSelect).toHaveBeenCalledWith('n2');
+  it('CTA를 누르면 경로가 점등된 뒤 원정을 확정한다',()=>{
+    vi.useFakeTimers();
+    try{
+      const onSelect=vi.fn();
+      render(<RunMap {...mapProps({onSelect})}/>);
+      fireEvent.click(screen.getByTestId('v10-node-n2'));
+      fireEvent.click(screen.getByTestId('v10-map-cta'));
+      expect(screen.getByTestId('v10-map-cta').textContent).toContain('원정 출발 중');
+      expect(onSelect).not.toHaveBeenCalled();
+      vi.advanceTimersByTime(680);
+      expect(onSelect).toHaveBeenCalledWith('n2');
+    }finally{vi.useRealTimers()}
   });
 
   it('닿을 수 없는 노드도 미리 볼 수는 있고 갈 수는 없다',()=>{
