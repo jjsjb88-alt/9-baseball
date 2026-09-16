@@ -67,8 +67,17 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
   const refs=useRef(new Map());
   const moved=useRef(false);
 
-  /* 기본은 지금 있는 막만 편다. flipped는 사람이 그 기본을 뒤집은 막이다. */
-  const isOpen=useCallback(key=>!multiAct||(key===currentAct)!==flipped.has(key),[multiAct,currentAct,flipped]);
+  /* 지금 있는 막과 갈 수 있는 칸이 있는 막을 편다. 막 보스를 깨면 다음 칸이 다음 막에 있어서,
+     지금 막만 펴면 하나뿐인 갈 곳이 접힌 채로 숨는다. flipped는 사람이 그 기본을 뒤집은 막이다. */
+  const liveActs=useMemo(()=>{
+    const keys=new Set();
+    const currentKey=actOf(byId.get(currentNodeId));
+    if(currentKey!==null)keys.add(currentKey);
+    for(const id of reachable){const key=actOf(byId.get(id));if(key!==null)keys.add(key)}
+    if(!keys.size&&acts[0])keys.add(acts[0].key);
+    return keys;
+  },[acts,byId,currentNodeId,reachable]);
+  const isOpen=useCallback(key=>!multiAct||liveActs.has(key)!==flipped.has(key),[multiAct,liveActs,flipped]);
   const toggleAct=key=>setFlipped(prev=>{
     const next=new Set(prev);
     next.has(key)?next.delete(key):next.add(key);

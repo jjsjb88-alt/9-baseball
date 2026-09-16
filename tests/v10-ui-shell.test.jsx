@@ -328,6 +328,25 @@ describe('엔진 출력 모양 수용',()=>{
     expect(screen.getByTestId('v10-act-3').getAttribute('aria-expanded')).toBe('false');
   });
 
+  it('막 보스를 깨서 다음 칸이 다음 막에 있으면 그 막도 편다',()=>{
+    const {nodes,edges}=engineMap();
+    const {container}=render(<RunMap nodes={nodes} edges={edges} currentNodeId="a1-boss" reachableIds={['a2-entry']}/>);
+    expect(screen.getByTestId('v10-act-1').getAttribute('aria-expanded')).toBe('true');
+    expect(screen.getByTestId('v10-act-2').getAttribute('aria-expanded')).toBe('true');
+    expect(screen.getByTestId('v10-act-3').getAttribute('aria-expanded')).toBe('false');
+    expect(container.querySelectorAll('.v10-node.is-open').length).toBe(1);
+    expect(screen.getByTestId('v10-node-a2-entry')).toBeTruthy();
+  });
+
+  it('갈 수 있는 칸은 언제나 화면에 있다',()=>{
+    const {nodes,edges}=engineMap();
+    for(const [current,reach] of [['a1-entry',['a1-fork-a']],['a1-boss',['a2-entry']],['a2-boss',['a3-entry']],[null,['a1-entry']]]){
+      const {container,unmount}=render(<RunMap nodes={nodes} edges={edges} currentNodeId={current} reachableIds={reach}/>);
+      expect(container.querySelectorAll('.v10-node.is-open').length).toBe(reach.length);
+      unmount();
+    }
+  });
+
   it('접힌 막을 펴고 다시 접을 수 있다',()=>{
     const {nodes,edges}=engineMap();
     const {container}=render(<RunMap nodes={nodes} edges={edges} currentNodeId="a1-entry" reachableIds={['a1-fork-a']}/>);

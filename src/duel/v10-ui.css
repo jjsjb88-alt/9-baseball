@@ -118,3 +118,59 @@
 }
 .v10-reduced .v10-hp-ghost,.v10-reduced .v10-hp-fill{transition:none!important}
 .v10-reduced .v10-hp-ghost,.v10-reduced .v10-hp-damage,.v10-reduced .v10-hp-fill{animation:none!important}
+
+/* ---- V10 연결부 화면 (App.jsx에서 라우팅) --------------------------------- */
+.v10-app{max-width:1180px;margin:auto;min-height:100vh;background:#0b1c23;box-shadow:0 0 70px #0008}
+.v10-bar{display:flex;align-items:center;gap:9px;height:52px;padding:0 12px;border-bottom:1px solid #48615d;background:#0c2028f5;position:sticky;top:0;z-index:30}
+.v10-bar strong{font-size:15px;letter-spacing:-.6px;color:#f2d48f}
+.v10-bar small{font-size:9px;color:#8ea39a}
+.v10-bar button{margin-left:auto;font-size:10px;padding:6px 9px;border-radius:7px}
+.v10-bar button+button{margin-left:0}
+.v10-save-error{margin:0;padding:9px 12px;background:#743f30;font-size:11px}
+.v10-screen{padding:16px 12px 40px;display:grid;gap:12px;color:#f4ecd8}
+.v10-screen>h1{margin:0;font-size:24px;letter-spacing:-1.2px;line-height:1.3}
+.v10-screen>p{margin:0;font-size:12px;line-height:1.75;color:#c4d0c9}
+.v10-screen-intro{min-height:100vh;align-content:center;text-align:left}
+.v10-screen-intro h1{font-size:clamp(30px,9vw,54px)}
+.v10-screen-end{min-height:70vh;align-content:center}
+.v10-screen-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:6px}
+.v10-seed{font-size:10px;color:#a9bbb3;display:flex;align-items:center;gap:8px}
+.v10-seed input{width:130px;padding:8px;background:#10252d;border:1px solid #49625f;border-radius:7px;color:inherit;font:inherit}
+.v10-primary{background:linear-gradient(#f5d78d,#dcae5f);color:#142329;border:1px solid #ffe6ab;box-shadow:0 4px 0 #785836;font-weight:900}
+.v10-primary:hover:not(:disabled){background:#ffe3a3}
+.v10-next{width:100%;min-height:48px;font-size:14px}
+.v10-count{display:flex;align-items:baseline;gap:9px;margin:0;font-size:12px}
+.v10-count b{font-size:14px;color:#f2ead6}
+.v10-count span{margin-left:auto;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:#a9bbb3}
+.v10-intent{display:flex;gap:9px;align-items:baseline;margin:0;padding:8px 10px;background:#11282f;border:1px solid #35504d;border-radius:9px}
+.v10-intent span{font-size:8px;letter-spacing:1.6px;font-weight:900;color:#e8bd70}
+.v10-intent b{font-size:12px}
+.v10-zones{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.v10-zone{min-height:46px;padding:5px;font-size:9px;line-height:1.3;border-radius:8px;background:#10262d;border:1px solid #45605b}
+.v10-zone.is-covered{border-color:#5f9b86;background:#14332f}
+.v10-zone.is-aim{border-color:#ffe096;background:#25404a;box-shadow:0 0 0 2px #ffe09655;font-weight:900}
+.v10-hand{display:flex;gap:8px;overflow-x:auto;padding:2px 0 8px;scroll-snap-type:x proximity}
+.v10-card{scroll-snap-align:start;flex:0 0 150px;min-height:92px;display:flex;flex-direction:column;gap:5px;padding:9px;text-align:left;background:#ded6b9;color:#172d36;border:2px solid #82978d;border-radius:9px}
+.v10-card strong{font-size:12px;letter-spacing:-.3px}
+.v10-card small{font-size:8px;line-height:1.5;color:#3f5a58}
+.v10-card.is-picked{background:#f1e6c7;border-color:#ffd57f;box-shadow:0 0 0 2px #ffd57f}
+.v10-actions{display:grid;grid-template-columns:auto 1fr;gap:8px}
+.v10-actions button{min-height:46px}
+.v10-note{margin:0;font-size:10px;color:#e0a68f}
+.v10-entry{border-color:#8fd0b6}
+@media(min-width:900px){
+  .v10-screen{padding:24px 20px 56px}
+  .v10-combat{grid-template-columns:1fr 1fr;align-items:start}
+  .v10-combat>.v10-hp,.v10-combat>.v10-hand,.v10-combat>.v10-actions,.v10-combat>.v10-next{grid-column:1/-1}
+  .v10-card{flex-basis:170px}
+}
+.v10-intent small{margin-left:auto;font-size:9px;color:#a9bbb3}
+.v10-read{margin:0;font-size:10px;line-height:1.6;color:#a9bbb3}
+.v10-zone{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px}
+.v10-zone b{font-size:9px;font-weight:700}
+.v10-zone i{font-style:normal;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9px;color:#ffdf72}
+.v10-zone.shade-1{background:#0d1f26}
+.v10-zone.shade-2{background:#163038}
+.v10-zone.shade-3{background:#1f4249;border-color:#6f8f87}
+.v10-zone.is-covered{border-color:#5f9b86;box-shadow:inset 0 0 0 1px #5f9b8666}
+.v10-zone.is-aim{border-color:#ffe096;box-shadow:0 0 0 2px #ffe09655}
