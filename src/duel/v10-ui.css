@@ -74,6 +74,15 @@
 .v10-node:hover{background:transparent!important}
 .v10-node-route{position:absolute;z-index:7;top:-1px;left:50%;max-width:104px;transform:translate(-50%,-100%);padding:2px 6px;border:1px solid #6f8d82;border-radius:999px;background:#0d2027ee;font-size:5.5px;font-weight:1000;letter-spacing:.8px;color:#b9cec3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .v10-node-scene{position:relative;width:96px;height:58px;display:block;filter:drop-shadow(0 9px 6px #0009);transition:transform .14s steps(3),filter .14s steps(3)}
+.v10-node-scene:before{content:'';position:absolute;z-index:-1;inset:4px 1px 0;background:linear-gradient(180deg,#17313a66,#08191f22);clip-path:polygon(8% 19%,22% 8%,78% 8%,92% 19%,100% 100%,0 100%)}
+.v10-node[data-route="development"] .v10-node-scene:before{background:linear-gradient(180deg,#24543b7a,#0b241b2a)}
+.v10-node[data-route="steady"] .v10-node-scene:before{background:linear-gradient(180deg,#27524f70,#0b22232a)}
+.v10-node[data-route="craft"] .v10-node-scene:before{background:linear-gradient(180deg,#473c5d70,#1816262a)}
+.v10-node[data-route="scout"] .v10-node-scene:before{background:linear-gradient(180deg,#26526878,#0c202b2a)}
+.v10-node[data-route="gauntlet"] .v10-node-scene:before,.v10-node[data-route="ace"] .v10-node-scene:before{background:linear-gradient(180deg,#6a302a88,#26141235)}
+.v10-node[data-route="playoff"] .v10-node-scene:before{background:linear-gradient(180deg,#6a542578,#2e23102f)}
+.v10-node[data-route="gauntlet"] .v10-node-route,.v10-node[data-route="ace"] .v10-node-route{border-color:#ad755f;color:#ffc59c;background:#3b211ce8}
+.v10-node[data-route="playoff"] .v10-node-route{border-color:#a78b4d;color:#ffe08a;background:#33290fe8}
 .v10-diorama-art{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 .v10-diorama-art .px-ground{fill:#213d37}.v10-diorama-art .px-dirt{fill:#8d6448}.v10-diorama-art .px-stand{fill:#24464a}.v10-diorama-art .px-stand.hostile{fill:#49302d}
 .v10-diorama-art .px-light{fill:#f0d483}.v10-diorama-art .px-player{fill:#d7ddd1}.v10-diorama-art .px-player.hostile{fill:#e29b7a}
@@ -96,7 +105,7 @@
 .v10-node-name{max-width:118px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9px;line-height:1.2;color:#f5eedb;text-shadow:0 2px 2px #061219}
 .v10-node-badge{max-width:118px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:6px;line-height:1.25;color:#97aaa1}
 .v10-node-here{position:absolute;z-index:8;right:-3px;bottom:-3px;padding:2px 4px;border:1px solid #9ce4c2;background:#174534;color:#c9ffe4;font-family:ui-monospace,monospace;font-size:5px;font-style:normal;font-weight:1000;letter-spacing:.8px;box-shadow:0 0 10px #6fe0a255}
-.v10-node.is-locked{opacity:.24;filter:grayscale(.8) saturate(.25)}
+.v10-node.is-locked{opacity:.46;filter:grayscale(.45) saturate(.5)}
 .v10-node.is-open{opacity:1}
 .v10-node.is-open .v10-node-glow{opacity:1;animation:v10-route-pulse 1.8s steps(6) infinite}
 .v10-node.is-open .v10-node-scene{filter:drop-shadow(0 9px 6px #0009) drop-shadow(0 0 8px #d9a84444)}
