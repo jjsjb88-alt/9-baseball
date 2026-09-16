@@ -160,8 +160,10 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
   const [flipped,setFlipped]=useState(()=>new Set());
   const [previewId,setPreviewId]=useState(null);
   const [cursorId,setCursorId]=useState(null);
+  const [departingId,setDepartingId]=useState(null);
   const refs=useRef(new Map());
   const moved=useRef(false);
+  const departTimer=useRef(null);
 
   const liveActs=useMemo(()=>{
     const keys=new Set();
@@ -187,6 +189,7 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
     moved.current=false;
     refs.current.get(cursor)?.focus();
   },[cursor]);
+  useEffect(()=>()=>{if(departTimer.current)clearTimeout(departTimer.current)},[]);
 
   const go=id=>{moved.current=true;setCursorId(id)};
   const move=useCallback((act,fromId,key)=>{
@@ -212,7 +215,12 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
     event.preventDefault();
     move(act,id,event.key);
   };
-  const look=id=>{setCursorId(id);setPreviewId(id)};
+  const look=id=>{if(departingId)return;setCursorId(id);setPreviewId(id)};
+  const confirmRoute=()=>{
+    if(!previewOpen||departingId)return;
+    setDepartingId(preview.id);
+    departTimer.current=setTimeout(()=>onSelect?.(preview.id),680);
+  };
 
   const preview=previewId?byId.get(previewId):null;
   const previewType=preview?nodeType(preview.type):null;
@@ -224,7 +232,7 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
   }):[];
 
   return (
-    <section className={`v10-map${reduced?' v10-reduced':''}`} data-reduced={reduced?'true':'false'} aria-label="경로 지도">
+    <section className={`v10-map${reduced?' v10-reduced':''}${departingId?' is-travelling':''}`} data-reduced={reduced?'true':'false'} aria-label="경로 지도">
       <div className="v10-map-board">
         <div className="v10-map-skyline" aria-hidden="true"><i/><i/><i/><i/><i/></div>
         {acts.map((act,actIndex)=>{
@@ -273,7 +281,7 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
                               key={node.id}
                               type="button"
                               ref={element=>{element?refs.current.set(node.id,element):refs.current.delete(node.id)}}
-                              className={`v10-node v10-node-${node.type||'unknown'}${canGo?' is-open':' is-locked'}${here?' is-here':''}${picked?' is-picked':''}`}
+                              className={`v10-node v10-node-${node.type||'unknown'}${canGo?' is-open':' is-locked'}${here?' is-here':''}${picked?' is-picked':''}${departingId===node.id?' is-departing':''}`}
                               data-testid={`v10-node-${node.id}`}
                               data-type={node.type}
                               aria-disabled={canGo?undefined:'true'}
@@ -333,7 +341,7 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
                 <div><dt>이후</dt><dd data-testid="v10-preview-next">{nextLabels.length?nextLabels.join(' · '):MAP_DEAD_END}</dd></div>
               </dl>
               {previewOpen
-                ?<button type="button" className="v10-map-cta primary" data-testid="v10-map-cta" onClick={()=>onSelect?.(preview.id)}>{MAP_CTA}<b aria-hidden="true">→</b></button>
+                ?<button type="button" className="v10-map-cta primary" data-testid="v10-map-cta" disabled={!!departingId} onClick={confirmRoute}><span>{departingId?'원정 출발 중':'이 원정으로 간다'}</span><b aria-hidden="true">→</b></button>
                 :<p className="v10-preview-locked" data-testid="v10-preview-locked">{MAP_LOCKED}</p>}
             </>
           ):<div className="v10-preview-empty" data-testid="v10-preview-empty">
