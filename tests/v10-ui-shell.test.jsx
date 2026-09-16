@@ -116,7 +116,7 @@ describe('RunMap',()=>{
   it('노드 종류 이름을 붙여 보여준다',()=>{
     render(<RunMap {...mapProps()}/>);
     const labels=['n0','n1','n2','n3','n4','n5','n6'].map(id=>within(screen.getByTestId(`v10-node-${id}`)).getByText(/.+/,{selector:'.v10-node-type'}).textContent);
-    expect(labels).toEqual(['전투','훈련','강적','휴식','장비점','라커룸','보스']);
+    expect(labels).toEqual(['정규전','훈련','강적','휴식','영입','정리','결정전']);
   });
 
   it('한 줄에 노드를 다섯 개 이상 늘어놓지 않는다',()=>{
@@ -129,8 +129,25 @@ describe('RunMap',()=>{
 
   it('연결 관계를 선으로 그린다',()=>{
     const {container}=render(<RunMap {...mapProps()}/>);
-    expect(container.querySelectorAll('.v10-map-edges line').length).toBe(EDGES.length);
+    expect(container.querySelectorAll('.v10-map-edges .v10-edge').length).toBe(EDGES.length);
     expect(container.querySelectorAll('.v10-edge-live').length).toBe(3);
+  });
+
+  it('노드는 카드 상자가 아니라 픽셀 다이아몬드 엠블럼으로 렌더된다',()=>{
+    const {container}=render(<RunMap {...mapProps()}/>);
+    expect(container.querySelectorAll('.v10-node-core').length).toBe(NODES.length);
+    expect(container.querySelectorAll('.v10-map-icon').length).toBeGreaterThanOrEqual(NODES.length);
+    for(const node of NODES){
+      const button=screen.getByTestId(`v10-node-${node.id}`);
+      expect(button.querySelector('.v10-node-core')).toBeTruthy();
+      expect(button.querySelector('.v10-map-icon')).toBeTruthy();
+    }
+  });
+
+  it('현재 노드에서 갈 수 있는 경로만 황금 곡선으로 강조한다',()=>{
+    const {container}=render(<RunMap {...mapProps()}/>);
+    expect(container.querySelectorAll('.v10-edge-live').length).toBe(3);
+    for(const path of container.querySelectorAll('.v10-edge-live'))expect(path.getAttribute('d')).toContain(' C ');
   });
 
   it('reachable 노드를 누르면 보상·위험·이후 경로가 보인다',()=>{
@@ -149,7 +166,7 @@ describe('RunMap',()=>{
     render(<RunMap {...mapProps({onSelect})}/>);
     fireEvent.click(screen.getByTestId('v10-node-n2'));
     fireEvent.click(screen.getByTestId('v10-map-cta'));
-    expect(screen.getByTestId('v10-map-cta').textContent).toBe('이 경로로 간다');
+    expect(screen.getByTestId('v10-map-cta').textContent).toContain('이 원정으로 간다');
     expect(onSelect).toHaveBeenCalledWith('n2');
   });
 
@@ -159,7 +176,7 @@ describe('RunMap',()=>{
     const locked=screen.getByTestId('v10-node-n6');
     expect(locked.getAttribute('aria-disabled')).toBe('true');
     fireEvent.click(locked);
-    expect(screen.getByTestId('v10-preview-reward').textContent).toBe('막 보상을 받는다');
+    expect(screen.getByTestId('v10-preview-reward').textContent).toBe('다음 막으로 진출한다');
     expect(screen.queryByTestId('v10-map-cta')).toBeNull();
     expect(screen.getByTestId('v10-preview-locked').textContent).toBe('아직 닿지 않는 칸이다. 미리 보기만 된다.');
     expect(onSelect).not.toHaveBeenCalled();
@@ -182,17 +199,19 @@ describe('RunMap',()=>{
     expect(screen.getByTestId('v10-preview-name').textContent).toBe('훈련장');
     fireEvent.keyDown(document.activeElement,{key:'End'});
     expect(document.activeElement).toBe(screen.getByTestId('v10-node-n3'));
-    expect(screen.getByTestId('v10-preview-name').textContent).toBe('벤치 휴식');
+    expect(screen.getByTestId('v10-preview-name').textContent).toBe('컨디션 회복');
     fireEvent.keyDown(document.activeElement,{key:'Home'});
     expect(document.activeElement).toBe(screen.getByTestId('v10-node-n1'));
   });
 
-  it('연결선을 노드 밖에서 끊어 그린다',()=>{
+  it('연결선은 노드 중심을 관통하지 않는 곡선 원정 경로다',()=>{
     const {container}=render(<RunMap {...mapProps()}/>);
-    const line=[...container.querySelectorAll('.v10-map-edges line')][0];
-    const y1=Number(line.getAttribute('y1')),y2=Number(line.getAttribute('y2'));
-    expect(y1).toBeGreaterThan(100/6);
-    expect(y2).toBeLessThan(100/6*3);
+    const path=container.querySelector('.v10-map-edges .v10-edge');
+    expect(path?.tagName.toLowerCase()).toBe('path');
+    expect(path?.getAttribute('d')).toContain(' C ');
+    const nums=path.getAttribute('d').match(/-?\\d+(?:\\.\\d+)?/g).map(Number);
+    expect(nums[1]).toBeGreaterThan(100/6);
+    expect(nums.at(-1)).toBeLessThan(100/6*3);
   });
 
   it('방향키로 지도를 옮겨 다니고 포커스가 따라간다',()=>{
@@ -275,7 +294,7 @@ describe('엔진이 준 상세를 지도에 쓴다',()=>{
     fireEvent.click(screen.getByTestId('v10-node-n2'));
     expect(screen.queryByTestId('v10-preview-facing')).toBeNull();
     expect(screen.queryByTestId('v10-preview-why')).toBeNull();
-    expect(screen.getByTestId('v10-preview-reward').textContent).toBe('희귀 카드 한 장을 얻는다');
+    expect(screen.getByTestId('v10-preview-reward').textContent).toBe('보상 후보가 더 넓어진다');
   });
 
   it('스크린 리더 문구에 루트와 상대를 함께 넣는다',()=>{
@@ -366,7 +385,7 @@ describe('엔진 출력 모양 수용',()=>{
     expect(screen.getByTestId('v10-node-a1-entry').style.gridColumn).toBe('2');
     expect(screen.getByTestId('v10-node-a1-fork-a').style.gridColumn).toBe('1');
     expect(screen.getByTestId('v10-node-a1-fork-b').style.gridColumn).toBe('3');
-    expect(container.querySelectorAll('.v10-map-edges line').length).toBe(8);
+    expect(container.querySelectorAll('.v10-map-edges .v10-edge').length).toBe(8);
   });
 
   it('엔진 노드의 name을 이름으로 쓴다',()=>{
