@@ -30,7 +30,7 @@ export const RESULT_ORDER=['choice','pitch','verdict','hp'];
 
 export const NODE_TYPES={
   battle:{label:'정규전',title:'선발 승부',reward:'카드 드래프트',risk:'3아웃 전에 투수 체력을 0으로 만든다'},
-  elite:{label:'강적',title:'라이벌 원정',reward:'보상 후보가 더 넓어진다',risk:'더 높은 HP와 투수 능력치를 상대한다'},
+  elite:{label:'강적',title:'라이벌 원정',reward:'보상 후보가 더 넓어진다',risk:'더 높은 체력과 투수 능력치를 상대한다'},
   training:{label:'훈련',title:'타격 훈련',reward:'카드 한 장을 강화한다',risk:'즉시 카드 보상은 없다'},
   locker:{label:'정리',title:'라커룸',reward:'카드 한 장을 제거한다',risk:'덱을 얇게 만드는 선택이다'},
   shop:{label:'영입',title:'전력 보강',reward:'후보 중 카드 한 장을 추가한다',risk:'덱이 두꺼워질 수 있다'},
