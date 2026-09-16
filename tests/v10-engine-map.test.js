@@ -64,6 +64,37 @@ describe('V10 deterministic run map',()=>{
     }
   });
 
+  it('keeps early route choices committed before offering a second pivot, and varies topology by seed',()=>{
+    const signatures=new Set();
+    const children=(map,id)=>map.edges.filter(e=>e.from===id).map(e=>e.to);
+    for(let seed=0;seed<64;seed++){
+      const map=createRunMap(seed);
+      signatures.add(map.edges.map(e=>e.from+'>'+e.to).join('|'));
+      for(let act=1;act<=3;act++){
+        const branches=children(map,`a${act}-entry`);
+        expect(branches.length).toBeGreaterThanOrEqual(2);
+        const committed=branches.map(id=>new Set(children(map,id)));
+        for(let i=0;i<committed.length;i++)for(let j=i+1;j<committed.length;j++){
+          expect([...committed[i]].filter(id=>committed[j].has(id))).toEqual([]);
+        }
+      }
+    }
+    expect(signatures.size).toBeGreaterThan(1);
+  });
+
+  it('exposes opponent identity, risk and reward before combat',()=>{
+    const map=createRunMap(21);
+    const combat=map.nodes.filter(n=>['battle','elite','boss'].includes(n.type));
+    expect(combat.length).toBeGreaterThan(0);
+    for(const n of combat){
+      expect(n.preview).toContain('HP ');
+      expect(n.opponent.name).toBeTruthy();
+      expect(n.opponent.threat).toBeTruthy();
+      expect(['rookie','sinker','deep','closer']).toContain(n.opponent.style);
+      expect(n.risk).toBeTruthy();expect(n.reward).toBeTruthy();
+    }
+  });
+
   it('supports every node type and rejects disconnected selections',()=>{
     const map=createRunMap(9),types=new Set(map.nodes.map(n=>n.type));
     for(const type of ['battle','elite','training','locker','shop','rest','boss'])expect(types.has(type)).toBe(true);
@@ -76,9 +107,14 @@ describe('V10 engine loop and save isolation',()=>{
   it('runs battle -> pitcher defeated -> card reward -> map -> next pitcher',()=>{
     let s=createV10Duel(7);
     expect(Object.keys(selectV10Map(s))).toEqual(['nodes','edges','currentNodeId','reachableIds']);
-    s=enterV10Node(s,selectV10Map(s).reachableIds[0]);
+    const openingId=selectV10Map(s).reachableIds[0],openingNode=getRunNode(s.runMap,openingId);
+    s=enterV10Node(s,openingId);
     expect(s.phase).toBe('battle');
     expect(Object.keys(selectV10Pitcher(s))).toEqual(['name','hp','maxHp','phase','lastDamage']);
+    expect(s.pitcher.name).toBe(openingNode.opponent.name);
+    expect(s.pitcher.maxHp).toBe(openingNode.opponent.maxHp);
+    expect(s.battle.intent.maxWidth).toBe(openingNode.opponent.zoneMax);
+    expect(s.v10.opponent.archetypeKey).toBe(openingNode.opponent.archetypeKey);
     const firstMax=s.pitcher.maxHp;
     s.pitcher={...s.pitcher,hp:12,phase:'critical'};
     s.battle.pending={...s.battle.pending,zone:s.battle.aimZone,roll:0,powerRoll:.99};
