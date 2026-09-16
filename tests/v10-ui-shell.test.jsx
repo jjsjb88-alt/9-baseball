@@ -107,7 +107,7 @@ describe('RunMap',()=>{
   it('노드 종류 이름을 붙여 보여준다',()=>{
     render(<RunMap {...mapProps()}/>);
     const labels=['n0','n1','n2','n3','n4','n5','n6'].map(id=>within(screen.getByTestId(`v10-node-${id}`)).getByText(/.+/,{selector:'.v10-node-type'}).textContent);
-    expect(labels).toEqual(['전투','훈련','강적','휴식','장비점','라커룸','보스']);
+    expect(labels).toEqual(['정규전','훈련','강적','휴식','영입','정리','결정전']);
   });
 
   it('한 줄에 노드를 다섯 개 이상 늘어놓지 않는다',()=>{
@@ -120,8 +120,23 @@ describe('RunMap',()=>{
 
   it('연결 관계를 선으로 그린다',()=>{
     const {container}=render(<RunMap {...mapProps()}/>);
-    expect(container.querySelectorAll('.v10-map-edges line').length).toBe(EDGES.length);
+    expect(container.querySelectorAll('.v10-map-edges .v10-edge').length).toBe(EDGES.length);
     expect(container.querySelectorAll('.v10-edge-live').length).toBe(3);
+  });
+
+
+  it('모든 노드가 고유 야구 엠블럼을 가진다',()=>{
+    const {container}=render(<RunMap {...mapProps()}/>);
+    expect(container.querySelectorAll('.v10-node-glyph').length).toBe(NODES.length);
+    for(const node of NODES)expect(screen.getByTestId(`v10-node-${node.id}`).querySelector('.v10-node-emblem svg')).toBeTruthy();
+  });
+
+  it('활성 경로는 곡선 글로우 패스로 표현한다',()=>{
+    const {container}=render(<RunMap {...mapProps()}/>);
+    expect(container.querySelectorAll('.v10-edge-live').length).toBe(3);
+    const path=container.querySelector('.v10-edge-live');
+    expect(path?.tagName.toLowerCase()).toBe('path');
+    expect(path?.getAttribute('d')).toContain(' C ');
   });
 
   it('reachable 노드를 누르면 보상·위험·이후 경로가 보인다',()=>{
@@ -139,7 +154,7 @@ describe('RunMap',()=>{
     render(<RunMap {...mapProps({onSelect})}/>);
     fireEvent.click(screen.getByTestId('v10-node-n2'));
     fireEvent.click(screen.getByTestId('v10-map-cta'));
-    expect(screen.getByTestId('v10-map-cta').textContent).toBe('이 경로로 간다');
+    expect(screen.getByTestId('v10-map-cta').textContent).toContain('이 원정으로 간다');
     expect(onSelect).toHaveBeenCalledWith('n2');
   });
 
