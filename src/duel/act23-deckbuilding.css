@@ -1,0 +1,20 @@
+/* Act II / III deckbuilding presentation. Signature cards should feel like trophies, not another rectangle. */
+.duel-card[data-signature-act]{position:relative;overflow:hidden;border-color:rgba(248,210,110,.78)!important;background-image:radial-gradient(circle at 85% 8%,rgba(255,221,124,.18),transparent 30%),linear-gradient(155deg,rgba(57,48,27,.32),rgba(15,31,29,.08));box-shadow:inset 0 0 0 1px rgba(255,237,177,.09),0 10px 30px rgba(0,0,0,.18),0 0 22px rgba(255,204,83,.07)}
+.duel-card[data-signature-act]::before{content:attr(data-signature-label);position:absolute;left:8px;top:8px;z-index:6;padding:4px 6px;border:1px solid rgba(255,220,127,.62);border-radius:999px;background:rgba(60,47,24,.94);color:#ffe49a;font-size:6.5px;font-weight:950;letter-spacing:.75px;line-height:1;pointer-events:none}
+.duel-card[data-signature-act="2"]::before{background:rgba(29,54,49,.96);border-color:rgba(121,221,194,.62);color:#c6faeb}
+.duel-card[data-signature-act="3"]{border-color:rgba(255,179,96,.82)!important;box-shadow:inset 0 0 0 1px rgba(255,221,170,.1),0 10px 30px rgba(0,0,0,.2),0 0 30px rgba(255,139,60,.1)}
+.duel-card[data-signature-act="3"]::before{background:rgba(78,37,24,.96);border-color:rgba(255,174,94,.74);color:#ffd1a0}
+.duel-card[data-signature-act] .card-art{filter:drop-shadow(0 0 10px rgba(255,216,112,.14))}
+.duel-card[data-signature-act] .card-foot{color:#d7c68f}
+
+.signature-draft-callout{position:relative;display:grid;grid-template-columns:auto 1fr;gap:2px 12px;align-items:center;margin:14px auto 10px;max-width:760px;padding:11px 14px;border:1px solid rgba(245,205,99,.42);border-radius:14px;background:radial-gradient(circle at 90% 0,rgba(255,210,100,.12),transparent 32%),linear-gradient(135deg,rgba(47,39,21,.95),rgba(12,29,27,.95));box-shadow:0 14px 34px rgba(0,0,0,.18)}
+.signature-draft-callout::after{content:"";position:absolute;inset:5px;border:1px solid rgba(255,255,255,.025);border-radius:10px;pointer-events:none}
+.signature-draft-callout span{grid-row:1/3;align-self:stretch;display:grid;place-items:center;min-width:100px;padding:7px 9px;border-right:1px solid rgba(246,211,120,.22);font-size:8px;font-weight:950;letter-spacing:1.25px;color:#ffe398}
+.signature-draft-callout strong{font-size:13px;color:#fff7dc}
+.signature-draft-callout small{font-size:9px;line-height:1.45;color:#93aaa3}
+.reward-screen[data-signature-draft="2"] .signature-draft-callout{border-color:rgba(116,211,185,.42);background:radial-gradient(circle at 90% 0,rgba(102,225,192,.11),transparent 32%),linear-gradient(135deg,rgba(19,48,42,.95),rgba(10,27,26,.95))}
+.reward-screen[data-signature-draft="2"] .signature-draft-callout span{border-right-color:rgba(116,211,185,.22);color:#c6f8e9}
+.reward-screen[data-signature-draft="3"] .signature-draft-callout{border-color:rgba(255,164,83,.5);background:radial-gradient(circle at 90% 0,rgba(255,142,64,.13),transparent 32%),linear-gradient(135deg,rgba(55,31,22,.96),rgba(19,25,24,.96))}
+.reward-screen[data-signature-draft="3"] .signature-draft-callout span{border-right-color:rgba(255,170,91,.24);color:#ffd0a0}
+
+@media(max-width:720px){.signature-draft-callout{margin:10px 8px 8px;padding:9px 11px}.signature-draft-callout span{min-width:82px;font-size:7px}.signature-draft-callout strong{font-size:11px}.signature-draft-callout small{font-size:8px}}
