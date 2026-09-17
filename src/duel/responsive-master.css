@@ -141,76 +141,10 @@
   .card-drawer .duel-hand{min-height:124px!important}.card-drawer .duel-card{min-height:120px!important;max-height:154px!important;flex-basis:110px!important;width:110px!important}.card-drawer .duel-card .card-art{height:28px!important;min-height:28px!important}
 }
 
-/* PHONE LANDSCAPE 배치 — 구조
-   가로용 규칙이 네 개 시트에 흩어져 서로를 덮은 탓에, 기기 높이가 조금만 달라져도
-   다른 블록이 걸려 배치가 통째로 바뀌었다. 여기서 전투 화면의 행·열과 자리를 한 번에
-   못 박는다. 다른 가로 블록과 같은 범위(760px)를 써서 "안 걸리는 높이"를 없앤다.
-   9존은 auto 행, 손패는 1fr 행이다. 9존이 접히면 그 행이 0이 되고 손패가 남은 높이를
-   전부 가져간다. 빼야 할 매직 넘버가 없다. */
-@media (orientation:landscape) and (max-height:760px){
-  .duel-combat{
-    display:grid!important;
-    grid-template-columns:minmax(0,1.04fr) minmax(0,.96fr)!important;
-    grid-template-rows:22px 116px auto minmax(0,1fr)!important;
-    gap:4px 6px!important;padding:4px 6px 6px!important;
-    height:calc(100dvh - 46px)!important;overflow:hidden!important;align-items:stretch!important}
-  .duel-combat>*{min-width:0!important}
-  /* 전투 캔버스는 스크롤이 없는데 전광판이 sticky top:66px로 붙어 구장을 덮었다. 제자리에 둔다. */
-  .duel-combat>.scoreboard,.duel-combat>.v10-combat-hp,.duel-combat>.battle-ribbon{position:static!important;top:auto!important}
-  .duel-combat>.battle-ribbon{grid-area:1/1/2/3!important;height:22px!important;min-height:0!important;margin:0!important}
-  .duel-combat>.scoreboard{grid-area:2/1/3/2!important;height:116px!important;min-height:0!important;margin:0!important;overflow:hidden!important}
-  .duel-combat>.v10-combat-hp{grid-area:2/2/3/3!important;height:116px!important;min-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important}
-  .duel-combat>.duel-arena{grid-area:3/1/5/2!important;height:auto!important;min-height:0!important;max-height:none!important;margin:0!important;border-radius:10px!important;overflow:hidden!important}
-  .duel-combat>.zone-panel{grid-area:3/2/4/3!important;align-self:stretch!important;margin:0!important;min-height:0!important;padding:5px!important;border-radius:10px!important;overflow:hidden!important;z-index:2!important}
-  .duel-combat>.duel-table{grid-area:4/2/5/3!important;align-self:stretch!important;margin:0!important;min-height:0!important;max-height:100%!important;padding:0!important;overflow:hidden!important;scrollbar-width:none}
-  .duel-combat>.pitch-read{position:absolute!important;left:10px!important;bottom:10px!important;z-index:25!important;width:min(46%,380px)!important;margin:0!important;padding:5px 8px!important;border-radius:9px!important}
-
-  /* 확정 바는 position:sticky·z-index 4라 손패 위에 떠 카드를 덮었다. 서랍을 세로 플렉스로
-     만들어 머리글·손패·확정 바가 자리를 나눠 갖게 한다. */
-  .duel-combat .card-drawer{padding:6px 7px 0!important;margin:0!important}
-  .duel-combat>.duel-table>.card-drawer{display:flex!important;flex-direction:column!important;min-height:0!important}
-  .duel-combat .card-drawer .decision-preview{position:static!important;flex:0 0 auto!important;margin:0!important;min-height:0!important;padding:5px 8px!important}
-  /* 카드가 손패보다 커서 아래가 잘렸다. 손패 높이에 맞춰 늘리고 설명문은 두 줄 말줄임으로
-     끊어 잘림이 아니라 요약으로 읽히게 한다. */
-  .duel-combat.decision-swing .card-drawer .duel-hand,.duel-combat.decision-prepare .card-drawer .duel-hand{flex:1 1 auto!important;height:auto!important;min-height:0!important;align-items:stretch!important;padding:3px 2px 4px!important}
-  .duel-combat.decision-swing .card-drawer .duel-card,.duel-combat.decision-prepare .card-drawer .duel-card{overflow:hidden!important;height:auto!important;min-height:0!important;max-height:100%!important;padding:5px!important}
-  .duel-combat.decision-swing .card-drawer .duel-card .card-rule,.duel-combat.decision-prepare .card-drawer .duel-card .card-rule,
-  .duel-combat.decision-swing .card-drawer .duel-card p,.duel-combat.decision-prepare .card-drawer .duel-card p{display:-webkit-box!important;-webkit-box-orient:vertical!important;-webkit-line-clamp:2!important;overflow:hidden!important;min-height:0!important}
-}
-
-/* PHONE LANDSCAPE 배치 — 압축
-   진짜 좁은 폰 가로(세로 560px 이하)에서만 글자와 보조 줄을 줄인다. 위 구조는 그대로 두고
-   높이만 깎기 때문에, 기기 높이가 달라져도 배치가 바뀌지 않는다. */
-@media (orientation:landscape) and (max-height:560px){
-  .duel-header{height:38px!important;min-height:38px!important;padding:3px 9px!important}
-  .duel-combat{grid-template-rows:18px 48px auto minmax(0,1fr)!important;height:calc(100dvh - 38px)!important}
-  .duel-combat>.battle-ribbon{height:18px!important}
-  .duel-combat>.scoreboard,.duel-combat>.v10-combat-hp{height:48px!important}
-  /* 전광판 내용이 100px인데 칸은 48px이라 NEXT 타자·득점 설명·아웃 줄·타순 보기가 잘려 나갔다.
-     타자·투수 HP·볼카운트만 남긴다. 타순 보기는 세로와 데스크톱에 그대로 있다. */
-  .duel-combat>.scoreboard .scoreboard-player small,
-  .duel-combat>.scoreboard .scoreboard-score small,
-  .duel-combat>.scoreboard .scoreboard-count button{display:none!important}
-  .duel-combat>.scoreboard>div{padding:2px 6px!important;gap:1px!important}
-  .duel-combat>.scoreboard .scoreboard-count>div{min-height:0!important;height:11px!important;margin:0!important}
-  /* 투수 HP 칸도 내용이 113px이라 막대가 잘렸다. HP 숫자는 왼쪽 전광판에 이미 있다. */
-  .duel-combat>.v10-combat-hp .v10-hp{padding:4px 8px!important;gap:3px!important}
-  .duel-combat>.v10-combat-hp .v10-hp-count,.duel-combat>.v10-combat-hp .v10-hp-note{display:none!important}
-  .duel-combat>.v10-combat-hp .v10-hp-head{min-height:0!important;margin:0!important}
-  .duel-combat>.v10-combat-hp .v10-hp-name{font-size:12px!important;line-height:1.2!important}
-  .duel-combat>.v10-combat-hp .v10-hp-bar{height:10px!important;min-height:0!important;margin:0!important}
-  /* 존 셀이 17~21px로 눌려 라벨("몸쪽 높음")이 값("드묾") 위에 겹쳐 찍혔다. */
-  .duel-combat>.zone-panel .zone-grid{gap:3px!important;margin-top:3px!important}
-  .duel-combat>.zone-panel .zone-cell{min-height:26px!important;height:26px!important;padding:2px 3px!important;gap:0!important;justify-content:center!important}
-  .duel-combat>.zone-panel .zone-cell>span{font-size:7px!important;line-height:1.1!important}
-  .duel-combat>.zone-panel .zone-cell>strong{font-size:11px!important;line-height:1.15!important}
-  .duel-combat>.zone-panel .zone-cell>small{font-size:7px!important;line-height:1.1!important}
-  .duel-combat .drawer-head{gap:6px!important}
-  .duel-combat .drawer-head h2{font-size:12px!important;margin:0!important}
-  .duel-combat.decision-swing .card-drawer .duel-card .card-art,.duel-combat.decision-prepare .card-drawer .duel-card .card-art{height:18px!important;min-height:18px!important;margin:2px 0 3px!important}
-  /* BASIC SWING 카드는 설명이 두 단락이라 낮은 카드 높이에서 끝이 잘린다. */
-  .duel-combat.decision-swing .card-drawer .basic-card small,.duel-combat.decision-prepare .card-drawer .basic-card small{display:none!important}
-}
+/* 가로 배치는 sts-battleboard.css가 소유한다(b2b02b8).
+   이 시트에도 가로 블록이 있어 두 배치가 서로를 덮으면서, 전광판·HP·9존이 제각기
+   다른 규칙을 따라 겹쳐 찍혔다. 소유자를 하나로 두려고 여기서는 가로를 건드리지 않는다.
+   가로에서 고칠 것이 생기면 sts-battleboard.css에서 고친다. */
 
 /* BASIC SWING 카드만 위에 card-type·card-art가 없어, absolute로 띄운 비용 뱃지가 제목을 덮어
    "WING"으로 보였다. 기존 padding-top:30px는 반응형 시트들이 카드 padding을 !important로
@@ -224,6 +158,4 @@
 @media (max-width:900px) and (orientation:portrait){
   .zone-cell.aimed{outline-offset:-2px!important}
 }
-@media (orientation:landscape) and (max-height:560px){
-  .zone-cell.aimed{outline-offset:-2px!important}
-}
+
