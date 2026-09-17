@@ -48,7 +48,8 @@
   .duel-combat>.pitch-read{left:50%!important;right:auto!important;transform:translateX(-50%)!important;width:clamp(230px,31vw,380px)!important;z-index:24!important}
   .duel-combat>.zone-panel{z-index:30!important}
   .duel-combat>.v10-combat-hp{overflow:visible!important}
-  .duel-combat>.v10-combat-hp .v10-result{display:none!important}
+  .duel-combat>.v10-combat-hp .v10-result,
+  .duel-combat>.v10-combat-hp>.v10-result-impact{display:none!important}
   .duel-combat>.v10-combat-hp .v10-hp-impact{display:none!important}
   .duel-combat>.v10-combat-hp .v10-hp-count{display:flex!important;position:absolute!important;left:7px!important;bottom:4px!important;margin:0!important;z-index:7!important}
   .duel-combat>.v10-combat-hp .v10-hp-count b{font-size:14px!important}
