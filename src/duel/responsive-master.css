@@ -18,7 +18,11 @@
   .duel-header nav{gap:4px!important}
   .duel-header nav button{min-width:38px!important;min-height:32px!important;padding:4px 8px!important}
 
-  .duel-combat{box-sizing:border-box!important;width:100%!important;height:auto!important;min-height:calc(100dvh - 46px)!important;max-height:none!important;overflow:visible!important;display:grid!important;grid-template-columns:1fr!important;grid-template-rows:auto auto auto minmax(228px,34dvh) auto auto auto!important;gap:6px!important;padding:6px 7px 12px!important;align-items:stretch!important}
+  .duel-combat{box-sizing:border-box!important;width:100%!important;height:auto!important;min-height:calc(100dvh - 46px)!important;max-height:none!important;overflow:visible!important;display:grid!important;grid-template-columns:minmax(0,1fr)!important;grid-template-rows:auto auto auto minmax(228px,34dvh) auto auto auto!important;gap:6px!important;padding:6px 7px 12px!important;align-items:stretch!important}
+  /* 1fr은 자동 최소가 min-content라, 스윙 상태에서 손패·투구읽기의 min-content(811px)가
+     412px 화면의 열을 통째로 밀어 전광판까지 화면 밖으로 잘렸다. 트랙을 0까지 줄게 하고
+     자식도 min-width:auto를 풀어 화면 폭을 넘기지 못하게 못 박는다. */
+  .duel-combat>*{min-width:0!important;max-width:100%!important}
   .duel-combat>.battle-ribbon{grid-column:1!important;grid-row:1!important;height:26px!important;min-height:26px!important;margin:0!important;padding:3px 8px!important;border-radius:8px!important}
   .duel-combat>.scoreboard{grid-column:1!important;grid-row:2!important;height:62px!important;min-height:62px!important;margin:0!important;padding:0!important;border-radius:10px!important;overflow:hidden!important}
   .duel-combat>.v10-combat-hp{grid-column:1!important;grid-row:3!important;height:54px!important;min-height:54px!important;margin:0!important;overflow:hidden!important;border-radius:10px!important}
@@ -145,18 +149,68 @@
   .duel-combat{
     display:grid!important;
     grid-template-columns:minmax(0,1.04fr) minmax(0,.96fr)!important;
-    grid-template-rows:20px 40px minmax(0,1fr)!important;
+    grid-template-rows:18px 48px minmax(0,1fr)!important;
     gap:4px 6px!important;padding:4px 6px 6px!important;
     height:calc(100dvh - 38px)!important;overflow:hidden!important;align-items:stretch!important}
-  .duel-combat>.battle-ribbon{grid-area:1/1/2/3!important;height:20px!important;min-height:0!important;margin:0!important}
+  /* 폰 가로는 세로 높이가 390px 남짓이라 머리글·리본이 먹는 12px이 손패 한 줄을 좌우한다. */
+  .duel-header{height:38px!important;min-height:38px!important;padding:3px 9px!important}
+  .duel-combat>.battle-ribbon{grid-area:1/1/2/3!important;height:18px!important;min-height:0!important;margin:0!important}
   /* 전투 캔버스는 스크롤이 없는데 전광판이 sticky top:66px로 붙어 구장을 38px 덮었다. 가로에선 제자리에 둔다. */
   .duel-combat>.scoreboard,.duel-combat>.v10-combat-hp,.duel-combat>.battle-ribbon{position:static!important;top:auto!important}
-  .duel-combat>.scoreboard{grid-area:2/1/3/2!important;height:40px!important;min-height:0!important;margin:0!important;overflow:hidden!important}
-  .duel-combat>.v10-combat-hp{grid-area:2/2/3/3!important;height:40px!important;min-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important}
+  .duel-combat>.scoreboard{grid-area:2/1/3/2!important;height:48px!important;min-height:0!important;margin:0!important;overflow:hidden!important}
+  .duel-combat>.v10-combat-hp{grid-area:2/2/3/3!important;height:48px!important;min-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important}
+  /* 전광판은 내용이 100px인데 칸은 44px이라 "NEXT · 이민준", 득점 설명, 아웃 줄, 타순 보기가
+     잘려 나갔다. 폰 가로에서는 타자·투수 HP·볼카운트만 남기고 보조 줄을 접는다.
+     타순 보기는 세로와 데스크톱에 그대로 있다. */
+  .duel-combat>.scoreboard .scoreboard-player small,
+  .duel-combat>.scoreboard .scoreboard-score small,
+  .duel-combat>.scoreboard .scoreboard-count button{display:none!important}
+  .duel-combat>.scoreboard>div{padding:2px 6px!important;gap:1px!important}
+  .duel-combat>.scoreboard .scoreboard-count>div{min-height:0!important;height:11px!important;margin:0!important}
   .duel-combat>.duel-arena{grid-area:3/1/4/2!important;height:auto!important;min-height:0!important;max-height:none!important;margin:0!important;border-radius:10px!important;overflow:hidden!important}
   /* 9존은 스윙을 고를 때만 펼쳐진다. 접힌 동안 오른쪽 칸을 비워 두지 않도록 손패가 그 자리를 쓴다. */
   .duel-combat>.zone-panel{grid-area:3/2/4/3!important;align-self:start!important;margin:0!important;min-height:0!important;padding:5px!important;border-radius:10px!important;overflow:hidden!important;z-index:2!important}
+  /* 존 셀이 17~21px로 눌려 라벨("몸쪽 높음")이 값("드묾") 위에 겹쳐 찍혔다.
+     셀은 라벨·값·숙련 3줄이라 그 높이로는 절대 안 들어간다. 가로에서도 3줄이 들어갈
+     최소 높이를 주고 글자 크기를 셀 높이에 맞춰 못 박는다. */
+  .duel-combat>.zone-panel .zone-grid{gap:3px!important;margin-top:3px!important}
+  .duel-combat>.zone-panel .zone-cell{min-height:26px!important;height:26px!important;padding:2px 3px!important;gap:0!important;justify-content:center!important}
+  .duel-combat>.zone-panel .zone-cell>span{font-size:7px!important;line-height:1.1!important}
+  .duel-combat>.zone-panel .zone-cell>strong{font-size:11px!important;line-height:1.15!important}
+  .duel-combat>.zone-panel .zone-cell>small{font-size:7px!important;line-height:1.1!important}
+  /* 확정 바는 position:sticky·z-index 4라 손패 위에 뜬다. 카드 아래쪽 글자가 가려지지 않게
+     손패가 바 높이만큼 자리를 비우고, 서랍 머리글도 한 줄로 눌러 세로를 아낀다. */
+  .duel-combat .card-drawer{padding:6px 7px 0!important;margin:0!important}
+  .duel-combat .drawer-head{gap:6px!important}
+  .duel-combat .drawer-head h2{font-size:12px!important;margin:0!important}
+  .duel-combat>.duel-table>.card-drawer{display:flex!important;flex-direction:column!important;min-height:0!important}
+  .duel-combat.decision-swing .card-drawer .duel-hand,.duel-combat.decision-prepare .card-drawer .duel-hand{flex:1 1 auto!important;height:auto!important;min-height:0!important;padding:3px 2px 4px!important}
+  .duel-combat.decision-swing .card-drawer .duel-card,.duel-combat.decision-prepare .card-drawer .duel-card{min-height:0!important;height:100%!important}
+  /* 카드 높이가 86px로 줄면 설명문 마지막 줄이 상자 끝에서 잘려 깨진 것처럼 보인다.
+     두 줄에서 말줄임으로 끊어 잘림이 아니라 요약으로 읽히게 한다. */
+  .duel-combat.decision-swing .card-drawer .duel-hand,.duel-combat.decision-prepare .card-drawer .duel-hand{align-items:stretch!important}
+  .duel-combat.decision-swing .card-drawer .duel-card,.duel-combat.decision-prepare .card-drawer .duel-card{overflow:hidden!important;height:auto!important;min-height:0!important;max-height:100%!important;padding:5px!important}
+  .duel-combat.decision-swing .card-drawer .duel-card .card-art,.duel-combat.decision-prepare .card-drawer .duel-card .card-art{height:18px!important;min-height:18px!important;margin:2px 0 3px!important}
+  .duel-combat.decision-swing .card-drawer .duel-card .card-rule,.duel-combat.decision-prepare .card-drawer .duel-card .card-rule,
+  .duel-combat.decision-swing .card-drawer .duel-card p,.duel-combat.decision-prepare .card-drawer .duel-card p{display:-webkit-box!important;-webkit-box-orient:vertical!important;-webkit-line-clamp:2!important;overflow:hidden!important;min-height:0!important}
+  .duel-combat .card-drawer .decision-preview{position:static!important;flex:0 0 auto!important;margin:0!important;min-height:0!important;padding:5px 8px!important}
   .duel-combat>.duel-table{grid-area:3/2/4/3!important;align-self:end!important;margin:0!important;min-height:0!important;max-height:100%!important;padding:0!important;overflow:auto!important;scrollbar-width:none}
-  .duel-combat.decision-swing>.duel-table,.duel-combat.decision-prepare>.duel-table{align-self:end!important;max-height:calc(100% - 88px)!important}
+  .duel-combat.decision-swing>.duel-table,.duel-combat.decision-prepare>.duel-table{align-self:end!important;max-height:calc(100% - 116px)!important}
   .duel-combat>.pitch-read{position:absolute!important;left:10px!important;bottom:10px!important;z-index:25!important;width:min(46%,380px)!important;margin:0!important;padding:5px 8px!important;border-radius:9px!important}
+}
+
+/* BASIC SWING 카드만 위에 card-type·card-art가 없어, absolute로 띄운 비용 뱃지가 제목을 덮어
+   "WING"으로 보였다. 기존 padding-top:30px는 반응형 시트들이 카드 padding을 !important로
+   덮으면서 죽었다. 숫자를 다시 맞추는 대신 이 카드에서만 뱃지를 흐름에 되돌려, 화면 크기와
+   카드 높이가 어떻게 바뀌어도 제목이 뱃지 아래에서 시작하게 한다. */
+.basic-card>.card-cost{position:static!important;display:block!important;align-self:flex-start!important;margin:0 0 4px!important}
+
+/* 노림 표시는 outline-offset:-5px로 셀 안쪽에 링을 그린다. 데스크톱의 82px 셀에서는 여백에
+   떨어지지만, 폰에서 셀이 44px로 줄면 링이 위아래 라벨("한가운데", "비숙련 · 노림") 위를
+   지나 글자를 지운다. 작은 화면에서만 링을 테두리 쪽으로 붙여 글자를 비운다. */
+@media (max-width:900px) and (orientation:portrait){
+  .zone-cell.aimed{outline-offset:-2px!important}
+}
+@media (orientation:landscape) and (max-height:540px) and (max-width:1079px){
+  .zone-cell.aimed{outline-offset:-2px!important}
 }
