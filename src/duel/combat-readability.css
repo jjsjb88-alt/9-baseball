@@ -16,22 +16,48 @@
 .hp-hit-flash{animation:hpPlateHit .72s steps(6,end)!important}
 .v10-hp-ghost{background:#ffb56099!important;animation:hpBarGhost 1s ease-out both!important}
 .v10-hp-fill.is-draining{animation-duration:.72s!important}
-.hp-impact-burst{position:absolute;z-index:70;right:8%;top:42%;display:grid;justify-items:center;gap:3px;pointer-events:none;animation:hpBurst 1.4s cubic-bezier(.18,.8,.22,1) both;filter:drop-shadow(0 4px 0 #1d0906) drop-shadow(0 0 15px #ff6a3d66)}
+.hp-impact-burst{position:absolute;z-index:70;right:30%;top:42%;display:grid;justify-items:center;gap:3px;pointer-events:none;animation:hpBurst 1.4s cubic-bezier(.18,.8,.22,1) both;filter:drop-shadow(0 4px 0 #1d0906) drop-shadow(0 0 15px #ff6a3d66)}
 .hp-impact-burst strong{font:1000 clamp(28px,5vw,58px)/.9 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:-2px;color:#ff7d5b;-webkit-text-stroke:1px #35130d;text-shadow:3px 3px 0 #38110a}
 .hp-impact-burst span{padding:3px 8px;border:1px solid #d79658;border-radius:999px;background:#1b1210dd;font:900 clamp(7px,1.2vw,11px)/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:#ffe09a;letter-spacing:.4px}
 .hp-impact-burst.heavy strong{font-size:clamp(38px,7vw,76px);color:#ff6348}.hp-impact-burst.chip strong{font-size:clamp(22px,4vw,42px);color:#e9b47e}
 .hp-last-hit{position:absolute;right:7px;bottom:4px;display:flex;align-items:baseline;gap:6px;z-index:8;pointer-events:none}.hp-last-hit strong{font:1000 12px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:#ff8a6a}.hp-last-hit span{font:900 7px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:#f3d28d}.hp-last-hit.heavy strong{font-size:15px;color:#ff6348}
 .hp-efficiency-chip{order:-1;align-self:flex-end;margin:0 0 2px;padding:3px 7px;border:1px solid #8b7140;border-radius:999px;background:#211c11;color:#ffe18b;font:900 7px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.4px;white-space:nowrap}.hp-efficiency-chip[data-rate="100"]{border-color:#5e916f;background:#10241b;color:#b8efc6}.hp-efficiency-chip[data-rate="50"],.hp-efficiency-chip[data-rate="65"]{border-color:#9d5e49;background:#2b1711;color:#ffc08f}
 .duel-combat .zone-cell[data-read-level="high"] strong{color:#ffe179!important;text-shadow:0 0 8px #ffc94d55}.duel-combat .zone-cell[data-read-level="mid"] strong{color:#e5e6d4!important}.duel-combat .zone-cell[data-read-level="low"] strong{color:#99b3ae!important}.duel-combat .zone-cell[data-read-level="none"] strong{color:#667a77!important}
+.duel-combat .zone-cell>span[data-zone-copy="english"]{font-weight:900!important;letter-spacing:.3px!important;word-spacing:-1px!important}
+.character-focus-layer,.actor-focus-tag{display:none}
+
 @media (orientation:landscape){
-  .duel-combat>.duel-arena .actor-left,.duel-combat>.duel-arena .actor-right{z-index:26!important;scale:1.14;transform-origin:50% 100%!important;filter:drop-shadow(0 8px 5px #000b) drop-shadow(0 0 8px #e7cf8a44)!important}
-  .duel-combat>.duel-arena .actor-left{left:4.5%!important}.duel-combat>.duel-arena .actor-right{right:5%!important}
-  .duel-combat>.pitch-read{left:50%!important;right:auto!important;transform:translateX(-50%)!important;width:clamp(230px,31vw,380px)!important;z-index:24!important}
+  /* The arena is a duel stage. HUD stays peripheral; the two players own the middle. */
+  .duel-combat>.duel-arena.protagonist-stage{isolation:isolate!important}
+  .duel-combat>.duel-arena .character-focus-layer{display:block;position:absolute;inset:0;z-index:18;pointer-events:none;background:radial-gradient(circle at 15% 62%,rgba(245,211,125,.16) 0 12%,rgba(245,211,125,.05) 26%,transparent 42%),radial-gradient(circle at 66% 55%,rgba(125,205,222,.14) 0 12%,rgba(125,205,222,.04) 27%,transparent 43%),linear-gradient(90deg,rgba(2,8,11,.20),rgba(2,8,11,.48) 48%,rgba(2,8,11,.28));box-shadow:inset 0 0 90px rgba(0,0,0,.55)!important}
+  .duel-combat>.duel-arena .character-focus-spot{position:absolute;display:block;width:25%;height:72%;bottom:3%;border-radius:50%;filter:blur(8px);opacity:.95}
+  .duel-combat>.duel-arena .character-focus-spot.batter{left:2%;background:radial-gradient(ellipse at 50% 72%,rgba(252,221,136,.22),rgba(252,221,136,.06) 46%,transparent 70%)}
+  .duel-combat>.duel-arena .character-focus-spot.pitcher{right:22%;background:radial-gradient(ellipse at 50% 66%,rgba(142,218,230,.20),rgba(142,218,230,.05) 46%,transparent 70%)}
+  .duel-combat>.duel-arena .actor-left,.duel-combat>.duel-arena .actor-right{z-index:34!important;scale:1.24;transform-origin:50% 100%!important;filter:brightness(1.12) contrast(1.08) saturate(1.08) drop-shadow(0 10px 6px #000d) drop-shadow(0 0 11px #efd88a55)!important}
+  .duel-combat>.duel-arena .actor-left{left:5.5%!important}
+  .duel-combat>.duel-arena .actor-right{right:30%!important}
+  .duel-combat>.duel-arena .actor-focus-tag{display:block;position:absolute;z-index:35;bottom:5px;padding:3px 7px;border:1px solid rgba(224,199,126,.42);border-radius:999px;background:rgba(4,14,18,.74);backdrop-filter:blur(4px);font:1000 clamp(6px,.75vw,9px)/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:1.2px;color:#f1db99;pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,.32)}
+  .duel-combat>.duel-arena .actor-focus-tag.batter{left:5.5%}
+  .duel-combat>.duel-arena .actor-focus-tag.pitcher{right:30%;color:#bcebf1;border-color:rgba(139,212,224,.38)}
+  .duel-combat>.pitch-read{left:50%!important;right:auto!important;transform:translateX(-50%)!important;width:clamp(230px,31vw,380px)!important;z-index:24!important;opacity:.92}
   .duel-combat>.zone-panel{z-index:30!important}.duel-combat>.v10-combat-hp{overflow:visible!important}
   .duel-combat>.v10-combat-hp .v10-result,.duel-combat>.v10-combat-hp>.v10-result-impact{display:none!important}.duel-combat>.v10-combat-hp .v10-hp-impact{display:none!important}
   .duel-combat>.v10-combat-hp .v10-hp-count{display:flex!important;position:absolute!important;left:7px!important;bottom:4px!important;margin:0!important;z-index:7!important}.duel-combat>.v10-combat-hp .v10-hp-count b{font-size:14px!important}.duel-combat>.v10-combat-hp .v10-hp-count span{font-size:7px!important}.duel-combat>.v10-combat-hp .v10-hp-damage{display:none!important}
   .duel-combat .decision-preview.active{justify-content:flex-end!important}
 }
-@media (orientation:landscape) and (max-height:430px){.duel-combat>.duel-arena .actor-left,.duel-combat>.duel-arena .actor-right{scale:1.08}.hp-impact-burst{top:38%;right:9%}.hp-last-hit{bottom:2px}.hp-last-hit strong{font-size:10px}.hp-last-hit span{font-size:6px}.duel-combat>.pitch-read{width:30vw!important;max-width:250px!important}}
+
+@media (orientation:landscape) and (max-height:430px){
+  .duel-combat>.duel-arena .actor-left,.duel-combat>.duel-arena .actor-right{scale:1.14}
+  .duel-combat>.duel-arena .actor-left{left:4.5%!important}.duel-combat>.duel-arena .actor-right{right:30%!important}
+  .duel-combat>.duel-arena .actor-focus-tag{bottom:2px;padding:2px 5px;letter-spacing:.8px}
+  .duel-combat>.duel-arena .actor-focus-tag.batter{left:4.5%}.duel-combat>.duel-arena .actor-focus-tag.pitcher{right:30%}
+  .hp-impact-burst{top:38%;right:30%}.hp-last-hit{bottom:2px}.hp-last-hit strong{font-size:10px}.hp-last-hit span{font-size:6px}.duel-combat>.pitch-read{width:30vw!important;max-width:250px!important}
+}
+@media (orientation:landscape) and (min-width:1080px) and (min-height:650px){
+  .duel-combat>.duel-arena .actor-left,.duel-combat>.duel-arena .actor-right{scale:1.29}
+  .duel-combat>.duel-arena .actor-right{right:29%!important}
+  .duel-combat>.duel-arena .actor-focus-tag.pitcher{right:29%}
+  .hp-impact-burst{right:29%}
+}
 @media (orientation:portrait){.hp-impact-burst{right:8%;top:34%}.hp-last-hit{position:static;margin-top:5px;justify-content:flex-end}.hp-efficiency-chip{align-self:stretch;text-align:center;font-size:9px;padding:5px 8px}}
-@media (prefers-reduced-motion:reduce){.hp-hit-flash,.hp-impact-burst,.v10-hp-ghost,.v10-hp-fill.is-draining{animation:none!important;transition:none!important}.hp-impact-burst{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.hp-hit-flash,.hp-impact-burst,.v10-hp-ghost,.v10-hp-fill.is-draining{animation:none!important;transition:none!important}.hp-impact-burst{opacity:1;transform:none}.duel-combat>.duel-arena .character-focus-spot{filter:none!important}}
