@@ -1,7 +1,7 @@
 import {describe,it,expect} from 'vitest';
 import {CARDS,cardPower,rewardChoices,DECKBUILDER_BUILD} from '../src/duel/cards.js';
 import {createRunMap,getRunNode,validateRunMap} from '../src/duel/run-map.js';
-import {createV10Duel,enterV10Node,playV10Action,v10RewardOptions} from '../src/duel/engine.js';
+import {createV10Duel,enterV10Node,playV10Action,v10RewardOptions,claimV10Reward} from '../src/duel/engine.js';
 
 function forceCombatReward(act,type='elite',seed=20260917){
   let s=createV10Duel(seed);
@@ -13,6 +13,18 @@ function forceCombatReward(act,type='elite',seed=20260917){
   s.battle.pending={...s.battle.pending,zone:s.battle.aimZone,roll:0,powerRoll:.99};
   s=playV10Action(s,{type:'card',id:'basic'});
   return {s,node,rewards:v10RewardOptions(s)};
+}
+
+function defeatBossAndDraft(s,bossId){
+  s.runMap.reachableIds=[bossId];
+  s=enterV10Node(s,bossId);
+  expect(s.phase).toBe('battle');
+  s.pitcher={...s.pitcher,hp:12,phase:'critical'};
+  s.battle.pending={...s.battle.pending,zone:s.battle.aimZone,roll:0,powerRoll:.99};
+  s=playV10Action(s,{type:'card',id:'basic'});
+  expect(s.phase).toBe('reward');
+  const pick=v10RewardOptions(s)[0];
+  return claimV10Reward(s,pick?{type:'add',kind:pick}:{type:'skip'});
 }
 
 describe('V10 three-act deckbuilding arc',()=>{
@@ -54,6 +66,24 @@ describe('V10 three-act deckbuilding arc',()=>{
       expect(getRunNode(map,'a2-boss').opponent.archetypeKey).toBe('high');
       expect(getRunNode(map,'a3-boss').opponent.archetypeKey).toBe('closer');
     }
+  });
+
+  it('보스 승리와 드래프트가 실제로 1막→2막→3막을 끊김 없이 연다',()=>{
+    let s=createV10Duel(20260917);
+    s=defeatBossAndDraft(s,'a1-boss');
+    expect(s.phase).toBe('map');
+    expect(s.runMap.completedNodeIds).toContain('a1-boss');
+    expect(s.runMap.reachableIds).toEqual(['a2-entry']);
+
+    s=defeatBossAndDraft(s,'a2-boss');
+    expect(s.phase).toBe('map');
+    expect(s.runMap.completedNodeIds).toContain('a2-boss');
+    expect(s.runMap.reachableIds).toEqual(['a3-entry']);
+
+    s=enterV10Node(s,'a3-entry');
+    expect(s.phase).toBe('battle');
+    expect(s.v10.opponent.act).toBe(3);
+    expect(s.pitcher.maxHp).toBeGreaterThan(getRunNode(s.runMap,'a1-entry').opponent.maxHp);
   });
 
   it('정규전은 시그니처를 공짜로 풀지 않고 강적 선택에 의미를 남긴다',()=>{
