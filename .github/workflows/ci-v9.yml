@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - codex/v9-deckbuilder
-      - codex/responsive-master-character-pass
   workflow_dispatch:
 
 permissions:
