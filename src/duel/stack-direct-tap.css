@@ -1,5 +1,5 @@
-/* Direct-tap Swing Stack affordance.
-   The hand itself teaches the rule: first tap = MAIN, later taps = supports. */
+/* V10 Swing Stack — the hand teaches the gesture.
+   First tap picks MAIN. Other attack cards are physically swiped upward into COVER +. */
 .direct-stack-guide{margin:10px 0 12px;padding:13px 14px;border:1px solid rgba(255,213,112,.38);border-radius:14px;background:linear-gradient(135deg,rgba(45,37,20,.96),rgba(12,29,27,.96));box-shadow:inset 0 0 0 1px rgba(255,255,255,.025),0 12px 28px rgba(0,0,0,.16)}
 .direct-stack-guide>strong{display:block;margin-top:8px;font-size:14px;line-height:1.35;color:#fff5d5}
 .direct-stack-guide>small{display:block;margin-top:4px;font-size:9px;line-height:1.5;color:#9db4ad}
@@ -12,43 +12,55 @@
 
 .direct-stack-enhanced .stack-discovery{display:none}
 .direct-stack-enhanced .stack-candidates{display:none}
+.direct-stack-enhanced .duel-hand{overflow:visible}
 .direct-stack-enhanced .duel-card.attack{position:relative;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease,opacity .16s ease}
-.direct-stack-enhanced .duel-card.attack[data-stack-role]::after{content:attr(data-stack-role);position:absolute;right:7px;top:7px;z-index:4;padding:4px 6px;border:1px solid #5a746d;border-radius:999px;background:rgba(7,22,20,.92);color:#b6cbc5;font-size:7px;font-weight:950;letter-spacing:.45px;line-height:1;pointer-events:none;box-shadow:0 3px 9px rgba(0,0,0,.2)}
+.direct-stack-enhanced .duel-card.attack[data-stack-role]::after{content:attr(data-stack-role);position:absolute;right:7px;top:7px;z-index:5;padding:4px 6px;border:1px solid #5a746d;border-radius:999px;background:rgba(7,22,20,.92);color:#b6cbc5;font-size:7px;font-weight:950;letter-spacing:.45px;line-height:1;pointer-events:none;box-shadow:0 3px 9px rgba(0,0,0,.2)}
 .direct-stack-enhanced .duel-card.attack[data-stack-role="MAIN · 1"]{border-color:#ffd66e;box-shadow:0 0 0 1px rgba(255,214,110,.22),0 8px 22px rgba(255,207,80,.08);transform:translateY(-2px)}
 .direct-stack-enhanced .duel-card.attack[data-stack-role="MAIN · 1"]::after{border-color:#ffd66e;background:#59451f;color:#fff0b7}
-.direct-stack-enhanced .duel-card.attack[data-stack-role="+ 같이 쓰기"]{border-color:#557c71;box-shadow:inset 0 0 0 1px rgba(117,211,185,.05)}
-.direct-stack-enhanced .duel-card.attack[data-stack-role="+ 같이 쓰기"]::after{border-color:#76cdb5;background:#12352e;color:#c7f6e8;animation:directStackPulse 1.55s ease-in-out infinite}
-.direct-stack-enhanced .duel-card.attack[data-stack-order="2"],
-.direct-stack-enhanced .duel-card.attack[data-stack-order="3"],
-.direct-stack-enhanced .duel-card.attack[data-stack-order="4"]{border-color:#82d7c0;background-image:linear-gradient(180deg,rgba(36,79,68,.16),transparent);box-shadow:0 0 0 1px rgba(130,215,192,.12),0 8px 18px rgba(72,191,160,.08);transform:translateY(-2px)}
-.direct-stack-enhanced .duel-card.attack[data-stack-order="2"]::after,
-.direct-stack-enhanced .duel-card.attack[data-stack-order="3"]::after,
-.direct-stack-enhanced .duel-card.attack[data-stack-order="4"]::after{border-color:#83d9c2;background:#17443a;color:#d6fff3}
+.direct-stack-enhanced .duel-card.attack[data-stack-role="↑ 위로 밀어 커버"]{border-color:#557c71;box-shadow:inset 0 0 0 1px rgba(117,211,185,.05);touch-action:none;user-select:none;-webkit-user-select:none}
+.direct-stack-enhanced .duel-card.attack[data-stack-role="↑ 위로 밀어 커버"]::after{border-color:#76cdb5;background:#12352e;color:#c7f6e8;animation:directStackPulse 1.45s ease-in-out infinite}
+.direct-stack-enhanced .duel-card.attack[data-stack-role="↑ 위로 밀어 커버"]::before{content:"↑";position:absolute;left:50%;bottom:7px;z-index:4;display:grid;place-items:center;width:24px;height:24px;margin-left:-12px;border-radius:50%;background:rgba(18,53,46,.9);color:#c9f8ea;font-size:14px;font-weight:950;pointer-events:none;animation:swipeArrow 1.2s ease-in-out infinite}
+.direct-stack-enhanced .duel-card.attack[data-stack-order="2"],.direct-stack-enhanced .duel-card.attack[data-stack-order="3"],.direct-stack-enhanced .duel-card.attack[data-stack-order="4"]{border-color:#82d7c0;background-image:linear-gradient(180deg,rgba(36,79,68,.16),transparent);box-shadow:0 0 0 1px rgba(130,215,192,.12),0 8px 18px rgba(72,191,160,.08);transform:translateY(-2px);touch-action:none}
+.direct-stack-enhanced .duel-card.attack[data-stack-order="2"]::after,.direct-stack-enhanced .duel-card.attack[data-stack-order="3"]::after,.direct-stack-enhanced .duel-card.attack[data-stack-order="4"]::after{border-color:#83d9c2;background:#17443a;color:#d6fff3}
 @keyframes directStackPulse{0%,100%{box-shadow:0 0 0 0 rgba(118,205,181,.04)}50%{box-shadow:0 0 0 4px rgba(118,205,181,.12)}}
+@keyframes swipeArrow{0%,100%{transform:translateY(2px);opacity:.72}50%{transform:translateY(-6px);opacity:1}}
 
-/* Once a support card is tapped, choosing its zone becomes the only question. */
+/* Magnetic COVER + target appears only while a support card is being swiped. */
+.swipe-stack-dock{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 70px);z-index:115;display:flex;align-items:center;gap:10px;min-width:178px;padding:10px 15px;border:1px solid rgba(117,206,181,.35);border-radius:999px;background:rgba(9,31,27,.9);box-shadow:0 16px 45px rgba(0,0,0,.35);color:#9fc9bd;opacity:0;pointer-events:none;transform:translate(-50%,-16px) scale(.92);transition:opacity .14s ease,transform .14s ease,border-color .14s ease,box-shadow .14s ease;backdrop-filter:blur(8px)}
+.swipe-stack-dock i{display:grid;place-items:center;width:31px;height:31px;border:1px solid #5a8f80;border-radius:50%;background:#153d34;color:#c6f6e8;font-size:18px;font-style:normal;font-weight:950}
+.swipe-stack-dock span,.swipe-stack-dock strong{display:block}.swipe-stack-dock span{font-size:8px;font-weight:950;letter-spacing:1.4px;color:#74bda9}.swipe-stack-dock strong{margin-top:1px;font-size:11px;color:#daf8ef}
+.swipe-stack-dock.active{opacity:1;transform:translate(-50%,0) scale(1)}
+.swipe-stack-dock.armed{border-color:#ffd56d;background:rgba(70,56,25,.95);box-shadow:0 0 0 1px rgba(255,213,109,.18),0 20px 55px rgba(0,0,0,.44),0 0 34px rgba(255,205,86,.16);transform:translate(-50%,0) scale(1.08)}
+.swipe-stack-dock.armed i{border-color:#ffd66e;background:#5b4720;color:#fff1b8;animation:dockMagnet .42s ease-in-out infinite alternate}
+@keyframes dockMagnet{to{transform:translateY(-3px) scale(1.08)}}
+
+.swipe-card-ghost{position:fixed!important;z-index:120!important;margin:0!important;pointer-events:none!important;opacity:.9!important;filter:drop-shadow(0 18px 22px rgba(0,0,0,.42));transform:rotate(-3deg) scale(.96);transition:transform .08s linear,opacity .12s ease!important;will-change:left,top,transform}
+.swipe-card-ghost::before,.swipe-card-ghost::after{display:none!important}
+.swipe-card-ghost.accepted{opacity:0!important;transform:translateY(-46px) scale(.72) rotate(2deg)!important}
+.swipe-card-ghost.snap-back{opacity:0!important;transform:translateY(18px) scale(.9)!important}
+.direct-stack-dragging .duel-card.attack.swipe-source{opacity:.28;transform:scale(.96)}
+.direct-stack-armed .duel-card.attack[data-stack-role="MAIN · 1"]{box-shadow:0 0 0 2px rgba(255,215,112,.42),0 0 28px rgba(255,210,92,.2);transform:translateY(-5px) scale(1.015)}
+.direct-stack-armed .duel-card.attack.swipe-armed{border-color:#ffd66e}
+
+/* Once COVER + accepts the card, choosing its coverage zone becomes the only question. */
 .direct-stack-enhanced.direct-stack-aiming:before{content:"";position:fixed;inset:0;z-index:90;background:rgba(3,10,10,.64);backdrop-filter:blur(2px)}
 .direct-stack-enhanced .stack-aim-editor.direct-open{position:fixed;left:max(10px,calc((100vw - 520px)/2));right:max(10px,calc((100vw - 520px)/2));bottom:max(12px,env(safe-area-inset-bottom));z-index:100;margin:0;padding:15px;border:1px solid #91dbc7;border-radius:18px;background:linear-gradient(180deg,#132e2a 0%,#0b1f1d 100%);box-shadow:0 22px 70px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.03);animation:directStackSheet .18s ease-out}
 .direct-stack-enhanced .stack-aim-editor.direct-open:before{content:attr(data-direct-title);display:block;margin:0 0 10px;padding-right:72px;font-size:14px;font-weight:950;line-height:1.35;color:#f0fff9}
-.direct-stack-enhanced .stack-aim-editor.direct-open:after{content:"존을 고르면 자동으로 2장 스윙 준비";display:block;margin-top:9px;font-size:9px;text-align:center;color:#8eaaa2}
-.direct-stack-enhanced .stack-aim-editor.direct-open .stack-aim-title{margin-bottom:8px}
-.direct-stack-enhanced .stack-aim-editor.direct-open .stack-aim-title>div{display:none}
-.direct-stack-enhanced .stack-aim-editor.direct-open .stack-aim-title>button{margin-left:auto}
-.direct-stack-enhanced .stack-aim-editor.direct-open .assist-zone-grid{gap:7px}
-.direct-stack-enhanced .stack-aim-editor.direct-open .assist-zone-grid button{min-height:54px;border-color:#49675f;background:#0b2220}
-.direct-stack-enhanced .stack-aim-editor.direct-open .assist-zone-grid button.selected{border-color:#ffd675;background:linear-gradient(180deg,#5c4723,#373d27);color:#fff0b3;box-shadow:0 0 18px rgba(255,211,102,.14)}
+.direct-stack-enhanced .stack-aim-editor.direct-open:after{content:"존을 고르면 커버 카드가 스택에 고정됩니다";display:block;margin-top:9px;font-size:9px;text-align:center;color:#8eaaa2}
+.direct-stack-enhanced .stack-aim-editor.direct-open .stack-aim-title{margin-bottom:8px}.direct-stack-enhanced .stack-aim-editor.direct-open .stack-aim-title>div{display:none}.direct-stack-enhanced .stack-aim-editor.direct-open .stack-aim-title>button{margin-left:auto}
+.direct-stack-enhanced .stack-aim-editor.direct-open .assist-zone-grid{gap:7px}.direct-stack-enhanced .stack-aim-editor.direct-open .assist-zone-grid button{min-height:54px;border-color:#49675f;background:#0b2220}.direct-stack-enhanced .stack-aim-editor.direct-open .assist-zone-grid button.selected{border-color:#ffd675;background:linear-gradient(180deg,#5c4723,#373d27);color:#fff0b3;box-shadow:0 0 18px rgba(255,211,102,.14)}
 @keyframes directStackSheet{from{opacity:0;transform:translateY(18px) scale(.985)}to{opacity:1;transform:none}}
 
-/* Keep the compact original stack board as confirmation, not as a second place to hunt for cards. */
-.direct-stack-enhanced .swing-stack{margin-top:12px}
-.direct-stack-enhanced .stack-lane{margin-top:9px}
-.direct-stack-enhanced .stack-verdict{margin-top:10px}
+.direct-stack-enhanced .swing-stack{margin-top:12px}.direct-stack-enhanced .stack-lane{margin-top:9px}.direct-stack-enhanced .stack-verdict{margin-top:10px}
 
 @media(max-width:520px){
-  .direct-stack-guide{margin:8px 0 10px;padding:12px}
-  .direct-stack-guide>strong{font-size:13px}
+  .direct-stack-guide{margin:8px 0 10px;padding:12px}.direct-stack-guide>strong{font-size:13px}
   .direct-stack-enhanced .duel-card.attack[data-stack-role]::after{right:5px;top:5px;padding:4px 5px;font-size:6.5px}
+  .swipe-stack-dock{top:calc(env(safe-area-inset-top) + 58px);min-width:164px;padding:9px 13px}
   .direct-stack-enhanced .stack-aim-editor.direct-open{left:8px;right:8px;bottom:max(8px,env(safe-area-inset-bottom));padding:14px 12px}
   .direct-stack-enhanced .stack-aim-editor.direct-open .assist-zone-grid button{min-height:50px}
 }
-@media(prefers-reduced-motion:reduce){.direct-stack-enhanced .duel-card.attack[data-stack-role="+ 같이 쓰기"]::after{animation:none}.direct-stack-enhanced .stack-aim-editor.direct-open{animation:none}}
+@media(prefers-reduced-motion:reduce){
+  .direct-stack-enhanced .duel-card.attack[data-stack-role="↑ 위로 밀어 커버"]::after,.direct-stack-enhanced .duel-card.attack[data-stack-role="↑ 위로 밀어 커버"]::before,.swipe-stack-dock.armed i{animation:none}
+  .direct-stack-enhanced .stack-aim-editor.direct-open{animation:none}
+}
