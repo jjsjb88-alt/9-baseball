@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - codex/v9-deckbuilder
-      - codex/fix-scroll-final-final
   workflow_dispatch:
 
 permissions:
