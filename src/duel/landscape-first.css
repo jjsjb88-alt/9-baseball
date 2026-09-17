@@ -98,3 +98,69 @@
   .card-drawer .duel-card .card-art{height:24px!important;min-height:24px!important}
   .action-dock .action{min-height:44px!important}
 }
+
+/* PHONE LANDSCAPE — HAND FIRST
+   One pitch must be playable without hunting for the hand. Zone stays readable,
+   but cards and the execute action own the vertical budget. */
+@media (orientation: landscape) and (max-height: 760px){
+  .duel-combat{grid-template-columns:minmax(0,.92fr) minmax(320px,1.08fr)!important;grid-template-rows:22px 42px 96px minmax(0,1fr)!important;gap:4px 6px!important;padding:4px 6px 6px!important}
+  .duel-combat>.battle-ribbon{height:22px!important}
+  .duel-combat>.scoreboard,.duel-combat>.v10-combat-hp{height:42px!important}
+
+  .duel-combat>.zone-panel{padding:4px 5px!important;border-radius:10px!important}
+  .zone-heading{margin:0 0 2px!important;min-height:14px!important}
+  .zone-heading .eyebrow{display:none!important}
+  .zone-heading h2{font-size:10px!important;line-height:1!important;margin:0!important}
+  .ball-read{font-size:6.5px!important;padding:2px 4px!important;min-height:0!important}
+  .zone-grid{gap:2px!important;margin-top:1px!important}
+  .zone-cell{min-height:21px!important;height:21px!important;padding:1px 2px!important;border-radius:5px!important}
+  .zone-cell span{font-size:5px!important}.zone-cell strong{font-size:7px!important}
+
+  .duel-combat>.duel-table{overflow:hidden!important;display:flex!important;flex-direction:column!important}
+  .duel-combat.decision-swing>.duel-table,.duel-combat.decision-prepare>.duel-table{overflow:hidden!important}
+  .duel-combat.decision-swing .diamond-events,.duel-combat.decision-prepare .diamond-events{display:none!important}
+  .duel-combat.decision-swing .table-footer,.duel-combat.decision-prepare .table-footer{display:none!important}
+
+  .duel-combat.decision-swing .card-drawer,.duel-combat.decision-prepare .card-drawer{display:grid!important;grid-template-rows:26px minmax(112px,1fr) auto!important;gap:4px!important;height:100%!important;padding:5px!important;overflow:hidden!important}
+  .duel-combat.decision-swing .drawer-head,.duel-combat.decision-prepare .drawer-head{min-height:26px!important;height:26px!important;margin:0!important;align-items:center!important}
+  .duel-combat.decision-swing .drawer-head>div,.duel-combat.decision-prepare .drawer-head>div{display:flex!important;align-items:baseline!important;gap:6px!important;min-width:0!important}
+  .duel-combat.decision-swing .drawer-head h2,.duel-combat.decision-prepare .drawer-head h2{font-size:10px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  .duel-combat.decision-swing .drawer-head small,.duel-combat.decision-prepare .drawer-head small{font-size:6px!important;white-space:nowrap!important}
+  .duel-combat.decision-swing .drawer-back,.duel-combat.decision-prepare .drawer-back{min-height:24px!important;height:24px!important;padding:2px 6px!important}
+
+  .duel-combat.decision-swing .drawer-escape,.duel-combat.decision-prepare .drawer-escape,
+  .duel-combat.decision-swing .stack-discovery,.duel-combat.decision-prepare .stack-discovery,
+  .duel-combat.decision-swing .direct-stack-guide,.duel-combat.decision-prepare .direct-stack-guide{display:none!important}
+
+  .duel-combat.decision-swing .card-drawer .duel-hand,.duel-combat.decision-prepare .card-drawer .duel-hand{grid-row:2;flex:none!important;min-height:112px!important;height:100%!important;max-height:none!important;align-items:stretch!important;padding:2px 1px 3px!important;gap:5px!important;overflow-x:auto!important;overflow-y:hidden!important}
+  .duel-combat.decision-swing .card-drawer .duel-card,.duel-combat.decision-prepare .card-drawer .duel-card{height:100%!important;max-height:none!important;min-height:108px!important;flex:0 0 clamp(90px,13vw,112px)!important;width:clamp(90px,13vw,112px)!important;min-width:90px!important;padding:5px!important}
+  .duel-combat.decision-swing .card-drawer .duel-card .card-art,.duel-combat.decision-prepare .card-drawer .duel-card .card-art{height:24px!important;min-height:24px!important;margin:2px 0!important}
+  .duel-combat.decision-swing .card-drawer .duel-card .card-rule,.duel-combat.decision-prepare .card-drawer .duel-card .card-rule{-webkit-line-clamp:2!important;font-size:6.5px!important}
+
+  .duel-combat.decision-swing .swing-stack{height:0!important;min-height:0!important;max-height:0!important;margin:0!important;padding:0!important;border:0!important;background:none!important;box-shadow:none!important;overflow:visible!important}
+  .duel-combat.decision-swing .swing-stack>.stack-head,
+  .duel-combat.decision-swing .swing-stack>.stack-tradeoff,
+  .duel-combat.decision-swing .swing-stack>.stack-lane,
+  .duel-combat.decision-swing .swing-stack>.stack-candidates,
+  .duel-combat.decision-swing .swing-stack>.stack-verdict{display:none!important}
+
+  .duel-combat.decision-swing .decision-preview,.duel-combat.decision-prepare .decision-preview{grid-row:3!important;min-height:40px!important;max-height:54px!important;margin:0!important;padding:4px 5px!important;display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;gap:6px!important;overflow:hidden!important}
+  .duel-combat.decision-swing .decision-preview>div,.duel-combat.decision-prepare .decision-preview>div{min-width:0!important;overflow:hidden!important}
+  .duel-combat.decision-swing .decision-preview>div>span,.duel-combat.decision-prepare .decision-preview>div>span{display:none!important}
+  .duel-combat.decision-swing .decision-preview b,.duel-combat.decision-prepare .decision-preview b{font-size:8px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  .duel-combat.decision-swing .decision-preview .primary,.duel-combat.decision-prepare .decision-preview .primary{min-height:32px!important;height:32px!important;margin:0!important;padding:4px 9px!important;white-space:nowrap!important;font-size:8px!important}
+
+  .direct-stack-enhanced .stack-aim-editor.direct-open{z-index:120!important;max-height:calc(100dvh - 52px)!important;overflow:auto!important}
+}
+
+@media (orientation: landscape) and (max-height: 470px){
+  .duel-combat{grid-template-rows:20px 38px 82px minmax(0,1fr)!important}
+  .duel-combat>.battle-ribbon{height:20px!important}
+  .duel-combat>.scoreboard,.duel-combat>.v10-combat-hp{height:38px!important}
+  .zone-cell{min-height:17px!important;height:17px!important}
+  .duel-combat.decision-swing .card-drawer,.duel-combat.decision-prepare .card-drawer{grid-template-rows:24px minmax(96px,1fr) auto!important}
+  .duel-combat.decision-swing .card-drawer .duel-hand,.duel-combat.decision-prepare .card-drawer .duel-hand{min-height:96px!important}
+  .duel-combat.decision-swing .card-drawer .duel-card,.duel-combat.decision-prepare .card-drawer .duel-card{min-height:92px!important;flex-basis:84px!important;width:84px!important;min-width:84px!important}
+  .duel-combat.decision-swing .decision-preview,.duel-combat.decision-prepare .decision-preview{min-height:34px!important;max-height:42px!important}
+  .duel-combat.decision-swing .decision-preview .primary,.duel-combat.decision-prepare .decision-preview .primary{height:28px!important;min-height:28px!important}
+}
