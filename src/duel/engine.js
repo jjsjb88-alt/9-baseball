@@ -262,7 +262,7 @@ export function previewV10Stack(s,id,supports=[],probabilities=publicProbabiliti
   });
   const basesFor=label=>label.includes('홈런')?4:label.includes('2루타')?2:1;
   const types=[...mass].map(([label,m])=>({label,bases:basesFor(label),p:hit?m/hit:0}));
-  const hr=types.find(t=>t.bases===4)?.p||0,cardCount=1+supports.length,damageRate=v10SwingDamageRate(cardCount);
+  const hr=types.find(t=>t.bases===4)?.p||0,cardCount=1+supports.length,damageRate=v10RelicDamageRate(s.relics||[],cardCount,v10SwingDamageRate(cardCount));
   return {...base,label:'스윙 스택 · '+cardCount+'장을 겹쳐 커버합니다',coverage:combined,primaryCoverage:main,supportCoverages,
     supports:supportCoverages.map(({coverage,...x})=>x),cardCount,damageRate,hit,foul,whiff,out,sacrifice:0,types,
     matchup:matchup(s,id,s.battle.aimZone,combined.length),expectedBases:hit*types.reduce((v,t)=>v+t.p*t.bases,0),
@@ -536,6 +536,7 @@ export function readDuel(storage){
 import {createPitcherHp,applyPitcherOutcome,pitcherSelector} from './pitcher-hp.js';
 import {createRunMap,selectRunNode,completeRunNode,getRunNode,isCombatNode,runMapSelector} from './run-map.js';
 import {V10_SAVE_KEY as V10_STORAGE_KEY,saveV10State,readV10State} from './v10-storage.js';
+import {V10_RELICS,v10RelicOffers,v10RelicDamagePlan,v10RelicDamageRate} from './v10-relics.js';
 
 const V10_UTILITY_PHASES=new Set(['training','locker','shop','rest']);
 const v10StageForNode=node=>node?.type==='boss'?Math.min(3,node.act):Math.min(2,Math.max(0,(node?.act||1)-1));
@@ -555,6 +556,10 @@ const v10ShopPool=s=>{
   if(!pool.length)return [];
   const offset=(node?.seed||0)%pool.length;
   return [...pool.slice(offset),...pool.slice(0,offset)].slice(0,3);
+};
+const v10RelicPool=s=>{
+  const node=currentV10Node(s);
+  return v10RelicOffers({seed:s.initialSeed,act:node?.act||1,nodeSeed:node?.seed||0,owned:s.relics||[]});
 };
 const v10BasesForReveal=r=>{
   if(r?.kind!=='hit')return 0;
@@ -611,7 +616,11 @@ export function v10UtilityOptions(state){
   if(state?.version!==10||!V10_UTILITY_PHASES.has(state.phase))return [];
   if(state.phase==='training')return state.deck.filter(canUpgrade).map(c=>({type:'upgrade',id:c.id,kind:c.kind,name:CARDS[c.kind].name}));
   if(state.phase==='locker')return state.deck.length<=DECK_MIN?[]:state.deck.map(c=>({type:'remove',id:c.id,kind:c.kind,name:CARDS[c.kind].name}));
-  if(state.phase==='shop')return state.deck.length>=DECK_MAX?[]:v10ShopPool(state).map(kind=>({type:'add',kind,name:CARDS[kind].name}));
+  if(state.phase==='shop'){
+    const relics=v10RelicPool(state).map(relic=>({type:'relic',relic,name:`RELIC · ${V10_RELICS[relic].name} / ${V10_RELICS[relic].text}`}));
+    const cards=state.deck.length>=DECK_MAX?[]:v10ShopPool(state).map(kind=>({type:'add',kind,name:CARDS[kind].name}));
+    return [...cards,...relics];
+  }
   if(state.phase==='rest')return [{type:'rest',technique:8,name:'컨디션 회복'}];
   return [];
 }
@@ -621,7 +630,11 @@ function v10UtilityProblem(state,action){
   const options=v10UtilityOptions(state);
   if(state.phase==='training')return options.some(o=>o.type==='upgrade'&&o.id===action.id)?null:'강화할 수 없는 카드입니다.';
   if(state.phase==='locker')return options.some(o=>o.type==='remove'&&o.id===action.id)?null:'정리할 수 없는 카드입니다.';
-  if(state.phase==='shop')return options.some(o=>o.type==='add'&&o.kind===action.kind)?null:'이번 상점의 카드가 아닙니다.';
+  if(state.phase==='shop'){
+    if(action.type==='add')return options.some(o=>o.type==='add'&&o.kind===action.kind)?null:'이번 상점의 카드가 아닙니다.';
+    if(action.type==='relic')return options.some(o=>o.type==='relic'&&o.relic===action.relic)?null:'이번 상점의 유물이 아닙니다.';
+    return '카드 또는 유물 하나를 선택하세요.';
+  }
   if(state.phase==='rest')return action.type==='rest'?null:'휴식 효과를 선택할 수 없습니다.';
   return '알 수 없는 경로 행동입니다.';
 }
@@ -633,6 +646,8 @@ export function completeV10UtilityNode(state,action={type:'skip'}){
   else if(action.type==='remove')s.deck=applyRewardToDeck(s.deck,{type:'remove',id:action.id},s.nextId).deck;
   else if(action.type==='add'){
     const moved=applyRewardToDeck(s.deck,{type:'add',kind:action.kind},s.nextId);s.deck=moved.deck;s.nextId=moved.nextId;
+  }else if(action.type==='relic'){
+    if(!s.relics.includes(action.relic))s.relics.push(action.relic);
   }else if(action.type==='rest')s.v10.nextBattleBonus={technique:8,source:'rest'};
   s.v10.utilityHistory=[...(s.v10.utilityHistory||[]),{nodeId,kind,action:clone(action)}];
   s.runMap=completeRunNode(s.runMap);
@@ -653,19 +668,22 @@ export function playV10Action(state,action){
     return next;
   }
   const r=next.battle?.revealed;if(!r)return next;
-  const stackCardCount=action.type==='card'?(r.stackCardCount||1):1,damageRate=v10SwingDamageRate(stackCardCount);
-  const applied=applyPitcherOutcome(next.pitcher,{
-    kind:r.kind,label:r.label,bases:v10BasesForReveal(r),zone:r.zone,aimZone:r.aimZone,
-    covered:Array.isArray(r.coverage)&&r.coverage.includes(r.zone),
-  },{pitchId:next.stats.pitches,damageMultiplier:damageRate});
+  const stackCardCount=action.type==='card'?(r.stackCardCount||1):1,stackDamageRate=v10SwingDamageRate(stackCardCount);
+  const outcome={kind:r.kind,label:r.label,bases:v10BasesForReveal(r),zone:r.zone,aimZone:r.aimZone,
+    covered:Array.isArray(r.coverage)&&r.coverage.includes(r.zone)};
+  const pitchInPA=Math.max(1,(next.battle?.history||[]).filter(h=>h.turn===next.battle.turn).length);
+  const relicPlan=v10RelicDamagePlan({relics:next.relics||[],outcome,cardCount:stackCardCount,damageRate:stackDamageRate,pitchInPA});
+  const applied=applyPitcherOutcome(next.pitcher,outcome,{pitchId:next.stats.pitches,damageMultiplier:relicPlan.damageRate,damageBonus:relicPlan.damageBonus});
   next.pitcher=applied.pitcher;
   const supportNames=(r.supportKinds||[]).map(k=>CARDS[k]?.name||k);
   const supportAims=(r.supportZones||[]).map(v10ZoneLabel);
   next.v10={...next.v10,lastCombat:{
     choice,choiceLabel:[v10ChoiceLabel(choice),...supportNames].join(' + '),aimZone:r.aimZone,aimLabel:[v10ZoneLabel(r.aimZone),...supportAims].join(' + '),
     actualPitch:r.zone,pitchLabel:v10ZoneLabel(r.zone),pitchName:next.battle?.intent?.name||'',
-    verdict:r.label,damage:applied.result.damage,baseDamage:applied.result.baseDamage,damageRate,cardCount:stackCardCount,hpAfter:applied.result.hpAfter,
+    verdict:r.label,damage:applied.result.damage,baseDamage:applied.result.baseDamage,damageRate:relicPlan.damageRate,baseStackDamageRate:stackDamageRate,
+    relicBonus:relicPlan.damageBonus,relicEvents:relicPlan.events,cardCount:stackCardCount,hpAfter:applied.result.hpAfter,
   }};
+  if(relicPlan.events.length&&next.last?.events)next.last.events=[...relicPlan.events.map(e=>'유물 · '+e),...next.last.events];
   if(next.pitcher.hp<=0){
     const node=currentV10Node(next),finalBoss=node?.type==='boss'&&node.act===3;
     const events=[...(next.last?.events||[]),next.pitcher.name+' HP 0 · 강판'];

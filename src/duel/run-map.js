@@ -9,7 +9,7 @@ const ROUTE_LABELS={
 const UTILITY={
   training:{effect:'카드 강화',detail:'핵심 카드 하나를 강화해 다음 경기부터 역할을 선명하게 만듭니다.',risk:'낮음',reward:'덱 강화'},
   locker:{effect:'덱 정리',detail:'약한 카드를 덜 뽑도록 덱을 정리하는 구간입니다.',risk:'낮음',reward:'덱 압축'},
-  shop:{effect:'전력 보강',detail:'다음 승부 전에 카드·장비 선택지를 확보하는 구간입니다.',risk:'낮음',reward:'선택지 확장'},
+  shop:{effect:'전력 보강',detail:'카드와 런 전체를 바꾸는 유물 중 하나를 골라 전력을 보강합니다.',risk:'낮음',reward:'카드 / 유물'},
   rest:{effect:'컨디션 회복',detail:'다음 전투에서 타선의 타격 기술 +8. 강행군을 끊고 다음 투수를 안정적으로 공략합니다.',risk:'최저',reward:'다음 전투 타격 +8'},
 };
 const copy=o=>JSON.parse(JSON.stringify(o));
