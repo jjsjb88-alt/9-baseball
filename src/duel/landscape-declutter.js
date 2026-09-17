@@ -27,15 +27,22 @@ function decorateZone(panel){
   info.addEventListener('click',()=>toggleClass(panel,'zone-info-open',info));
   bar.append(title,info);panel.prepend(bar);
 }
-function decorateRead(read){
-  if(!read||read.querySelector('.landscape-read-toggle'))return;
-  const control=button('READ +','landscape-read-toggle');
-  control.setAttribute('aria-label','투구 읽기 상세');
-  control.addEventListener('click',()=>{
-    const open=toggleClass(read,'read-open',control);
-    control.textContent=open?'READ −':'READ +';
-  });
-  read.prepend(control);
+function decorateRead(read,combat){
+  if(!read)return;
+  let control=read.querySelector('.landscape-read-toggle');
+  const summary=(combat?.querySelector('.duel-arena .intent strong')?.textContent||'').trim();
+  if(!control){
+    control=button('READ','landscape-read-toggle');
+    control.setAttribute('aria-label','투구 읽기 상세');
+    control.addEventListener('click',()=>{
+      const open=toggleClass(read,'read-open',control);
+      const label=control.dataset.summary||'READ';
+      control.textContent=open?'READ −':label;
+    });
+    read.prepend(control);
+  }
+  control.dataset.summary=summary?('READ · '+summary):'READ +';
+  if(!read.classList.contains('read-open'))control.textContent=control.dataset.summary;
 }
 function decorateChoice(preview){
   if(!preview||preview.querySelector('.landscape-choice-toggle'))return;
@@ -74,7 +81,7 @@ function refresh(root=document,media=defaultMedia){
     combat.classList.toggle('v10-landscape-declutter',active&&!!combat.querySelector('.v10-combat-hp'));
     if(!active)return;
     decorateZone(combat.querySelector(':scope > .zone-panel'));
-    decorateRead(combat.querySelector(':scope > .pitch-read'));
+    decorateRead(combat.querySelector(':scope > .pitch-read'),combat);
     decorateChoice(combat.querySelector('.decision-preview'));
     decorateRelics(combat.querySelector('.v10-relic-rack'));
     decorateArena(combat.querySelector(':scope > .duel-arena'));
