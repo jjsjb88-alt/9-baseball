@@ -1155,3 +1155,102 @@ button:disabled{filter:grayscale(.5)}
 .assist-summary{margin:9px 0 0;font-size:10px;line-height:1.55;color:#a9c2ba}
 .assist-summary b{color:#ffe39a}
 @media(max-width:380px){.assist-head{display:grid}.assist-head small{max-width:none;text-align:left}.assist-card-row button{min-width:100px}.assist-zone-grid button{min-height:42px}}
+
+
+/* ─────────────────────────────────────────────────────────────
+   V10 SWING STACK
+   A deliberate risk / coverage instrument, not a hidden submenu.
+   ───────────────────────────────────────────────────────────── */
+.stack-discovery{
+  position:relative;display:flex;align-items:center;gap:14px;margin:10px 0 14px;padding:14px 16px;
+  border:1px solid rgba(255,210,103,.52);border-radius:16px;
+  background:
+    radial-gradient(circle at 12% 50%,rgba(255,205,83,.14),transparent 34%),
+    linear-gradient(135deg,rgba(39,31,18,.96),rgba(18,28,29,.96));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.03),0 10px 28px rgba(0,0,0,.18);
+  overflow:hidden;
+}
+.stack-discovery:after{content:"";position:absolute;inset:auto -24px -48px auto;width:120px;height:120px;border:1px solid rgba(255,221,128,.08);border-radius:50%}
+.stack-discovery>div:last-child{position:relative;z-index:1;min-width:0}
+.stack-discovery span{display:block;margin-bottom:3px;font-size:9px;font-weight:900;letter-spacing:1.7px;color:#ffd978}
+.stack-discovery strong{display:block;font-size:15px;line-height:1.3;color:#fff7de}
+.stack-discovery p{margin:4px 0 0;font-size:10px;line-height:1.55;color:#b9c8c4}
+.stack-discovery p b{color:#9de0cf}.stack-discovery p em{font-style:normal;color:#ffd978}
+.stack-fan{position:relative;flex:0 0 58px;height:48px}
+.stack-fan i{position:absolute;left:17px;top:5px;width:28px;height:38px;border:1px solid rgba(255,225,153,.75);border-radius:6px;background:linear-gradient(180deg,#455a54,#203632);box-shadow:0 4px 9px rgba(0,0,0,.28)}
+.stack-fan i:nth-child(1){transform:translate(-14px,4px) rotate(-15deg);opacity:.45}
+.stack-fan i:nth-child(2){transform:translate(-7px,1px) rotate(-7deg);opacity:.65}
+.stack-fan i:nth-child(3){transform:translate(1px,0) rotate(3deg);opacity:.82}
+.stack-fan i:nth-child(4){transform:translate(9px,3px) rotate(11deg);background:linear-gradient(180deg,#8b7138,#4e4228)}
+
+.swing-stack{margin:16px 0;padding:16px;border:1px solid rgba(255,215,124,.34);border-radius:18px;background:linear-gradient(145deg,rgba(12,28,29,.98),rgba(18,32,30,.98));box-shadow:inset 0 0 0 1px rgba(130,223,197,.05),0 18px 34px rgba(0,0,0,.2)}
+.stack-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.stack-head>div:first-child{min-width:0}
+.stack-head span{display:block;font-size:9px;font-weight:900;letter-spacing:1.55px;color:#82d8c2}
+.stack-head strong{display:block;margin-top:3px;font-size:16px;line-height:1.3;color:#f7fff9}
+.stack-head p{max-width:520px;margin:5px 0 0;font-size:10px;line-height:1.55;color:#91aaa3}
+.stack-efficiency{flex:0 0 94px;padding:9px 10px;border:1px solid rgba(255,215,124,.32);border-radius:12px;background:rgba(60,47,24,.45);text-align:right}
+.stack-efficiency small{display:block;font-size:8px;letter-spacing:.4px;color:#b9ad87}
+.stack-efficiency b{display:block;margin:1px 0;font-size:23px;line-height:1;color:#ffe095;font-variant-numeric:tabular-nums}
+.stack-efficiency em{display:block;font-size:8px;font-style:normal;color:#9eaaa6}
+
+.stack-tradeoff{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:14px 0 12px}
+.stack-tradeoff:before{content:"";position:absolute;left:8%;right:8%;top:19px;height:1px;background:linear-gradient(90deg,#8fe1cb,#e4c979,#ce8b5c);opacity:.35}
+.stack-tradeoff>div{position:relative;z-index:1;padding:7px 5px;border:1px solid #2f4a45;border-radius:10px;background:#102220;text-align:center;transition:.16s ease}
+.stack-tradeoff>div.filled{border-color:#5c7f75;background:#17302c}
+.stack-tradeoff>div.current{border-color:#ffd777;background:linear-gradient(180deg,#4a3e24,#2e321f);box-shadow:0 0 18px rgba(255,205,87,.14);transform:translateY(-1px)}
+.stack-tradeoff span,.stack-tradeoff small{display:block;font-size:8px;color:#79938c}
+.stack-tradeoff b{display:block;margin:2px 0;font-size:14px;color:#dceae6;font-variant-numeric:tabular-nums}
+.stack-tradeoff .current b{color:#ffe092}.stack-tradeoff .current small{color:#d9c789}
+
+.stack-lane{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:10px 0}
+.stack-slot{position:relative;min-width:0;min-height:78px;padding:9px;border:1px solid #36524c;border-radius:12px;background:#102421;color:#dfece8;text-align:left}
+button.stack-slot{cursor:pointer}
+.stack-slot span{display:block;font-size:8px;font-weight:900;letter-spacing:1px;color:#7ebbaa}
+.stack-slot strong{display:block;margin:7px 0 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:#e9f8f3}
+.stack-slot small{display:block;font-size:8px;line-height:1.35;color:#839a93}
+.stack-slot.main{border-color:#d8b963;background:linear-gradient(145deg,#3a3522,#1f3029);box-shadow:inset 0 0 0 1px rgba(255,226,146,.06)}
+.stack-slot.main span{color:#ffd97b}
+.stack-slot.support{appearance:none;font:inherit}
+.stack-slot.support i{position:absolute;right:8px;top:8px;font-size:7px;font-style:normal;color:#607d75}
+.stack-slot.support.editing{border-color:#89dbc6;box-shadow:0 0 0 1px rgba(137,219,198,.18),0 0 18px rgba(95,203,178,.08)}
+.stack-slot.empty{border-style:dashed;opacity:.48}.stack-slot.empty strong{color:#7f928d}
+
+.stack-candidates{display:flex;gap:7px;overflow-x:auto;padding:4px 0 8px;scrollbar-width:thin}
+.stack-candidates>button{flex:0 0 auto;min-width:122px;max-width:160px;padding:9px 10px;border:1px solid #355049;border-radius:11px;background:#0d201e;color:#d2e0dc;text-align:left}
+.stack-candidates>button>span,.stack-candidates>button>strong,.stack-candidates>button>small{display:block}
+.stack-candidates>button>span{font-size:8px;font-weight:900;letter-spacing:.8px;color:#79bea9}
+.stack-candidates>button>strong{margin:4px 0 3px;font-size:11px}
+.stack-candidates>button>small{font-size:8px;line-height:1.35;color:#718a82}
+.stack-candidates>button.picked{border-color:#f0c967;background:#3d3822;box-shadow:0 0 15px rgba(240,201,103,.1)}
+.stack-candidates>button.picked>span{color:#ffe094}
+.stack-candidates>button:disabled{opacity:.33}
+.stack-candidates>p{margin:0;padding:10px;font-size:9px;color:#789089}
+
+.stack-aim-editor{margin-top:5px;padding:11px;border:1px solid rgba(128,214,190,.28);border-radius:13px;background:rgba(7,20,19,.72)}
+.stack-aim-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.stack-aim-title span{display:block;font-size:8px;font-weight:900;letter-spacing:1.1px;color:#75bfa9}
+.stack-aim-title strong{display:block;margin-top:2px;font-size:11px;color:#e9f8f3}
+.stack-aim-title button{padding:6px 8px;border:1px solid #4b5f5a;border-radius:8px;background:transparent;color:#8fa39d;font-size:8px}
+
+.stack-verdict{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:12px;padding-top:12px;border-top:1px solid rgba(122,159,149,.2)}
+.stack-verdict>div{padding:7px 8px;border-radius:9px;background:#0d201e}
+.stack-verdict span{display:block;font-size:8px;color:#6f8981}
+.stack-verdict b{display:block;margin-top:1px;font-size:16px;color:#cfdfda;font-variant-numeric:tabular-nums}
+.stack-verdict b i{margin-left:2px;font-size:9px;font-style:normal;color:#647c75}
+.stack-verdict .damage b{color:#ffe091}
+.stack-verdict p{grid-column:1/-1;margin:2px 0 0;font-size:9px;line-height:1.5;color:#8da29c}
+
+.stack-preview-rule{color:#ffe091!important}
+@media(max-width:520px){
+  .stack-discovery{padding:12px}.stack-fan{flex-basis:48px;transform:scale(.88)}
+  .stack-head{display:grid;grid-template-columns:1fr auto}.stack-head p{grid-column:1/-1}
+  .stack-efficiency{flex-basis:auto;min-width:84px}
+  .stack-lane{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stack-slot{min-height:70px}
+}
+@media(max-width:360px){
+  .stack-tradeoff{gap:4px}.stack-tradeoff>div{padding:6px 2px}
+  .stack-verdict{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .stack-candidates>button{min-width:112px}
+}

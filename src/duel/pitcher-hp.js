@@ -71,10 +71,13 @@ export function applyPitcherOutcome(pitcher,outcome,opts={}){
   if(pitcher.hp<=0)return {pitcher,result:{damage:0,hpAfter:0,locked:true,duplicate:false}};
   if(pitchId!==null&&pitcher.lastPitchId===pitchId)
     return {pitcher,result:{damage:0,hpAfter:pitcher.hp,locked:false,duplicate:true}};
-  const calc=damageForOutcome(outcome,pitcher.foulStreak||0),hpAfter=Math.max(0,pitcher.hp-calc.damage);
-  const next={...pitcher,hp:hpAfter,phase:pitcherPhase(hpAfter,pitcher.maxHp),lastDamage:calc.damage,
+  const calc=damageForOutcome(outcome,pitcher.foulStreak||0);
+  const damageMultiplier=Number.isFinite(opts.damageMultiplier)?clamp(opts.damageMultiplier,0,1):1;
+  const damage=calc.damage>0?Math.max(1,Math.round(calc.damage*damageMultiplier)):0;
+  const hpAfter=Math.max(0,pitcher.hp-damage);
+  const next={...pitcher,hp:hpAfter,phase:pitcherPhase(hpAfter,pitcher.maxHp),lastDamage:damage,
     lastPitchId:pitchId,foulStreak:outcome?.kind==='foul'?(pitcher.foulStreak||0)+1:0};
-  return {pitcher:next,result:{...calc,hpAfter,locked:hpAfter<=0,duplicate:false}};
+  return {pitcher:next,result:{...calc,baseDamage:calc.damage,damage,damageMultiplier,hpAfter,locked:hpAfter<=0,duplicate:false}};
 }
 
 export const pitcherSelector=p=>p?({name:p.name,hp:p.hp,maxHp:p.maxHp,phase:p.phase,lastDamage:p.lastDamage}):null;
