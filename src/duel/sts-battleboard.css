@@ -470,3 +470,74 @@
   .duel-combat>.v10-combat-hp .v10-hp-name{-webkit-line-clamp:2!important}
   .duel-combat .decision-preview span{-webkit-line-clamp:3!important}
 }
+
+/* 브라우저 주소창이 뜬 폰 가로는 세로가 270~380px밖에 안 남는다. 이 구간에서는
+   9존의 max-height 계산(100% - 손패 - 98px)이 음수가 되어 상자가 12~78px로 눌렸고,
+   내용 107px이 그대로 잘려 "어떤 공을 기다릴까?" 한 줄만 보였다.
+   손패를 한 단계 줄여 자리를 만들고, 판·9존을 그 높이에 맞춰 다시 잡는다. */
+@media (orientation:landscape) and (max-height:380px){
+  .duel-combat{--sts-hand-h:104px}
+  .duel-combat>.scoreboard,.duel-combat>.v10-combat-hp{top:20px!important;height:34px!important;min-height:34px!important}
+  .duel-combat>.scoreboard .scoreboard-player strong{font-size:10px!important}
+  .duel-combat>.scoreboard .scoreboard-score strong{font-size:14px!important}
+  .duel-combat>.scoreboard .scoreboard-count>div{height:9px!important;line-height:9px!important;font-size:6px!important}
+  .duel-combat>.scoreboard span,.duel-combat>.scoreboard small{font-size:5.5px!important}
+  .duel-combat>.v10-combat-hp .v10-hp-name{font-size:9px!important}
+  .duel-combat>.v10-combat-hp .v10-hp-bar{height:6px!important}
+  .duel-combat>.scoreboard>div{padding:2px 6px!important;gap:0!important}
+  .duel-combat>.v10-combat-hp .v10-hp-head{gap:4px!important}
+  .duel-combat>.v10-combat-hp .v10-hp-phase{display:none!important}
+  .duel-combat>.zone-panel{
+    top:56px!important;padding:4px!important;
+    max-height:calc(100% - var(--sts-hand-h) - 58px)!important}
+  .duel-combat>.zone-panel .zone-heading{display:none!important}
+  .duel-combat>.zone-panel .zone-grid{gap:2px!important}
+  .duel-combat>.zone-panel .zone-cell{height:16px!important;min-height:16px!important;padding:0 2px!important}
+  /* 셀이 16px인데 라벨·값 2줄이라 글자가 겹쳐 찍혔다. 몸쪽/가운데/바깥과 높음/중간/낮음은
+     셀의 자리로 이미 드러나므로, 이 구간에서만 라벨을 접고 값만 남긴다. */
+  .duel-combat>.zone-panel .zone-cell span,.duel-combat>.zone-panel .zone-cell small{display:none!important}
+  .duel-combat>.zone-panel .zone-cell strong{font-size:8px!important;line-height:1!important}
+  .duel-combat>.pitch-read{bottom:calc(var(--sts-hand-h) + 6px)!important;min-height:0!important;padding:3px 6px!important}
+  .duel-combat .card-drawer .duel-hand{height:calc(var(--sts-hand-h) - 12px)!important;padding-top:3px!important}
+  .duel-combat .card-drawer .duel-card{height:auto!important;min-height:0!important;max-height:100%!important}
+  /* 서랍이 그리드가 아니라 절대배치라 머리글·기다리기 버튼·알약이 서로 겹친다.
+     가장 짧은 가로에서는 머리글("이 공을 어떻게 칠까?")을 접는다. 같은 지시가 알약의
+     "카드 한 장을 선택하세요"에 있다. 기다리기 버튼은 알약 아래 한 줄로 내린다. */
+  .duel-combat .card-drawer .drawer-head{display:none!important}
+  .duel-combat .card-drawer .drawer-escape{top:auto!important;bottom:6px!important;right:8px!important;width:150px!important;height:20px!important;min-height:20px!important}
+  .duel-combat .card-drawer .drawer-watch{width:100%!important;height:20px!important;min-height:20px!important;font-size:7px!important;padding:0!important}
+  .duel-combat .card-drawer .duel-hand{bottom:4px!important;top:auto!important}
+  .duel-combat .decision-preview{padding:4px!important}
+  .duel-combat .decision-preview>div>span,.duel-combat .decision-preview span{display:none!important}
+  /* 확정 버튼 문구("맞혀놓기 · 단독 스윙 100%")가 150px 알약보다 넓어 좌우로 잘렸다.
+     알약을 세로로 쌓고 버튼을 폭 전체로 펴서 두 줄까지 들어가게 한다. */
+  .duel-combat.decision-swing .decision-preview,.duel-combat.decision-prepare .decision-preview{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:3px!important}
+  .duel-combat.decision-swing .decision-preview>div,.duel-combat.decision-prepare .decision-preview>div{flex:0 0 auto!important;align-self:stretch!important}
+  .duel-combat.decision-swing .decision-preview b,.duel-combat.decision-prepare .decision-preview b{font-size:6px!important;line-height:1.15!important;max-height:2.4em!important}
+  .duel-combat.decision-swing .decision-preview .primary,.duel-combat.decision-prepare .decision-preview .primary{width:100%!important;flex:0 0 auto!important;height:auto!important;min-height:26px!important;padding:3px 4px!important;font-size:6px!important;line-height:1.15!important;white-space:normal!important;align-self:stretch!important}
+}
+
+/* 확정 알약이 화면 아래로 22px 밀려 나갔다. landscape-first.css가 .decision-swing 선택자로
+   top과 max-height:42px를 박아, 배틀보드의 bottom:8px가 무시되고 top이 이겼기 때문이다.
+   같은 선택자 세기로 되잡아 알약을 손패 칸 안에 앉힌다. */
+@media (orientation: landscape){
+  /* landscape-first.css가 .decision-swing 세기로 서랍을 그리드(24px/1fr/auto)로 만든다.
+     그러면 알약은 그리드 항목이라 컨테이닝 블록이 서랍의 padding box가 아니라 세 번째
+     그리드 영역이 되고, 그 영역이 서랍 밖(303px)에 놓여 알약이 화면 밑으로 나갔다.
+     배틀보드에서 손패와 알약은 좌우로 나란히 놓는 절대배치라 그리드가 필요 없다. */
+  .duel-combat.decision-swing .card-drawer,
+  .duel-combat.decision-prepare .card-drawer{display:block!important}
+  .duel-combat.decision-swing .decision-preview,
+  .duel-combat.decision-prepare .decision-preview{
+    top:auto!important;bottom:8px!important;
+    min-height:0!important;max-height:none!important;
+    height:calc(var(--sts-hand-h) - 42px)!important}
+}
+@media (orientation:landscape) and (max-height:430px){
+  .duel-combat.decision-swing .decision-preview,
+  .duel-combat.decision-prepare .decision-preview{height:94px!important}
+}
+@media (orientation:landscape) and (max-height:380px){
+  .duel-combat.decision-swing .decision-preview,
+  .duel-combat.decision-prepare .decision-preview{bottom:30px!important;height:calc(var(--sts-hand-h) - 38px)!important}
+}
