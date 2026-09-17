@@ -2,11 +2,14 @@ import {describe,expect,it} from 'vitest';
 import fs from 'node:fs';
 
 const css=fs.readFileSync(new URL('../src/duel/landscape-first.css',import.meta.url),'utf8');
+const scrollFix=fs.readFileSync(new URL('../src/duel/landscape-scroll-fix.css',import.meta.url),'utf8');
 const main=fs.readFileSync(new URL('../src/main.jsx',import.meta.url),'utf8');
 
 describe('V10 landscape-first mobile contract',()=>{
-  it('loads the dedicated landscape stylesheet from the app entry',()=>{
+  it('loads the dedicated landscape stylesheet and scroll hotfix from the app entry',()=>{
     expect(main).toContain('landscape-first.css');
+    expect(main).toContain('landscape-scroll-fix.css');
+    expect(main.indexOf('landscape-scroll-fix.css')).toBeGreaterThan(main.indexOf('landscape-first.css'));
   });
 
   it('portrait phones get a rotate-device gate instead of compressed combat UI',()=>{
@@ -28,5 +31,16 @@ describe('V10 landscape-first mobile contract',()=>{
     expect(css).toContain('overflow-x:auto!important');
     expect(css).toContain('.zone-cell{min-height:30px!important');
     expect(css).toContain('max-height:158px!important');
+  });
+
+  it('does not globally lock landscape run screens while keeping combat fixed',()=>{
+    expect(scrollFix).toContain('overflow-y:auto!important');
+    expect(scrollFix).toContain('.duel-app{');
+    expect(scrollFix).toContain('overflow:visible!important');
+    expect(scrollFix).toContain('.duel-combat{');
+    expect(scrollFix).toContain('height:calc(100dvh - 38px)!important');
+    expect(scrollFix).toContain('overflow:hidden!important');
+    expect(scrollFix).toContain('.run-map,');
+    expect(scrollFix).toContain('.reward-flow,');
   });
 });
