@@ -1,0 +1,419 @@
+/* SLAY-THE-SPIRE BATTLEBOARD
+   Landscape combat is one scene, not a dashboard. The arena owns the frame,
+   the hand owns the bottom edge, and tactical information floats on top.
+   Loaded last on purpose so this file is the single landscape contract. */
+
+@media (orientation: landscape){
+  .duel-header{
+    height:48px!important;
+    min-height:48px!important;
+    position:relative!important;
+    top:auto!important;
+    z-index:90!important;
+    padding:5px 12px!important;
+  }
+
+  .duel-combat{
+    --sts-hand-h:clamp(142px,36dvh,176px);
+    position:relative!important;
+    display:block!important;
+    width:100%!important;
+    height:calc(100dvh - 48px)!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow:hidden!important;
+    padding:0!important;
+    margin:0!important;
+    isolation:isolate!important;
+    background:#07161b!important;
+  }
+
+  /* The playfield is the scene. Everything else overlays it. */
+  .duel-combat>.duel-arena{
+    position:absolute!important;
+    inset:22px 0 var(--sts-hand-h) 0!important;
+    width:auto!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    margin:0!important;
+    border:0!important;
+    border-radius:0!important;
+    z-index:1!important;
+    overflow:hidden!important;
+  }
+
+  .duel-combat>.battle-ribbon{
+    position:absolute!important;
+    left:0!important;right:0!important;top:0!important;
+    height:22px!important;min-height:22px!important;
+    margin:0!important;padding:0 12px!important;
+    border-radius:0!important;
+    z-index:55!important;
+    background:linear-gradient(90deg,rgba(8,25,31,.96),rgba(12,37,42,.82),rgba(8,25,31,.96))!important;
+  }
+
+  /* Player and enemy status behave like STS HUD plates, not layout rows. */
+  .duel-combat>.scoreboard{
+    position:absolute!important;
+    left:8px!important;top:30px!important;
+    width:clamp(250px,36vw,430px)!important;
+    height:52px!important;min-height:52px!important;
+    margin:0!important;
+    z-index:35!important;
+    border:1px solid rgba(201,174,109,.44)!important;
+    border-radius:10px!important;
+    overflow:hidden!important;
+    background:rgba(8,24,29,.86)!important;
+    backdrop-filter:blur(6px)!important;
+    box-shadow:0 8px 24px rgba(0,0,0,.28)!important;
+  }
+  .duel-combat>.scoreboard>div{padding:5px 7px!important}
+  .duel-combat>.scoreboard .scoreboard-player strong{font-size:12px!important;margin:1px 0!important}
+  .duel-combat>.scoreboard .scoreboard-score strong{font-size:20px!important}
+  .duel-combat>.scoreboard span,.duel-combat>.scoreboard small{font-size:6px!important}
+
+  .duel-combat>.v10-combat-hp{
+    position:absolute!important;
+    right:8px!important;top:30px!important;
+    width:clamp(235px,31vw,380px)!important;
+    height:52px!important;min-height:52px!important;
+    margin:0!important;padding:5px 7px!important;
+    z-index:36!important;
+    border-radius:10px!important;
+    overflow:hidden!important;
+    background:rgba(8,24,29,.86)!important;
+    backdrop-filter:blur(6px)!important;
+    box-shadow:0 8px 24px rgba(0,0,0,.28)!important;
+  }
+
+  /* 9-zone is a targeting widget floating above the enemy side, not half the screen. */
+  .duel-combat>.zone-panel{
+    position:absolute!important;
+    right:8px!important;
+    top:88px!important;
+    width:clamp(245px,29vw,340px)!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:calc(100% - var(--sts-hand-h) - 98px)!important;
+    margin:0!important;
+    padding:7px!important;
+    z-index:31!important;
+    overflow:hidden!important;
+    border-radius:12px!important;
+    background:rgba(8,27,32,.86)!important;
+    backdrop-filter:blur(6px)!important;
+    box-shadow:0 10px 28px rgba(0,0,0,.26)!important;
+  }
+  .duel-combat>.zone-panel .zone-heading{margin:0 0 4px!important;min-height:15px!important}
+  .duel-combat>.zone-panel .zone-heading .eyebrow{display:none!important}
+  .duel-combat>.zone-panel .zone-heading h2{font-size:11px!important;line-height:1.1!important;margin:0!important}
+  .duel-combat>.zone-panel .ball-read{padding:2px 5px!important;font-size:6.5px!important;min-height:0!important}
+  .duel-combat>.zone-panel .zone-grid{gap:3px!important;margin:0!important}
+  .duel-combat>.zone-panel .zone-cell{height:30px!important;min-height:30px!important;padding:2px 3px!important;border-radius:6px!important}
+  .duel-combat>.zone-panel .zone-cell span{font-size:5.5px!important}
+  .duel-combat>.zone-panel .zone-cell strong{font-size:8px!important}
+  .duel-combat>.zone-panel .zone-cell small{font-size:5.5px!important}
+  .duel-combat>.zone-panel .zone-promise,
+  .duel-combat>.zone-panel .zone-legend,
+  .duel-combat>.zone-panel .zone-details,
+  .duel-combat>.zone-panel .scout-clue{display:none!important}
+
+  .duel-combat>.pitch-read{
+    position:absolute!important;
+    left:10px!important;
+    bottom:calc(var(--sts-hand-h) + 8px)!important;
+    width:clamp(210px,34vw,390px)!important;
+    min-height:38px!important;
+    height:auto!important;
+    margin:0!important;
+    padding:6px 8px!important;
+    z-index:32!important;
+    border:1px solid rgba(202,176,112,.26)!important;
+    border-radius:10px!important;
+    background:rgba(6,20,24,.88)!important;
+    backdrop-filter:blur(7px)!important;
+    box-shadow:0 8px 26px rgba(0,0,0,.32)!important;
+  }
+  .duel-combat>.pitch-read>span{font-size:6px!important;padding:2px 4px!important}
+  .duel-combat>.pitch-read>b{font-size:8px!important;line-height:1.25!important}
+  .duel-combat>.pitch-read>small{font-size:6px!important}
+
+  /* The whole bottom edge is the hand/action rail. */
+  .duel-combat>.duel-table{
+    position:absolute!important;
+    left:0!important;right:0!important;bottom:0!important;
+    width:auto!important;
+    height:var(--sts-hand-h)!important;
+    min-height:var(--sts-hand-h)!important;
+    max-height:var(--sts-hand-h)!important;
+    margin:0!important;
+    padding:0!important;
+    z-index:60!important;
+    overflow:visible!important;
+    background:linear-gradient(180deg,rgba(5,16,21,.12) 0%,rgba(5,16,21,.9) 16%,rgba(5,16,21,.99) 100%)!important;
+    border-top:1px solid rgba(208,183,113,.26)!important;
+    box-shadow:0 -18px 40px rgba(0,0,0,.32)!important;
+  }
+  .duel-combat>.duel-table>.diamond-events,
+  .duel-combat>.duel-table>.table-footer{display:none!important}
+
+  /* Hub is a compact action rail if it ever appears. V10 auto-opens the hand. */
+  .duel-combat .decision-hub{
+    position:absolute!important;
+    left:50%!important;bottom:8px!important;
+    transform:translateX(-50%)!important;
+    width:min(620px,82vw)!important;
+    height:calc(var(--sts-hand-h) - 16px)!important;
+    padding:0!important;
+    display:flex!important;
+    align-items:flex-end!important;
+    justify-content:center!important;
+  }
+  .duel-combat .decision-hub .decision-copy{display:none!important}
+  .duel-combat .decision-hub .action-dock{width:100%!important;display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:8px!important}
+  .duel-combat .decision-hub .action{min-height:78px!important;padding:8px 10px!important;border-radius:14px!important}
+  .duel-combat .decision-hub .action>span{font-size:28px!important}
+  .duel-combat .decision-hub .action strong{font-size:11px!important}
+  .duel-combat .decision-hub .action small{font-size:7px!important}
+
+  /* Drawer becomes the permanent bottom hand. */
+  .duel-combat .card-drawer{
+    position:absolute!important;
+    inset:0!important;
+    width:auto!important;height:auto!important;
+    min-height:0!important;max-height:none!important;
+    margin:0!important;padding:0!important;
+    border:0!important;border-radius:0!important;
+    overflow:visible!important;
+    background:transparent!important;
+    box-shadow:none!important;
+  }
+  .duel-combat .card-drawer .drawer-head{
+    position:absolute!important;
+    left:10px!important;top:4px!important;
+    height:25px!important;min-height:25px!important;
+    margin:0!important;
+    display:flex!important;align-items:center!important;gap:7px!important;
+    z-index:4!important;
+  }
+  .duel-combat .card-drawer .drawer-back{display:none!important}
+  .duel-combat .card-drawer .drawer-head>div{display:flex!important;align-items:baseline!important;gap:7px!important}
+  .duel-combat .card-drawer .drawer-head span{font-size:6px!important;letter-spacing:1.6px!important}
+  .duel-combat .card-drawer .drawer-head h2{font-size:10px!important;line-height:1!important;margin:0!important;white-space:nowrap!important}
+  .duel-combat .card-drawer .drawer-head>small{font-size:6px!important;color:#91a69f!important}
+
+  /* "Watch" is the baseball version of End Turn: always available at the rail edge. */
+  .duel-combat .card-drawer .drawer-escape{
+    position:absolute!important;
+    right:8px!important;top:4px!important;
+    width:auto!important;height:26px!important;min-height:26px!important;
+    margin:0!important;padding:0!important;
+    display:block!important;
+    z-index:5!important;
+    background:transparent!important;border:0!important;
+  }
+  .duel-combat .card-drawer .drawer-escape>span{display:none!important}
+  .duel-combat .card-drawer .drawer-watch{
+    min-width:104px!important;height:26px!important;min-height:26px!important;
+    padding:3px 10px!important;margin:0!important;
+    border-radius:999px!important;
+    font-size:7px!important;font-weight:900!important;
+    background:rgba(72,61,33,.92)!important;
+    border:1px solid rgba(232,194,105,.62)!important;
+  }
+
+  .duel-combat .stack-discovery,
+  .duel-combat .direct-stack-guide{display:none!important}
+
+  .duel-combat .card-drawer .duel-hand{
+    position:absolute!important;
+    left:12px!important;right:178px!important;bottom:4px!important;
+    width:auto!important;
+    height:calc(var(--sts-hand-h) - 34px)!important;
+    min-height:0!important;max-height:none!important;
+    margin:0!important;
+    padding:10px 10px 4px!important;
+    display:flex!important;
+    align-items:flex-end!important;
+    justify-content:flex-start!important;
+    gap:0!important;
+    overflow-x:auto!important;overflow-y:visible!important;
+    touch-action:pan-x!important;
+    scroll-snap-type:x proximity!important;
+    overscroll-behavior-inline:contain!important;
+    scrollbar-width:none!important;
+  }
+  .duel-combat .card-drawer .duel-hand::-webkit-scrollbar{display:none!important}
+
+  .duel-combat .card-drawer .duel-card{
+    box-sizing:border-box!important;
+    flex:0 0 clamp(94px,12vw,116px)!important;
+    width:clamp(94px,12vw,116px)!important;
+    min-width:94px!important;
+    height:calc(var(--sts-hand-h) - 45px)!important;
+    min-height:96px!important;
+    max-height:none!important;
+    margin:0 0 0 -6px!important;
+    padding:6px!important;
+    border-radius:10px!important;
+    scroll-snap-align:center!important;
+    transform-origin:50% 100%!important;
+    transition:transform .12s ease,filter .12s ease,box-shadow .12s ease!important;
+    z-index:1!important;
+    overflow:hidden!important;
+  }
+  .duel-combat .card-drawer .duel-card:first-child{margin-left:0!important}
+  .duel-combat .card-drawer .duel-card.selected,
+  .duel-combat .card-drawer .duel-card:focus-visible{
+    transform:translateY(-10px) scale(1.055)!important;
+    z-index:9!important;
+    box-shadow:0 0 0 2px #f5cf75,0 12px 26px rgba(0,0,0,.54)!important;
+  }
+  .duel-combat .card-drawer .duel-card .card-art{height:28px!important;min-height:28px!important;margin:2px 0 4px!important}
+  .duel-combat .card-drawer .duel-card>strong{font-size:9px!important;margin:0 0 2px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  .duel-combat .card-drawer .duel-card .card-type{font-size:5.5px!important;min-height:10px!important}
+  .duel-combat .card-drawer .duel-card .card-cost{font-size:6px!important;padding:1px 3px!important}
+  .duel-combat .card-drawer .duel-card .card-gives{display:none!important}
+  .duel-combat .card-drawer .duel-card .card-rule{font-size:6.3px!important;line-height:1.22!important;min-height:0!important;display:-webkit-box!important;-webkit-line-clamp:3!important;-webkit-box-orient:vertical!important;overflow:hidden!important}
+  .duel-combat .card-drawer .duel-card .card-foot{font-size:5.8px!important;line-height:1.15!important;padding-top:3px!important}
+  .duel-combat .card-drawer .basic-card p{font-size:6.3px!important;margin:3px 0!important}
+  .duel-combat .card-drawer .basic-card small{font-size:5.8px!important}
+  .duel-combat .card-drawer .hand-divider{flex:0 0 10px!important;min-width:10px!important;margin:0 3px!important;border:0!important}
+  .duel-combat .card-drawer .hand-divider span{display:none!important}
+
+  /* Stack data remains in the DOM for swipe-COVER, but never steals hand height. */
+  .duel-combat .swing-stack{
+    position:absolute!important;
+    left:0!important;right:0!important;bottom:0!important;
+    width:0!important;height:0!important;min-height:0!important;max-height:0!important;
+    margin:0!important;padding:0!important;border:0!important;background:none!important;
+    overflow:visible!important;box-shadow:none!important;
+  }
+  .duel-combat .swing-stack>.stack-head,
+  .duel-combat .swing-stack>.stack-tradeoff,
+  .duel-combat .swing-stack>.stack-lane,
+  .duel-combat .swing-stack>.stack-candidates,
+  .duel-combat .swing-stack>.stack-verdict{display:none!important}
+
+  /* Execute is the right-side action button, like End Turn in STS. */
+  .duel-combat .decision-preview{
+    position:absolute!important;
+    right:8px!important;bottom:8px!important;
+    width:160px!important;
+    height:calc(var(--sts-hand-h) - 42px)!important;
+    min-height:0!important;max-height:none!important;
+    margin:0!important;padding:6px!important;
+    display:flex!important;flex-direction:column!important;justify-content:flex-end!important;gap:5px!important;
+    z-index:8!important;
+    overflow:hidden!important;
+    border:1px solid rgba(97,129,120,.45)!important;
+    border-radius:12px!important;
+    background:rgba(8,27,32,.94)!important;
+    box-shadow:0 10px 28px rgba(0,0,0,.34)!important;
+  }
+  .duel-combat .decision-preview>div{min-height:0!important;overflow:hidden!important}
+  .duel-combat .decision-preview>div>span{display:none!important}
+  .duel-combat .decision-preview b{font-size:7px!important;line-height:1.2!important;display:block!important;max-height:2.4em!important;overflow:hidden!important}
+  .duel-combat .decision-preview .primary{
+    width:100%!important;min-height:38px!important;height:38px!important;
+    margin:0!important;padding:4px 6px!important;
+    font-size:7px!important;line-height:1.15!important;white-space:normal!important;
+    border-radius:9px!important;
+  }
+
+  .duel-combat .watch-confirm{
+    position:absolute!important;
+    right:12px!important;bottom:10px!important;
+    width:min(360px,48vw)!important;
+    padding:10px!important;
+    z-index:10!important;
+    border-radius:14px!important;
+    background:rgba(8,27,32,.96)!important;
+    box-shadow:0 12px 32px rgba(0,0,0,.45)!important;
+  }
+  .duel-combat .watch-confirm h2{font-size:12px!important;margin:0 0 5px!important}
+  .duel-combat .watch-confirm p{font-size:7px!important;margin:0 0 7px!important}
+  .duel-combat .watch-confirm button{min-height:30px!important;padding:4px 8px!important;font-size:7px!important}
+
+  /* Results replace the hand rail instead of forcing a page scroll. */
+  .duel-combat .pa-result{
+    position:absolute!important;
+    left:50%!important;bottom:8px!important;
+    transform:translateX(-50%)!important;
+    width:min(620px,84vw)!important;
+    max-height:calc(var(--sts-hand-h) - 16px)!important;
+    margin:0!important;padding:10px 12px!important;
+    overflow:auto!important;
+    border-radius:14px!important;
+    background:rgba(8,27,32,.96)!important;
+  }
+  .duel-combat .pa-result h2{font-size:15px!important;margin:2px 0!important}
+  .duel-combat .pa-result p{font-size:7px!important;margin:2px 0!important}
+  .duel-combat .pa-result .failure-timeline{display:none!important}
+  .duel-combat .pa-result .next-batter{min-height:34px!important;padding:5px 10px!important;font-size:8px!important}
+
+  .direct-stack-enhanced .stack-aim-editor.direct-open{
+    position:fixed!important;
+    left:50%!important;top:50%!important;right:auto!important;bottom:auto!important;
+    transform:translate(-50%,-50%)!important;
+    width:min(560px,86vw)!important;
+    max-height:82dvh!important;
+    overflow:auto!important;
+    z-index:160!important;
+  }
+}
+
+/* Desktop/laptop keeps the same interaction grammar but gives the hand real card scale. */
+@media (orientation:landscape) and (min-width:1080px) and (min-height:650px){
+  .duel-header{height:58px!important;min-height:58px!important}
+  .duel-combat{
+    --sts-hand-h:clamp(220px,30dvh,270px);
+    height:calc(100dvh - 58px)!important;
+  }
+  .duel-combat>.scoreboard{top:34px!important;width:430px!important;height:70px!important;min-height:70px!important}
+  .duel-combat>.v10-combat-hp{top:34px!important;width:390px!important;height:70px!important;min-height:70px!important}
+  .duel-combat>.zone-panel{top:116px!important;width:330px!important;padding:10px!important}
+  .duel-combat>.zone-panel .zone-heading h2{font-size:14px!important}
+  .duel-combat>.zone-panel .zone-cell{height:40px!important;min-height:40px!important}
+  .duel-combat>.zone-panel .zone-cell strong{font-size:10px!important}
+  .duel-combat>.pitch-read{bottom:calc(var(--sts-hand-h) + 14px)!important;width:390px!important;padding:8px 10px!important}
+  .duel-combat>.pitch-read>b{font-size:10px!important}
+
+  .duel-combat .card-drawer .drawer-head{left:18px!important;top:7px!important}
+  .duel-combat .card-drawer .drawer-head h2{font-size:13px!important}
+  .duel-combat .card-drawer .drawer-escape{right:16px!important;top:7px!important}
+  .duel-combat .card-drawer .drawer-watch{height:30px!important;min-height:30px!important;min-width:122px!important;font-size:8px!important}
+  .duel-combat .card-drawer .duel-hand{left:24px!important;right:224px!important;bottom:8px!important;height:calc(var(--sts-hand-h) - 44px)!important;padding-top:16px!important;justify-content:center!important}
+  .duel-combat .card-drawer .duel-card{
+    flex-basis:138px!important;width:138px!important;min-width:138px!important;
+    height:calc(var(--sts-hand-h) - 62px)!important;min-height:168px!important;
+    margin-left:-12px!important;padding:8px!important;
+  }
+  .duel-combat .card-drawer .duel-card:first-child{margin-left:0!important}
+  .duel-combat .card-drawer .duel-card.selected,
+  .duel-combat .card-drawer .duel-card:hover:not(:disabled){transform:translateY(-18px) scale(1.07)!important;z-index:9!important}
+  .duel-combat .card-drawer .duel-card .card-art{height:48px!important;min-height:48px!important}
+  .duel-combat .card-drawer .duel-card>strong{font-size:12px!important}
+  .duel-combat .card-drawer .duel-card .card-type{font-size:7px!important}
+  .duel-combat .card-drawer .duel-card .card-rule{font-size:8px!important;-webkit-line-clamp:4!important}
+  .duel-combat .card-drawer .duel-card .card-foot{font-size:7px!important}
+  .duel-combat .decision-preview{right:16px!important;bottom:12px!important;width:196px!important;height:calc(var(--sts-hand-h) - 54px)!important;padding:10px!important}
+  .duel-combat .decision-preview b{font-size:9px!important}
+  .duel-combat .decision-preview .primary{height:48px!important;min-height:48px!important;font-size:9px!important}
+}
+
+/* Tiny landscape phones: keep interaction priority even when browser chrome steals height. */
+@media (orientation:landscape) and (max-height:430px){
+  .duel-combat{--sts-hand-h:136px}
+  .duel-combat>.scoreboard,.duel-combat>.v10-combat-hp{top:26px!important;height:44px!important;min-height:44px!important}
+  .duel-combat>.zone-panel{top:75px!important;width:238px!important;padding:5px!important}
+  .duel-combat>.zone-panel .zone-cell{height:25px!important;min-height:25px!important}
+  .duel-combat>.pitch-read{bottom:142px!important;min-height:32px!important;padding:4px 6px!important}
+  .duel-combat .card-drawer .duel-hand{right:164px!important;height:101px!important;padding-top:4px!important}
+  .duel-combat .card-drawer .duel-card{height:96px!important;min-height:96px!important;flex-basis:88px!important;width:88px!important;min-width:88px!important;padding:5px!important}
+  .duel-combat .card-drawer .duel-card .card-art{height:22px!important;min-height:22px!important}
+  .duel-combat .card-drawer .duel-card .card-rule{-webkit-line-clamp:2!important;font-size:5.8px!important}
+  .duel-combat .decision-preview{width:150px!important;height:94px!important;padding:5px!important}
+  .duel-combat .decision-preview .primary{height:34px!important;min-height:34px!important;font-size:6.5px!important}
+}
