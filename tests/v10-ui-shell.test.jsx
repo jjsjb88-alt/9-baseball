@@ -107,6 +107,13 @@ describe('CombatResultSummary',()=>{
     render(<CombatResultSummary choice="지켜보기" actualPitch="직구 · 존 밖" verdict="ball" damage={0} hpAfter={60}/>);
     expect(screen.getByTestId('v10-result-hp').textContent).toBe('60 유지');
   });
+
+  it('여러 장을 겹친 스윙은 결과에도 카드 수와 HP 효율을 남긴다',()=>{
+    render(<CombatResultSummary choice={{card:'밀어치기 + 맞혀놓기 + 맞혀놓기',zone:'몸쪽 높음 + 바깥 낮음'}} actualPitch="직구 · 바깥 낮음" verdict="hit" damage={8} hpAfter={52} cardCount={3} damageRate={.65}/>);
+    const stack=screen.getByLabelText('스윙 스택 3장, HP 피해 효율 65퍼센트');
+    expect(stack.textContent).toContain('SWING STACK · 3장');
+    expect(stack.textContent).toContain('HP DAMAGE × 65%');
+  });
 });
 function CombatServiceFixture(){
   return <CombatResultSummary choice={{card:'밀어치기',zone:'바깥쪽 낮은 코스'}} actualPitch={{type:'슬라이더',zone:'한가운데'}} verdict="near" damage={2} hpAfter={58}/>;
