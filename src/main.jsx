@@ -5,6 +5,7 @@ import "./duel/stack-direct-tap.js";
 import "./duel/landscape-first.css";
 import "./duel/landscape-scroll-fix.css";
 import "./duel/character-master.css";
+import "./duel/character-v3.css";
 import "./duel/responsive-master.css";
 
 createRoot(document.getElementById("root")).render(
