@@ -7,13 +7,16 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: codex/zone-card-board-ux
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
         with:
           version: 10
@@ -22,6 +25,8 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Align visible copy
+        run: node scripts/apply-zone-board-copy.mjs
       - name: Full tests
         run: pnpm test
       - name: First pitcher smoke
@@ -32,3 +37,11 @@ jobs:
         run: node scripts/deck-report.js 1
       - name: Production build
         run: pnpm run build
+      - name: Commit verified copy change
+        run: |
+          git config user.name "jjsjb88-alt"
+          git config user.email "jjsjb88@gmail.com"
+          git add src/duel/App.jsx
+          git diff --cached --quiet && exit 0
+          git commit -m "feat(ux): explain card-to-zone swing flow"
+          git push origin HEAD:codex/zone-card-board-ux
