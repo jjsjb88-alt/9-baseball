@@ -329,3 +329,9 @@
 .v10-node.is-locked .v10-node-scene{opacity:.5;filter:grayscale(.45) saturate(.5)}
 .v10-node.is-locked .v10-node-copy{opacity:.78}
 .v10-node.is-locked .v10-node-route{opacity:.62}
+
+
+/* Swing-stack tradeoff stays visible after contact so the lower HP damage never feels arbitrary. */
+.v10-result-stack{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:5px;padding:7px 9px;border:1px solid #6f5b31;border-radius:8px;background:linear-gradient(90deg,#2a2518,#172522)}
+.v10-result-stack span{font-size:8px;font-weight:900;letter-spacing:.8px;color:#9fcfc1}
+.v10-result-stack b{font-size:9px;letter-spacing:.45px;color:#ffe08f;font-variant-numeric:tabular-nums}
