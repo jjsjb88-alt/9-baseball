@@ -56,14 +56,15 @@ describe('V10 swipe swing-stack hand interaction',()=>{
     cleanup();
   });
 
-  it('짧게 끌다 놓으면 스택에 넣지 않고 더 위로 밀라는 피드백만 준다',async()=>{
+  it('짧게 끌다 놓으면 스택에 넣지 않고 원래 커버 후보 상태로 돌아온다',async()=>{
     const ui=fixture(),addSupport=vi.fn(()=>ui.candidate.classList.add('picked'));
     ui.candidate.addEventListener('click',addSupport);
     const cleanup=installSwingStackDirectTap(document);await tick();
     pointer(ui.second,'pointerdown',120,320);pointer(ui.second,'pointermove',121,295);pointer(ui.second,'pointerup',121,295);
     await tick();
     expect(addSupport).not.toHaveBeenCalled();
-    expect(ui.drawer.querySelector('.direct-stack-guide').textContent).toContain('조금 더 위로');
+    expect(ui.editor.classList.contains('direct-open')).toBe(false);
+    expect(ui.second.dataset.stackRole).toBe('↑ 위로 밀어 커버');
     cleanup();
   });
 
