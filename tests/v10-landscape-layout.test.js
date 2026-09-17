@@ -33,6 +33,18 @@ describe('V10 landscape-first mobile contract',()=>{
     expect(css).toContain('max-height:158px!important');
   });
 
+  it('phone landscape reserves real height for the hand and execute action',()=>{
+    expect(css).toContain('PHONE LANDSCAPE — HAND FIRST');
+    expect(css).toContain('grid-template-rows:22px 42px 96px minmax(0,1fr)!important');
+    expect(css).toContain('grid-template-rows:26px minmax(112px,1fr) auto!important');
+    expect(css).toContain('min-height:112px!important');
+    expect(css).toContain('.duel-combat.decision-swing .drawer-escape');
+    expect(css).toContain('.duel-combat.decision-swing .stack-discovery');
+    expect(css).toContain('display:none!important');
+    expect(css).toContain('grid-template-columns:minmax(0,1fr) auto!important');
+    expect(css).toContain('height:32px!important');
+  });
+
   it('does not globally lock landscape run screens while keeping combat fixed',()=>{
     expect(scrollFix).toContain('overflow-y:auto!important');
     expect(scrollFix).toContain('.duel-app{');
