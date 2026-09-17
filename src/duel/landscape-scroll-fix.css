@@ -1,0 +1,35 @@
+/* Hotfix: landscape is the combat canvas, not a global page lock.
+   Route / reward / menu screens must keep normal vertical scrolling. */
+@media (orientation: landscape) and (max-height: 760px){
+  html,body,#root{
+    height:auto!important;
+    min-height:100%!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+  }
+  body{overscroll-behavior-y:auto!important}
+  .duel-app{
+    height:auto!important;
+    min-height:100dvh!important;
+    overflow:visible!important;
+  }
+
+  /* The actual battle remains a fixed game canvas. */
+  .duel-combat{
+    height:calc(100dvh - 38px)!important;
+    min-height:0!important;
+    overflow:hidden!important;
+  }
+
+  /* Non-combat run surfaces are documents, so they must be able to exceed one viewport. */
+  .duel-title,
+  .run-map,
+  .reward-flow,
+  .facility-screen,
+  .v10-map-screen,
+  .v10-route-screen{
+    height:auto!important;
+    min-height:calc(100dvh - 38px)!important;
+    overflow:visible!important;
+  }
+}
