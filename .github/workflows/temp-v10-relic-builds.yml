@@ -36,6 +36,9 @@ jobs:
       - name: Apply relic patch
         run: node scripts/apply-v10-relic-builds.mjs
 
+      - name: Preserve shop order contract
+        run: node scripts/fix-v10-relic-order.mjs
+
       - name: Run tests
         run: pnpm test
 
