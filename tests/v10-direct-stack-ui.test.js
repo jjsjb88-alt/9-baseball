@@ -54,7 +54,10 @@ describe('V10 9-zone card placement interaction',()=>{
     expect(ui.main.dataset.boardAction).toContain('효과 카드');
     expect(ui.second.dataset.boardAction).toBe('＋ 존에 놓기');
     expect(ui.third.dataset.boardAction).toBe('＋ 존에 놓기');
-    expect(document.querySelector('.zone-card-board-guide').textContent).toContain('1장 배치');
+    const guide=document.querySelector('.zone-card-board-guide');
+    expect(guide.textContent).toContain('1장 배치');
+    expect(guide.textContent).toContain('HP ×1.00');
+    expect(guide.textContent).toContain('FULL POWER');
     cleanup();
   });
 
@@ -73,6 +76,38 @@ describe('V10 9-zone card placement interaction',()=>{
     expect(ui.main.classList.contains('selected')).toBe(true);
     expect(ui.candidates[0].classList.contains('picked')).toBe(true);
     expect(ui.slots[0].querySelector('small').textContent).toContain('존5');
+    const guide=document.querySelector('.zone-card-board-guide');
+    expect(guide.textContent).toContain('HP ×0.80');
+    expect(guide.textContent).toContain('위력 -20%');
+    expect(ui.zones[4].classList.contains('board-impact-cover')).toBe(true);
+    cleanup();
+  });
+
+  it('카드를 더 놓을수록 HP 배율과 파워 게이지가 100 → 80 → 65로 명확히 내려간다',async()=>{
+    const ui=fixture(),cleanup=installSwingStackDirectTap(document);await tick();
+    ui.second.click();ui.zones[3].click();await settle();
+    let guide=document.querySelector('.zone-card-board-guide');
+    expect(guide.textContent).toContain('2장 배치');
+    expect(guide.textContent).toContain('HP ×0.80');
+    expect(guide.querySelector('.zone-power-track').style.getPropertyValue('--power')).toBe('80%');
+
+    ui.third.click();ui.zones[7].click();await settle();
+    guide=document.querySelector('.zone-card-board-guide');
+    expect(guide.textContent).toContain('3장 배치');
+    expect(guide.textContent).toContain('HP ×0.65');
+    expect(guide.textContent).toContain('위력 -35%');
+    expect(guide.querySelector('.zone-power-track').style.getPropertyValue('--power')).toBe('65%');
+    cleanup();
+  });
+
+  it('유물 등으로 실제 STACK 배율이 보정되면 기본표 대신 현재 실제 HP 배율을 보여준다',async()=>{
+    const ui=fixture(),cleanup=installSwingStackDirectTap(document);await tick();
+    const efficiency=document.createElement('div');efficiency.className='stack-efficiency';efficiency.innerHTML='<b>HP DAMAGE 92%</b>';ui.drawer.appendChild(efficiency);
+    ui.second.click();ui.zones[5].click();await settle();
+    const guide=document.querySelector('.zone-card-board-guide');
+    expect(guide.textContent).toContain('HP ×0.92');
+    expect(guide.textContent).toContain('위력 -8%');
+    expect(guide.querySelector('.zone-power-track').style.getPropertyValue('--power')).toBe('92%');
     cleanup();
   });
 
