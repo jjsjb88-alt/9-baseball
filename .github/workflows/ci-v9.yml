@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - codex/v9-deckbuilder
-      - codex/mandatory-impact-analysis
   workflow_dispatch:
 
 permissions:
