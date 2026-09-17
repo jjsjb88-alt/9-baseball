@@ -3,6 +3,7 @@ import {afterEach,describe,expect,it,vi} from 'vitest';
 import {installSwingStackDirectTap} from '../src/duel/stack-direct-tap.js';
 
 const tick=()=>new Promise(resolve=>setTimeout(resolve,35));
+const settle=()=>new Promise(resolve=>setTimeout(resolve,120));
 function pointer(target,type,x,y,id=1){
   const e=new Event(type,{bubbles:true,cancelable:true});
   Object.defineProperties(e,{clientX:{value:x},clientY:{value:y},pointerId:{value:id},pointerType:{value:'touch'}});
@@ -29,6 +30,8 @@ function fixture(){
     second:document.querySelectorAll('.duel-hand .duel-card')[1],
     candidate:document.querySelector('.stack-candidates button'),
     editor:document.querySelector('.stack-aim-editor'),
+    remove:document.querySelector('.stack-aim-title > button'),
+    execute:document.querySelector('[data-testid="execute-action"]'),
     slot:document.querySelector('.stack-slot.support'),
   };
 }
@@ -77,6 +80,33 @@ describe('V10 swipe swing-stack hand interaction',()=>{
     expect(removeSupport).not.toHaveBeenCalled();
     expect(editSupport).toHaveBeenCalledTimes(1);
     expect(ui.editor.classList.contains('direct-open')).toBe(true);
+    cleanup();
+  });
+
+  it('COVER 편집 중 카드 빼기 후 조준 잠금을 해제해 메인 단독 스윙으로 계속 진행할 수 있다',async()=>{
+    const ui=fixture();
+    ui.candidate.classList.add('picked');
+    ui.execute.scrollIntoView=vi.fn();
+    const cleanup=installSwingStackDirectTap(document);await tick();
+
+    pointer(ui.second,'pointerdown',120,320);pointer(ui.second,'pointermove',120,240);pointer(ui.second,'pointerup',120,240);
+    await tick();
+    expect(ui.drawer.classList.contains('direct-stack-aiming')).toBe(true);
+    expect(ui.editor.classList.contains('direct-open')).toBe(true);
+
+    // React가 하는 일(스택에서 제거 + 편집기 언마운트)을 DOM fixture에서 그대로 모사한다.
+    ui.remove.addEventListener('click',()=>{
+      ui.candidate.classList.remove('picked');
+      ui.editor.remove();
+    });
+    ui.remove.click();
+    await settle();
+
+    expect(ui.drawer.classList.contains('direct-stack-aiming')).toBe(false);
+    expect(document.querySelector('.stack-aim-editor')).toBeNull();
+    expect(ui.main.dataset.stackRole).toBe('MAIN · 1');
+    expect(ui.second.dataset.stackRole).toBe('↑ 위로 밀어 커버');
+    expect(ui.execute.scrollIntoView).toHaveBeenCalled();
     cleanup();
   });
 });

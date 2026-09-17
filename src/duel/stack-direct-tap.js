@@ -61,6 +61,11 @@ function markCards(drawer){
 }
 function refresh(drawer){
   if(!drawer)return;
+  // React가 COVER 편집기를 제거했는데 제스처 레이어의 aiming 상태만 남으면
+  // 화면이 dim 처리된 채 영구 잠긴다. DOM을 진실 원천으로 삼아 자동 복구한다.
+  if(drawer.classList.contains('direct-stack-aiming')&&!drawer.querySelector('.stack-aim-editor')){
+    drawer.classList.remove('direct-stack-aiming');
+  }
   drawer.classList.add('direct-stack-enhanced');swipeDock(drawer);markCards(drawer);
   const main=mainCard(drawer),count=main?stackCount(drawer):0;
   if(!main){setGuide(drawer,1,'① 먼저 메인 스윙 카드를 고르세요.','첫 카드는 HP 피해 100%. 메인을 고르면 다른 카드에 ↑ 커버 표시가 생깁니다.');return;}
@@ -159,6 +164,8 @@ export function installSwingStackDirectTap(root=document){
     const drawer=swingDrawer(root);if(!drawer)return;
     const zone=e.target.closest?.('.stack-aim-editor .assist-zone-grid button');
     if(zone){setTimeout(()=>closeAim(drawer),80);return;}
+    const remove=e.target.closest?.('.stack-aim-editor .stack-aim-title > button');
+    if(remove){setTimeout(()=>closeAim(drawer),80);return;}
     const card=e.target.closest?.(CARD_SELECTOR);if(!card||!drawer.contains(card))return;
     if(Date.now()<suppressClickUntil){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation?.();return;}
     const main=mainCard(drawer);if(!main||card===main)return;
