@@ -10,6 +10,8 @@ import "./duel/sts-battleboard.js";
 import "./duel/sts-battleboard.css";
 import "./duel/combat-readability.js";
 import "./duel/combat-readability.css";
+import "./duel/v10-relic-ui.js";
+import "./duel/v10-relic-ui.css";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
