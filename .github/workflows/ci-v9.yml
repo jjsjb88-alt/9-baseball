@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - codex/v9-deckbuilder
-      - codex/fix-stack-remove-deadlock
   workflow_dispatch:
 
 permissions:
