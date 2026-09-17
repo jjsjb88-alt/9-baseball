@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - codex/v9-deckbuilder
+      - codex/v10-swipe-stack
   workflow_dispatch:
 
 permissions:
