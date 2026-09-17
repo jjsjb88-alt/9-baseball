@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - codex/v9-deckbuilder
-      - codex/mobile-landscape-hand-first
   workflow_dispatch:
 
 permissions:
