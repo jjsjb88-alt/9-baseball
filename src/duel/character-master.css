@@ -1,0 +1,110 @@
+/* CHARACTER MASTER PASS
+   Visual target: silhouette first, readable motion second, ornament last.
+   This layer does not change combat logic; it upgrades how actors occupy the stadium. */
+
+.duel-arena{isolation:isolate;overflow:hidden}
+.duel-arena::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:
+  radial-gradient(ellipse at 24% 82%,rgba(242,204,123,.14),transparent 24%),
+  radial-gradient(ellipse at 77% 62%,rgba(116,194,178,.10),transparent 22%),
+  linear-gradient(180deg,rgba(2,11,14,.04) 30%,rgba(2,10,12,.36) 100%);mix-blend-mode:screen}
+.duel-arena::after{z-index:8!important;background:linear-gradient(180deg,rgba(3,11,15,.03) 48%,rgba(3,11,14,.48) 100%)!important;box-shadow:inset 0 0 54px rgba(0,0,0,.2)}
+
+.actor-left,.actor-right{z-index:5!important;transform-origin:center bottom;filter:none;contain:layout paint style}
+.actor-left{width:clamp(184px,23vw,250px);height:clamp(184px,23vw,250px);left:clamp(-28px,-1.7vw,-10px);bottom:-1px}
+.actor-right{width:clamp(160px,19vw,215px);height:clamp(160px,19vw,215px);right:clamp(4px,2.8vw,44px);bottom:7px}
+
+.actor-left::before,.actor-right::before{content:"";position:absolute;left:17%;right:17%;bottom:3%;height:7%;border-radius:50%;background:rgba(0,0,0,.58);filter:blur(5px);transform:scaleX(1.15);z-index:-2}
+.actor-left::after,.actor-right::after{content:"";position:absolute;inset:8% 8% 4%;z-index:-1;border-radius:46% 46% 34% 34%;opacity:.72;filter:blur(15px);pointer-events:none}
+.actor-left::after{background:radial-gradient(ellipse at 38% 42%,rgba(255,214,132,.16),transparent 62%)}
+.actor-right::after{background:radial-gradient(ellipse at 62% 40%,rgba(109,202,181,.14),transparent 62%)}
+
+.sprite-stage{transform-origin:50% 92%;will-change:transform}
+.sprite-stage .duel-sprite{position:relative;z-index:3;image-rendering:pixelated!important;image-rendering:crisp-edges;filter:
+  contrast(1.08) saturate(1.06)
+  drop-shadow(1px 0 0 rgba(2,9,12,.95))
+  drop-shadow(-1px 0 0 rgba(2,9,12,.95))
+  drop-shadow(0 1px 0 rgba(2,9,12,.95))
+  drop-shadow(0 -1px 0 rgba(2,9,12,.82))
+  drop-shadow(0 9px 3px rgba(1,6,9,.62))!important}
+.sprite-stage .sprite-bloom{inset:9% 7% 5%!important;opacity:.18!important;filter:blur(16px)!important}
+.sprite-batter .sprite-bloom{background:radial-gradient(circle at 42% 46%,rgba(255,225,151,.22),rgba(212,156,76,.08) 37%,transparent 69%)!important}
+.sprite-pitcher .sprite-bloom{background:radial-gradient(circle at 56% 42%,rgba(136,226,202,.18),rgba(66,130,116,.06) 39%,transparent 70%)!important}
+
+/* Distinct body language. The batter carries weight low and forward; the pitcher coils vertically. */
+.actor-left .sprite-stage.pose-idle{animation:batter-master-idle 2.9s steps(6,end) infinite!important;transform:rotate(-.6deg)}
+.actor-right .sprite-stage.pose-idle,.actor-right .sprite-stage.pose-set{animation:pitcher-master-idle 3.15s steps(6,end) infinite!important}
+.actor-left .sprite-stage.pose-load{transform-origin:44% 87%}
+.actor-right .sprite-stage.pose-legkick,.actor-right .sprite-stage.pose-release{transform-origin:55% 91%}
+
+@keyframes batter-master-idle{
+  0%,100%{transform:translate3d(0,0,0) rotate(-.8deg) scale(1)}
+  18%{transform:translate3d(0,-1px,0) rotate(-.45deg) scale(1.006)}
+  42%{transform:translate3d(1px,-2px,0) rotate(-.15deg) scale(1.009)}
+  64%{transform:translate3d(1px,-1px,0) rotate(-.5deg) scale(1.004)}
+  82%{transform:translate3d(0,0,0) rotate(-.72deg) scale(1.001)}
+}
+@keyframes pitcher-master-idle{
+  0%,100%{transform:translate3d(0,0,0) rotate(.35deg) scale(1)}
+  22%{transform:translate3d(0,-1px,0) rotate(.1deg) scale(.998,1.008)}
+  48%{transform:translate3d(-1px,-2px,0) rotate(-.18deg) scale(1.004,1.012)}
+  72%{transform:translate3d(0,-1px,0) rotate(.08deg) scale(1.002,1.006)}
+}
+
+/* Contact should read as a violent pose change, not a frame swap. */
+.fx-stage-windup .actor-left{transform:translateX(-2px)}
+.fx-stage-windup .actor-right{transform:translateX(-3px) translateY(-1px)}
+.fx-stage-impact .actor-left{transform:translateX(8px) scale(1.025)}
+.fx-stage-impact .actor-right{transform:translateX(-7px) scale(.995)}
+.fx-stage-slowmo .actor-left{transform:translateX(10px) scale(1.035)}
+.fx-stage-release .actor-left{transform:translateX(5px)}
+.fx-stage-release .actor-right{transform:translateX(-4px)}
+.fx-stage-settle .actor-left,.fx-stage-settle .actor-right{transition:transform .22s steps(3,end)}
+
+/* Pixel rim-light: one warm edge for the hitter, one cool edge for the pitcher. */
+.actor-left .sprite-stage .duel-sprite{filter:
+  contrast(1.11) saturate(1.08)
+  drop-shadow(1px 0 0 rgba(255,214,135,.30))
+  drop-shadow(-1px 0 0 rgba(1,8,12,.98))
+  drop-shadow(0 1px 0 rgba(1,8,12,.98))
+  drop-shadow(0 -1px 0 rgba(1,8,12,.82))
+  drop-shadow(0 10px 3px rgba(0,4,8,.64))!important}
+.actor-right .sprite-stage .duel-sprite{filter:
+  contrast(1.12) saturate(1.02)
+  drop-shadow(-1px 0 0 rgba(123,219,198,.26))
+  drop-shadow(1px 0 0 rgba(1,8,12,.96))
+  drop-shadow(0 1px 0 rgba(1,8,12,.96))
+  drop-shadow(0 -1px 0 rgba(1,8,12,.80))
+  drop-shadow(0 9px 3px rgba(0,4,8,.61))!important}
+
+.batter-nameplate{left:12%!important;bottom:0!important;border-left:0!important;border-top:1px solid rgba(244,205,123,.58);background:linear-gradient(90deg,rgba(7,20,24,.92),rgba(7,20,24,.46))!important;padding:4px 9px 5px!important;box-shadow:0 5px 14px rgba(0,0,0,.22);letter-spacing:.2px}
+
+/* Stage escalation changes the atmosphere around the same silhouettes without recoloring the art itself. */
+.release-combat.stadium-stage-1 .actor-right::after{background:radial-gradient(ellipse at 62% 40%,rgba(119,181,225,.16),transparent 64%)}
+.release-combat.stadium-stage-2 .actor-right::after{background:radial-gradient(ellipse at 62% 40%,rgba(237,126,96,.17),transparent 64%)}
+.release-combat.stadium-stage-2 .duel-arena::before{background:
+  radial-gradient(ellipse at 24% 82%,rgba(255,201,110,.15),transparent 24%),
+  radial-gradient(ellipse at 77% 60%,rgba(223,104,83,.11),transparent 23%),
+  linear-gradient(180deg,rgba(10,9,15,.04) 30%,rgba(18,8,10,.38) 100%)}
+
+/* Keep silhouettes premium on small devices instead of simply shrinking them to icons. */
+@media(max-width:900px){
+  .actor-left{width:clamp(156px,43vw,205px);height:clamp(156px,43vw,205px);left:-18px}
+  .actor-right{width:clamp(136px,35vw,176px);height:clamp(136px,35vw,176px);right:3px;bottom:5px}
+  .sprite-stage .duel-sprite{filter:
+    contrast(1.1) saturate(1.05)
+    drop-shadow(1px 0 0 rgba(2,9,12,.94))
+    drop-shadow(-1px 0 0 rgba(2,9,12,.94))
+    drop-shadow(0 1px 0 rgba(2,9,12,.94))
+    drop-shadow(0 7px 2px rgba(1,5,8,.62))!important}
+}
+
+@media(min-width:1280px){
+  .actor-left{width:270px;height:270px;left:-8px}
+  .actor-right{width:225px;height:225px;right:6%;bottom:12px}
+  .duel-arena::after{box-shadow:inset 0 0 82px rgba(0,0,0,.24)}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .actor-left .sprite-stage.pose-idle,.actor-right .sprite-stage.pose-idle,.actor-right .sprite-stage.pose-set{animation:none!important}
+  .fx-stage-windup .actor-left,.fx-stage-windup .actor-right,.fx-stage-impact .actor-left,.fx-stage-impact .actor-right,.fx-stage-slowmo .actor-left,.fx-stage-release .actor-left,.fx-stage-release .actor-right{transform:none!important}
+}
