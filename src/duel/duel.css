@@ -1128,3 +1128,30 @@ button:disabled{filter:grayscale(.5)}
   .title-main{padding:26px 24px}
   .title-main-actions button{flex:0 1 auto;min-width:190px}
 }
+
+
+/* V10 보조 커버 — 메인 스윙에 공격 카드 한 장을 더 겹쳐 빈 존을 막는다. */
+.assist-cover{margin:14px 0;padding:14px;border:1px solid #6f8e87;border-radius:14px;background:linear-gradient(145deg,#102a2ddd,#172f31dd);box-shadow:inset 0 0 0 1px #b7e7d91a}
+.assist-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
+.assist-head>div{display:grid;gap:3px}
+.assist-head span{font-size:9px;font-weight:900;letter-spacing:1.8px;color:#8fd5c4}
+.assist-head strong{font-size:14px;line-height:1.35;color:#effff7}
+.assist-head small{max-width:160px;text-align:right;font-size:10px;line-height:1.45;color:#9eb8b0}
+.assist-card-row{display:flex;gap:7px;overflow-x:auto;padding:2px 0 7px;scrollbar-width:thin}
+.assist-card-row button{flex:0 0 auto;min-width:108px;min-height:48px;padding:8px 10px;border:1px solid #3e5c57;border-radius:10px;background:#122321;color:#c9d9d4;text-align:left}
+.assist-card-row button strong,.assist-card-row button small{display:block}
+.assist-card-row button strong{font-size:11px}
+.assist-card-row button small{margin-top:3px;font-size:9px;color:#8ca39d}
+.assist-card-row button.selected{border-color:#ffd77c;background:#423a27;color:#fff0bc;box-shadow:0 0 0 1px #ffd77c30}
+.assist-zone-label{display:flex;align-items:end;justify-content:space-between;gap:8px;margin:7px 0}
+.assist-zone-label b{font-size:11px;color:#e8fff7}
+.assist-zone-label span{font-size:9px;color:#87a39b}
+.assist-zone-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.assist-zone-grid button{min-height:46px;padding:5px;border:1px solid #35534d;border-radius:8px;background:#0c1f20;color:#a8bbb5}
+.assist-zone-grid button span,.assist-zone-grid button small{display:block}
+.assist-zone-grid button span{font-size:12px;font-weight:900}
+.assist-zone-grid button small{margin-top:2px;font-size:8px;line-height:1.2}
+.assist-zone-grid button.selected{border-color:#ffd77c;background:#4a3f28;color:#fff0bc;box-shadow:0 0 12px #ffd77c2b}
+.assist-summary{margin:9px 0 0;font-size:10px;line-height:1.55;color:#a9c2ba}
+.assist-summary b{color:#ffe39a}
+@media(max-width:380px){.assist-head{display:grid}.assist-head small{max-width:none;text-align:left}.assist-card-row button{min-width:100px}.assist-zone-grid button{min-height:42px}}
