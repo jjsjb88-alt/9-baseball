@@ -8,10 +8,15 @@ const result=fs.readFileSync(new URL('../src/duel/CombatResultSummary.jsx',impor
 const main=fs.readFileSync(new URL('../src/main.jsx',import.meta.url),'utf8');
 
 describe('V10 combat readability contract',()=>{
-  it('uses player-facing 9-zone likelihood words',()=>{
-    expect(js).toContain("['드묾','낮음']");
-    expect(js).toContain("['가끔','보통']");
-    expect(js).toContain("['자주','높음']");
+  it('uses instant English likelihood words and English zone axes',()=>{
+    expect(js).toContain("['희박','VERY LOW']");
+    expect(js).toContain("['드묾','LOW']");
+    expect(js).toContain("['가끔','MID']");
+    expect(js).toContain("['자주','HIGH']");
+    expect(js).toContain("['안 씀','NONE']");
+    expect(js).toContain("['몸쪽 높음','IN · HIGH']");
+    expect(js).toContain("['한가운데','CENTER']");
+    expect(js).toContain("['바깥 낮음','OUT · LOW']");
   });
 
   it('surfaces actual HP loss and damage efficiency',()=>{
@@ -23,11 +28,20 @@ describe('V10 combat readability contract',()=>{
     expect(css).toContain('.hp-efficiency-chip');
   });
 
-  it('keeps batter and pitcher visually above the field while UI stays out of their silhouettes',()=>{
-    expect(css).toContain('.duel-combat>.duel-arena .actor-left');
-    expect(css).toContain('.duel-combat>.duel-arena .actor-right');
-    expect(css).toContain('scale:1.14');
+  it('stages batter and pitcher as protagonists instead of background props',()=>{
+    expect(js).toContain('character-focus-layer');
+    expect(js).toContain("batterTag.textContent='BATTER'");
+    expect(js).toContain("pitcherTag.textContent='PITCHER'");
+    expect(css).toContain('.duel-combat>.duel-arena .character-focus-layer');
+    expect(css).toContain('scale:1.24');
+    expect(css).toContain('.duel-combat>.duel-arena .actor-right{right:30%!important}');
+    expect(css).toContain('z-index:34!important');
     expect(css).toContain('.duel-combat>.pitch-read{left:50%');
+  });
+
+  it('keeps the tiny-landscape safety valve for browser chrome',()=>{
+    expect(css).toContain('@media (orientation:landscape) and (max-height:430px)');
+    expect(css).toContain('scale:1.14');
   });
 
   it('loads the readability pass after the STS battleboard',()=>{
