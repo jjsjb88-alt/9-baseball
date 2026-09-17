@@ -8,6 +8,8 @@ import "./duel/character-master.css";
 import "./duel/responsive-master.css";
 import "./duel/sts-battleboard.js";
 import "./duel/sts-battleboard.css";
+import "./duel/combat-readability.js";
+import "./duel/combat-readability.css";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
