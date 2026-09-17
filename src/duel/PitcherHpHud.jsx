@@ -8,9 +8,10 @@ export default function PitcherHpHud({name='투수',hp=0,maxHp=0,phase,lastDamag
   const reduced=useReducedMotion();
   const max=Math.max(0,Number(maxHp)||0),cur=clamp(hp,max),damage=Math.max(0,Number(lastDamage)||0);
   const before=Math.min(max,cur+damage),state=normalizePhase(phase)||phaseFor(cur,max),info=PHASES[state];
-  const fill=max?cur/max*100:0,ghost=max?before/max*100:0;
+  const fill=max?cur/max*100:0,ghost=max?before/max*100:0,damagePct=max?Math.round(damage/max*100):0;
+  const severity=damage>=18?'heavy':damage>=8?'solid':'chip';
   return (
-    <section className={`v10-hp v10-hp-${state}${reduced?' v10-reduced':''}`} data-phase={state} data-reduced={reduced?'true':'false'} aria-label="투수 체력">
+    <section className={`v10-hp v10-hp-${state}${reduced?' v10-reduced':''}`} data-phase={state} data-reduced={reduced?'true':'false'} data-last-damage={damage} aria-label="투수 체력">
       <header className="v10-hp-head">
         <strong className="v10-hp-name">{name}</strong>
         <b className="v10-hp-phase" data-testid="v10-hp-phase">{info.label}</b>
@@ -28,8 +29,11 @@ export default function PitcherHpHud({name='투수',hp=0,maxHp=0,phase,lastDamag
       <p className="v10-hp-count" aria-hidden="true"><b>{cur}</b><span>/ {max}</span>
         {damage>0&&<em className="v10-hp-damage" data-testid="v10-hp-damage">-{damage}</em>}
       </p>
+      {damage>0&&<div className={`v10-hp-impact v10-hp-impact-${severity}`} data-testid="v10-hp-impact" aria-hidden="true">
+        <strong>-{damage}<i>HP</i></strong><span>한 번에 {damagePct}% 감소</span>
+      </div>}
       <small className="v10-hp-note" aria-hidden="true">{info.note}</small>
-      <p className="v10-sr-only" role="status" data-testid="v10-hp-sr">{name} 투수 HP {cur} / {max}, {info.label}</p>
+      <p className="v10-sr-only" role="status" data-testid="v10-hp-sr">{name} 투수 HP {cur} / {max}{damage>0?`, 직전 피해 ${damage}`:''}, {info.label}</p>
     </section>
   );
 }
