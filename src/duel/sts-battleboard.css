@@ -417,3 +417,56 @@
   .duel-combat .decision-preview{width:150px!important;height:94px!important;padding:5px!important}
   .duel-combat .decision-preview .primary{height:34px!important;min-height:34px!important;font-size:6.5px!important}
 }
+
+/* HUD 판이 내용보다 작아 잘린 것 고치기.
+   전광판 판은 44~52px인데 내용이 90px, 투수 HP 판은 같은 높이에 내용이 136px이었다.
+   판 크기는 배틀보드의 배치 상수(9존이 top:88px에 붙는다)라 건드리지 않고, 판 안의
+   내용을 판에 맞춘다. 지운 값은 모두 화면 다른 곳에 남아 있다.
+   - 타순 보기: 세로와 데스크톱에 그대로 있다.
+   - 투수 HP 숫자(72/72): 왼쪽 전광판의 PITCHER HP에 그대로 있다. */
+@media (orientation: landscape){
+  .duel-combat>.scoreboard .scoreboard-player small,
+  .duel-combat>.scoreboard .scoreboard-score small,
+  .duel-combat>.scoreboard .scoreboard-count button{display:none!important}
+  .duel-combat>.scoreboard>div{gap:1px!important}
+  .duel-combat>.scoreboard .scoreboard-count>div{height:10px!important;min-height:0!important;margin:0!important}
+
+  .duel-combat>.v10-combat-hp .v10-hp{padding:0!important;gap:3px!important}
+  .duel-combat>.v10-combat-hp .v10-hp-count,
+  .duel-combat>.v10-combat-hp .v10-hp-note{display:none!important}
+  .duel-combat>.v10-combat-hp .v10-hp-head{min-height:0!important;margin:0!important}
+  .duel-combat>.v10-combat-hp .v10-hp-name{font-size:11px!important;line-height:1.2!important;display:-webkit-box!important;-webkit-box-orient:vertical!important;-webkit-line-clamp:1!important;overflow:hidden!important}
+  .duel-combat>.v10-combat-hp .v10-hp-phase{font-size:8px!important;padding:2px 6px!important}
+  .duel-combat>.v10-combat-hp .v10-hp-bar{height:10px!important;min-height:0!important;margin:0!important}
+
+  /* 확정 알약(150px)은 42~54px인데 설명문이 3줄로 늘어 내용이 62px이었다. 화면 아래로
+     잘려 문장이 끊겼다. 행동 문구("카드 한 장을 선택하세요")를 살리고 설명문을 줄로 끊는다. */
+  .duel-combat .decision-preview span{display:-webkit-box!important;-webkit-box-orient:vertical!important;-webkit-line-clamp:2!important;overflow:hidden!important}
+
+  /* 노림 링은 outline-offset:-5px라 30px 셀에서 라벨 위를 지나 글자를 지운다. */
+  .duel-combat>.zone-panel .zone-cell.aimed{outline-offset:-2px!important}
+}
+
+/* 가장 낮은 가로(430px 이하)에서는 판이 44px로 더 줄어 내용 50px이 여전히 넘쳤다.
+   9존도 2px 높았다. 이 구간만 글자를 한 단계 더 줄인다. */
+@media (orientation:landscape) and (max-height:430px){
+  .duel-combat>.zone-panel .zone-cell{height:24px!important;min-height:24px!important}
+  .duel-combat>.scoreboard .scoreboard-player strong{font-size:11px!important}
+  .duel-combat>.scoreboard .scoreboard-score strong{font-size:16px!important}
+  .duel-combat>.scoreboard .scoreboard-count>div{height:8px!important}
+  .duel-combat>.v10-combat-hp .v10-hp-name{font-size:10px!important}
+  .duel-combat>.v10-combat-hp .v10-hp-phase{font-size:7px!important;padding:1px 5px!important}
+  .duel-combat>.v10-combat-hp .v10-hp-bar{height:8px!important}
+  .duel-combat .decision-preview span{-webkit-line-clamp:1!important}
+}
+
+/* 넓은 가로(판이 70px)에서는 위에서 접은 정보를 되돌린다. 좁은 폰에서 자리를 만들려고
+   접은 것이지, 데스크톱에서까지 없앨 이유가 없다. 되돌린 뒤에도 판 안에 들어간다. */
+@media (orientation:landscape) and (min-width:1080px) and (min-height:650px){
+  .duel-combat>.scoreboard .scoreboard-player small,
+  .duel-combat>.scoreboard .scoreboard-count button{display:block!important}
+  .duel-combat>.scoreboard .scoreboard-count>div{height:11px!important}
+  .duel-combat>.v10-combat-hp .v10-hp-count{display:block!important}
+  .duel-combat>.v10-combat-hp .v10-hp-name{-webkit-line-clamp:2!important}
+  .duel-combat .decision-preview span{-webkit-line-clamp:3!important}
+}
