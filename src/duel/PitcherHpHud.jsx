@@ -33,7 +33,7 @@ export default function PitcherHpHud({name='투수',hp=0,maxHp=0,phase,lastDamag
         <strong>-{damage}<i>HP</i></strong><span>한 번에 {damagePct}% 감소</span>
       </div>}
       <small className="v10-hp-note" aria-hidden="true">{info.note}</small>
-      <p className="v10-sr-only" role="status" data-testid="v10-hp-sr">{name} 투수 HP {cur} / {max}, 직전 피해 {damage}, {info.label}</p>
+      <p className="v10-sr-only" role="status" data-testid="v10-hp-sr">{name} 투수 HP {cur} / {max}{damage>0?`, 직전 피해 ${damage}`:''}, {info.label}</p>
     </section>
   );
 }
