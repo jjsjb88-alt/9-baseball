@@ -1,66 +1,88 @@
-/* V10 Swing Stack — the hand teaches the gesture.
-   First tap picks MAIN. Other attack cards are physically swiped upward into COVER +. */
-.direct-stack-guide{margin:10px 0 12px;padding:13px 14px;border:1px solid rgba(255,213,112,.38);border-radius:14px;background:linear-gradient(135deg,rgba(45,37,20,.96),rgba(12,29,27,.96));box-shadow:inset 0 0 0 1px rgba(255,255,255,.025),0 12px 28px rgba(0,0,0,.16)}
-.direct-stack-guide>strong{display:block;margin-top:8px;font-size:14px;line-height:1.35;color:#fff5d5}
-.direct-stack-guide>small{display:block;margin-top:4px;font-size:9px;line-height:1.5;color:#9db4ad}
-.direct-stack-progress{display:grid;grid-template-columns:auto auto 1fr auto auto 1fr auto auto;align-items:center;gap:5px}
-.direct-stack-progress i{display:grid;place-items:center;width:20px;height:20px;border:1px solid #49635c;border-radius:50%;background:#102421;color:#6f8c84;font-size:9px;font-style:normal;font-weight:900;transition:.18s ease}
-.direct-stack-progress i.current{border-color:#ffd66e;background:#554321;color:#fff0b8;box-shadow:0 0 16px rgba(255,211,102,.2)}
-.direct-stack-progress i.done{border-color:#75cbb4;background:#183c34;color:#bff5e6}
-.direct-stack-progress span{font-size:8px;font-weight:900;color:#718a83;letter-spacing:.45px}
-.direct-stack-progress b{height:1px;background:linear-gradient(90deg,#4b6a61,#7a6a3e)}
+/* V10 SWING BOARD -----------------------------------------------------------
+   The player never edits a hidden stack model. Cards are placed on the 9-zone
+   board, Marvel-Snap-style: hand -> location -> resolve. The engine contract is
+   unchanged underneath (first card = effect, later cards = coverage).
+*/
+.zone-card-board .stack-discovery,
+.zone-card-board .swing-stack{display:none!important}
+.zone-card-board .duel-hand{overflow:visible!important}
 
-.direct-stack-enhanced .stack-discovery{display:none}
-.direct-stack-enhanced .stack-candidates{display:none}
-.direct-stack-enhanced .duel-hand{overflow:visible}
-.direct-stack-enhanced .duel-card.attack{position:relative;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease,opacity .16s ease}
-.direct-stack-enhanced .duel-card.attack[data-stack-role]::after{content:attr(data-stack-role);position:absolute;right:7px;top:7px;z-index:5;padding:4px 6px;border:1px solid #5a746d;border-radius:999px;background:rgba(7,22,20,.92);color:#b6cbc5;font-size:7px;font-weight:950;letter-spacing:.45px;line-height:1;pointer-events:none;box-shadow:0 3px 9px rgba(0,0,0,.2)}
-.direct-stack-enhanced .duel-card.attack[data-stack-role="MAIN · 1"]{border-color:#ffd66e;box-shadow:0 0 0 1px rgba(255,214,110,.22),0 8px 22px rgba(255,207,80,.08);transform:translateY(-2px)}
-.direct-stack-enhanced .duel-card.attack[data-stack-role="MAIN · 1"]::after{border-color:#ffd66e;background:#59451f;color:#fff0b7}
-.direct-stack-enhanced .duel-card.attack[data-stack-role="↑ 위로 밀어 커버"]{border-color:#557c71;box-shadow:inset 0 0 0 1px rgba(117,211,185,.05);touch-action:none;user-select:none;-webkit-user-select:none}
-.direct-stack-enhanced .duel-card.attack[data-stack-role="↑ 위로 밀어 커버"]::after{border-color:#76cdb5;background:#12352e;color:#c7f6e8;animation:directStackPulse 1.45s ease-in-out infinite}
-.direct-stack-enhanced .duel-card.attack[data-stack-role="↑ 위로 밀어 커버"]::before{content:"↑";position:absolute;left:50%;bottom:7px;z-index:4;display:grid;place-items:center;width:24px;height:24px;margin-left:-12px;border-radius:50%;background:rgba(18,53,46,.9);color:#c9f8ea;font-size:14px;font-weight:950;pointer-events:none;animation:swipeArrow 1.2s ease-in-out infinite}
-.direct-stack-enhanced .duel-card.attack[data-stack-order="2"],.direct-stack-enhanced .duel-card.attack[data-stack-order="3"],.direct-stack-enhanced .duel-card.attack[data-stack-order="4"]{border-color:#82d7c0;background-image:linear-gradient(180deg,rgba(36,79,68,.16),transparent);box-shadow:0 0 0 1px rgba(130,215,192,.12),0 8px 18px rgba(72,191,160,.08);transform:translateY(-2px);touch-action:none}
-.direct-stack-enhanced .duel-card.attack[data-stack-order="2"]::after,.direct-stack-enhanced .duel-card.attack[data-stack-order="3"]::after,.direct-stack-enhanced .duel-card.attack[data-stack-order="4"]::after{border-color:#83d9c2;background:#17443a;color:#d6fff3}
-@keyframes directStackPulse{0%,100%{box-shadow:0 0 0 0 rgba(118,205,181,.04)}50%{box-shadow:0 0 0 4px rgba(118,205,181,.12)}}
-@keyframes swipeArrow{0%,100%{transform:translateY(2px);opacity:.72}50%{transform:translateY(-6px);opacity:1}}
+/* Unplaced cards must continue to look usable after the first choice. */
+.zone-card-board .duel-hand .duel-card.attack:not(:disabled){
+  opacity:1!important;filter:none!important;visibility:visible!important;
+  transition:transform .14s ease,border-color .14s ease,box-shadow .14s ease,opacity .14s ease!important;
+  touch-action:pan-x;user-select:none;-webkit-user-select:none;
+}
+.zone-card-board .duel-hand .duel-card.attack:not(:disabled):not(.board-placed-source){
+  border-color:#58736c!important;box-shadow:0 8px 18px rgba(0,0,0,.16)!important;
+}
+.zone-card-board .duel-hand .duel-card.attack[data-board-action]::after{
+  content:attr(data-board-action);position:absolute;z-index:7;right:7px;top:7px;
+  padding:4px 6px;border:1px solid #6fae9e;border-radius:999px;background:#10342ddd;
+  color:#c9f8ea;font:950 7px/1 ui-monospace,monospace;letter-spacing:.35px;pointer-events:none;
+  box-shadow:0 4px 12px rgba(0,0,0,.2)
+}
+.zone-card-board .duel-hand .duel-card.attack.board-placed-source{
+  opacity:.42!important;filter:saturate(.68)!important;border-style:dashed!important;
+  transform:translateY(3px) scale(.985)!important;box-shadow:none!important
+}
+.zone-card-board .duel-hand .duel-card.attack.board-placed-source::after{
+  border-color:#a88b4b;background:#342c1bdd;color:#f3d996
+}
+.zone-card-board .duel-hand .duel-card.attack.board-card-armed{
+  opacity:1!important;filter:none!important;border-color:#ffd66e!important;
+  transform:translateY(-5px) scale(1.025)!important;
+  box-shadow:0 0 0 2px rgba(255,214,110,.28),0 0 28px rgba(255,206,86,.2)!important
+}
+.zone-card-board .duel-hand .duel-card.attack.board-card-armed::after{
+  content:'놓을 존 선택';border-color:#ffd66e;background:#5a451f;color:#fff0b6
+}
+.zone-card-board .duel-hand .duel-card.attack.board-drag-source{opacity:.2!important}
 
-/* Magnetic COVER + target appears only while a support card is being swiped. */
-.swipe-stack-dock{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 70px);z-index:115;display:flex;align-items:center;gap:10px;min-width:178px;padding:10px 15px;border:1px solid rgba(117,206,181,.35);border-radius:999px;background:rgba(9,31,27,.9);box-shadow:0 16px 45px rgba(0,0,0,.35);color:#9fc9bd;opacity:0;pointer-events:none;transform:translate(-50%,-16px) scale(.92);transition:opacity .14s ease,transform .14s ease,border-color .14s ease,box-shadow .14s ease;backdrop-filter:blur(8px)}
-.swipe-stack-dock i{display:grid;place-items:center;width:31px;height:31px;border:1px solid #5a8f80;border-radius:50%;background:#153d34;color:#c6f6e8;font-size:18px;font-style:normal;font-weight:950}
-.swipe-stack-dock span,.swipe-stack-dock strong{display:block}.swipe-stack-dock span{font-size:8px;font-weight:950;letter-spacing:1.4px;color:#74bda9}.swipe-stack-dock strong{margin-top:1px;font-size:11px;color:#daf8ef}
-.swipe-stack-dock.active{opacity:1;transform:translate(-50%,0) scale(1)}
-.swipe-stack-dock.armed{border-color:#ffd56d;background:rgba(70,56,25,.95);box-shadow:0 0 0 1px rgba(255,213,109,.18),0 20px 55px rgba(0,0,0,.44),0 0 34px rgba(255,205,86,.16);transform:translate(-50%,0) scale(1.08)}
-.swipe-stack-dock.armed i{border-color:#ffd66e;background:#5b4720;color:#fff1b8;animation:dockMagnet .42s ease-in-out infinite alternate}
-@keyframes dockMagnet{to{transform:translateY(-3px) scale(1.08)}}
+/* Board instruction replaces the old stack tutorial/editor. */
+.zone-card-board-guide{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;
+  margin:8px 0 10px;padding:10px 11px;border:1px solid rgba(110,181,161,.3);border-radius:13px;
+  background:linear-gradient(135deg,rgba(12,35,31,.95),rgba(24,29,25,.95));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.02),0 8px 22px rgba(0,0,0,.14)
+}
+.zone-board-copy{min-width:0}.zone-board-copy>span{display:block;color:#72b9a6;font:950 7px/1 ui-monospace,monospace;letter-spacing:1.5px}.zone-board-copy>strong{display:block;margin-top:5px;color:#effff9;font-size:12px;line-height:1.25}.zone-board-copy>small{display:block;margin-top:3px;color:#8fa9a2;font-size:8px;line-height:1.4}
+.zone-card-board-guide.armed{border-color:#d7ae57;background:linear-gradient(135deg,rgba(66,51,22,.96),rgba(18,35,30,.96));box-shadow:0 0 0 1px rgba(255,211,104,.08),0 8px 24px rgba(0,0,0,.18)}
+.zone-card-board-guide.armed .zone-board-copy>span{color:#e6ba5d}.zone-card-board-guide.armed .zone-board-copy>strong{color:#fff0b6}
+.zone-board-rate{display:flex;gap:4px}.zone-board-rate i{display:grid;place-items:center;min-width:31px;padding:4px 3px;border:1px solid #405d56;border-radius:7px;background:#0b2420;color:#78968e;font-style:normal}.zone-board-rate i b,.zone-board-rate i span{display:block;line-height:1}.zone-board-rate i b{font-size:7px}.zone-board-rate i span{margin-top:3px;font-size:8px;font-weight:950}.zone-board-rate i.current{border-color:#ffd66e;background:#5a451f;color:#fff0b6;box-shadow:0 0 16px rgba(255,210,91,.15)}
 
-.swipe-card-ghost{position:fixed!important;z-index:120!important;margin:0!important;pointer-events:none!important;opacity:.9!important;filter:drop-shadow(0 18px 22px rgba(0,0,0,.42));transform:rotate(-3deg) scale(.96);transition:transform .08s linear,opacity .12s ease!important;will-change:left,top,transform}
-.swipe-card-ghost::before,.swipe-card-ghost::after{display:none!important}
-.swipe-card-ghost.accepted{opacity:0!important;transform:translateY(-46px) scale(.72) rotate(2deg)!important}
-.swipe-card-ghost.snap-back{opacity:0!important;transform:translateY(18px) scale(.9)!important}
-.direct-stack-dragging .duel-card.attack.swipe-source{opacity:.28;transform:scale(.96)}
-.direct-stack-armed .duel-card.attack[data-stack-role="MAIN · 1"]{box-shadow:0 0 0 2px rgba(255,215,112,.42),0 0 28px rgba(255,210,92,.2);transform:translateY(-5px) scale(1.015)}
-.direct-stack-armed .duel-card.attack.swipe-armed{border-color:#ffd66e}
+/* The 9-zone board is now visibly a placement surface. */
+.zone-card-board-active .zone-grid{overflow:visible}
+.zone-card-board-active .zone-cell{position:relative;overflow:visible;transition:border-color .14s ease,box-shadow .14s ease,transform .14s ease,background .14s ease}
+.zone-card-board-active.board-targeting .zone-cell,
+.zone-card-board-active.board-dragging .zone-cell{
+  border-color:#79cbb5!important;box-shadow:inset 0 0 0 1px rgba(121,203,181,.12),0 0 12px rgba(65,177,149,.08);
+  cursor:crosshair
+}
+.zone-card-board-active.board-targeting .zone-cell:hover,
+.zone-card-board-active.board-dragging .zone-cell:hover{
+  z-index:8;border-color:#ffd66e!important;background-image:linear-gradient(rgba(255,211,101,.08),rgba(255,211,101,.08))!important;
+  transform:translateY(-2px);box-shadow:0 0 0 2px rgba(255,214,110,.18),0 0 22px rgba(255,205,80,.14)!important
+}
+.zone-card-board-active .zone-cell.board-has-card{border-color:#c49c4c!important;box-shadow:inset 0 0 0 1px rgba(255,211,105,.1),0 0 13px rgba(206,160,65,.08)}
+.zone-card-token-layer{position:absolute;z-index:9;left:4px;right:4px;bottom:4px;display:flex;flex-wrap:wrap;gap:2px;align-items:flex-end;justify-content:flex-start;pointer-events:none}
+.zone-card-token{display:flex;align-items:center;min-width:0;max-width:100%;height:18px;padding:2px 4px 2px 2px;border:1px solid #72c8b0;border-radius:5px;background:#123b32f2;color:#dcfff5;box-shadow:0 4px 9px rgba(0,0,0,.26);pointer-events:auto;cursor:pointer}
+.zone-card-token i{display:grid;place-items:center;flex:0 0 13px;height:13px;margin-right:3px;border-radius:3px;background:#76cdb5;color:#09221c;font:1000 7px/1 ui-monospace,monospace;font-style:normal}.zone-card-token b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:7px;line-height:1}.zone-card-token em{margin-left:3px;color:#9bcfc1;font-size:8px;font-style:normal;font-weight:950}.zone-card-token.main{border-color:#ffd66e;background:#5a451ff2;color:#fff1b8}.zone-card-token.main i{background:#ffd66e;color:#241b08}.zone-card-token.main em{color:#ffe7a1}
+.zone-card-board-active .zone-cell.board-has-card>small{padding-bottom:17px}
 
-/* Once COVER + accepts the card, choosing its coverage zone becomes the only question. */
-.direct-stack-enhanced.direct-stack-aiming:before{content:"";position:fixed;inset:0;z-index:90;background:rgba(3,10,10,.64);backdrop-filter:blur(2px)}
-.direct-stack-enhanced .stack-aim-editor.direct-open{position:fixed;left:max(10px,calc((100vw - 520px)/2));right:max(10px,calc((100vw - 520px)/2));bottom:max(12px,env(safe-area-inset-bottom));z-index:100;margin:0;padding:15px;border:1px solid #91dbc7;border-radius:18px;background:linear-gradient(180deg,#132e2a 0%,#0b1f1d 100%);box-shadow:0 22px 70px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.03);animation:directStackSheet .18s ease-out}
-.direct-stack-enhanced .stack-aim-editor.direct-open:before{content:attr(data-direct-title);display:block;margin:0 0 10px;padding-right:72px;font-size:14px;font-weight:950;line-height:1.35;color:#f0fff9}
-.direct-stack-enhanced .stack-aim-editor.direct-open:after{content:"존을 고르면 커버 카드가 스택에 고정됩니다";display:block;margin-top:9px;font-size:9px;text-align:center;color:#8eaaa2}
-.direct-stack-enhanced .stack-aim-editor.direct-open .stack-aim-title{margin-bottom:8px}.direct-stack-enhanced .stack-aim-editor.direct-open .stack-aim-title>div{display:none}.direct-stack-enhanced .stack-aim-editor.direct-open .stack-aim-title>button{margin-left:auto}
-.direct-stack-enhanced .stack-aim-editor.direct-open .assist-zone-grid{gap:7px}.direct-stack-enhanced .stack-aim-editor.direct-open .assist-zone-grid button{min-height:54px;border-color:#49675f;background:#0b2220}.direct-stack-enhanced .stack-aim-editor.direct-open .assist-zone-grid button.selected{border-color:#ffd675;background:linear-gradient(180deg,#5c4723,#373d27);color:#fff0b3;box-shadow:0 0 18px rgba(255,211,102,.14)}
-@keyframes directStackSheet{from{opacity:0;transform:translateY(18px) scale(.985)}to{opacity:1;transform:none}}
+.zone-card-drag-ghost{position:fixed;z-index:140;display:flex;align-items:center;gap:6px;max-width:150px;padding:7px 9px;border:1px solid #ffd66e;border-radius:8px;background:#192d27f2;color:#effff9;box-shadow:0 16px 36px rgba(0,0,0,.4),0 0 20px rgba(255,210,90,.12);pointer-events:none;transform:translate(-50%,-50%) rotate(-2deg);transition:opacity .15s ease,transform .15s ease;will-change:left,top}.zone-card-drag-ghost span{display:grid;place-items:center;width:18px;height:18px;border-radius:5px;background:#ffd66e;color:#211907;font:1000 8px/1 ui-monospace,monospace}.zone-card-drag-ghost strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px}.zone-card-drag-ghost.accepted{opacity:0;transform:translate(-50%,-50%) scale(.72)}.zone-card-drag-ghost.snap-back{opacity:0;transform:translate(-50%,5px) scale(.9)}
 
-.direct-stack-enhanced .swing-stack{margin-top:12px}.direct-stack-enhanced .stack-lane{margin-top:9px}.direct-stack-enhanced .stack-verdict{margin-top:10px}
+/* The hidden React controls remain as an implementation bridge only. */
+.zone-card-board .stack-aim-editor{display:none!important}
+.zone-card-board .stack-candidates{display:none!important}
 
 @media(max-width:520px){
-  .direct-stack-guide{margin:8px 0 10px;padding:12px}.direct-stack-guide>strong{font-size:13px}
-  .direct-stack-enhanced .duel-card.attack[data-stack-role]::after{right:5px;top:5px;padding:4px 5px;font-size:6.5px}
-  .swipe-stack-dock{top:calc(env(safe-area-inset-top) + 58px);min-width:164px;padding:9px 13px}
-  .direct-stack-enhanced .stack-aim-editor.direct-open{left:8px;right:8px;bottom:max(8px,env(safe-area-inset-bottom));padding:14px 12px}
-  .direct-stack-enhanced .stack-aim-editor.direct-open .assist-zone-grid button{min-height:50px}
+  .zone-card-board-guide{grid-template-columns:1fr;gap:7px;padding:9px 10px}.zone-board-copy>strong{font-size:11px}.zone-board-rate{justify-content:stretch}.zone-board-rate i{flex:1;min-width:0;padding:4px 2px}
+  .zone-card-board .duel-hand .duel-card.attack[data-board-action]::after{right:5px;top:5px;padding:3px 4px;font-size:6px}
+  .zone-card-token{height:16px}.zone-card-token i{flex-basis:11px;height:11px;font-size:6px}.zone-card-token b{font-size:6.5px}.zone-card-token em{font-size:7px}
+  .zone-card-board-active .zone-cell.board-has-card>small{padding-bottom:15px}
 }
-@media(prefers-reduced-motion:reduce){
-  .direct-stack-enhanced .duel-card.attack[data-stack-role="↑ 위로 밀어 커버"]::after,.direct-stack-enhanced .duel-card.attack[data-stack-role="↑ 위로 밀어 커버"]::before,.swipe-stack-dock.armed i{animation:none}
-  .direct-stack-enhanced .stack-aim-editor.direct-open{animation:none}
+@media(orientation:landscape) and (max-height:470px){
+  .zone-card-board-guide{margin:4px 0 5px;padding:6px 8px;gap:7px}.zone-board-copy>strong{margin-top:3px;font-size:9px}.zone-board-copy>small{display:none}.zone-board-rate i{min-width:25px;padding:3px 2px}.zone-board-rate i span{font-size:7px}.zone-card-token{height:14px;padding:1px 3px 1px 1px}.zone-card-token i{height:10px;flex-basis:10px}.zone-card-token b{font-size:6px}
 }
+@media(prefers-reduced-motion:reduce){.zone-card-board .duel-card.attack,.zone-card-board-active .zone-cell,.zone-card-drag-ghost{transition:none!important}}
