@@ -15,7 +15,8 @@ function markSignatureCards(root=document){
   root.querySelectorAll?.('.duel-card').forEach(card=>{
     const sig=signatureForCard(card);
     if(!sig){card.removeAttribute('data-signature-act');card.removeAttribute('data-signature-label');return;}
-    card.dataset.signatureAct=String(sig.act);card.dataset.signatureLabel=sig.label;
+    if(card.dataset.signatureAct!==String(sig.act))card.dataset.signatureAct=String(sig.act);
+    if(card.dataset.signatureLabel!==sig.label)card.dataset.signatureLabel=sig.label;
   });
 }
 function rewardCallout(root=document){
@@ -30,7 +31,10 @@ function rewardCallout(root=document){
     callout=document.createElement('div');callout.className='signature-draft-callout';callout.setAttribute('role','note');
     screen.querySelector('.reward-cards')?.before(callout);
   }
-  callout.innerHTML=`<span>${sig.label}</span><strong>강적을 잡아야만 열리는 한 장.</strong><small>${sig.copy}</small>`;
+  if(callout.dataset.signatureAct!==String(sig.act)){
+    callout.dataset.signatureAct=String(sig.act);
+    callout.innerHTML=`<span>${sig.label}</span><strong>강적을 잡아야만 열리는 한 장.</strong><small>${sig.copy}</small>`;
+  }
 }
 function refresh(root=document){markSignatureCards(root);rewardCallout(root);}
 
