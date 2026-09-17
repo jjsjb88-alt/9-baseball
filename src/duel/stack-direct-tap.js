@@ -19,6 +19,7 @@ const DRAG_START=9;
 const DAMAGE_RATES=[100,80,65,50];
 const normalize=s=>(s||'').replace(/\s+/g,' ').trim();
 const cardName=el=>normalize(el?.querySelector('strong')?.textContent);
+const isUsable=card=>!!card&&!card.disabled&&!card.classList.contains('unavailable');
 const raf2=fn=>requestAnimationFrame(()=>requestAnimationFrame(fn));
 
 function swingDrawer(root=document){return root.querySelector('.card-drawer[aria-label="스윙 카드 선택"]');}
@@ -79,7 +80,9 @@ function boardGuide(panel){
 }
 function setGuide(drawer,panel,armed=null){
   const guide=boardGuide(panel);if(!guide)return;
-  const placed=assignments(drawer,document),count=placed.length,rate=DAMAGE_RATES[Math.max(0,count-1)]||50;
+  const placed=assignments(drawer,document),count=placed.length,baseRate=DAMAGE_RATES[Math.max(0,count-1)]||50;
+  const liveRate=Number.parseInt(normalize(drawer.querySelector('.stack-efficiency b')?.textContent),10);
+  const rate=Number.isFinite(liveRate)?liveRate:baseRate;
   const strong=guide.querySelector('strong'),small=guide.querySelector('small'),strip=guide.querySelector('.zone-board-rate');
   if(armed){
     strong.textContent=`${cardName(armed)} → 놓을 존을 탭하세요`;
@@ -90,7 +93,7 @@ function setGuide(drawer,panel,armed=null){
     strong.textContent=count?`${count}장 배치 · HP 피해 ${rate}%`:'카드를 9존에 직접 놓으세요';
     small.textContent=count?'첫 카드 효과 + 추가 카드 커버 · 더 놓거나 바로 스윙':'탭 → 존 탭, 또는 카드를 존까지 드래그 · 최대 4장';
   }
-  strip.innerHTML=DAMAGE_RATES.map((n,i)=>`<i class="${count===i+1?'current':''}"><b>${i+1}</b><span>${n}%</span></i>`).join('');
+  strip.innerHTML=DAMAGE_RATES.map((n,i)=>{const shown=count===i+1?rate:n;return `<i class="${count===i+1?'current':''}"><b>${i+1}</b><span>${shown}%</span></i>`;}).join('');
 }
 function clearTokens(root=document){
   zoneCells(root).forEach(cell=>{cell.querySelector('.zone-card-token-layer')?.remove();cell.classList.remove('board-has-card');});
@@ -116,14 +119,14 @@ function markCards(drawer,root=document,armed=null){
     if(row){
       card.classList.add('board-placed-source');card.dataset.boardOrder=String(row.order);
       card.dataset.boardAction=row.role==='main'?'1 · 효과 카드':'✓ 존에 배치됨';
-    }else card.dataset.boardAction='＋ 존에 놓기';
+    }else card.dataset.boardAction=isUsable(card)?'＋ 존에 놓기':'사용 불가';
     if(card===armed)card.classList.add('board-card-armed');
   });
 }
 function refresh(drawer,root=document,armed=null){
   const panel=zonePanel(root);if(!drawer||!panel)return;
   drawer.classList.add('zone-card-board');panel.classList.add('zone-card-board-active');
-  panel.classList.toggle('board-targeting',!!armed);
+  panel.classList.toggle('board-empty',!mainCard(drawer));panel.classList.toggle('board-targeting',!!armed);
   markCards(drawer,root,armed);renderTokens(drawer,root);setGuide(drawer,panel,armed);
 }
 function safeClick(el,state){
@@ -170,7 +173,7 @@ function placeCardAtZone(drawer,card,zone,state){
   safeClick(candidate,state);hiddenAimAt(drawer,zone,state);return true;
 }
 function armCard(drawer,card,state){
-  if(!drawer||!card||card.disabled)return;
+  if(!drawer||!isUsable(card))return;
   const placed=assignments(drawer,state.root),row=placed.find(x=>x.card===card);
   if(!row&&placed.length>=4){setGuide(drawer,zonePanel(state.root),null);return;}
   state.armed=card;refresh(drawer,state.root,card);
@@ -194,7 +197,7 @@ export function installSwingStackDirectTap(root=document){
   if(root.__swingStackDirectTapInstalled)return ()=>{};
   root.__swingStackDirectTapInstalled=true;
   const state={root,bypass:false,armed:null,drag:null,suppressClickUntil:0,scheduled:false};
-  const schedule=()=>{if(state.scheduled)return;state.scheduled=true;requestAnimationFrame(()=>{state.scheduled=false;const drawer=swingDrawer(root);if(!drawer){state.armed=null;clearTokens(root);return;}if(state.armed&&!drawer.contains(state.armed))state.armed=null;refresh(drawer,root,state.armed);});};
+  const schedule=()=>{if(state.scheduled)return;state.scheduled=true;requestAnimationFrame(()=>{state.scheduled=false;const drawer=swingDrawer(root);if(!drawer){state.armed=null;clearTokens(root);return;}if(state.armed&&(!drawer.contains(state.armed)||!isUsable(state.armed)))state.armed=null;refresh(drawer,root,state.armed);});};
   const observer=new MutationObserver(schedule);observer.observe(root.documentElement||root,{subtree:true,childList:true,attributes:true,attributeFilter:['class','aria-pressed']});
 
   const finishDrag=(e,cancel=false)=>{
@@ -209,7 +212,7 @@ export function installSwingStackDirectTap(root=document){
   };
   const onPointerDown=e=>{
     if(state.bypass)return;const drawer=swingDrawer(root);if(!drawer)return;
-    const card=e.target.closest?.(ATTACK_CARD_SELECTOR);if(!card||!drawer.contains(card)||card.disabled)return;
+    const card=e.target.closest?.(ATTACK_CARD_SELECTOR);if(!card||!drawer.contains(card)||!isUsable(card))return;
     state.drag={pointerId:e.pointerId,startX:e.clientX,startY:e.clientY,card,moved:false,ghost:null,rect:null};
   };
   const onPointerMove=e=>{
@@ -245,15 +248,16 @@ export function installSwingStackDirectTap(root=document){
 
   root.addEventListener('pointerdown',onPointerDown,true);
   root.addEventListener('pointermove',onPointerMove,{capture:true,passive:false});
+  const onPointerCancel=e=>finishDrag(e,true);
   root.addEventListener('pointerup',finishDrag,true);
-  root.addEventListener('pointercancel',e=>finishDrag(e,true),true);
+  root.addEventListener('pointercancel',onPointerCancel,true);
   root.addEventListener('click',onClick,true);
   schedule();
   return ()=>{
     observer.disconnect();state.drag?.ghost?.remove();clearTokens(root);
     zonePanel(root)?.classList.remove('zone-card-board-active','board-targeting','board-dragging');
     root.removeEventListener('pointerdown',onPointerDown,true);root.removeEventListener('pointermove',onPointerMove,true);
-    root.removeEventListener('pointerup',finishDrag,true);root.removeEventListener('click',onClick,true);
+    root.removeEventListener('pointerup',finishDrag,true);root.removeEventListener('pointercancel',onPointerCancel,true);root.removeEventListener('click',onClick,true);
     delete root.__swingStackDirectTapInstalled;
   };
 }

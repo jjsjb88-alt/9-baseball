@@ -8,12 +8,12 @@
 .zone-card-board .duel-hand{overflow:visible!important}
 
 /* Unplaced cards must continue to look usable after the first choice. */
-.zone-card-board .duel-hand .duel-card.attack:not(:disabled){
+.zone-card-board .duel-hand .duel-card.attack:not(:disabled):not(.unavailable){
   opacity:1!important;filter:none!important;visibility:visible!important;
   transition:transform .14s ease,border-color .14s ease,box-shadow .14s ease,opacity .14s ease!important;
   touch-action:pan-x;user-select:none;-webkit-user-select:none;
 }
-.zone-card-board .duel-hand .duel-card.attack:not(:disabled):not(.board-placed-source){
+.zone-card-board .duel-hand .duel-card.attack:not(:disabled):not(.unavailable):not(.board-placed-source){
   border-color:#58736c!important;box-shadow:0 8px 18px rgba(0,0,0,.16)!important;
 }
 .zone-card-board .duel-hand .duel-card.attack[data-board-action]::after{
@@ -53,6 +53,7 @@
 
 /* The 9-zone board is now visibly a placement surface. */
 .zone-card-board-active .zone-grid{overflow:visible}
+.zone-card-board-active.board-empty .zone-cell.aimed,.zone-card-board-active.board-empty .zone-cell.covered{box-shadow:none!important;outline:none!important;border-color:inherit!important}
 .zone-card-board-active .zone-cell{position:relative;overflow:visible;transition:border-color .14s ease,box-shadow .14s ease,transform .14s ease,background .14s ease}
 .zone-card-board-active.board-targeting .zone-cell,
 .zone-card-board-active.board-dragging .zone-cell{
