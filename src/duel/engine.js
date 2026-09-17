@@ -98,14 +98,36 @@ export function setAimZone(state,zone){
   if(state.phase!=='battle'||!Number.isInteger(zone)||zone<0||zone>8||state.battle.aimZone===zone)return state;
   const s=clone(state);s.battle.aimZone=zone;return s;
 }
-export function coverage(s,id='basic'){
+export function coverageAt(s,id='basic',aimZone=s.battle.aimZone){
   const def=id==='basic'?{shape:'point'}:CARDS[card(s,id)?.kind];if(!def||def.type==='skill')return [];
-  const z=s.battle.aimZone,row=Math.floor(z/3),col=z%3;
+  const z=aimZone,row=Math.floor(z/3),col=z%3;
   if(s.battle.growthMode==='patience'&&s.growth.patience&&s.battle.waitCharge>0&&def.shape!=='all')return [z];
   let zones=Array.from({length:9},(_,i)=>i).filter(i=>def.shape==='all'||def.shape==='row'&&Math.floor(i/3)===row
     ||def.shape==='column'&&i%3===col||def.shape==='cross'&&Math.abs(Math.floor(i/3)-row)+Math.abs(i%3-col)<=1||i===z);
   if(s.battle.expanded)zones=[...new Set(zones.flatMap(i=>[i,...Array.from({length:9},(_,j)=>j).filter(j=>Math.abs(Math.floor(i/3)-Math.floor(j/3))+Math.abs(i%3-j%3)===1)]))];
   return zones.sort((a,b)=>a-b);
+}
+export const coverage=(s,id='basic')=>coverageAt(s,id,s.battle.aimZone);
+
+export function assistProblem(s,primaryId,assistId,assistZone){
+  if(!assistId)return null;
+  if(s?.version!==10)return '보조 커버는 MAIN RUN에서만 사용할 수 있습니다.';
+  if(s.phase!=='battle')return '지금은 보조 카드를 낼 수 없습니다.';
+  if(!Number.isInteger(assistZone)||assistZone<0||assistZone>8)return '보조 카드가 노릴 존을 고르세요.';
+  if(primaryId!=='basic'&&cardProblem(s,primaryId))return cardProblem(s,primaryId);
+  const primary=primaryId==='basic'?null:card(s,primaryId),assist=card(s,assistId);
+  if(primary?.kind==='bunt')return '희생 번트에는 보조 카드를 붙일 수 없습니다.';
+  if(s.battle.growthMode==='patience')return '기다린 한 공은 한 존 승부라 보조 카드를 붙일 수 없습니다.';
+  if(!assist||!s.battle.hand.includes(assistId))return '보조 카드가 손패에 없습니다.';
+  if(assistId===primaryId)return '같은 카드를 두 번 낼 수 없습니다.';
+  if(CARDS[assist.kind]?.type!=='attack')return '스윙 카드만 보조 커버로 낼 수 있습니다.';
+  if(assist.kind==='bunt')return '희생 번트는 보조 커버로 사용할 수 없습니다.';
+  return null;
+}
+export function comboCoverage(s,primaryId,assistId=null,assistZone=s.battle.aimZone){
+  const main=coverage(s,primaryId);
+  if(!assistId||assistProblem(s,primaryId,assistId,assistZone))return main;
+  return [...new Set([...main,...coverageAt(s,assistId,assistZone)])].sort((a,b)=>a-b);
 }
 export function cardProblem(s,id){
   if(s.phase!=='battle')return '먼저 투구 결과를 확인하고 다음 공/타자를 진행하세요.';
@@ -149,14 +171,14 @@ export function pitchClue(s){
   // Upgraded scout also names the column, the only way a `column` card can be handed information.
   return b.scoutPlus?row+' · '+['몸쪽','가운데','바깥'][b.pending.zone%3]+' 확인':row+' 확인';
 }
-export function matchup(s,id='basic',zone=s.battle.aimZone){
+export function matchup(s,id='basic',zone=s.battle.aimZone,coverageSize=null){
   const b=s.battle,k=id==='basic'?'basic':card(s,id)?.kind;
   const base=BUILDS[s.build].stats,player=b.batterIndex,v10Technique=s.version===10?(s.v10?.activeBattleBonus?.technique||0):0;
   const hitter={technique:base.technique+[0,4,-2,2,-3,1,3,-1,0][player]+b.aim*8+b.relayActive*10+v10Technique,
     power:base.power+[0,-3,5,-1,4,0,-4,2,1][player]+b.aim*5,luck:base.luck};
   const pitcher=pitcherProfile(s);
   const familiarity=BUILDS[s.build].zones.includes(zone)?12:0;
-  const widthPenalty=Math.max(0,coverage(s,id).length-1)*7;
+  const widthPenalty=Math.max(0,(coverageSize??coverage(s,id).length)-1)*7;
   const growthPower=b.growthMode==='patience'&&s.growth.patience?(12+12*s.growth.patience)*b.waitCharge:0;
   return {hitter,pitcher,familiarity,widthPenalty,growthPower,
     quality:hitter.technique+familiarity+(k==='strike'&&zone%3===2?12:0)-pitcher.movement,
@@ -164,8 +186,8 @@ export function matchup(s,id='basic',zone=s.battle.aimZone){
     luckEdge:hitter.luck-pitcher.command};
 }
 // Conditional hit types. Stats NEVER revoke a successful zone read.
-export function hitProfile(s,id,zone){
-  const k=id==='basic'?'basic':card(s,id).kind,m=matchup(s,id,zone);
+export function hitProfile(s,id,zone,coverageSize=null){
+  const k=id==='basic'?'basic':card(s,id).kind,m=matchup(s,id,zone,coverageSize);
   const limited=(k==='basic'||k==='defend')&&!m.growthPower;
   let hr=limited?0:clamp(.025+m.powerEdge*.006,0,(k==='slug'||m.growthPower>0)?.65:.12);
   let double=limited?0:clamp(.14+m.powerEdge*.005,.02,Math.min(.38,.95-hr));
@@ -197,6 +219,31 @@ export function previewCard(s,id,probabilities=publicProbabilities(s)){
   return {label:id!=='basic'&&card(s,id).kind==='bunt'?'희생 작전 · 안타 보장 예외':'타격 범위 적중 = 안타 확정',coverage:coverage(s,id),hit,foul:sum('foul'),whiff:sum('whiff'),out:sum('out'),sacrifice:sum('sacrifice'),types,matchup:matchup(s,id),expectedBases:hit*types.reduce((v,t)=>v+t.p*t.bases,0),
     growthText:growthText+(active?' · 연결 사인: 기존 주자 추가 '+(active>=3?2:1)+'베이스':''),fortuneChance:s.battle.growthMode==='fortune'?hit*(1-types[0].p):0};
 }
+
+export function previewV10Combo(s,id,assistId,assistZone,probabilities=publicProbabilities(s)){
+  if(!assistId)return previewCard(s,id,probabilities);
+  const problem=cardProblem(s,id)||assistProblem(s,id,assistId,assistZone);if(problem)return {problem};
+  const base=previewCard(s,id,probabilities),main=coverage(s,id),support=coverageAt(s,assistId,assistZone);
+  const combined=[...new Set([...main,...support])].sort((a,b)=>a-b),mass=new Map();
+  let hit=0,foul=0,whiff=0,out=0;
+  probabilities.forEach((p,z)=>{
+    if(z!==9&&main.includes(z)){
+      hit+=p;
+      for(const t of hitProfile(s,id,z,combined.length))mass.set(t.label,(mass.get(t.label)||0)+p*t.p);
+    }else if(z!==9&&support.includes(z)){
+      hit+=p;mass.set('보조 커버 단타',(mass.get('보조 커버 단타')||0)+p);
+    }else{
+      const o=swingOdds(s,id,z);foul+=p*(o.foul||0);whiff+=p*(o.whiff||0);out+=p*(o.out||0);
+    }
+  });
+  const basesFor=label=>label.includes('홈런')?4:label.includes('2루타')?2:1;
+  const types=[...mass].map(([label,m])=>({label,bases:basesFor(label),p:hit?m/hit:0}));
+  const hr=types.find(t=>t.bases===4)?.p||0;
+  return {...base,label:'합동 스윙 · 두 카드 커버를 합칩니다',coverage:combined,primaryCoverage:main,assistCoverage:support,
+    assist:{id:assistId,kind:card(s,assistId).kind,aimZone:assistZone},hit,foul,whiff,out,sacrifice:0,types,
+    matchup:matchup(s,id,s.battle.aimZone,combined.length),expectedBases:hit*types.reduce((v,t)=>v+t.p*t.bases,0),
+    fortuneChance:s.battle.growthMode==='fortune'?hit*(1-hr):0};
+}
 function home(s,id,events){s.battle.runs++;s.stats.runs++;events.push(playerName(id)+' 홈인 · +1점');}
 function advance(s,steps,events){
   const b=s.battle;for(let i=2;i>=0;i--){const id=b.bases[i];if(!id)continue;b.bases[i]=null;
@@ -224,31 +271,38 @@ function finalize(s,before,kind,name,events,growthEvents=[]){
   }else if(b.outs>=3)s.phase='lost';
   return s;
 }
-export function battingResult(s,id){
+export function battingResult(s,id,opts={}){
   const {zone,roll,powerRoll}=s.battle.pending,o=swingOdds(s,id,zone),k=id==='basic'?'basic':card(s,id).kind;
   let kind=roll<o.hit?'hit':roll<o.hit+o.foul?'foul':roll<o.hit+o.foul+(o.sacrifice||0)?'sacrifice':roll<o.hit+o.foul+(o.sacrifice||0)+o.out?'out':'whiff';
   let hitType=null;
-  if(kind==='hit'){let q=powerRoll;const types=hitProfile(s,id,zone);hitType=types.at(-1);for(const t of types){q-=t.p;if(q<0){hitType=t;break;}}}
+  if(kind==='hit'){let q=powerRoll;const types=hitProfile(s,id,zone,opts.coverageSize);hitType=types.at(-1);for(const t of types){q-=t.p;if(q<0){hitType=t;break;}}}
   return {kind,bases:hitType?.bases||0,zone,covered:o.covered,label:hitType?.label||{foul:k==='bunt'?'번트 파울':'파울',sacrifice:'희생 번트',out:'인플레이 아웃',whiff:'헛스윙'}[kind]};
 }
-function resolve(state,id){
-  if(cardProblem(state,id||'basic'))return state;
-  const s=clone(state),b=s.battle,before={runs:b.runs,outs:b.outs},events=[],growthEvents=[],pending=b.pending;
-  const result=id?battingResult(s,id):{kind:pending.zone===9?'ball':'called',zone:pending.zone,label:pending.zone===9?'볼':'루킹 스트라이크'};
+function resolve(state,id,assist=null){
+  if(cardProblem(state,id||'basic')||assist&&assistProblem(state,id||'basic',assist.id,assist.aimZone))return state;
+  const s=clone(state),b=s.battle,before={runs:b.runs,outs:b.outs},events=[],growthEvents=[],pending=b.pending,mode=b.growthMode;
+  const mainCoverage=id?coverage(s,id):[],assistCard=assist?.id?card(s,assist.id):null;
+  const assistCoverage=assistCard?coverageAt(s,assist.id,assist.aimZone):[];
+  const usedCoverage=id?[...new Set([...mainCoverage,...assistCoverage])].sort((a,b)=>a-b):[];
+  let result;
+  if(!id)result={kind:pending.zone===9?'ball':'called',zone:pending.zone,label:pending.zone===9?'볼':'루킹 스트라이크'};
+  else if(assistCard&&pending.zone!==9&&!mainCoverage.includes(pending.zone)&&assistCoverage.includes(pending.zone))
+    result={kind:'hit',bases:1,zone:pending.zone,covered:true,label:'보조 커버 단타',assistOnly:true};
+  else result=battingResult(s,id,{coverageSize:usedCoverage.length});
   const k=id==='basic'?'basic':id?card(s,id).kind:null;
-  // Capture promises before consuming charges; reveal must show the coverage actually used.
-  const usedCoverage=id?coverage(s,id):[],mode=b.growthMode;
   if(id&&id!=='basic'){b.hand.splice(b.hand.indexOf(id),1);b.discard.push(id);s.stats.cards++;}
+  if(assistCard){b.hand.splice(b.hand.indexOf(assist.id),1);b.discard.push(assist.id);s.stats.cards++;}
   s.stats.pitches++;s.phase='pitch';
   const countBefore={balls:b.balls,strikes:b.strikes};
   if(result.kind==='hit'){
-    const m=matchup(s,id,result.zone);events.push('존 적중 → 안타 확정 · 타격 '+m.hitter.technique+' vs 변화 '+m.pitcher.movement+' / 파워 '+m.hitter.power+' vs 구위 '+m.pitcher.stuff);
+    if(result.assistOnly)events.push('보조 커버 적중 → 단타 확정 · '+CARDS[assistCard.kind].name+'이 빗나간 메인 스윙을 살렸습니다.');
+    else {const m=matchup(s,id,result.zone,usedCoverage.length);events.push('존 적중 → 안타 확정 · 타격 '+m.hitter.technique+' vs 변화 '+m.pitcher.movement+' / 파워 '+m.hitter.power+' vs 구위 '+m.pitcher.stuff);}
     s.stats.hits++;s.stats.totalBases+=result.bases;
     const fortunate=mode==='fortune'&&result.bases<4;
     if(fortunate){s.fortune-=growthCost(s.growth.fortune);s.growthStats.fortuneUses++;growthEvents.push('행운 해방 · 수비 혼선으로 타자·주자 추가 1베이스');}
     const relaySteps=b.relayActive?(b.relayActive>=3?2:1):0;
     if(relaySteps){s.growthStats.relayHits++;growthEvents.push('연결 사인 실현 · 기존 주자 추가 '+relaySteps+'베이스');}
-    advance(s,Math.max(result.bases,k==='rally'?2:0)+(b.runSignal?(b.runSignalPlus?2:1):0)+relaySteps+(fortunate?1:0),events);
+    advance(s,(result.assistOnly?result.bases:Math.max(result.bases,k==='rally'?2:0))+(b.runSignal?(b.runSignalPlus?2:1):0)+relaySteps+(fortunate?1:0),events);
     const destination=result.bases+(fortunate?1:0);
     if(destination>=4)home(s,currentBatter(s).id,events);else b.bases[destination-1]=currentBatter(s).id;
     if(s.growth.fortune&&!fortunate&&['땅볼 안타','바가지 안타 · 행운의 단타'].includes(result.label)){
@@ -274,7 +328,7 @@ function resolve(state,id){
   }
   if(id&&mode==='patience'){growthEvents.unshift('기다린 한 공 · '+b.waitCharge+'중첩 사용');b.waitCharge=0;s.growthStats.patienceSwings++;}
   if(id&&!(mode==='fortune'&&result.kind!=='hit'))b.growthMode='normal';
-  b.revealed={zone:pending.zone,label:result.label,kind:result.kind,coverage:usedCoverage,aimZone:id?b.aimZone:null,action:k||'take',ballsBefore:countBefore.balls,strikesBefore:countBefore.strikes,growthEvents};
+  b.revealed={zone:pending.zone,label:result.label,kind:result.kind,coverage:usedCoverage,primaryCoverage:mainCoverage,assistCoverage,assistZone:assistCard?assist.aimZone:null,assistKind:assistCard?assistCard.kind:null,assistOnly:!!result.assistOnly,aimZone:id?b.aimZone:null,action:k||'take',ballsBefore:countBefore.balls,strikesBefore:countBefore.strikes,growthEvents};
   b.history.push({zone:pending.zone,label:result.label,aimZone:id?b.aimZone:null,turn:b.turn,...countBefore});
   b.history=b.history.slice(-18);b.pending=null;b.scouted=false;b.scoutPlus=false;
   // Upgraded 코스 조정 survives the swing and lasts the rest of the plate appearance.
@@ -283,9 +337,9 @@ function resolve(state,id){
   if(s.phase==='pitch')events.push('같은 타자 · 다음 공에서 승부가 이어집니다.');
   return finalize(s,before,result.kind==='hit'?'hit':['out','sacrifice'].includes(result.kind)?'out':'pitch',currentBatter(s).name+' · '+result.label,events,growthEvents);
 }
-export function playCard(state,id){
+export function playCard(state,id,opts={}){
   if(cardProblem(state,id))return state;
-  if(id==='basic'||CARDS[card(state,id).kind].type==='attack')return resolve(state,id);
+  if(id==='basic'||CARDS[card(state,id).kind].type==='attack')return resolve(state,id,opts.assist||null);
   const s=clone(state),entry=card(s,id),k=entry.kind,plus=!!entry.plus,b=s.battle,before={runs:b.runs,outs:b.outs},events=[];
   b.hand.splice(b.hand.indexOf(id),1);b.discard.push(id);s.stats.cards++;b.preparations++;
   if(k==='setup')b.aim=Math.min(4,b.aim+(plus?2:1));if(k==='watch')draw(s,plus?3:2);
@@ -555,7 +609,7 @@ export function playV10Action(state,action){
   const choice=action.type==='take'?'take':action.type==='card'
     ?(action.id==='basic'?'basic':card(state,action.id)?.kind||String(action.id||'')):'';
   if(!choice)return state;
-  let next=action.type==='take'?endTurn(state):action.type==='card'?playCard(state,action.id):state;
+  let next=action.type==='take'?endTurn(state):action.type==='card'?playCard(state,action.id,{assist:action.assistId?{id:action.assistId,aimZone:action.assistZone}:null}):state;
   if(next===state)return state;
   if(next.stats.pitches===beforePitches){
     if(['reward','won'].includes(next.phase)&&next.pitcher?.hp>0)next.phase='battle';
@@ -567,8 +621,9 @@ export function playV10Action(state,action){
     covered:Array.isArray(r.coverage)&&r.coverage.includes(r.zone),
   },{pitchId:next.stats.pitches});
   next.pitcher=applied.pitcher;
+  const assistName=r.assistKind?CARDS[r.assistKind]?.name||r.assistKind:null;
   next.v10={...next.v10,lastCombat:{
-    choice,choiceLabel:v10ChoiceLabel(choice),aimZone:r.aimZone,aimLabel:v10ZoneLabel(r.aimZone),
+    choice,choiceLabel:v10ChoiceLabel(choice)+(assistName?' + '+assistName:''),aimZone:r.aimZone,aimLabel:v10ZoneLabel(r.aimZone)+(assistName?' + '+v10ZoneLabel(r.assistZone):''),
     actualPitch:r.zone,pitchLabel:v10ZoneLabel(r.zone),pitchName:next.battle?.intent?.name||'',
     verdict:r.label,damage:applied.result.damage,hpAfter:applied.result.hpAfter,
   }};
