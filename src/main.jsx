@@ -12,6 +12,8 @@ import "./duel/combat-readability.js";
 import "./duel/combat-readability.css";
 import "./duel/v10-relic-ui.js";
 import "./duel/v10-relic-ui.css";
+import "./duel/landscape-declutter.js";
+import "./duel/landscape-declutter.css";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
