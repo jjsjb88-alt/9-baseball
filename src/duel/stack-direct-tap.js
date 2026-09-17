@@ -21,6 +21,12 @@ const normalize=s=>(s||'').replace(/\s+/g,' ').trim();
 const cardName=el=>normalize(el?.querySelector('strong')?.textContent);
 const isUsable=card=>!!card&&!card.disabled&&!card.classList.contains('unavailable');
 const raf2=fn=>requestAnimationFrame(()=>requestAnimationFrame(fn));
+function liveDamageRate(drawer,count){
+  const base=DAMAGE_RATES[Math.max(0,count-1)]||50;
+  const text=normalize(drawer?.querySelector('.stack-efficiency b')?.textContent);
+  const match=text.match(/(\d{1,3})\s*%/);
+  return match?Number(match[1]):base;
+}
 
 function swingDrawer(root=document){return root.querySelector('.card-drawer[aria-label="스윙 카드 선택"]');}
 function zonePanel(root=document){return root.querySelector('.zone-panel[aria-label="9존 타격 계획"]');}
@@ -75,25 +81,52 @@ function boardGuide(panel){
   let el=panel?.querySelector('.zone-card-board-guide');if(el)return el;
   if(!panel)return null;
   el=document.createElement('div');el.className='zone-card-board-guide';el.setAttribute('role','status');
-  el.innerHTML='<div class="zone-board-copy"><span>PLACE CARDS</span><strong></strong><small></small></div><div class="zone-board-rate" aria-label="카드 수별 HP 피해 효율"></div>';
+  el.innerHTML='<div class="zone-board-copy"><span>PLACE CARDS</span><strong></strong><small></small></div><div class="zone-board-power"><div class="zone-power-head"><span>HP POWER</span><strong>HP ×1.00</strong></div><div class="zone-power-track"><i></i></div><small>FULL POWER</small></div><div class="zone-board-rate" aria-label="카드 수별 HP 피해 배율"></div>';
   const grid=panel.querySelector('.zone-grid');grid?.parentNode?.insertBefore(el,grid);return el;
 }
 function setGuide(drawer,panel,armed=null){
   const guide=boardGuide(panel);if(!guide)return;
-  const placed=assignments(drawer,document),count=placed.length,baseRate=DAMAGE_RATES[Math.max(0,count-1)]||50;
-  const liveRate=Number.parseInt(normalize(drawer.querySelector('.stack-efficiency b')?.textContent),10);
-  const rate=Number.isFinite(liveRate)?liveRate:baseRate;
-  const strong=guide.querySelector('strong'),small=guide.querySelector('small'),strip=guide.querySelector('.zone-board-rate');
+  const placed=assignments(drawer,panel?.ownerDocument||document),count=placed.length,rate=liveDamageRate(drawer,count);
+  const loss=Math.max(0,100-rate),power=Math.max(0,Math.min(100,rate));
+  const strong=guide.querySelector('.zone-board-copy>strong'),small=guide.querySelector('.zone-board-copy>small');
+  const powerStrong=guide.querySelector('.zone-power-head>strong'),powerTrack=guide.querySelector('.zone-power-track'),powerSmall=guide.querySelector('.zone-board-power>small');
+  const strip=guide.querySelector('.zone-board-rate');
   if(armed){
     strong.textContent=`${cardName(armed)} → 놓을 존을 탭하세요`;
     small.textContent='다른 카드는 잠기지 않습니다 · 바로 다른 카드로 바꿔도 됩니다.';
     guide.classList.add('armed');
   }else{
     guide.classList.remove('armed');
-    strong.textContent=count?`${count}장 배치 · HP 피해 ${rate}%`:'카드를 9존에 직접 놓으세요';
-    small.textContent=count?'첫 카드 효과 + 추가 카드 커버 · 더 놓거나 바로 스윙':'탭 → 존 탭, 또는 카드를 존까지 드래그 · 최대 4장';
+    strong.textContent=count?`${count}장 배치 · 커버 ${count}칸 전략`:'카드를 9존에 직접 놓으세요';
+    small.textContent=count?'카드를 더 놓으면 커버는 넓어지고 HP 위력은 내려갑니다.':'탭 → 존 탭, 또는 카드를 존까지 드래그 · 최대 4장';
   }
-  strip.innerHTML=DAMAGE_RATES.map((n,i)=>{const shown=count===i+1?rate:n;return `<i class="${count===i+1?'current':''}"><b>${i+1}</b><span>${shown}%</span></i>`;}).join('');
+  powerStrong.textContent=`HP ×${(rate/100).toFixed(2)}`;
+  powerTrack?.style.setProperty('--power',power+'%');
+  powerSmall.textContent=count<=1?'FULL POWER':`COVER +${count-1} · 위력 -${loss}%`;
+  const hadCount=guide.dataset.count!==undefined,prevCount=Number(guide.dataset.count||count),prevRate=Number(guide.dataset.rate||rate);
+  guide.dataset.count=String(count);guide.dataset.rate=String(rate);
+  if(hadCount&&(count>prevCount||rate<prevRate)){
+    guide.classList.remove('rate-drop');void guide.offsetWidth;guide.classList.add('rate-drop');
+    setTimeout(()=>guide.classList.remove('rate-drop'),520);
+  }
+  strip.innerHTML=DAMAGE_RATES.map((n,i)=>{
+    const shown=count===i+1?rate:n,cut=Math.max(0,100-shown);
+    return `<i class="${count===i+1?'current':''}" style="--rate:${Math.max(0,Math.min(100,shown))}%"><b>${i+1}장</b><span>×${(shown/100).toFixed(2)}</span><em>${cut?'-'+cut+'%':'FULL'}</em></i>`;
+  }).join('');
+}
+function placementImpact(drawer,zone,state){
+  const cell=zoneCells(state.root)[zone],panel=zonePanel(state.root);if(!drawer||!cell||!panel)return;
+  const count=assignments(drawer,state.root).length,rate=liveDamageRate(drawer,count);
+  cell.classList.remove('board-impact','board-impact-main','board-impact-cover');
+  void cell.offsetWidth;
+  cell.classList.add('board-impact',count<=1?'board-impact-main':'board-impact-cover');
+  cell.dataset.impactRate=(rate/100).toFixed(2);
+  panel.classList.remove('board-placement-kick');void panel.offsetWidth;panel.classList.add('board-placement-kick');
+  try{globalThis.navigator?.vibrate?.(count<=1?18:[9,18,9]);}catch{}
+  setTimeout(()=>{
+    cell.classList.remove('board-impact','board-impact-main','board-impact-cover');
+    panel.classList.remove('board-placement-kick');
+  },520);
 }
 function clearTokens(root=document){
   zoneCells(root).forEach(cell=>{cell.querySelector('.zone-card-token-layer')?.remove();cell.classList.remove('board-has-card');});
@@ -139,7 +172,9 @@ function hiddenAimAt(drawer,zone,state){
     const editor=drawer.querySelector('.stack-aim-editor');
     const button=editor?.querySelectorAll('.assist-zone-grid button')?.[zone];
     if(button)safeClick(button,state);
-    state.armed=null;refresh(swingDrawer(state.root),state.root,null);
+    state.armed=null;
+    const live=swingDrawer(state.root);refresh(live,state.root,null);
+    requestAnimationFrame(()=>placementImpact(swingDrawer(state.root),zone,state));
   });
 }
 function placeCardAtZone(drawer,card,zone,state){
@@ -150,18 +185,18 @@ function placeCardAtZone(drawer,card,zone,state){
   // No effect card yet, BASIC is being chosen, or BASIC is being replaced by a real card.
   if(!currentMain||card.classList.contains('basic-card')||(currentMain.classList.contains('basic-card')&&card!==currentMain)){
     if(card!==currentMain)safeClick(card,state);
-    raf2(()=>{safeClick(zoneCells(state.root)[zone],state);state.armed=null;refresh(swingDrawer(state.root),state.root,null);});
+    raf2(()=>{safeClick(zoneCells(state.root)[zone],state);state.armed=null;const live=swingDrawer(state.root);refresh(live,state.root,null);requestAnimationFrame(()=>placementImpact(swingDrawer(state.root),zone,state));});
     return true;
   }
   // Moving the first/effect card is just moving its aim zone.
   if(card===currentMain){
-    safeClick(cell,state);state.armed=null;refresh(drawer,state.root,null);return true;
+    safeClick(cell,state);state.armed=null;refresh(drawer,state.root,null);requestAnimationFrame(()=>placementImpact(swingDrawer(state.root),zone,state));return true;
   }
 
   const candidate=candidateFor(drawer,card);
   if(!candidate){
     // A stale DOM edge case: treat the card as a new effect card rather than dead-ending the player.
-    safeClick(card,state);raf2(()=>{safeClick(zoneCells(state.root)[zone],state);state.armed=null;refresh(swingDrawer(state.root),state.root,null);});
+    safeClick(card,state);raf2(()=>{safeClick(zoneCells(state.root)[zone],state);state.armed=null;const live=swingDrawer(state.root);refresh(live,state.root,null);requestAnimationFrame(()=>placementImpact(swingDrawer(state.root),zone,state));});
     return true;
   }
   if(candidate.disabled&&!candidate.classList.contains('picked')){
