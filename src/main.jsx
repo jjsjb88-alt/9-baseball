@@ -4,6 +4,8 @@ import Duel from "./duel/App.jsx";
 import "./duel/stack-direct-tap.js";
 import "./duel/landscape-first.css";
 import "./duel/landscape-scroll-fix.css";
+import "./duel/character-master.css";
+import "./duel/responsive-master.css";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
