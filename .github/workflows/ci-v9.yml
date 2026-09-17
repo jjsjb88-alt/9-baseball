@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - codex/v9-deckbuilder
-      - codex/sts-landscape-battleboard
   workflow_dispatch:
 
 permissions:
