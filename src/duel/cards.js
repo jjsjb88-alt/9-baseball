@@ -9,6 +9,9 @@ export const CARDS={
   bunt:{name:'희생 번트',type:'attack',art:'diamond',shape:'all',power:0,role:'진루',axis:'all',gives:['주자 진루'],needs:['아웃 지불'],text:'9존 대응. 스트라이크에 70% 희생 번트, 30% 파울. 2스트라이크 번트 파울은 삼진.',flavor:'세 번째 아웃이면 득점도 없다.'},
   finisher:{name:'갭 공략',type:'attack',art:'sun',shape:'row',power:1,role:'장타',axis:'row',gives:['가로 3존 커버','파워 +18'],needs:[],text:'가로 3존 커버. 안타 때 2루타·홈런 기회. 파워 +18.',flavor:'수비 사이를 가른다.'},
   defend:{name:'커트 스윙',type:'attack',art:'shield',shape:'cross',power:-1,role:'생존',axis:'cross',gives:['십자 5존 커버','단타 확정','파울 생존'],needs:[],text:'선택 존과 상하좌우 커버. 범위 적중은 단타 확정. 범위 밖에서도 파울 생존에 유리.',flavor:'좋은 공까지 타석을 이어간다.'},
+  wall:{name:'존 봉쇄',type:'attack',art:'shield',shape:'cross',power:0,role:'범위',axis:'cross',rarity:'signature',act:1,gives:['십자 5존 커버'],needs:[],text:'선택 존과 상하좌우 5존을 한 장으로 커버. 커트 스윙보다 장타 손실이 적지만 범위 밖 파울 보정은 없다.',flavor:'1막의 강적을 꺾은 타선이 처음 얻는 넓은 정답.'},
+  laser:{name:'라인드라이브',type:'attack',art:'sun',shape:'column',power:1,role:'장타',axis:'column',rarity:'signature',act:2,gives:['세로 3존 커버','파워 +18'],needs:[],text:'선택한 세로 3존을 커버하면서 파워 +18. 밀어치기의 안정성과 갭 공략의 타구 질을 한 장에 묶은 2막 시그니처.',flavor:'읽은 세로선을 그대로 찢는다.'},
+  commit:{name:'끝장 승부',type:'attack',art:'comet',shape:'point',power:3,role:'장타',axis:'point',rarity:'signature',act:3,gives:['1존 커버','파워 +54'],needs:[],text:'선택한 단 1존에 파워 +54. 커버를 넓히면 장점이 크게 줄어드는 3막 시그니처. 읽기와 덱 압축이 완성됐을 때 폭발한다.',flavor:'아홉 칸 중 하나. 마지막에는 그것으로 충분하다.'},
   setup:{name:'타이밍 맞추기',type:'skill',art:'target',role:'집중',axis:null,gives:['집중 +1'],needs:[],text:'준비 1회 · 이번 타석 집중 +1. 타격 +8 · 파워 +5로 적중한 공의 안타 종류를 개선.',flavor:'위치를 못 읽은 스윙까지 구해주지는 않는다.'},
   watch:{name:'작전 확인',type:'skill',art:'eye',role:'수급',axis:null,gives:['카드 +2'],needs:[],text:'준비 1회 · 카드 2장 뽑기. 준비는 타석당 최대 2회.',flavor:'한 타석에 쓸 선택지를 늘린다.'},
   scout:{name:'릴리스 간파',type:'skill',art:'book',role:'관찰',axis:null,gives:['행 정보','카드 +1'],needs:[],text:'준비 1회 · 이번 공의 높음/중간/낮음 또는 볼 여부를 확인. 카드 1장 뽑기.',flavor:'정답 존이 아닌, 관찰 가능한 단서.'},
@@ -43,7 +46,7 @@ export function cardText(kind,plus=false){
 export const DECK_MIN=9,DECK_MAX=18;
 export const DECKBUILDER_BUILD='starter';
 export const BUILDS={
-  starter:{name:'무명 타선',description:'정답이 없는 9장 · 약한 기본 타격을 교체하며 이번 런의 야구를 만든다',stats:{technique:58,power:52,luck:52},zones:[1,3,5,7],cards:['place','place','place','place','strike','strike','setup','watch','scout']},
+  starter:{name:'무명 타선',description:'정답이 없는 9장 · 1막에서 방향을 고르고 2막에서 연계를 만들고 3막에서 한 가지 야구로 완성한다',stats:{technique:58,power:52,luck:52},zones:[1,3,5,7],cards:['place','place','place','place','strike','strike','setup','watch','scout']},
   pull:{name:'몸쪽 장타',description:'완성형 체험 · 좁게 기다려 크게 친다',stats:{technique:52,power:76,luck:44},zones:[0,3,4,6],cards:['slug','slug','setup','scout','lure','strike','slug','flow','watch','setup','rally','calm']},
   away:{name:'바깥 연결',description:'완성형 체험 · 출루와 진루를 다음 타석까지 잇는다',stats:{technique:76,power:45,luck:50},zones:[2,4,5,8],cards:['strike','rally','scout','watch','setup','strike','rally','flow','calm','strike','lure','bunt']},
   contact:{name:'끈질긴 컨택',description:'완성형 체험 · 넓게 버티며 계속 타석을 잇는다',stats:{technique:58,power:34,luck:72},zones:[1,3,5,7],cards:['defend','strike','scout','calm','watch','defend','rally','defend','setup','lure','bunt','calm']},
@@ -76,26 +79,25 @@ export const REWARDS=[['calm','flow','rally'],['lure','scout','defend'],['finish
 // Each pool is 정보 / 페이오프 / 보완 — three real directions for one growth.
 // 기다림 keeps `scout` first: the growth is charged by WATCHED strikes, so information is its enabler, not a flavor pick.
 export const AFFINITY_CARDS={patience:['scout','slug','lure'],relay:['rally','finisher','flow','bunt'],fortune:['defend','calm','strike']};
-// V9 main-run rewards deliberately open with three different identities. The player, not a preset, decides what this run becomes.
+// MAIN RUN draft arc: act 1 picks an identity, act 2 adds synergy, act 3 asks for a final tactical commitment.
 export const V9_REWARDS=[
   ['slug','rally','defend'],
   ['scout','flow','finisher'],
   ['lure','bunt','calm'],
 ];
-// V9.2: a route is a baseball opponent choice, not map decoration. Hard routes ask for
-// one more run against a better pitcher and pay back with one extra draft candidate.
+// Hard/elite routes expose an act-specific signature as the fourth draft card.
 export const ROUTE_CHOICES=[
   [
-    {id:'home-opener',name:'홈 개막전',tag:'안정',text:'현재 전력으로 정면 승부합니다.',risk:'기본 목표 · 기본 투수 능력',reward:'승리 시 기본 3장 드래프트',targetDelta:0,statBonus:0,rewardBonus:null},
-    {id:'giant-road',name:'강팀 원정',tag:'고위험',text:'첫 경기부터 강한 투수진을 상대합니다.',risk:'목표 +1점 · 투수 능력 +6',reward:'승리 시 릴리스 간파가 4번째 후보',targetDelta:1,statBonus:6,rewardBonus:'scout'},
+    {id:'home-opener',name:'홈 개막전',tag:'안정',text:'현재 전력으로 정면 승부합니다.',risk:'기본 목표 · 기본 투수 능력',reward:'1막 기본 3장 드래프트',targetDelta:0,statBonus:0,rewardBonus:null},
+    {id:'giant-road',name:'강팀 원정',tag:'고위험',text:'첫 경기부터 강한 투수진을 상대합니다.',risk:'목표 +1점 · 투수 능력 +6',reward:'강적 격파 시 존 봉쇄가 4번째 후보',targetDelta:1,statBonus:6,rewardBonus:'wall'},
   ],
   [
-    {id:'sinker-study',name:'낮은 공 연구전',tag:'안정',text:'낮은 코스에 적응하며 덱을 정리합니다.',risk:'기본 목표 · 기본 투수 능력',reward:'승리 시 기본 3장 드래프트',targetDelta:0,statBonus:0,rewardBonus:null},
-    {id:'city-rival',name:'도시 라이벌',tag:'라이벌',text:'낮은 공을 더 강하게 밀어붙이는 라이벌전입니다.',risk:'목표 +1점 · 투수 능력 +7',reward:'승리 시 당겨 넘기기가 4번째 후보',targetDelta:1,statBonus:7,rewardBonus:'slug'},
+    {id:'sinker-study',name:'낮은 공 연구전',tag:'안정',text:'낮은 코스에 적응하며 덱을 정리합니다.',risk:'기본 목표 · 기본 투수 능력',reward:'2막 연계 3장 드래프트',targetDelta:0,statBonus:0,rewardBonus:null},
+    {id:'city-rival',name:'도시 라이벌',tag:'라이벌',text:'낮은 공을 더 강하게 밀어붙이는 라이벌전입니다.',risk:'목표 +1점 · 투수 능력 +7',reward:'강적 격파 시 라인드라이브가 4번째 후보',targetDelta:1,statBonus:7,rewardBonus:'laser'},
   ],
   [
-    {id:'deep-series',name:'수비형 강팀',tag:'안정',text:'외야가 깊은 팀을 상대로 출루와 진루를 시험합니다.',risk:'기본 목표 · 기본 투수 능력',reward:'승리 시 기본 3장 드래프트',targetDelta:0,statBonus:0,rewardBonus:null},
-    {id:'wall-rival',name:'담장 라이벌',tag:'라이벌',text:'장타를 억제하는 팀과 정면으로 부딪칩니다.',risk:'목표 +1점 · 투수 능력 +8',reward:'승리 시 주자 연결이 4번째 후보',targetDelta:1,statBonus:8,rewardBonus:'rally'},
+    {id:'deep-series',name:'수비형 강팀',tag:'안정',text:'외야가 깊은 팀을 상대로 출루와 진루를 시험합니다.',risk:'기본 목표 · 기본 투수 능력',reward:'3막 전술 3장 드래프트',targetDelta:0,statBonus:0,rewardBonus:null},
+    {id:'wall-rival',name:'담장 라이벌',tag:'라이벌',text:'장타를 억제하는 팀과 정면으로 부딪칩니다.',risk:'목표 +1점 · 투수 능력 +8',reward:'강적 격파 시 끝장 승부가 4번째 후보',targetDelta:1,statBonus:8,rewardBonus:'commit'},
   ],
   [
     {id:'regular-final',name:'정규 결승',tag:'안정',text:'지금까지 만든 팀으로 마지막 세 아웃을 넘습니다.',risk:'기본 목표 · 기본 투수 능력',reward:'완주 기록',targetDelta:0,statBonus:0,rewardBonus:null},
@@ -172,6 +174,7 @@ export const GLOSSARY=[
   ['공개 정보와 실제 공','표시된 코스 확률로 다음 공을 미리 추첨합니다. 존을 바꾸거나 카드를 고른다고 공이 다시 뽑히지 않습니다. 릴리스 간파는 그 공의 높이만 추가로 보여줍니다.'],
   ['선수와 카드','베이스에는 p1–p9 선수만 올라갑니다. 사용한 카드는 버린 더미로 갑니다. 헛스윙·파울 뒤 같은 타자가 계속 서며, 타석 종료 후에만 다음 타자를 입장시킵니다.'],
   ['범위와 파워의 상충','커버가 넓을수록 파워가 깎입니다(커버 장수−1 당 −7). 넓게 치면 맞히기 쉽고 장타는 어렵습니다. 덱을 넓게 짤지 좁게 짤지가 이 게임의 중심 선택입니다.'],
+  ['3막 드래프트 곡선','1막은 당겨 넘기기/주자 연결/커트 스윙으로 덱의 방향을 정합니다. 강적을 잡으면 존 봉쇄가 열립니다. 2막은 정보·주루·갭 공략을 붙이고 강적 보상으로 라인드라이브가 열립니다. 3막은 코스 조정·번트·호흡으로 덱을 완성하고 강적을 잡으면 끝장 승부가 등장합니다.'],
   ['카드 강화(+)','보상에서 카드 하나를 + 판으로 바꿀 수 있습니다. 강화는 범위·파워·정보·진루만 바꾸며, 커버 안에 들어온 공을 아웃으로 되돌리지 않습니다.'],
   ['검증 범위','같은 시험 시드로 세 덱을 비교하는 전략 시험판입니다. 투구 코스·범위 밖 파울과 헛스윙·적중 후 안타 종류에 확률을 사용합니다. 안타·진루는 단순화돼 있으며 실제 야구 통계나 30분의 재미를 검증한 완성판이 아닙니다.'],
 ];

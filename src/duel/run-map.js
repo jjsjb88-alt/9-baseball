@@ -22,6 +22,14 @@ const ARCHETYPES=[
   {key:'high',label:'높은 공 수비형',style:'deep',threat:'높은 공과 깊은 수비로 장타 기대값을 낮춥니다.',zoneOpen:5,zoneMax:8},
   {key:'closer',label:'반대 코스 승부형',style:'closer',threat:'이전 노림 반대편을 찌르며 2스트라이크에 존을 넓힙니다.',zoneOpen:7,zoneMax:9},
 ];
+const ARCHETYPE_BY_KEY=Object.fromEntries(ARCHETYPES.map(x=>[x.key,x]));
+/* 막이 오를수록 단순히 숫자만 세지는 게 아니라 상대의 질문 자체가 바뀐다. */
+const ACT_ARCHETYPE_KEYS={
+  1:['outside','sinker'],
+  2:['sinker','high','outside'],
+  3:['high','closer','sinker'],
+};
+const BOSS_ARCHETYPE={1:'sinker',2:'high',3:'closer'};
 /* 한 런의 전투 칸은 최대 23개다. 이름 풀은 그보다 넉넉해야 한 런 안에서 겹치지 않는다. */
 const NAMES=['윤태성','민재호','강도윤','박현우','이시훈','최준혁','김태겸','한지우','오세민','정우찬',
   '임건호','서재윤','노경환','백승호','류지환','문성주','조현성','신동하','황인우','고태원',
@@ -30,20 +38,22 @@ const NAMES=['윤태성','민재호','강도윤','박현우','이시훈','최준
 /* 막마다 무엇이 어려워지는지 한 곳에 적는다. 화면도 이 표를 그대로 읽어 플레이어에게 보여준다.
    hp는 끌어내릴 양, stat은 투수 기본기, zone은 쓰는 코스 수. 코스가 넓어지는 게 읽기를 가장 어렵게 만든다. */
 export const ACT_ESCALATION={
-  1:{name:'개막',hp:0,stat:0,zone:0,note:'기본 전력. 읽기가 통하는 구간.'},
-  2:{name:'중반',hp:16,stat:4,zone:1,note:'투수가 코스를 하나 더 쓴다. HP도 두꺼워진다.'},
-  3:{name:'결승',hp:36,stat:9,zone:2,note:'코스 둘이 더 열리고 전력이 최대. 한 타석이 비싸다.'},
+  1:{name:'개막',hp:0,stat:0,zone:0,note:'바깥·낮은 공 중심. 읽은 대로 치며 덱의 첫 방향을 정하는 막.'},
+  2:{name:'중반',hp:16,stat:4,zone:1,note:'싱커와 높은 공이 섞이고 코스가 하나 더 열린다. 1막에서 고른 카드끼리 연계를 만들 시점.'},
+  3:{name:'결승',hp:36,stat:9,zone:2,note:'높은 공·반대 코스 승부가 본격화되고 코스 둘이 더 열린다. 압축과 시그니처 카드가 없으면 한 타석이 비싸다.'},
 };
 export const actEscalation=act=>ACT_ESCALATION[act]||ACT_ESCALATION[1];
 
 function makeOpponent(seed,act,type,row,lane,route){
   const salt=act*101+row*17+lane*7+(type==='elite'?31:type==='boss'?67:0);
-  const archetype=sample(seed,salt,ARCHETYPES);
+  const pool=(ACT_ARCHETYPE_KEYS[act]||ACT_ARCHETYPE_KEYS[1]).map(k=>ARCHETYPE_BY_KEY[k]);
+  const archetype=type==='boss'?ARCHETYPE_BY_KEY[BOSS_ARCHETYPE[act]||'outside']:sample(seed,salt,pool);
   const step=actEscalation(act);
   const base={battle:72,elite:92,boss:120}[type]+step.hp;
   const routeBonus=route==='gauntlet'||route==='ace'?8:route==='playoff'?4:0;
   const maxHp=base+routeBonus;
   const rewardTier=type==='boss'?3:type==='elite'?2:1;
+  const reward=rewardTier===1?'막별 기본 3장 드래프트':rewardTier===2?'시그니처 카드 포함 4장 드래프트':act===3?'최종 결승 · 런 완주':'막 돌파 · 시그니처 4장 드래프트';
   return {
     name:sample(seed,salt+13,NAMES),archetype:archetype.label,archetypeKey:archetype.key,style:archetype.style,
     maxHp,statBonus:(type==='battle'?0:type==='elite'?6:10)+step.stat+Math.floor(routeBonus/2),
@@ -52,7 +62,7 @@ function makeOpponent(seed,act,type,row,lane,route){
     /* 화면이 막 난도를 추론하지 않게, 이 막에서 무엇이 얼마나 올랐는지 그대로 실어 보낸다. */
     escalation:{name:step.name,hp:step.hp,stat:step.stat,zone:step.zone,note:step.note},
     risk:rewardTier===3?'최종':rewardTier===2?'높음':routeBonus?'중상':'보통',
-    reward:rewardTier===1?'기본 카드 드래프트':rewardTier===2?'추가 후보가 붙는 카드 드래프트':'막 돌파 보상',
+    reward,
   };
 }
 

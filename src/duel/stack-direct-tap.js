@@ -1,4 +1,5 @@
 import './stack-direct-tap.css';
+import './act23-deckbuilding-ui.js';
 
 const CARD_SELECTOR='.duel-hand .duel-card.attack:not(.basic-card)';
 const SWIPE_TRIGGER=58;
