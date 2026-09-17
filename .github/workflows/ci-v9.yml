@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - codex/v9-deckbuilder
+      - codex/combat-readability-hp-impact-v2
   workflow_dispatch:
 
 permissions:
