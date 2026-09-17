@@ -136,3 +136,27 @@
   .duel-combat>.zone-panel{padding:8px!important}.zone-cell{min-height:34px!important;height:auto!important}.zone-heading h2{font-size:14px!important}
   .card-drawer .duel-hand{min-height:124px!important}.card-drawer .duel-card{min-height:120px!important;max-height:154px!important;flex-basis:110px!important;width:110px!important}.card-drawer .duel-card .card-art{height:28px!important;min-height:28px!important}
 }
+
+/* PHONE LANDSCAPE — 배치 확정
+   폰 가로에서 전광판이 구장 위로 38px 겹쳐 그려지고 오른쪽 칸에 큰 빈 공간이 남았다.
+   가로용 규칙이 여러 파일에 흩어져 서로를 덮은 결과라, 마지막에 로드되는 이 파일에서
+   전투 화면의 모든 칸을 한 번에 못 박는다. 행/열 수와 배치가 같은 곳에 적혀 있어야 한다. */
+@media (orientation:landscape) and (max-height:540px) and (max-width:1079px){
+  .duel-combat{
+    display:grid!important;
+    grid-template-columns:minmax(0,1.04fr) minmax(0,.96fr)!important;
+    grid-template-rows:20px 40px minmax(0,1fr)!important;
+    gap:4px 6px!important;padding:4px 6px 6px!important;
+    height:calc(100dvh - 38px)!important;overflow:hidden!important;align-items:stretch!important}
+  .duel-combat>.battle-ribbon{grid-area:1/1/2/3!important;height:20px!important;min-height:0!important;margin:0!important}
+  /* 전투 캔버스는 스크롤이 없는데 전광판이 sticky top:66px로 붙어 구장을 38px 덮었다. 가로에선 제자리에 둔다. */
+  .duel-combat>.scoreboard,.duel-combat>.v10-combat-hp,.duel-combat>.battle-ribbon{position:static!important;top:auto!important}
+  .duel-combat>.scoreboard{grid-area:2/1/3/2!important;height:40px!important;min-height:0!important;margin:0!important;overflow:hidden!important}
+  .duel-combat>.v10-combat-hp{grid-area:2/2/3/3!important;height:40px!important;min-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important}
+  .duel-combat>.duel-arena{grid-area:3/1/4/2!important;height:auto!important;min-height:0!important;max-height:none!important;margin:0!important;border-radius:10px!important;overflow:hidden!important}
+  /* 9존은 스윙을 고를 때만 펼쳐진다. 접힌 동안 오른쪽 칸을 비워 두지 않도록 손패가 그 자리를 쓴다. */
+  .duel-combat>.zone-panel{grid-area:3/2/4/3!important;align-self:start!important;margin:0!important;min-height:0!important;padding:5px!important;border-radius:10px!important;overflow:hidden!important;z-index:2!important}
+  .duel-combat>.duel-table{grid-area:3/2/4/3!important;align-self:end!important;margin:0!important;min-height:0!important;max-height:100%!important;padding:0!important;overflow:auto!important;scrollbar-width:none}
+  .duel-combat.decision-swing>.duel-table,.duel-combat.decision-prepare>.duel-table{align-self:end!important;max-height:calc(100% - 88px)!important}
+  .duel-combat>.pitch-read{position:absolute!important;left:10px!important;bottom:10px!important;z-index:25!important;width:min(46%,380px)!important;margin:0!important;padding:5px 8px!important;border-radius:9px!important}
+}
