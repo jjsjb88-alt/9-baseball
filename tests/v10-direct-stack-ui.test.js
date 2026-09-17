@@ -2,111 +2,110 @@
 import {afterEach,describe,expect,it,vi} from 'vitest';
 import {installSwingStackDirectTap} from '../src/duel/stack-direct-tap.js';
 
-const tick=()=>new Promise(resolve=>setTimeout(resolve,35));
-const settle=()=>new Promise(resolve=>setTimeout(resolve,120));
+const tick=()=>new Promise(resolve=>setTimeout(resolve,45));
+const settle=()=>new Promise(resolve=>setTimeout(resolve,130));
 function pointer(target,type,x,y,id=1){
   const e=new Event(type,{bubbles:true,cancelable:true});
   Object.defineProperties(e,{clientX:{value:x},clientY:{value:y},pointerId:{value:id},pointerType:{value:'touch'}});
   target.dispatchEvent(e);return e;
 }
+const ZONE_NAMES=Array.from({length:9},(_,i)=>`존${i+1}`);
 
-function fixture(){
-  document.body.innerHTML=`<section class="card-drawer" aria-label="스윙 카드 선택">
+function fixture({withMain=true}={}){
+  document.body.innerHTML=`
+  <section class="zone-panel" aria-label="9존 타격 계획">
+    <div class="zone-grid">${ZONE_NAMES.map((name,i)=>`<button class="zone-cell" aria-label="${name}" aria-pressed="${withMain&&i===0?'true':'false'}"><span>${name}</span><strong>${10+i}%</strong><small>비숙련</small></button>`).join('')}</div>
+  </section>
+  <section class="card-drawer" aria-label="스윙 카드 선택">
     <div class="drawer-head"></div><div class="drawer-escape"></div>
     <div class="duel-hand">
-      <button class="duel-card attack selected"><strong>밀어치기</strong></button>
+      <button class="duel-card attack ${withMain?'selected':''}"><strong>밀어치기</strong></button>
       <button class="duel-card attack"><strong>맞혀놓기</strong></button>
+      <button class="duel-card attack"><strong>강공</strong></button>
+      <button class="duel-card attack basic-card"><strong>BASIC SWING</strong></button>
     </div>
     <section class="swing-stack">
-      <div class="stack-lane"><div class="stack-slot main"><strong>밀어치기</strong></div><button class="stack-slot support"><strong>맞혀놓기</strong></button></div>
-      <div class="stack-candidates"><button><span>+ 겹치기</span><strong>맞혀놓기</strong></button></div>
-      <div class="stack-aim-editor"><div class="stack-aim-title"><div></div><button>빼기</button></div><div class="assist-zone-grid"><button>1</button><button>2</button></div></div>
-      <button data-testid="execute-action">2장 겹쳐 스윙 · HP 80%</button>
+      <div class="stack-lane"><div class="stack-slot main"><strong>밀어치기</strong></div><button class="stack-slot support"><strong>맞혀놓기</strong><small>존1 · 커버만</small></button><button class="stack-slot support"><strong>강공</strong><small>존1 · 커버만</small></button></div>
+      <div class="stack-candidates"><button><span>+ 겹치기</span><strong>맞혀놓기</strong></button><button><span>+ 겹치기</span><strong>강공</strong></button></div>
+      <div class="stack-aim-editor"><div class="stack-aim-title"><div></div><button>빼기</button></div><div class="assist-zone-grid">${ZONE_NAMES.map((name,i)=>`<button data-zone="${i}">${name}</button>`).join('')}</div></div>
     </section>
+    <div class="decision-preview"><button data-testid="execute-action">스윙</button></div>
   </section>`;
-  return {
-    drawer:document.querySelector('.card-drawer'),
-    main:document.querySelectorAll('.duel-hand .duel-card')[0],
-    second:document.querySelectorAll('.duel-hand .duel-card')[1],
-    candidate:document.querySelector('.stack-candidates button'),
-    editor:document.querySelector('.stack-aim-editor'),
-    remove:document.querySelector('.stack-aim-title > button'),
-    execute:document.querySelector('[data-testid="execute-action"]'),
-    slot:document.querySelector('.stack-slot.support'),
-  };
+  const cards=[...document.querySelectorAll('.duel-hand .duel-card')],zones=[...document.querySelectorAll('.zone-grid .zone-cell')],candidates=[...document.querySelectorAll('.stack-candidates button')],slots=[...document.querySelectorAll('.stack-slot.support')];
+  zones.forEach((zone,i)=>zone.addEventListener('click',()=>zones.forEach((x,j)=>x.setAttribute('aria-pressed',j===i?'true':'false'))));
+  cards.forEach(card=>card.addEventListener('click',()=>{
+    cards.forEach(x=>x.classList.remove('selected'));card.classList.add('selected');
+    candidates.forEach(x=>x.classList.remove('picked'));
+  }));
+  candidates.forEach((candidate,i)=>candidate.addEventListener('click',()=>candidate.classList.toggle('picked')));
+  document.querySelectorAll('.assist-zone-grid button').forEach(button=>button.addEventListener('click',()=>{
+    const picked=candidates.filter(x=>x.classList.contains('picked')),active=Math.max(0,picked.length-1),slot=slots[active];
+    if(slot)slot.querySelector('small').textContent=ZONE_NAMES[Number(button.dataset.zone)]+' · 커버만';
+  }));
+  return {drawer:document.querySelector('.card-drawer'),cards,zones,candidates,slots,main:cards[0],second:cards[1],third:cards[2],basic:cards[3]};
 }
 
-afterEach(()=>{document.body.innerHTML='';});
+afterEach(()=>{document.body.innerHTML='';delete document.elementFromPoint;});
 
-describe('V10 swipe swing-stack hand interaction',()=>{
-  it('메인 선택 뒤 다른 카드가 위로 밀어 커버하는 카드임을 손패에서 직접 보여준다',async()=>{
+describe('V10 9-zone card placement interaction',()=>{
+  it('첫 카드를 고른 뒤에도 나머지 공격 카드가 모두 살아 있는 배치 선택지로 보인다',async()=>{
     const ui=fixture(),cleanup=installSwingStackDirectTap(document);await tick();
-    expect(ui.main.dataset.stackRole).toBe('MAIN · 1');
-    expect(ui.second.dataset.stackRole).toBe('↑ 위로 밀어 커버');
-    expect(ui.drawer.querySelector('.direct-stack-guide').textContent).toContain('위로 밀어');
+    expect(ui.drawer.classList.contains('zone-card-board')).toBe(true);
+    expect(ui.main.dataset.boardAction).toContain('효과 카드');
+    expect(ui.second.dataset.boardAction).toBe('＋ 존에 놓기');
+    expect(ui.third.dataset.boardAction).toBe('＋ 존에 놓기');
+    expect(document.querySelector('.zone-card-board-guide').textContent).toContain('1장 배치');
     cleanup();
   });
 
-  it('다른 카드를 충분히 위로 스와이프하면 메인 교체 없이 COVER로 들어가고 존 선택이 열린다',async()=>{
-    const ui=fixture(),replaceMain=vi.fn(),addSupport=vi.fn(()=>ui.candidate.classList.add('picked'));
-    ui.second.addEventListener('click',replaceMain);ui.candidate.addEventListener('click',addSupport);
+  it('카드 탭은 메인을 교체하지 않고 카드를 든 상태로 만들고, 존 탭이 곧 추가 배치가 된다',async()=>{
+    const ui=fixture(),replaceMain=vi.fn(),addSupport=vi.fn();
+    ui.second.addEventListener('click',replaceMain);ui.candidates[0].addEventListener('click',addSupport);
     const cleanup=installSwingStackDirectTap(document);await tick();
-    pointer(ui.second,'pointerdown',120,320);pointer(ui.second,'pointermove',121,245);pointer(ui.second,'pointerup',121,245);
-    await tick();
+
+    ui.second.click();await tick();
     expect(replaceMain).not.toHaveBeenCalled();
+    expect(ui.second.classList.contains('board-card-armed')).toBe(true);
+    expect(document.querySelector('.zone-card-board-guide').textContent).toContain('놓을 존');
+
+    ui.zones[4].click();await settle();
     expect(addSupport).toHaveBeenCalledTimes(1);
-    expect(ui.editor.classList.contains('direct-open')).toBe(true);
+    expect(ui.main.classList.contains('selected')).toBe(true);
+    expect(ui.candidates[0].classList.contains('picked')).toBe(true);
+    expect(ui.slots[0].querySelector('small').textContent).toContain('존5');
     cleanup();
   });
 
-  it('짧게 끌다 놓으면 스택에 넣지 않고 원래 커버 후보 상태로 돌아온다',async()=>{
-    const ui=fixture(),addSupport=vi.fn(()=>ui.candidate.classList.add('picked'));
-    ui.candidate.addEventListener('click',addSupport);
-    const cleanup=installSwingStackDirectTap(document);await tick();
-    pointer(ui.second,'pointerdown',120,320);pointer(ui.second,'pointermove',121,295);pointer(ui.second,'pointerup',121,295);
-    await tick();
-    expect(addSupport).not.toHaveBeenCalled();
-    expect(ui.editor.classList.contains('direct-open')).toBe(false);
-    expect(ui.second.dataset.stackRole).toBe('↑ 위로 밀어 커버');
+  it('아직 메인이 없으면 카드 → 존 두 동작으로 첫 효과 카드와 노림존을 동시에 정한다',async()=>{
+    const ui=fixture({withMain:false}),cleanup=installSwingStackDirectTap(document);await tick();
+    ui.second.click();ui.zones[7].click();await settle();
+    expect(ui.second.classList.contains('selected')).toBe(true);
+    expect(ui.zones[7].getAttribute('aria-pressed')).toBe('true');
+    expect(document.querySelector('.zone-card-token.main')?.textContent).toContain('맞혀놓기');
     cleanup();
   });
 
-  it('이미 COVER인 카드를 다시 스와이프하면 제거 대신 존 편집을 연다',async()=>{
-    const ui=fixture(),removeSupport=vi.fn(),editSupport=vi.fn();
-    ui.candidate.classList.add('picked');ui.candidate.addEventListener('click',removeSupport);ui.slot.addEventListener('click',editSupport);
-    const cleanup=installSwingStackDirectTap(document);await tick();
-    pointer(ui.second,'pointerdown',120,320);pointer(ui.second,'pointermove',120,240);pointer(ui.second,'pointerup',120,240);
-    await tick();
-    expect(removeSupport).not.toHaveBeenCalled();
-    expect(editSupport).toHaveBeenCalledTimes(1);
-    expect(ui.editor.classList.contains('direct-open')).toBe(true);
-    cleanup();
-  });
-
-  it('COVER 편집 중 카드 빼기 후 조준 잠금을 해제해 메인 단독 스윙으로 계속 진행할 수 있다',async()=>{
-    const ui=fixture();
-    ui.candidate.classList.add('picked');
-    ui.execute.scrollIntoView=vi.fn();
-    const cleanup=installSwingStackDirectTap(document);await tick();
-
-    pointer(ui.second,'pointerdown',120,320);pointer(ui.second,'pointermove',120,240);pointer(ui.second,'pointerup',120,240);
-    await tick();
-    expect(ui.drawer.classList.contains('direct-stack-aiming')).toBe(true);
-    expect(ui.editor.classList.contains('direct-open')).toBe(true);
-
-    // React가 하는 일(스택에서 제거 + 편집기 언마운트)을 DOM fixture에서 그대로 모사한다.
-    ui.remove.addEventListener('click',()=>{
-      ui.candidate.classList.remove('picked');
-      ui.editor.remove();
-    });
-    ui.remove.click();
+  it('카드를 존까지 드래그하면 별도 COVER 편집 화면 없이 바로 그 존에 배치한다',async()=>{
+    const ui=fixture(),cleanup=installSwingStackDirectTap(document);await tick();
+    document.elementFromPoint=vi.fn(()=>ui.zones[2]);
+    pointer(ui.second,'pointerdown',120,320);pointer(ui.second,'pointermove',180,240);pointer(ui.second,'pointerup',180,240);
     await settle();
-
+    expect(ui.candidates[0].classList.contains('picked')).toBe(true);
+    expect(ui.slots[0].querySelector('small').textContent).toContain('존3');
+    expect(ui.drawer.querySelector('.stack-aim-editor').classList.contains('direct-open')).toBe(false);
     expect(ui.drawer.classList.contains('direct-stack-aiming')).toBe(false);
-    expect(document.querySelector('.stack-aim-editor')).toBeNull();
-    expect(ui.main.dataset.stackRole).toBe('MAIN · 1');
-    expect(ui.second.dataset.stackRole).toBe('↑ 위로 밀어 커버');
-    expect(ui.execute.scrollIntoView).toHaveBeenCalled();
+    cleanup();
+  });
+
+  it('존 안의 추가 카드 토큰을 탭하면 즉시 빼고 다른 카드는 그대로 유지한다',async()=>{
+    const ui=fixture();ui.candidates[0].classList.add('picked');ui.slots[0].querySelector('small').textContent='존6 · 커버만';
+    const cleanup=installSwingStackDirectTap(document);await tick();
+    const token=document.querySelector('.zone-card-token.support');
+    expect(token?.textContent).toContain('맞혀놓기');
+    token.click();await settle();
+    expect(ui.candidates[0].classList.contains('picked')).toBe(false);
+    expect(ui.main.classList.contains('selected')).toBe(true);
+    expect(ui.second.dataset.boardAction).toBe('＋ 존에 놓기');
     cleanup();
   });
 });
