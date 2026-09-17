@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - codex/v9-deckbuilder
-      - codex/v10-direct-multicard-tap
   workflow_dispatch:
 
 permissions:
