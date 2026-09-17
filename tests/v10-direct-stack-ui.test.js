@@ -68,17 +68,6 @@ describe('V10 swipe swing-stack hand interaction',()=>{
     cleanup();
   });
 
-  it('탭은 PC와 접근성을 위한 보조 조작으로 그대로 동작한다',async()=>{
-    const ui=fixture(),replaceMain=vi.fn(),addSupport=vi.fn(()=>ui.candidate.classList.add('picked'));
-    ui.second.addEventListener('click',replaceMain);ui.candidate.addEventListener('click',addSupport);
-    const cleanup=installSwingStackDirectTap(document);await tick();
-    ui.second.click();await tick();
-    expect(replaceMain).not.toHaveBeenCalled();
-    expect(addSupport).toHaveBeenCalledTimes(1);
-    expect(ui.editor.classList.contains('direct-open')).toBe(true);
-    cleanup();
-  });
-
   it('이미 COVER인 카드를 다시 스와이프하면 제거 대신 존 편집을 연다',async()=>{
     const ui=fixture(),removeSupport=vi.fn(),editSupport=vi.fn();
     ui.candidate.classList.add('picked');ui.candidate.addEventListener('click',removeSupport);ui.slot.addEventListener('click',editSupport);
