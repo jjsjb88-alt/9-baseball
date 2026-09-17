@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - codex/v9-deckbuilder
+      - codex/protagonist-visibility-zone-english
   workflow_dispatch:
 
 permissions:
