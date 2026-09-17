@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="576" height="128" viewBox="0 0 576 128" shape-rendering="crispEdges">
+<defs><style>
+.o{fill:#081116}.o2{fill:#142129}.n0{fill:#102638}.n1{fill:#17405a}.n2{fill:#2a6682}.n3{fill:#79a8b5}.s0{fill:#9a5e4a}.s1{fill:#c77f61}.s2{fill:#efb089}.s3{fill:#ffd2a6}.p0{fill:#8d8b7c}.p1{fill:#c9c3aa}.p2{fill:#efe4c7}.p3{fill:#fff2d0}.b0{fill:#805027}.b1{fill:#c17a38}.b2{fill:#f0b45d}.r{fill:#b74b3b}.w{fill:#f4e8ca}
+</style></defs>
+<!-- 0 IDLE: low center of gravity, bat visible above helmet -->
+<g transform="translate(0 0)">
+ <rect class="o" x="18" y="112" width="25" height="5"/><rect class="o" x="55" y="112" width="25" height="5"/>
+ <polygon class="o" points="31,73 47,71 50,91 43,114 31,114 35,89"/><polygon class="p1" points="34,75 44,74 46,90 40,110 34,110 38,88"/>
+ <polygon class="o" points="48,72 62,74 68,112 56,115 52,92"/><polygon class="p2" points="51,76 59,77 64,109 58,111 55,90"/>
+ <rect class="o" x="34" y="45" width="29" height="33"/><polygon class="n1" points="37,48 58,46 61,72 54,78 38,74"/><rect class="n3" x="38" y="50" width="4" height="22"/><rect class="w" x="53" y="50" width="5" height="3"/>
+ <rect class="o" x="30" y="49" width="10" height="27"/><rect class="s1" x="33" y="52" width="6" height="19"/><rect class="o" x="58" y="48" width="11" height="25"/><rect class="s2" x="60" y="51" width="6" height="17"/>
+ <rect class="o" x="39" y="26" width="21" height="22"/><rect class="s1" x="42" y="30" width="16" height="16"/><rect class="s3" x="49" y="33" width="8" height="5"/><rect class="o" x="43" y="38" width="3" height="3"/>
+ <polygon class="o" points="35,23 42,18 58,18 65,24 63,33 38,33"/><polygon class="n1" points="39,23 44,20 57,20 62,24 61,29 39,29"/><rect class="n3" x="44" y="21" width="11" height="2"/><rect class="o" x="58" y="28" width="11" height="4"/>
+ <polygon class="o" points="64,54 70,55 83,18 78,16"/><polygon class="b1" points="67,54 69,53 80,19 78,19"/><rect class="b2" x="77" y="16" width="5" height="4"/>
+ <rect class="o" x="62" y="52" width="9" height="8"/><rect class="s2" x="64" y="54" width="5" height="4"/>
+</g>
+<!-- 1 LOAD: hips sit, hands coil behind shoulder -->
+<g transform="translate(96 0)">
+ <rect class="o" x="15" y="112" width="27" height="5"/><rect class="o" x="56" y="112" width="26" height="5"/>
+ <polygon class="o" points="30,75 45,72 49,91 42,114 29,114 34,88"/><polygon class="p1" points="33,77 42,75 45,90 39,110 33,110 37,87"/>
+ <polygon class="o" points="47,73 61,75 70,112 57,115 53,92"/><polygon class="p2" points="50,77 58,78 66,109 59,111 56,91"/>
+ <polygon class="o" points="31,47 58,43 64,75 52,80 34,75"/><polygon class="n1" points="35,49 56,46 60,72 52,76 37,72"/><rect class="n3" x="36" y="50" width="4" height="20"/>
+ <polygon class="o" points="28,50 36,47 43,62 38,72 31,68"/><polygon class="s1" points="31,51 35,50 40,62 37,68 34,66"/>
+ <polygon class="o" points="57,47 65,43 72,57 68,66 61,64"/><polygon class="s2" points="59,49 64,47 69,57 66,62 63,61"/>
+ <rect class="o" x="37" y="25" width="22" height="22"/><rect class="s1" x="40" y="29" width="17" height="16"/><rect class="s3" x="47" y="31" width="9" height="5"/><rect class="o" x="41" y="37" width="3" height="3"/>
+ <polygon class="o" points="33,22 41,17 57,18 64,23 62,32 36,32"/><polygon class="n1" points="37,22 43,19 56,20 61,23 60,28 37,28"/><rect class="n3" x="44" y="20" width="10" height="2"/><rect class="o" x="57" y="27" width="11" height="4"/>
+ <rect class="o" x="63" y="49" width="10" height="8"/><rect class="s2" x="65" y="51" width="6" height="4"/>
+ <polygon class="o" points="69,51 74,54 88,20 84,18"/><polygon class="b1" points="72,51 74,51 86,20 84,20"/><rect class="b2" x="83" y="17" width="5" height="4"/>
+</g>
+<!-- 2 CONTACT: front side braced, arms extended through ball -->
+<g transform="translate(192 0)">
+ <rect class="o" x="19" y="112" width="29" height="5"/><rect class="o" x="61" y="111" width="22" height="5"/>
+ <polygon class="o" points="33,73 50,73 48,93 46,114 34,114 38,91"/><polygon class="p2" points="36,76 47,76 45,92 43,110 37,110 41,91"/>
+ <polygon class="o" points="50,72 64,75 68,112 57,114 55,91"/><polygon class="p1" points="53,76 61,78 64,109 59,110 58,90"/>
+ <polygon class="o" points="37,44 62,48 61,76 50,80 34,72"/><polygon class="n2" points="40,47 59,50 58,72 50,76 38,69"/><rect class="w" x="53" y="51" width="5" height="3"/>
+ <polygon class="o" points="34,50 42,47 55,56 67,58 66,66 53,64 39,58"/><polygon class="s1" points="37,51 41,50 54,59 64,60 64,63 53,61 40,56"/>
+ <polygon class="o" points="59,52 65,49 73,56 82,58 81,65 71,64 62,59"/><polygon class="s2" points="61,53 65,52 72,59 79,60 79,62 72,61 64,57"/>
+ <rect class="o" x="41" y="26" width="22" height="22"/><rect class="s1" x="44" y="30" width="17" height="16"/><rect class="s3" x="52" y="32" width="8" height="5"/><rect class="o" x="45" y="38" width="3" height="3"/>
+ <polygon class="o" points="37,22 44,18 60,19 67,24 65,33 40,33"/><polygon class="n1" points="41,23 46,20 59,21 64,24 63,29 41,29"/><rect class="n3" x="47" y="21" width="10" height="2"/><rect class="o" x="61" y="28" width="11" height="4"/>
+ <polygon class="o" points="78,58 82,65 92,62 92,57"/><polygon class="b2" points="80,60 82,63 92,60 92,58"/><rect class="w" x="84" y="58" width="4" height="4"/>
+</g>
+<!-- 3 FOLLOW: torso opened, bat wraps around front shoulder -->
+<g transform="translate(288 0)">
+ <rect class="o" x="17" y="112" width="28" height="5"/><rect class="o" x="59" y="112" width="25" height="5"/>
+ <polygon class="o" points="32,72 48,73 48,94 43,114 30,114 35,92"/><polygon class="p1" points="35,76 45,76 45,92 40,110 34,110 38,91"/>
+ <polygon class="o" points="48,72 63,74 70,111 58,114 53,91"/><polygon class="p2" points="51,76 60,77 66,108 60,110 56,90"/>
+ <polygon class="o" points="37,45 62,47 64,74 54,80 35,73"/><polygon class="n2" points="40,48 59,50 61,71 53,76 39,70"/>
+ <polygon class="o" points="35,50 43,48 57,55 67,48 73,53 61,64 53,63 40,57"/><polygon class="s1" points="38,52 42,51 56,58 66,51 69,53 60,61 54,60 41,55"/>
+ <polygon class="o" points="58,51 64,48 72,42 79,46 73,55 66,59"/><polygon class="s2" points="61,52 65,51 72,45 76,47 71,52 66,56"/>
+ <rect class="o" x="41" y="27" width="22" height="21"/><rect class="s1" x="44" y="31" width="17" height="15"/><rect class="s3" x="52" y="33" width="8" height="5"/><rect class="o" x="45" y="39" width="3" height="3"/>
+ <polygon class="o" points="37,23 44,18 60,20 67,25 64,34 40,34"/><polygon class="n1" points="41,23 47,20 59,22 64,25 62,30 41,30"/><rect class="n3" x="47" y="22" width="10" height="2"/><rect class="o" x="61" y="29" width="10" height="4"/>
+ <polygon class="o" points="73,44 77,49 92,35 89,31"/><polygon class="b1" points="75,44 77,46 91,34 89,33"/>
+</g>
+<!-- 4 HOMER: tall finish, chest open, bat high -->
+<g transform="translate(384 0)">
+ <rect class="o" x="20" y="112" width="25" height="5"/><rect class="o" x="58" y="112" width="27" height="5"/>
+ <polygon class="o" points="34,72 49,72 48,95 44,114 32,114 37,92"/><polygon class="p2" points="37,75 46,75 45,93 41,110 36,110 40,91"/>
+ <polygon class="o" points="49,71 62,73 70,112 58,114 54,91"/><polygon class="p1" points="52,75 59,76 66,109 60,110 57,90"/>
+ <polygon class="o" points="37,43 61,45 65,72 55,79 35,73"/><polygon class="n2" points="40,46 58,48 61,69 53,75 39,70"/><rect class="n3" x="41" y="47" width="4" height="20"/>
+ <polygon class="o" points="37,49 45,46 58,52 65,39 72,41 67,55 57,61 43,57"/><polygon class="s1" points="40,50 44,49 57,55 63,42 68,43 64,52 56,58 43,54"/>
+ <polygon class="o" points="61,47 67,43 72,33 80,35 76,47 69,55"/><polygon class="s2" points="63,48 67,46 72,36 77,37 73,45 69,52"/>
+ <rect class="o" x="40" y="25" width="22" height="22"/><rect class="s1" x="43" y="29" width="17" height="16"/><rect class="s3" x="51" y="31" width="8" height="5"/><rect class="o" x="44" y="37" width="3" height="3"/>
+ <polygon class="o" points="36,21 43,16 59,18 66,23 64,32 39,32"/><polygon class="n1" points="40,21 46,18 58,20 63,23 62,28 40,28"/><rect class="n3" x="46" y="19" width="10" height="2"/><rect class="o" x="60" y="27" width="11" height="4"/>
+ <polygon class="o" points="74,34 80,38 90,16 86,14"/><polygon class="b2" points="77,34 79,35 88,17 86,16"/><rect class="w" x="84" y="13" width="5" height="4"/>
+</g>
+<!-- 5 MISS: weight spills forward, bat below ball plane -->
+<g transform="translate(480 0)">
+ <rect class="o" x="18" y="112" width="28" height="5"/><rect class="o" x="61" y="111" width="23" height="5"/>
+ <polygon class="o" points="32,73 48,74 48,94 43,114 30,114 35,92"/><polygon class="p1" points="35,77 45,77 45,92 40,110 34,110 38,91"/>
+ <polygon class="o" points="48,72 62,75 70,111 58,114 53,91"/><polygon class="p2" points="51,76 59,78 66,108 60,110 56,90"/>
+ <polygon class="o" points="37,46 61,49 62,75 52,80 34,73"/><polygon class="n1" points="40,49 58,52 59,72 51,76 38,70"/>
+ <polygon class="o" points="34,51 42,48 57,58 68,63 66,70 54,66 40,58"/><polygon class="s1" points="37,52 41,51 56,61 64,65 64,67 55,63 40,56"/>
+ <polygon class="o" points="59,54 65,51 73,60 82,64 80,70 70,67 62,61"/><polygon class="s2" points="61,55 65,54 72,63 78,65 78,67 71,64 64,59"/>
+ <rect class="o" x="41" y="27" width="22" height="21"/><rect class="s1" x="44" y="31" width="17" height="15"/><rect class="s3" x="52" y="33" width="8" height="5"/><rect class="o" x="45" y="39" width="3" height="3"/>
+ <polygon class="o" points="37,23 44,18 60,20 67,25 64,34 40,34"/><polygon class="n1" points="41,23 47,20 59,22 64,25 62,30 41,30"/><rect class="n3" x="47" y="22" width="10" height="2"/><rect class="o" x="61" y="29" width="10" height="4"/>
+ <polygon class="o" points="79,64 83,70 93,72 94,67"/><polygon class="b1" points="81,66 83,68 93,70 93,68"/>
+</g>
+</svg>
