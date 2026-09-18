@@ -656,3 +656,73 @@
   .golden-master-stage.grade-homer .golden-actor.sprite-batter.pose-homer,
   .golden-master-stage.grade-grand-slam .golden-actor.sprite-batter.pose-homer{transform:translate3d(8px,-3px,0) rotate(3deg) scale(1.035)!important}
 }
+
+
+/* GOLDEN MASTER 06 — authored actor art.
+   V3 hero/release assets carry the signature frame; procedural echo becomes support instead of the subject. */
+.golden-master-stage .golden-actor.v3-authored .duel-sprite{
+  image-rendering:auto!important;
+  filter:drop-shadow(1px 0 0 rgba(244,222,173,.18))
+    drop-shadow(-1px 0 0 rgba(0,7,9,.96))
+    drop-shadow(0 2px 0 rgba(0,7,9,.96))
+    drop-shadow(0 13px 5px rgba(0,3,5,.8))!important
+}
+.golden-master-stage .golden-actor.v3-authored.sprite-pitcher .duel-sprite{
+  filter:drop-shadow(-1px 0 0 rgba(139,225,213,.22))
+    drop-shadow(1px 0 0 rgba(0,7,9,.96))
+    drop-shadow(0 2px 0 rgba(0,7,9,.96))
+    drop-shadow(0 13px 5px rgba(0,3,5,.82))!important
+}
+.golden-master-stage .golden-actor.v3-authored .sprite-echo{opacity:.035!important;filter:none!important}
+.golden-master-stage .golden-actor.v3-authored .sprite-bloom{opacity:.12!important;filter:blur(10px)!important}
+
+/* Hero art already contains the bat/action silhouette; duplicated smear would cheapen the still frame. */
+.golden-master-stage .golden-actor.v3-authored.sprite-batter .bat-smear{opacity:0!important}
+
+/* Give the authored release frame enough breathing room to read as a different pitcher, not a texture swap. */
+.golden-master-stage.fx-stage-impact .golden-actor.v3-authored.sprite-pitcher,
+.golden-master-stage.fx-stage-slowmo .golden-actor.v3-authored.sprite-pitcher{
+  width:106%!important;height:106%!important
+}
+.golden-master-stage.fx-stage-impact .golden-actor.v3-authored.sprite-pitcher.variant-sinker,
+.golden-master-stage.fx-stage-slowmo .golden-actor.v3-authored.sprite-pitcher.variant-sinker{
+  transform:translate3d(-11px,8px,0) scale(1.03,.97)
+}
+.golden-master-stage.fx-stage-impact .golden-actor.v3-authored.sprite-pitcher.variant-high,
+.golden-master-stage.fx-stage-slowmo .golden-actor.v3-authored.sprite-pitcher.variant-high{
+  transform:translate3d(-6px,-8px,0) scale(.98,1.04)
+}
+.golden-master-stage.fx-stage-impact .golden-actor.v3-authored.sprite-pitcher.variant-closer,
+.golden-master-stage.fx-stage-slowmo .golden-actor.v3-authored.sprite-pitcher.variant-closer{
+  transform:translate3d(-15px,0,0) rotate(-2deg) scale(1.035,1)
+}
+
+/* Home-run hero still: front leg planted, torso opened, bat line kept readable. */
+.golden-master-stage.grade-homer .golden-actor.v3-authored.sprite-batter,
+.golden-master-stage.grade-grand-slam .golden-actor.v3-authored.sprite-batter{
+  width:108%!important;height:108%!important
+}
+.golden-master-stage.grade-homer.fx-stage-release .golden-actor.v3-authored.sprite-batter,
+.golden-master-stage.grade-homer.fx-stage-settle .golden-actor.v3-authored.sprite-batter{
+  transform:translate3d(14px,-8px,0) rotate(2.4deg) scale(1.03)
+}
+.golden-master-stage.grade-grand-slam.fx-stage-release .golden-actor.v3-authored.sprite-batter,
+.golden-master-stage.grade-grand-slam.fx-stage-settle .golden-actor.v3-authored.sprite-batter{
+  transform:translate3d(16px,-10px,0) rotate(3.2deg) scale(1.055)
+}
+
+@media (orientation:landscape) and (max-height:430px){
+  .golden-master-stage.fx-stage-impact .golden-actor.v3-authored.sprite-pitcher,
+  .golden-master-stage.fx-stage-slowmo .golden-actor.v3-authored.sprite-pitcher,
+  .golden-master-stage.grade-homer .golden-actor.v3-authored.sprite-batter,
+  .golden-master-stage.grade-grand-slam .golden-actor.v3-authored.sprite-batter{width:102%!important;height:102%!important}
+}
+@media (orientation:portrait){
+  .golden-master-stage.fx-stage-impact .golden-actor.v3-authored.sprite-pitcher,
+  .golden-master-stage.fx-stage-slowmo .golden-actor.v3-authored.sprite-pitcher{width:103%!important;height:103%!important}
+  .golden-master-stage.grade-homer .golden-actor.v3-authored.sprite-batter,
+  .golden-master-stage.grade-grand-slam .golden-actor.v3-authored.sprite-batter{width:104%!important;height:104%!important}
+}
+@media (prefers-reduced-motion:reduce){
+  .golden-master-stage .golden-actor.v3-authored{transition:none!important}
+}
