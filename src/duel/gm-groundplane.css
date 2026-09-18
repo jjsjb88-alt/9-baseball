@@ -75,9 +75,11 @@
 .golden-master-stage.fx-stage-windup .sprite-pitcher .actor-ground::after{opacity:1}
 .golden-master-stage.fx-stage-windup .sprite-batter .actor-ground::after{opacity:.34}
 
-/* 컨택트 순간의 빛이 타석 흙까지 번진다. gm-contact-halo와 같은 박자로 끊어 준다. */
+/* 컨택트 순간의 빛이 타석 흙까지 번진다.
+   impact 단계는 실측 1프레임(약 33ms)이라 전환을 걸면 끝나기 전에 지나간다.
+   즉시 켜고 slowmo에서 내려오게 한다. */
 .golden-master-stage.fx-stage-impact .sprite-batter .actor-ground::after{
-  opacity:1;transition:opacity .045s steps(2,end)
+  opacity:1;transition:none
 }
 .golden-master-stage.fx-stage-impact .sprite-pitcher .actor-ground::after{opacity:.4}
 .golden-master-stage.fx-stage-slowmo .sprite-batter .actor-ground::after{opacity:.8}

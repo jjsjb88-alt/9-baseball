@@ -37,8 +37,9 @@ describe('ground plane lighting',()=>{
   it('spills the contact light onto the batter dirt at impact',()=>{
     const impact=block('.golden-master-stage.fx-stage-impact .sprite-batter .actor-ground::after{');
     expect(opacity(impact)).toBeGreaterThan(rest);
-    /* gm-contact-halo와 같은 박자로 끊어야 번지지 않는다. */
-    expect(impact).toContain('steps(2,end)');
+    /* impact는 실측 1프레임(약 33ms)이다. 전환을 걸면 끝나기 전에 지나가므로
+       즉시 켜야 컨택트 플래시가 실제로 렌더된다. */
+    expect(impact).toContain('transition:none');
   });
 
   it('moves the light to the mound while the pitcher works',()=>{
