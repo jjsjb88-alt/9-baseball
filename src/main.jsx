@@ -16,6 +16,7 @@ import "./duel/landscape-declutter.js";
 import "./duel/landscape-declutter.css";
 import "./duel/golden-master.css";
 import "./duel/gm-groundplane.css";
+import "./duel/diamond-weight.css";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>

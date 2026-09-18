@@ -1,0 +1,32 @@
+/* 베이스 표시의 시각 무게 -----------------------------------------------------
+
+   왜: 계획 §8은 "UI보다 전투 장면이 먼저 보인다"를 완료 조건에 둔다.
+   베이스 표시(.living-diamond)는 모바일 세로에서 경기장의 15.9%를 덮는데,
+   슬롯 배경이 #0b1d22e6(약 90% 불투명)이라 필드 한가운데 뜬 UI 박스로 읽혔다.
+
+   위치나 크기는 건드리지 않는다. 주자 정보는 이 게임의 실제 상태이고 가려지면 안 된다.
+   대신 정보가 있는 칸과 없는 칸의 무게를 갈랐다. 빈 베이스는 보여줄 것이 ◇ 하나뿐이니
+   필드로 가라앉히고, 주자가 선 베이스는 오히려 더 또렷해진다.
+
+   전투 장면에만 적용한다. 다른 화면의 베이스 표시는 그대로 둔다. */
+
+/* 빈 베이스 — 정보가 없으므로 필드에 양보한다. */
+.golden-master-stage .base-slot:not(.occupied){
+  background:rgba(11,29,34,.32);
+  border-color:rgba(120,138,119,.40);
+  box-shadow:none;
+}
+.golden-master-stage .base-slot:not(.occupied)>span:first-child{opacity:.7}
+
+/* 주자가 선 베이스 — 이건 정보다. 직전보다 더 또렷하게 세운다. */
+.golden-master-stage .base-slot.occupied{
+  background:rgba(25,48,47,.96);
+  border-color:#f0cf84;
+  box-shadow:0 3px 10px rgba(0,0,0,.5),0 0 0 1px rgba(240,207,132,.22);
+}
+
+/* 베이스 선은 흙에 그은 선이지 UI 테두리가 아니다. */
+.golden-master-stage .base-lines{
+  border-color:rgba(216,193,143,.30);
+  background:rgba(23,62,43,.10);
+}
