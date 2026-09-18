@@ -15,6 +15,16 @@ describe('landscape declutter visual contract',()=>{
     expect(css).toContain('.actor-right{right:5%!important}');
     expect(css).toContain('scale:1.52!important');
   });
+  it('모바일 가로에서도 9존은 손가락으로 넣을 수 있는 실제 터치 크기를 유지한다',()=>{
+    expect(css).toContain('width:clamp(330px,38vw,430px)!important');
+    expect(css).toContain('height:52px!important;min-height:52px!important');
+    expect(css).toContain('width:300px!important');
+    expect(css).toContain('height:44px!important;min-height:44px!important');
+    expect(css).toContain('width:276px!important');
+    expect(css).toContain('board-targeting .zone-cell');
+    expect(css).toContain('transform:translateX(-50%) scale(1.035)!important');
+    expect(css).toContain('touch-action:none!important');
+  });
   it('READ와 선택 상세는 기본 접힘 후 클릭 확장 구조다',()=>{
     expect(css).toContain('.pitch-read:not(.read-open)>b');
     expect(css).toContain('.decision-preview>div{display:none!important}');
