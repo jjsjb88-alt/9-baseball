@@ -211,17 +211,17 @@ function placeCardAtZone(drawer,card,zone,state){
 }
 function collapseSecondaryUi(root=document){
   const combat=combatRoot(root);if(!combat)return;
-  const close=(selector,className,buttonSelector,label)=>{
-    const el=combat.querySelector(selector);if(!el)return;
+  const close=(el,className,buttonSelector,label)=>{
+    if(!el)return;
     el.classList.remove(className);
     const button=el.querySelector(buttonSelector);if(button){
       button.classList.remove('active');button.setAttribute('aria-expanded','false');
       if(label)button.textContent=typeof label==='function'?label(button):label;
     }
   };
-  close(':scope > .zone-panel','zone-info-open','.landscape-zone-info-toggle','INFO');
-  close(':scope > .pitch-read','read-open','.landscape-read-toggle',button=>button.dataset.summary||'READ +');
-  close('.decision-preview','choice-info-open','.landscape-choice-toggle','DETAIL');
+  close(zonePanel(root),'zone-info-open','.landscape-zone-info-toggle','INFO');
+  close(combat.querySelector('.pitch-read'),'read-open','.landscape-read-toggle',button=>button.dataset.summary||'READ +');
+  close(combat.querySelector('.decision-preview'),'choice-info-open','.landscape-choice-toggle','DETAIL');
   const relics=combat.querySelector('.v10-relic-rack');
   if(relics){relics.classList.remove('relic-info-open');relics.setAttribute('aria-expanded','false');}
 }
