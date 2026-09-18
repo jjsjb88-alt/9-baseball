@@ -22,6 +22,11 @@ export default function GoldenMasterStage({stage=null,shot=null,rival=false}){
       <span className="gm-dugout-mouth gm-dugout-left"><i/><i/><i/></span>
       <span className="gm-dugout-mouth gm-dugout-right"><i/><i/><i/></span>
       <span className="gm-mid-haze"/>
+      <span className="gm-duel-axis"/>
+      <span className="gm-pitch-tunnel"><i/><i/><i/></span>
+      <span className="gm-release-ring"><i/><b/></span>
+      <span className="gm-foot-plant"><i/><i/><i/><i/></span>
+      <span className="gm-bat-arc"><i/><b/></span>
       <span className="gm-actor-light gm-batter-light"/>
       <span className="gm-actor-light gm-pitcher-light"/>
       <span className="gm-contact-halo"><i/><b/></span>
