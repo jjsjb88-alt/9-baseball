@@ -73,9 +73,16 @@
   cursor:crosshair
 }
 .zone-card-board-active.board-targeting .zone-cell:hover,
-.zone-card-board-active.board-dragging .zone-cell:hover{
-  z-index:8;border-color:#ffd66e!important;background-image:linear-gradient(rgba(255,211,101,.08),rgba(255,211,101,.08))!important;
-  transform:translateY(-2px);box-shadow:0 0 0 2px rgba(255,214,110,.18),0 0 22px rgba(255,205,80,.14)!important
+.zone-card-board-active.board-dragging .zone-cell:hover,
+.zone-card-board-active .zone-cell.board-drop-hot{
+  z-index:14;border-color:#ffd66e!important;background-image:linear-gradient(rgba(255,211,101,.13),rgba(255,211,101,.13))!important;
+  transform:translateY(-3px) scale(1.035);box-shadow:0 0 0 3px rgba(255,214,110,.22),0 0 30px rgba(255,205,80,.2),inset 0 0 18px rgba(255,219,119,.08)!important
+}
+.zone-card-board-active .zone-cell.board-drop-hot::before{
+  content:"DROP";position:absolute;z-index:21;left:50%;top:50%;transform:translate(-50%,-50%);
+  padding:3px 6px;border:1px solid rgba(255,230,157,.85);border-radius:999px;background:rgba(74,54,22,.92);
+  color:#fff0b6;font:1000 7px/1 ui-monospace,monospace;letter-spacing:.8px;pointer-events:none;
+  box-shadow:0 4px 14px rgba(0,0,0,.32),0 0 18px rgba(255,213,100,.2)
 }
 .zone-card-board-active .zone-cell.board-has-card{border-color:#c49c4c!important;box-shadow:inset 0 0 0 1px rgba(255,211,105,.1),0 0 13px rgba(206,160,65,.08)}
 .zone-card-board-active .zone-cell.board-impact{z-index:16;animation:zoneCardSeat .5s cubic-bezier(.16,.86,.18,1)}
@@ -92,7 +99,7 @@
 .zone-card-token i{display:grid;place-items:center;flex:0 0 13px;height:13px;margin-right:3px;border-radius:3px;background:#76cdb5;color:#09221c;font:1000 7px/1 ui-monospace,monospace;font-style:normal}.zone-card-token b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:7px;line-height:1}.zone-card-token em{margin-left:3px;color:#9bcfc1;font-size:8px;font-style:normal;font-weight:950}.zone-card-token.main{border-color:#ffd66e;background:#5a451ff2;color:#fff1b8}.zone-card-token.main i{background:#ffd66e;color:#241b08}.zone-card-token.main em{color:#ffe7a1}
 .zone-card-board-active .zone-cell.board-has-card>small{padding-bottom:17px}
 
-.zone-card-drag-ghost{position:fixed;z-index:140;display:flex;align-items:center;gap:6px;max-width:150px;padding:7px 9px;border:1px solid #ffd66e;border-radius:8px;background:#192d27f2;color:#effff9;box-shadow:0 16px 36px rgba(0,0,0,.4),0 0 20px rgba(255,210,90,.12);pointer-events:none;transform:translate(-50%,-50%) rotate(-2deg);transition:opacity .15s ease,transform .15s ease;will-change:left,top}.zone-card-drag-ghost span{display:grid;place-items:center;width:18px;height:18px;border-radius:5px;background:#ffd66e;color:#211907;font:1000 8px/1 ui-monospace,monospace}.zone-card-drag-ghost strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px}.zone-card-drag-ghost.accepted{opacity:0;transform:translate(-50%,-50%) scale(.72)}.zone-card-drag-ghost.snap-back{opacity:0;transform:translate(-50%,5px) scale(.9)}
+.zone-card-drag-ghost{position:fixed;z-index:140;display:grid;grid-template-columns:18px minmax(0,1fr);grid-template-rows:auto auto;align-items:center;column-gap:6px;row-gap:2px;max-width:165px;padding:7px 9px;border:1px solid #ffd66e;border-radius:9px;background:#192d27f2;color:#effff9;box-shadow:0 16px 36px rgba(0,0,0,.4),0 0 20px rgba(255,210,90,.12);pointer-events:none;transform:translate(-50%,-50%) rotate(-2deg);transition:opacity .16s ease,transform .16s ease,left .12s cubic-bezier(.2,.8,.2,1),top .12s cubic-bezier(.2,.8,.2,1),border-color .12s ease,background .12s ease;will-change:left,top,transform}.zone-card-drag-ghost span{grid-row:1/3;display:grid;place-items:center;width:18px;height:18px;border-radius:5px;background:#ffd66e;color:#211907;font:1000 8px/1 ui-monospace,monospace}.zone-card-drag-ghost strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px}.zone-card-drag-ghost small{font:900 6px/1 ui-monospace,monospace;letter-spacing:.55px;color:#8fb6aa;white-space:nowrap}.zone-card-drag-ghost.over-zone{border-color:#fff0a5;background:#3c3321f5;box-shadow:0 16px 36px rgba(0,0,0,.38),0 0 28px rgba(255,211,96,.22)}.zone-card-drag-ghost.over-zone small{color:#ffe4a1}.zone-card-drag-ghost.accepted{opacity:0;transform:translate(-50%,-50%) scale(.54) rotate(0deg)}.zone-card-drag-ghost.snap-back{opacity:0;transform:translate(-50%,5px) scale(.9)}
 
 /* The hidden React controls remain as an implementation bridge only. */
 .zone-card-board .stack-aim-editor{display:none!important}
@@ -107,4 +114,4 @@
 @media(orientation:landscape) and (max-height:470px){
   .zone-card-board-guide{margin:4px 0 5px;padding:6px 8px;gap:5px;grid-template-columns:minmax(0,1fr) minmax(118px,.65fr)}.zone-board-copy>strong{margin-top:3px;font-size:9px}.zone-board-copy>small{display:none}.zone-board-power{padding:5px 6px}.zone-power-track{height:6px;margin-top:4px}.zone-board-power>small{margin-top:3px;font-size:6px}.zone-power-head>strong{font-size:10px}.zone-board-rate{grid-column:1/-1}.zone-board-rate i{min-width:0;padding:3px 3px}.zone-board-rate i span{font-size:7px}.zone-board-rate i em{display:none}.zone-card-token{height:14px;padding:1px 3px 1px 1px}.zone-card-token i{height:10px;flex-basis:10px}.zone-card-token b{font-size:6px}
 }
-@media(prefers-reduced-motion:reduce){.zone-card-board .duel-card.attack,.zone-card-board-active .zone-cell,.zone-card-drag-ghost,.zone-power-track>i{transition:none!important}.zone-card-board-guide.rate-drop .zone-board-power,.zone-card-board-guide.rate-drop .zone-power-track>i,.zone-card-board-active .zone-cell.board-impact,.zone-card-board-active .zone-cell.board-impact::before,.zone-card-board-active .zone-cell.board-impact::after,.zone-card-board-active.board-placement-kick .zone-card-board-guide{animation:none!important}}
+@media(prefers-reduced-motion:reduce){.zone-card-board .duel-card.attack,.zone-card-board-active .zone-cell,.zone-card-drag-ghost,.zone-power-track>i{transition:none!important}.zone-card-board-active .zone-cell.board-drop-hot{transform:none!important}.zone-card-board-guide.rate-drop .zone-board-power,.zone-card-board-guide.rate-drop .zone-power-track>i,.zone-card-board-active .zone-cell.board-impact,.zone-card-board-active .zone-cell.board-impact::before,.zone-card-board-active .zone-cell.board-impact::after,.zone-card-board-active.board-placement-kick .zone-card-board-guide{animation:none!important}}
