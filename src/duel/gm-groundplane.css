@@ -39,3 +39,55 @@
 
 /* 접지 그림자를 지면 위에 올려 캐릭터가 흙을 밟은 것처럼 보이게 한다. */
 .golden-actor .actor-ground+.actor-contact-shadow{z-index:2}
+
+/* 지면에 닿는 조명 ---------------------------------------------------------
+
+   왜: 계획 §4는 key light·rim·접지 그림자·컨택트 플래시를 하나의 조명으로 묶으라고 한다.
+   기존 조명(gm-batter-light / gm-pitcher-light)은 gm-depth-mid(z-index 8)에 있어 액터
+   뒤쪽 공기만 물들이고, 발밑 흙에는 닿지 않았다. 그래서 지면이 장면의 조명과 무관한
+   스티커처럼 남았다.
+
+   색은 기존 액터 조명에서 그대로 가져온다. 타자는 따뜻한 색(255,220,142),
+   투수는 차가운 색(133,224,215). 새 팔레트를 만들지 않는다.
+
+   판정 타임라인(windup → impact → slowmo → release → settle)에 맞춰 세기를 옮긴다.
+   golden-master.css가 같은 단계에서 액터 조명을 옮기는 것과 방향을 맞춘 것이다. */
+
+.golden-actor .actor-ground::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  opacity:.34;
+  mix-blend-mode:screen;
+  transition:opacity .16s ease;
+}
+
+.golden-actor.sprite-batter .actor-ground::after{
+  background:radial-gradient(ellipse at 42% 30%,rgba(255,236,178,.46),rgba(230,168,86,.12) 45%,transparent 72%);
+}
+
+.golden-actor.sprite-pitcher .actor-ground::after{
+  background:radial-gradient(ellipse at 52% 28%,rgba(160,236,228,.38),rgba(70,150,158,.10) 46%,transparent 72%);
+}
+
+/* 투수가 공을 만드는 동안은 마운드가 밝고 타석은 가라앉는다. */
+.golden-master-stage.fx-stage-windup .sprite-pitcher .actor-ground::after{opacity:1}
+.golden-master-stage.fx-stage-windup .sprite-batter .actor-ground::after{opacity:.34}
+
+/* 컨택트 순간의 빛이 타석 흙까지 번진다. gm-contact-halo와 같은 박자로 끊어 준다. */
+.golden-master-stage.fx-stage-impact .sprite-batter .actor-ground::after{
+  opacity:1;transition:opacity .045s steps(2,end)
+}
+.golden-master-stage.fx-stage-impact .sprite-pitcher .actor-ground::after{opacity:.4}
+.golden-master-stage.fx-stage-slowmo .sprite-batter .actor-ground::after{opacity:.8}
+
+/* 판정이 끝나면 양쪽 모두 평상시 밝기로 돌아온다. */
+.golden-master-stage.fx-stage-release .actor-ground::after,
+.golden-master-stage.fx-stage-settle .actor-ground::after{
+  opacity:.34;transition:opacity .22s ease-out
+}
+
+@media (prefers-reduced-motion:reduce){
+  .golden-actor .actor-ground::after{transition:none!important}
+}
