@@ -306,3 +306,107 @@
   .golden-master-stage.fx-stage-windup .gm-pitch-tunnel{opacity:.42;transform:none}
   .golden-master-stage.fx-stage-impact .gm-bat-arc{opacity:.45;transform:none}
 }
+
+
+/* GOLDEN MASTER 03 — stadium depth / atmosphere.
+   Architecture is split into readable depth planes; motion stays subordinate to the duel. */
+.gm-skyline{position:absolute;left:7%;right:7%;top:8%;height:20%;opacity:.34;filter:saturate(.72)}
+.gm-skyline>i{position:absolute;bottom:0;width:6.5%;height:calc(28% + var(--gm-i)*2.4%);background:linear-gradient(180deg,rgba(19,42,47,.74),rgba(5,17,21,.94));border-top:1px solid rgba(122,170,164,.18);box-shadow:inset 0 0 0 1px rgba(2,9,12,.28)}
+.gm-skyline>i:after{content:"";position:absolute;left:18%;right:18%;top:18%;height:2px;background:rgba(220,190,112,.18);box-shadow:0 7px 0 rgba(123,181,169,.11),0 14px 0 rgba(220,190,112,.09)}
+.gm-skyline>i:nth-child(1){left:0}.gm-skyline>i:nth-child(2){left:8.5%}.gm-skyline>i:nth-child(3){left:18%}.gm-skyline>i:nth-child(4){left:28.5%}.gm-skyline>i:nth-child(5){left:39%}.gm-skyline>i:nth-child(6){left:49.5%}.gm-skyline>i:nth-child(7){left:60%}.gm-skyline>i:nth-child(8){left:69.5%}.gm-skyline>i:nth-child(9){left:78%}.gm-skyline>i:nth-child(10){left:87%}.gm-skyline>i:nth-child(11){left:94%;width:5%}
+.gm-skyline>i:nth-child(2n){transform:translateY(5px)}.gm-skyline>i:nth-child(3n){transform:translateY(-7px)}
+
+.gm-roof-truss{position:absolute;top:0;width:35%;height:24%;opacity:.58}
+.gm-truss-left{left:-3%;transform:skewX(-8deg)}.gm-truss-right{right:-3%;transform:scaleX(-1) skewX(-8deg)}
+.gm-roof-truss:before{content:"";position:absolute;left:0;right:0;top:7%;height:5px;background:#10262a;box-shadow:0 3px 0 rgba(86,126,121,.18)}
+.gm-roof-truss>i{position:absolute;top:8%;width:3px;height:92%;background:linear-gradient(#294541,#0b1b1f);transform-origin:50% 0}
+.gm-roof-truss>i:nth-child(1){left:7%;transform:rotate(-20deg)}.gm-roof-truss>i:nth-child(2){left:20%;transform:rotate(-14deg)}.gm-roof-truss>i:nth-child(3){left:34%;transform:rotate(-8deg)}.gm-roof-truss>i:nth-child(4){left:49%;transform:rotate(0)}.gm-roof-truss>i:nth-child(5){left:64%;transform:rotate(8deg)}.gm-roof-truss>i:nth-child(6){left:78%;transform:rotate(14deg)}.gm-roof-truss>i:nth-child(7){left:92%;transform:rotate(20deg)}
+
+.gm-concourse-windows{position:absolute;left:3%;right:3%;top:31%;height:9%;display:grid;grid-template-columns:repeat(14,1fr);gap:5px;padding:4px 5%;background:linear-gradient(180deg,rgba(4,14,17,.72),rgba(10,27,29,.28));border-top:1px solid rgba(129,161,150,.17);border-bottom:2px solid rgba(2,9,11,.68);opacity:.78}
+.gm-concourse-windows>i{display:block;height:5px;background:rgba(219,186,107,.18);box-shadow:0 8px 0 rgba(103,153,143,.08)}
+.gm-concourse-windows>i:nth-child(3n){background:rgba(236,204,127,.32);box-shadow:0 0 8px rgba(227,193,111,.08)}
+
+.gm-light-shaft{position:absolute;top:-5%;width:22%;height:86%;opacity:.14;filter:blur(5px);mix-blend-mode:screen;transform-origin:50% 0}
+.gm-shaft-left{left:1%;clip-path:polygon(30% 0,58% 0,100% 100%,0 100%);background:linear-gradient(180deg,rgba(255,236,178,.36),rgba(183,219,204,.10) 55%,transparent)}
+.gm-shaft-right{right:0;clip-path:polygon(40% 0,68% 0,100% 100%,0 100%);background:linear-gradient(180deg,rgba(208,247,235,.28),rgba(118,203,198,.08) 60%,transparent)}
+
+.gm-bullpen{position:absolute;bottom:13%;width:18%;height:10%;border-top:2px solid rgba(131,115,77,.35);background:linear-gradient(180deg,rgba(7,19,20,.86),rgba(2,8,10,.96));opacity:.72}
+.gm-bullpen-left{left:2%;transform:skewY(-2deg)}.gm-bullpen-right{right:2%;transform:skewY(2deg)}
+.gm-bullpen>i{position:absolute;bottom:20%;width:14%;height:48%;border-radius:50% 50% 20% 20%;background:#142829;box-shadow:0 -3px 0 #2b4742}
+.gm-bullpen>i:first-child{left:28%}.gm-bullpen>i:last-child{right:28%}
+
+.gm-atmosphere{position:absolute;inset:18% 8% 7%;opacity:.8}
+.gm-atmosphere>i{position:absolute;width:2px;height:2px;background:rgba(239,215,153,.34);box-shadow:0 0 5px rgba(238,207,128,.10);animation:gmAirDrift 6.8s linear infinite}
+.gm-atmosphere>i:nth-child(1){left:4%;top:20%;animation-delay:-.5s}.gm-atmosphere>i:nth-child(2){left:10%;top:62%;animation-delay:-2.4s}.gm-atmosphere>i:nth-child(3){left:17%;top:39%;animation-delay:-4.7s}.gm-atmosphere>i:nth-child(4){left:24%;top:76%;animation-delay:-1.8s}
+.gm-atmosphere>i:nth-child(5){left:31%;top:28%;animation-delay:-5.2s}.gm-atmosphere>i:nth-child(6){left:38%;top:56%;animation-delay:-3.1s}.gm-atmosphere>i:nth-child(7){left:44%;top:17%;animation-delay:-6.1s}.gm-atmosphere>i:nth-child(8){left:50%;top:69%;animation-delay:-2.1s}
+.gm-atmosphere>i:nth-child(9){left:57%;top:34%;animation-delay:-4.2s}.gm-atmosphere>i:nth-child(10){left:63%;top:81%;animation-delay:-.9s}.gm-atmosphere>i:nth-child(11){left:69%;top:24%;animation-delay:-5.7s}.gm-atmosphere>i:nth-child(12){left:75%;top:58%;animation-delay:-3.7s}
+.gm-atmosphere>i:nth-child(13){left:81%;top:14%;animation-delay:-1.3s}.gm-atmosphere>i:nth-child(14){left:86%;top:72%;animation-delay:-4.9s}.gm-atmosphere>i:nth-child(15){left:91%;top:42%;animation-delay:-2.8s}.gm-atmosphere>i:nth-child(16){left:96%;top:63%;animation-delay:-6.4s}
+
+.gm-camera-well{position:absolute;bottom:-1%;width:16%;height:26%;opacity:.96;background:linear-gradient(180deg,rgba(5,11,14,.08),rgba(2,7,9,.96) 36%);border-top:4px solid #050c0f;clip-path:polygon(0 18%,100% 0,100% 100%,0 100%)}
+.gm-camera-well-left{left:-5%;transform:skewX(-8deg)}.gm-camera-well-right{right:-5%;transform:scaleX(-1) skewX(-8deg)}
+.gm-camera-well>i{position:absolute;bottom:36%;width:18px;height:12px;border-radius:2px;background:#0b1719;box-shadow:0 0 0 2px #020709}
+.gm-camera-well>i:after{content:"";position:absolute;left:100%;top:3px;width:14px;height:5px;background:#091416;box-shadow:8px 0 0 #091416}
+.gm-camera-well>i:first-child{left:26%}.gm-camera-well>i:last-child{left:57%;transform:scale(.8)}
+
+.gm-grass-fringe{position:absolute;left:10%;right:10%;bottom:-2%;height:7%;opacity:.52;background:
+  repeating-linear-gradient(102deg,transparent 0 8px,rgba(43,94,63,.72) 8px 10px,transparent 10px 17px),
+  linear-gradient(180deg,transparent,rgba(5,24,17,.76));filter:drop-shadow(0 -2px 4px rgba(0,0,0,.18))}
+
+/* Act identity: the same park evolves instead of becoming unrelated wallpapers. */
+.gm-act-1 .gm-skyline{opacity:.22}.gm-act-1 .gm-concourse-windows>i:nth-child(3n){background:rgba(238,190,101,.28)}
+.gm-act-1 .gm-light-shaft{opacity:.11}
+.gm-act-2 .gm-skyline{opacity:.36;filter:saturate(.92) hue-rotate(-7deg)}.gm-act-2 .gm-concourse-windows{border-top-color:rgba(108,181,178,.28)}
+.gm-act-2 .gm-shaft-right{opacity:.23}.gm-act-2 .gm-atmosphere>i{background:rgba(177,229,217,.32)}
+.gm-act-3 .gm-skyline{opacity:.48;filter:saturate(.78) hue-rotate(10deg)}.gm-act-3 .gm-roof-truss{opacity:.72}
+.gm-act-3 .gm-concourse-windows>i{background:rgba(185,110,82,.18)}.gm-act-3 .gm-concourse-windows>i:nth-child(4n){background:rgba(239,151,92,.36)}
+.gm-act-3 .gm-shaft-left{opacity:.20;background:linear-gradient(180deg,rgba(255,195,151,.28),rgba(185,96,74,.06) 60%,transparent)}
+.gm-rival .gm-roof-truss,.gm-rival .gm-camera-well{filter:drop-shadow(0 0 10px rgba(172,65,48,.08))}
+
+/* Reaction belongs to the architecture: contact briefly wakes the park, then it settles. */
+.golden-master-stage.fx-stage-windup .gm-light-shaft{opacity:.22;transform:rotate(.7deg) scaleX(1.05);transition:opacity .18s ease,transform .28s ease}
+.golden-master-stage.fx-stage-impact .gm-concourse-windows>i:nth-child(3n),
+.golden-master-stage.fx-stage-impact .gm-light-tower>i{filter:brightness(1.45)}
+.golden-master-stage.fx-stage-impact .gm-light-shaft{opacity:.30;transform:rotate(-.7deg) scaleX(1.08)}
+.golden-master-stage.fx-stage-impact .gm-atmosphere{opacity:1;filter:brightness(1.35)}
+.golden-master-stage.fx-stage-impact .gm-depth-front{filter:brightness(.82) saturate(.84)}
+.golden-master-stage.fx-stage-slowmo .gm-depth-back{filter:saturate(.78) brightness(.79)}
+.golden-master-stage.fx-stage-slowmo .gm-light-shaft{opacity:.12;filter:blur(7px)}
+.golden-master-stage.fx-stage-release .gm-light-shaft{opacity:.17;transition:opacity .28s ease,transform .32s ease}
+.golden-master-stage.fx-stage-release .gm-depth-front{filter:brightness(.92);transition:filter .28s ease}
+.golden-master-stage.fx-stage-settle .gm-depth-back,.golden-master-stage.fx-stage-settle .gm-depth-front{filter:none}
+
+.golden-master-stage.fx-stage-impact .gm-depth-mid.gm-power .gm-side-crowd{
+  background:radial-gradient(circle,rgba(255,229,155,.52) 0 1px,transparent 1.2px) 0 0/10px 7px,
+  radial-gradient(circle,rgba(133,205,187,.34) 0 1px,transparent 1.2px) 5px 4px/13px 10px,
+  linear-gradient(180deg,rgba(19,41,40,.62),rgba(4,15,18,.9))
+}
+.golden-master-stage.fx-stage-impact .gm-depth-mid.gm-danger .gm-side-crowd{opacity:.46;filter:saturate(.55)}
+
+@keyframes gmAirDrift{
+  0%{transform:translate3d(0,7px,0);opacity:.05}
+  22%{opacity:.45}
+  72%{opacity:.28}
+  100%{transform:translate3d(12px,-12px,0);opacity:0}
+}
+
+@media (orientation:landscape) and (max-height:430px){
+  .gm-skyline{top:9%;height:16%;opacity:.2}.gm-roof-truss{height:19%;opacity:.42}
+  .gm-concourse-windows{top:29%;height:7%;padding-top:2px;padding-bottom:2px}
+  .gm-light-shaft{height:72%;opacity:.08}.gm-bullpen{display:none}.gm-camera-well{width:12%;height:19%;opacity:.84}
+  .gm-atmosphere>i:nth-child(n+9){display:none}.gm-grass-fringe{height:5%;opacity:.34}
+}
+@media (orientation:portrait){
+  .gm-skyline{left:2%;right:2%;top:8%;height:17%;opacity:.22}.gm-roof-truss{width:42%;height:18%;opacity:.42}
+  .gm-concourse-windows{top:29%;height:8%;gap:3px;padding-left:3%;padding-right:3%}
+  .gm-light-shaft{width:30%;height:72%;opacity:.09}.gm-bullpen{width:22%;height:8%;opacity:.56}
+  .gm-camera-well{width:13%;height:19%}.gm-atmosphere{inset:18% 4% 9%;opacity:.52}.gm-grass-fringe{left:4%;right:4%}
+}
+@media (min-width:1280px) and (orientation:landscape){
+  .gm-skyline{left:10%;right:10%;height:22%}.gm-concourse-windows{left:5%;right:5%}
+  .gm-camera-well{width:18%;height:29%}.gm-light-shaft{opacity:.18}
+}
+@media (prefers-reduced-motion:reduce){
+  .gm-atmosphere>i{animation:none!important;opacity:.22}
+  .golden-master-stage .gm-light-shaft,.golden-master-stage .gm-depth-back,.golden-master-stage .gm-depth-front{transition:none!important}
+  .golden-master-stage.fx-stage-windup .gm-light-shaft,.golden-master-stage.fx-stage-impact .gm-light-shaft{transform:none!important}
+}
