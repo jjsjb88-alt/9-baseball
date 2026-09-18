@@ -16,6 +16,16 @@ export default function GoldenMasterStage({stage=null,shot=null,rival=false}){
       <span className="gm-haze-band"/>
       <span className="gm-mound-ring"/>
     </div>
+    <div className={'gm-depth-mid gm-'+(stage||'idle')+(power?' gm-power':'')+(danger?' gm-danger':'')+(rival?' gm-rival':'')} aria-hidden="true">
+      <span className="gm-side-crowd gm-crowd-left"/>
+      <span className="gm-side-crowd gm-crowd-right"/>
+      <span className="gm-dugout-mouth gm-dugout-left"><i/><i/><i/></span>
+      <span className="gm-dugout-mouth gm-dugout-right"><i/><i/><i/></span>
+      <span className="gm-mid-haze"/>
+      <span className="gm-actor-light gm-batter-light"/>
+      <span className="gm-actor-light gm-pitcher-light"/>
+      <span className="gm-contact-halo"><i/><b/></span>
+    </div>
     <div className={'gm-depth-front gm-'+(stage||'idle')+(power?' gm-power':'')+(danger?' gm-danger':'')} aria-hidden="true">
       <span className="gm-dugout-rail gm-rail-left"/>
       <span className="gm-dugout-rail gm-rail-right"/>
