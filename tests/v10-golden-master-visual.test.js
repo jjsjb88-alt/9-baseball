@@ -13,7 +13,7 @@ describe('visual reboot golden master 01',()=>{
     expect(main.indexOf('golden-master.css')).toBeGreaterThan(main.indexOf('landscape-declutter.css'));
     expect(app).toContain('golden-master-stage');
     expect(app).toContain('<GoldenMasterStage stage={fxStage}');
-    expect(app).toContain('<GoldenMasterStage stage={stage} shot={shot} rival/>');
+    expect(app).toContain('<GoldenMasterStage stage={stage} shot={shot} rival match={3}/>');
   });
 
   it('uses V2 frame assets for the golden combat idle and key fallback poses',()=>{
