@@ -16,6 +16,7 @@ import './act23-deckbuilding-ui.js';
 const ATTACK_CARD_SELECTOR='.duel-hand .duel-card.attack';
 const STACKABLE_CARD_SELECTOR='.duel-hand .duel-card.attack:not(.basic-card)';
 const DRAG_START=9;
+const MAGNET_MARGIN=34;
 const DAMAGE_RATES=[100,80,65,50];
 const normalize=s=>(s||'').replace(/\s+/g,' ').trim();
 const cardName=el=>normalize(el?.querySelector('strong')?.textContent);
@@ -30,6 +31,7 @@ function liveDamageRate(drawer,count){
 
 function swingDrawer(root=document){return root.querySelector('.card-drawer[aria-label="스윙 카드 선택"]');}
 function zonePanel(root=document){return root.querySelector('.zone-panel[aria-label="9존 타격 계획"]');}
+function combatRoot(root=document){return root.querySelector('.duel-combat');}
 function zoneCells(root=document){return [...(zonePanel(root)?.querySelectorAll('.zone-grid .zone-cell')||[])];}
 function handCards(drawer){return [...drawer.querySelectorAll(ATTACK_CARD_SELECTOR)];}
 function stackableCards(drawer){return [...drawer.querySelectorAll(STACKABLE_CARD_SELECTOR)];}
@@ -172,7 +174,7 @@ function hiddenAimAt(drawer,zone,state){
     const editor=drawer.querySelector('.stack-aim-editor');
     const button=editor?.querySelectorAll('.assist-zone-grid button')?.[zone];
     if(button)safeClick(button,state);
-    state.armed=null;
+    state.armed=null;setPlacementFocus(state.root,false);
     const live=swingDrawer(state.root);refresh(live,state.root,null);
     requestAnimationFrame(()=>placementImpact(swingDrawer(state.root),zone,state));
   });
@@ -185,18 +187,18 @@ function placeCardAtZone(drawer,card,zone,state){
   // No effect card yet, BASIC is being chosen, or BASIC is being replaced by a real card.
   if(!currentMain||card.classList.contains('basic-card')||(currentMain.classList.contains('basic-card')&&card!==currentMain)){
     if(card!==currentMain)safeClick(card,state);
-    raf2(()=>{safeClick(zoneCells(state.root)[zone],state);state.armed=null;const live=swingDrawer(state.root);refresh(live,state.root,null);requestAnimationFrame(()=>placementImpact(swingDrawer(state.root),zone,state));});
+    raf2(()=>{safeClick(zoneCells(state.root)[zone],state);state.armed=null;setPlacementFocus(state.root,false);const live=swingDrawer(state.root);refresh(live,state.root,null);requestAnimationFrame(()=>placementImpact(swingDrawer(state.root),zone,state));});
     return true;
   }
   // Moving the first/effect card is just moving its aim zone.
   if(card===currentMain){
-    safeClick(cell,state);state.armed=null;refresh(drawer,state.root,null);requestAnimationFrame(()=>placementImpact(swingDrawer(state.root),zone,state));return true;
+    safeClick(cell,state);state.armed=null;setPlacementFocus(state.root,false);refresh(drawer,state.root,null);requestAnimationFrame(()=>placementImpact(swingDrawer(state.root),zone,state));return true;
   }
 
   const candidate=candidateFor(drawer,card);
   if(!candidate){
     // A stale DOM edge case: treat the card as a new effect card rather than dead-ending the player.
-    safeClick(card,state);raf2(()=>{safeClick(zoneCells(state.root)[zone],state);state.armed=null;const live=swingDrawer(state.root);refresh(live,state.root,null);requestAnimationFrame(()=>placementImpact(swingDrawer(state.root),zone,state));});
+    safeClick(card,state);raf2(()=>{safeClick(zoneCells(state.root)[zone],state);state.armed=null;setPlacementFocus(state.root,false);const live=swingDrawer(state.root);refresh(live,state.root,null);requestAnimationFrame(()=>placementImpact(swingDrawer(state.root),zone,state));});
     return true;
   }
   if(candidate.disabled&&!candidate.classList.contains('picked')){
@@ -207,11 +209,31 @@ function placeCardAtZone(drawer,card,zone,state){
   }
   safeClick(candidate,state);hiddenAimAt(drawer,zone,state);return true;
 }
+function collapseSecondaryUi(root=document){
+  const combat=combatRoot(root);if(!combat)return;
+  const close=(el,className,buttonSelector,label)=>{
+    if(!el)return;
+    el.classList.remove(className);
+    const button=el.querySelector(buttonSelector);if(button){
+      button.classList.remove('active');button.setAttribute('aria-expanded','false');
+      if(label)button.textContent=typeof label==='function'?label(button):label;
+    }
+  };
+  close(zonePanel(root),'zone-info-open','.landscape-zone-info-toggle','INFO');
+  close(combat.querySelector('.pitch-read'),'read-open','.landscape-read-toggle',button=>button.dataset.summary||'READ +');
+  close(combat.querySelector('.decision-preview'),'choice-info-open','.landscape-choice-toggle','DETAIL');
+  const relics=combat.querySelector('.v10-relic-rack');
+  if(relics){relics.classList.remove('relic-info-open');relics.setAttribute('aria-expanded','false');}
+}
+function setPlacementFocus(root,on){
+  combatRoot(root)?.classList.toggle('card-placement-focus',!!on);
+}
 function armCard(drawer,card,state){
   if(!drawer||!isUsable(card))return;
   const placed=assignments(drawer,state.root),row=placed.find(x=>x.card===card);
   if(!row&&placed.length>=4){setGuide(drawer,zonePanel(state.root),null);return;}
-  state.armed=card;refresh(drawer,state.root,card);
+  collapseSecondaryUi(state.root);
+  state.armed=card;setPlacementFocus(state.root,true);refresh(drawer,state.root,card);
   zonePanel(state.root)?.scrollIntoView?.({block:'center',behavior:'smooth'});
 }
 function tokenAssignment(drawer,token,state){
@@ -219,44 +241,74 @@ function tokenAssignment(drawer,token,state){
 }
 function ghostFor(card,e){
   const rect=card.getBoundingClientRect?.()||{width:120,height:160};
-  const el=document.createElement('div');el.className='zone-card-drag-ghost';el.innerHTML=`<span>${card.dataset.boardOrder||'+'}</span><strong>${cardName(card)}</strong>`;
+  const el=document.createElement('div');el.className='zone-card-drag-ghost';el.innerHTML=`<span>${card.dataset.boardOrder||'+'}</span><strong>${cardName(card)}</strong><small>9 ZONE</small>`;
   document.body.appendChild(el);moveGhost(el,e,rect);return {el,rect};
 }
-function moveGhost(el,e,rect){if(el){el.style.left=(e.clientX-Math.min(70,(rect?.width||120)/2))+'px';el.style.top=(e.clientY-26)+'px';}}
+function moveGhost(el,e,rect){if(el){el.style.left=(e.clientX-Math.min(70,(rect?.width||120)/2))+'px';el.style.top=(e.clientY-34)+'px';}}
+function zoneLabel(cell){return normalize(cell?.querySelector(':scope > span')?.textContent||cell?.getAttribute('aria-label'));}
+function clearDropHot(root=document){
+  zoneCells(root).forEach(cell=>cell.classList.remove('board-drop-hot'));
+}
 function zoneAtPoint(root,x,y){
-  const direct=root.elementFromPoint?.(x,y)?.closest?.('.zone-grid .zone-cell');if(direct)return direct;
-  return zoneCells(root).find(cell=>{const r=cell.getBoundingClientRect?.();return r&&x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom;})||null;
+  const cells=zoneCells(root),direct=root.elementFromPoint?.(x,y)?.closest?.('.zone-grid .zone-cell');
+  if(direct&&cells.includes(direct))return direct;
+  const grid=zonePanel(root)?.querySelector('.zone-grid'),gr=grid?.getBoundingClientRect?.();
+  if(!gr||x<gr.left-MAGNET_MARGIN||x>gr.right+MAGNET_MARGIN||y<gr.top-MAGNET_MARGIN||y>gr.bottom+MAGNET_MARGIN)return null;
+  let best=null,bestDistance=Infinity;
+  cells.forEach(cell=>{
+    const r=cell.getBoundingClientRect?.();if(!r)return;
+    const cx=(r.left+r.right)/2,cy=(r.top+r.bottom)/2,d=Math.hypot(x-cx,y-cy);
+    if(d<bestDistance){bestDistance=d;best=cell;}
+  });
+  return best;
+}
+function updateDropHot(root,x,y,ghost){
+  const hot=zoneAtPoint(root,x,y);clearDropHot(root);
+  if(hot){
+    hot.classList.add('board-drop-hot');
+    if(ghost){ghost.classList.add('over-zone');const small=ghost.querySelector('small');if(small)small.textContent=zoneLabel(hot)||'9 ZONE';}
+  }else if(ghost){ghost.classList.remove('over-zone');const small=ghost.querySelector('small');if(small)small.textContent='9 ZONE';}
+  return hot;
+}
+function snapGhostToCell(ghost,cell){
+  const r=cell?.getBoundingClientRect?.();if(!ghost||!r)return;
+  ghost.style.left=((r.left+r.right)/2)+'px';ghost.style.top=((r.top+r.bottom)/2)+'px';
+  ghost.classList.add('accepted');
 }
 
 export function installSwingStackDirectTap(root=document){
   if(root.__swingStackDirectTapInstalled)return ()=>{};
   root.__swingStackDirectTapInstalled=true;
   const state={root,bypass:false,armed:null,drag:null,suppressClickUntil:0,scheduled:false};
-  const schedule=()=>{if(state.scheduled)return;state.scheduled=true;requestAnimationFrame(()=>{state.scheduled=false;const drawer=swingDrawer(root);if(!drawer){state.armed=null;clearTokens(root);return;}if(state.armed&&(!drawer.contains(state.armed)||!isUsable(state.armed)))state.armed=null;refresh(drawer,root,state.armed);});};
+  const schedule=()=>{if(state.scheduled)return;state.scheduled=true;requestAnimationFrame(()=>{state.scheduled=false;const drawer=swingDrawer(root);if(!drawer){state.armed=null;clearTokens(root);setPlacementFocus(root,false);return;}if(state.armed&&(!drawer.contains(state.armed)||!isUsable(state.armed))){state.armed=null;if(!state.drag?.moved)setPlacementFocus(root,false);}refresh(drawer,root,state.armed);});};
   const observer=new MutationObserver(schedule);observer.observe(root.documentElement||root,{subtree:true,childList:true,attributes:true,attributeFilter:['class','aria-pressed']});
 
   const finishDrag=(e,cancel=false)=>{
     const d=state.drag;if(!d||e.pointerId!==d.pointerId)return;
-    const drawer=swingDrawer(root),target=!cancel&&d.moved?zoneAtPoint(root,e.clientX,e.clientY):null;
+    const drawer=swingDrawer(root),target=!cancel&&d.moved?(d.hot||zoneAtPoint(root,e.clientX,e.clientY)):null;
     if(d.moved){state.suppressClickUntil=Date.now()+420;e.preventDefault?.();e.stopPropagation?.();}
-    d.card?.classList.remove('board-drag-source');zonePanel(root)?.classList.remove('board-dragging');
+    d.card?.classList.remove('board-drag-source');zonePanel(root)?.classList.remove('board-dragging');clearDropHot(root);
     if(target){
-      const zone=zoneCells(root).indexOf(target);d.ghost?.classList.add('accepted');placeCardAtZone(drawer,d.card,zone,state);
+      const zone=zoneCells(root).indexOf(target);snapGhostToCell(d.ghost,target);placeCardAtZone(drawer,d.card,zone,state);
     }else if(d.moved)d.ghost?.classList.add('snap-back');
-    const ghost=d.ghost;setTimeout(()=>ghost?.remove(),160);state.drag=null;schedule();
+    const ghost=d.ghost;setTimeout(()=>ghost?.remove(),target?220:160);state.drag=null;
+    setPlacementFocus(root,!!state.armed);schedule();
   };
   const onPointerDown=e=>{
     if(state.bypass)return;const drawer=swingDrawer(root);if(!drawer)return;
     const card=e.target.closest?.(ATTACK_CARD_SELECTOR);if(!card||!drawer.contains(card)||!isUsable(card))return;
-    state.drag={pointerId:e.pointerId,startX:e.clientX,startY:e.clientY,card,moved:false,ghost:null,rect:null};
+    state.drag={pointerId:e.pointerId,startX:e.clientX,startY:e.clientY,card,moved:false,ghost:null,rect:null,hot:null};
   };
   const onPointerMove=e=>{
     const d=state.drag;if(!d||e.pointerId!==d.pointerId)return;
     const distance=Math.hypot(e.clientX-d.startX,e.clientY-d.startY);
     if(!d.moved&&distance>=DRAG_START){
-      d.moved=true;const made=ghostFor(d.card,e);d.ghost=made.el;d.rect=made.rect;d.card.classList.add('board-drag-source');zonePanel(root)?.classList.add('board-dragging');
+      d.moved=true;collapseSecondaryUi(root);setPlacementFocus(root,true);
+      const made=ghostFor(d.card,e);d.ghost=made.el;d.rect=made.rect;d.card.classList.add('board-drag-source');zonePanel(root)?.classList.add('board-dragging');
     }
-    if(d.moved){moveGhost(d.ghost,e,d.rect);e.preventDefault?.();}
+    if(d.moved){
+      moveGhost(d.ghost,e,d.rect);d.hot=updateDropHot(root,e.clientX,e.clientY,d.ghost);e.preventDefault?.();
+    }
   };
   const onClick=e=>{
     if(state.bypass)return;const drawer=swingDrawer(root);if(!drawer)return;
@@ -265,7 +317,7 @@ export function installSwingStackDirectTap(root=document){
       e.preventDefault();e.stopPropagation();e.stopImmediatePropagation?.();
       const row=tokenAssignment(drawer,token,state);if(!row)return;
       if(row.role==='main')armCard(drawer,row.card,state);
-      else if(row.candidate){safeClick(row.candidate,state);state.armed=null;schedule();}
+      else if(row.candidate){safeClick(row.candidate,state);state.armed=null;setPlacementFocus(root,false);schedule();}
       return;
     }
     const card=e.target.closest?.(ATTACK_CARD_SELECTOR);
@@ -277,7 +329,7 @@ export function installSwingStackDirectTap(root=document){
     const zone=e.target.closest?.('.zone-grid .zone-cell');
     if(zone&&state.armed){
       e.preventDefault();e.stopPropagation();e.stopImmediatePropagation?.();
-      placeCardAtZone(drawer,state.armed,zoneCells(root).indexOf(zone),state);return;
+      placeCardAtZone(drawer,state.armed,zoneCells(root).indexOf(zone),state);setPlacementFocus(root,false);return;
     }
   };
 
@@ -289,7 +341,7 @@ export function installSwingStackDirectTap(root=document){
   root.addEventListener('click',onClick,true);
   schedule();
   return ()=>{
-    observer.disconnect();state.drag?.ghost?.remove();clearTokens(root);
+    observer.disconnect();state.drag?.ghost?.remove();clearTokens(root);clearDropHot(root);setPlacementFocus(root,false);
     zonePanel(root)?.classList.remove('zone-card-board-active','board-targeting','board-dragging');
     root.removeEventListener('pointerdown',onPointerDown,true);root.removeEventListener('pointermove',onPointerMove,true);
     root.removeEventListener('pointerup',finishDrag,true);root.removeEventListener('pointercancel',onPointerCancel,true);root.removeEventListener('click',onClick,true);

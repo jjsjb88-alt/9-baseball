@@ -25,6 +25,14 @@ describe('landscape declutter visual contract',()=>{
     expect(css).toContain('transform:translateX(-50%) scale(1.035)!important');
     expect(css).toContain('touch-action:none!important');
   });
+  it('카드 배치 중에는 보조 HUD가 물러나고 9존/캐릭터 집중 모드가 유지된다',()=>{
+    expect(css).toContain('.card-placement-focus>.scoreboard');
+    expect(css).toContain('opacity:.38!important');
+    expect(css).toContain('.card-placement-focus>.zone-panel');
+    expect(css).toContain('z-index:58!important');
+    expect(css).toContain('.card-placement-focus>.duel-arena .actor-left');
+    expect(css).toContain('brightness(1.2)');
+  });
   it('READ와 선택 상세는 기본 접힘 후 클릭 확장 구조다',()=>{
     expect(css).toContain('.pitch-read:not(.read-open)>b');
     expect(css).toContain('.decision-preview>div{display:none!important}');
