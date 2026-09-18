@@ -1,0 +1,128 @@
+/* GOLDEN MASTER 01 — original 2.5D pixel baseball battle scene.
+   Scoped to .golden-master-stage so map/reward/title layouts keep their contracts. */
+
+.golden-master-stage{isolation:isolate!important;overflow:hidden!important;background:#07151a!important}
+.golden-master-stage>.arena-renderer2{z-index:0!important}
+.golden-master-stage .pixel-cinema{z-index:4!important}
+.golden-master-stage .living-diamond{z-index:12!important}
+.golden-master-stage .actor-left,.golden-master-stage .actor-right{z-index:30!important;contain:layout paint style;will-change:transform}
+.golden-master-stage .intent{z-index:42!important}
+.golden-master-stage .judgement-layer,.golden-master-stage .duel-fx{z-index:45!important}
+
+.gm-depth-back,.gm-depth-front{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.gm-depth-back{z-index:2;perspective:680px;transform-origin:50% 64%}
+.gm-depth-front{z-index:31;transform-origin:50% 100%}
+
+/* Far architecture: crisp geometry, not a blurred wallpaper. */
+.gm-scoreboard-shell{position:absolute;right:11%;top:12%;width:86px;height:46px;border:2px solid rgba(123,176,169,.26);background:linear-gradient(180deg,rgba(5,18,23,.92),rgba(8,29,31,.78));box-shadow:0 0 0 1px rgba(1,7,9,.78),6px 7px 0 rgba(1,8,10,.26)}
+.gm-scoreboard-shell:before,.gm-scoreboard-shell:after{content:"";position:absolute;bottom:-18px;width:3px;height:18px;background:#243f3e}
+.gm-scoreboard-shell:before{left:15px}.gm-scoreboard-shell:after{right:15px}
+.gm-scoreboard-shell>i{position:absolute;top:9px;width:17px;height:4px;background:#d4b36a;box-shadow:0 8px 0 #668c83,0 16px 0 #7e5840}
+.gm-scoreboard-shell>i:nth-child(1){left:9px}.gm-scoreboard-shell>i:nth-child(2){left:34px}.gm-scoreboard-shell>i:nth-child(3){left:59px}
+.gm-scoreboard-shell>b{position:absolute;right:5px;bottom:3px;font:1000 6px/1 ui-monospace,monospace;letter-spacing:.5px;color:#d8c99b}
+
+.gm-light-tower{position:absolute;top:-2%;width:54px;height:82px;display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:11px;gap:3px;padding:5px;border-top:3px solid #263f3e}
+.gm-light-left{left:4%;transform:skewY(-5deg)}.gm-light-right{right:3%;transform:skewY(5deg)}
+.gm-light-tower:after{content:"";position:absolute;left:50%;top:38px;width:3px;height:105px;background:linear-gradient(#3b5853,#1d302f);transform:translateX(-50%)}
+.gm-light-tower>i{display:block;background:#d9d2a5;box-shadow:0 0 0 1px rgba(76,73,54,.42),0 0 12px rgba(248,224,156,.2)}
+.gm-light-tower>i:nth-child(3n+2){background:#eee2b4}
+
+.gm-upper-deck{position:absolute;left:0;right:0;top:25%;height:36px;display:grid;grid-template-columns:repeat(18,1fr);gap:2px;padding:6px 4%;border-top:2px solid rgba(101,135,129,.24);border-bottom:3px solid rgba(4,12,15,.7);background:rgba(5,18,22,.44);transform:perspective(360px) rotateX(-4deg)}
+.gm-upper-deck>i{display:block;height:5px;margin-top:calc((var(--i,0))*1px);background:rgba(155,165,132,.18);box-shadow:0 8px 0 rgba(94,126,116,.12),0 16px 0 rgba(212,171,99,.09)}
+.gm-upper-deck>i:nth-child(3n){background:rgba(210,170,94,.28)}
+.gm-upper-deck>i:nth-child(5n){background:rgba(118,163,157,.25)}
+
+.gm-backstop-net{position:absolute;left:26%;right:25%;top:29%;height:31%;opacity:.16;background:
+  repeating-linear-gradient(90deg,rgba(156,186,174,.42) 0 1px,transparent 1px 12px),
+  repeating-linear-gradient(0deg,rgba(156,186,174,.28) 0 1px,transparent 1px 12px);
+  clip-path:polygon(19% 0,81% 0,100% 100%,0 100%);transform:perspective(280px) rotateX(8deg)}
+.gm-haze-band{position:absolute;left:7%;right:7%;top:29%;height:32%;background:linear-gradient(180deg,rgba(130,174,162,.04),rgba(151,177,147,.11) 56%,transparent);filter:blur(9px);opacity:.7}
+.gm-mound-ring{position:absolute;left:50%;top:56%;width:19%;height:11%;border:2px solid rgba(211,164,95,.18);border-radius:50%;transform:translate(-50%,-50%) perspective(260px) rotateX(61deg);box-shadow:0 0 0 8px rgba(146,92,51,.025)}
+
+/* Foreground silhouettes produce depth without stealing the playable center. */
+.gm-dugout-rail{position:absolute;bottom:2%;width:26%;height:9%;border-top:5px solid #071014;background:
+  repeating-linear-gradient(90deg,#071014 0 4px,transparent 4px 30px);opacity:.92}
+.gm-rail-left{left:-3%;transform:skewX(-14deg)}.gm-rail-right{right:-3%;transform:skewX(14deg)}
+.gm-camera-fence{position:absolute;bottom:-2%;width:10%;height:48%;opacity:.68;background:
+  repeating-linear-gradient(90deg,#071014 0 3px,transparent 3px 18px),
+  repeating-linear-gradient(0deg,#071014 0 3px,transparent 3px 18px)}
+.gm-fence-left{left:-5%;transform:skewX(7deg)}.gm-fence-right{right:-5%;transform:skewX(-7deg)}
+.gm-plate-grit{position:absolute;left:26%;right:24%;bottom:0;height:20%;opacity:.62}
+.gm-plate-grit>i{position:absolute;width:3px;height:3px;background:#c5975f;box-shadow:5px 3px 0 #826046,-4px 5px 0 #6f513d}
+.gm-plate-grit>i:nth-child(1){left:4%;top:68%}.gm-plate-grit>i:nth-child(2){left:14%;top:54%}.gm-plate-grit>i:nth-child(3){left:27%;top:78%}.gm-plate-grit>i:nth-child(4){left:39%;top:62%}.gm-plate-grit>i:nth-child(5){left:48%;top:84%}.gm-plate-grit>i:nth-child(6){left:59%;top:58%}.gm-plate-grit>i:nth-child(7){left:69%;top:76%}.gm-plate-grit>i:nth-child(8){left:78%;top:49%}.gm-plate-grit>i:nth-child(9){left:88%;top:72%}.gm-plate-grit>i:nth-child(10){left:96%;top:57%}
+
+/* Golden actor path: V2 art + authored weight transfer + grounded shadow. */
+.golden-actor{position:relative;display:block;width:100%;height:100%;transform-origin:50% 91%;will-change:transform}
+.golden-actor .duel-sprite{object-fit:contain;image-rendering:pixelated!important;image-rendering:crisp-edges!important;filter:
+  contrast(1.14) saturate(1.08)
+  drop-shadow(1px 0 0 rgba(246,216,149,.24))
+  drop-shadow(-1px 0 0 rgba(0,7,9,.96))
+  drop-shadow(0 1px 0 rgba(0,7,9,.96))
+  drop-shadow(0 10px 4px rgba(0,4,6,.72))!important}
+.golden-actor.sprite-pitcher .duel-sprite{filter:
+  contrast(1.15) saturate(1.02)
+  drop-shadow(-1px 0 0 rgba(138,223,213,.25))
+  drop-shadow(1px 0 0 rgba(0,7,9,.96))
+  drop-shadow(0 1px 0 rgba(0,7,9,.96))
+  drop-shadow(0 10px 4px rgba(0,4,6,.72))!important}
+.golden-actor .sprite-echo{opacity:.08!important;filter:saturate(.7)!important}
+.golden-actor .sprite-bloom{opacity:.24!important;filter:blur(12px)!important}
+.golden-actor .actor-contact-shadow{position:absolute;z-index:1;left:23%;right:19%;bottom:3%;height:7%;border-radius:50%;background:#010506;filter:blur(4px);transform:scaleX(1.22);opacity:.78;pointer-events:none}
+.golden-master-stage .actor-left:before,.golden-master-stage .actor-right:before{opacity:.45!important}
+.golden-master-stage .batter-nameplate,.golden-master-stage .pitcher-nameplate{position:absolute;z-index:34;bottom:2px;padding:3px 7px;border-top:1px solid rgba(222,197,132,.55);background:linear-gradient(90deg,rgba(3,13,17,.88),rgba(3,13,17,.3));font:900 8px/1.1 ui-monospace,monospace;letter-spacing:.35px;white-space:nowrap;pointer-events:none}
+.golden-master-stage .batter-nameplate{left:11%!important;color:#f1d89a}.golden-master-stage .pitcher-nameplate{right:10%;color:#b8e7df;border-color:rgba(133,205,195,.5);background:linear-gradient(270deg,rgba(3,13,17,.88),rgba(3,13,17,.3))}
+
+/* Weight transfer: each role moves differently. */
+.golden-master-stage.fx-stage-windup .golden-actor.sprite-batter{transform:translate3d(-5px,2px,0) rotate(-1.8deg) scale(1.018,.982)}
+.golden-master-stage.fx-stage-windup .golden-actor.sprite-pitcher{transform:translate3d(-3px,-5px,0) rotate(1.2deg) scale(.985,1.025)}
+.golden-master-stage.fx-stage-impact .golden-actor.sprite-batter{transform:translate3d(10px,-1px,0) rotate(1.4deg) scale(1.055,.985)}
+.golden-master-stage.fx-stage-impact .golden-actor.sprite-pitcher{transform:translate3d(-8px,1px,0) rotate(-1.6deg) scale(1.02,.98)}
+.golden-master-stage.fx-stage-slowmo .golden-actor.sprite-batter{transform:translate3d(12px,-2px,0) rotate(2deg) scale(1.065,.98)}
+.golden-master-stage.fx-stage-slowmo .golden-actor.sprite-pitcher{transform:translate3d(-10px,2px,0) rotate(-2deg) scale(1.025,.975)}
+.golden-master-stage.fx-stage-release .golden-actor.sprite-batter{transform:translate3d(8px,0,0) rotate(1deg)}
+.golden-master-stage.fx-stage-release .golden-actor.sprite-pitcher{transform:translate3d(-6px,2px,0) rotate(-1.2deg)}
+.golden-master-stage.fx-stage-settle .golden-actor{transition:transform .22s steps(4,end)!important}
+.golden-master-stage.fx-stage-impact .golden-actor .actor-contact-shadow{transform:scaleX(1.44);opacity:.9}
+.golden-master-stage.fx-stage-slowmo .golden-actor .actor-contact-shadow{transform:scaleX(1.52);opacity:.88}
+
+/* Scene camera layers move at different rates: real parallax, not one flat zoom. */
+.golden-master-stage.fx-stage-windup .gm-depth-back{transform:scale(1.025) translate3d(-.35%,.2%,0)}
+.golden-master-stage.fx-stage-windup .gm-depth-front{transform:scale(1.045) translate3d(.5%,1%,0)}
+.golden-master-stage.fx-stage-impact .gm-depth-back{transform:scale(1.065) translate3d(-.8%,.4%,0)}
+.golden-master-stage.fx-stage-impact .gm-depth-front{transform:scale(1.11) translate3d(1.3%,1.5%,0)}
+.golden-master-stage.fx-stage-slowmo .gm-depth-back{transform:scale(1.08) translate3d(-1.1%,.3%,0)}
+.golden-master-stage.fx-stage-slowmo .gm-depth-front{transform:scale(1.13) translate3d(1.8%,1.8%,0)}
+.golden-master-stage.fx-stage-release .gm-depth-back{transform:scale(1.035) translate3d(.5%,0,0);transition:transform .34s cubic-bezier(.2,.8,.2,1)}
+.golden-master-stage.fx-stage-release .gm-depth-front{transform:scale(1.06) translate3d(-.9%,.8%,0);transition:transform .34s cubic-bezier(.2,.8,.2,1)}
+.golden-master-stage.fx-stage-settle .gm-depth-back,.golden-master-stage.fx-stage-settle .gm-depth-front{transform:none;transition:transform .28s ease-out}
+.golden-master-stage.fx-stage-impact .gm-light-tower>i,.golden-master-stage.fx-stage-slowmo .gm-light-tower>i{background:#fff0bf;box-shadow:0 0 0 1px rgba(83,67,39,.42),0 0 18px rgba(255,224,141,.36)}
+.golden-master-stage.fx-stage-impact .gm-haze-band{opacity:.95}
+.golden-master-stage .gm-depth-back.gm-rival .gm-scoreboard-shell{border-color:rgba(201,117,84,.36);box-shadow:0 0 0 1px rgba(42,14,11,.7),0 0 22px rgba(178,70,43,.08)}
+.golden-master-stage .gm-depth-back.gm-power .gm-haze-band{background:linear-gradient(180deg,rgba(202,150,86,.03),rgba(223,170,91,.14) 56%,transparent)}
+.golden-master-stage .gm-depth-back.gm-danger .gm-haze-band{background:linear-gradient(180deg,rgba(130,143,159,.03),rgba(98,123,139,.09) 56%,transparent)}
+
+/* Character scale is tied to viewport and arena, not an arbitrary fixed icon size. */
+@media (orientation:landscape){
+  .duel-combat .golden-master-stage .actor-left{left:3.5%!important;right:auto!important;width:clamp(210px,min(31vw,76vh),330px)!important;height:clamp(210px,min(31vw,76vh),330px)!important;bottom:-2%!important}
+  .duel-combat .golden-master-stage .actor-right{right:4%!important;left:auto!important;width:clamp(190px,min(28vw,70vh),300px)!important;height:clamp(190px,min(28vw,70vh),300px)!important;bottom:1%!important}
+  .duel-combat .golden-master-stage .living-diamond{opacity:.48;filter:saturate(.7)}
+}
+@media (orientation:landscape) and (max-height:430px){
+  .duel-combat .golden-master-stage .actor-left{width:clamp(176px,min(29vw,62vh),245px)!important;height:clamp(176px,min(29vw,62vh),245px)!important;left:2%!important}
+  .duel-combat .golden-master-stage .actor-right{width:clamp(160px,min(26vw,58vh),220px)!important;height:clamp(160px,min(26vw,58vh),220px)!important;right:2.5%!important}
+  .gm-scoreboard-shell{transform:scale(.82);transform-origin:100% 0}.gm-light-tower{transform:scale(.84)}.gm-haze-band{opacity:.45}
+}
+@media (orientation:portrait){
+  .golden-master-stage .actor-left{width:clamp(156px,47vw,222px)!important;height:clamp(156px,47vw,222px)!important;left:-4%!important;bottom:-1%!important}
+  .golden-master-stage .actor-right{width:clamp(142px,40vw,196px)!important;height:clamp(142px,40vw,196px)!important;right:-1%!important;bottom:2%!important}
+  .gm-scoreboard-shell{right:5%;top:10%;transform:scale(.78);transform-origin:100% 0}.gm-light-tower{opacity:.62}.gm-upper-deck{top:23%}.gm-camera-fence{width:8%}
+}
+@media (min-width:1280px) and (orientation:landscape){
+  .duel-combat .golden-master-stage .actor-left{width:330px!important;height:330px!important;left:5%!important}
+  .duel-combat .golden-master-stage .actor-right{width:292px!important;height:292px!important;right:6%!important}
+  .gm-scoreboard-shell{width:102px;height:54px}.gm-upper-deck{top:23%;height:44px}
+}
+@media (prefers-reduced-motion:reduce){
+  .golden-master-stage .golden-actor,.golden-master-stage .gm-depth-back,.golden-master-stage .gm-depth-front{transform:none!important;transition:none!important;animation:none!important}
+  .golden-master-stage .gm-light-tower>i{box-shadow:0 0 0 1px rgba(76,73,54,.42)!important}
+}
