@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="19" viewBox="0 9 160 19" shape-rendering="crispEdges">
+<!-- 타석 흙·초크선·홈플레이트. 한 줄씩 직접 찍은 픽셀 런.
+
+     화면 아래가 경기장 바닥에서 잘리므로 타원의 '먼 쪽 절반'만 보이도록 viewBox를 잡았다.
+     먼 쪽(위)이 밝고 가까운 쪽(아래)이 어두워 바닥 평면으로 읽힌다. 명암 5단. -->
+<defs><style>
+.o{fill:#4a3524}.d0{fill:#6b5038}.d1{fill:#7d5d43}.d2{fill:#9a7150}.d3{fill:#c08a5a}.d4{fill:#d6a06a}
+.c{fill:#dbe3d8;fill-opacity:.55}
+.p{fill:#ebe4c8}.ps{fill:#a49c82}.po{fill:#5f5a49}
+</style></defs>
+
+<!-- 흙 · 먼 쪽 (조명 받는 면) -->
+<rect class="d4" x="54" y="10" width="52"  height="1"/>
+<rect class="d4" x="44" y="11" width="72"  height="1"/>
+<rect class="d4" x="37" y="12" width="86"  height="1"/>
+<rect class="d4" x="31" y="13" width="98"  height="1"/>
+<rect class="d4" x="26" y="14" width="108" height="1"/>
+
+<!-- 흙 · 중간 -->
+<rect class="d3" x="22" y="15" width="116" height="1"/>
+<rect class="d3" x="19" y="16" width="122" height="1"/>
+<rect class="d3" x="16" y="17" width="128" height="1"/>
+<rect class="d3" x="14" y="18" width="132" height="1"/>
+<rect class="d3" x="12" y="19" width="136" height="1"/>
+
+<!-- 흙 · 기본 -->
+<rect class="d2" x="11" y="20" width="138" height="1"/>
+<rect class="d2" x="9"  y="21" width="142" height="1"/>
+<rect class="d2" x="9"  y="22" width="142" height="1"/>
+<rect class="d2" x="8"  y="23" width="144" height="1"/>
+<rect class="d2" x="8"  y="24" width="144" height="1"/>
+
+<!-- 흙 · 가까운 쪽 그늘 -->
+<rect class="d1" x="8"  y="25" width="144" height="1"/>
+<rect class="d1" x="9"  y="26" width="142" height="1"/>
+<rect class="d0" x="9"  y="27" width="142" height="1"/>
+
+<!-- 타석 초크선 -->
+<rect class="c" x="26" y="16" width="78" height="1"/>
+<rect class="c" x="18" y="26" width="94" height="1"/>
+<rect class="c" x="25" y="17" width="1" height="2"/>
+<rect class="c" x="23" y="19" width="1" height="2"/>
+<rect class="c" x="21" y="21" width="1" height="2"/>
+<rect class="c" x="19" y="23" width="1" height="2"/>
+<rect class="c" x="18" y="25" width="1" height="1"/>
+<rect class="c" x="105" y="17" width="1" height="2"/>
+<rect class="c" x="107" y="19" width="1" height="2"/>
+<rect class="c" x="109" y="21" width="1" height="2"/>
+<rect class="c" x="111" y="23" width="1" height="2"/>
+<rect class="c" x="112" y="25" width="1" height="1"/>
+
+<!-- 홈플레이트 -->
+<rect class="po" x="119" y="19" width="24" height="1"/>
+<rect class="p"  x="117" y="20" width="28" height="1"/>
+<rect class="p"  x="117" y="21" width="28" height="1"/>
+<rect class="ps" x="118" y="22" width="26" height="1"/>
+<rect class="ps" x="120" y="23" width="22" height="1"/>
+<rect class="po" x="123" y="24" width="16" height="1"/>
+<rect class="po" x="127" y="25" width="8"  height="1"/>
+</svg>

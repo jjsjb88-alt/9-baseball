@@ -156,6 +156,7 @@ function Sprite({who,stage=null,shot=null,golden=false}){
   const pose=actorPose(who,stage,shot),spec=sequenceSpec(who,stage,shot),animated=useSpriteFrame(spec,who+'-'+stage+'-'+(shot?.grade||'idle'));
   const legacy=(who==='pitcher'?PITCHER_POSES:BATTER_POSES)[pose],v2=golden?V2_FALLBACKS[who]?.[pose]?.():null,src=animated||v2||legacy;
   return <span className={'sprite-stage sprite-'+who+' pose-'+pose+(animated?' v2-sequence':'')+(golden?' golden-actor':'')}>
+    {golden&&<i className="actor-ground" aria-hidden="true"/>}
     {golden&&<i className="actor-contact-shadow" aria-hidden="true"/>}
     <img aria-hidden="true" className="sprite-echo echo-back" src={src}/>
     <img aria-hidden="true" className="sprite-echo echo-mid" src={src}/>
