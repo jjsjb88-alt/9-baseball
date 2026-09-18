@@ -3,7 +3,7 @@ import React from 'react';
 import {render,screen,fireEvent,cleanup,act} from '@testing-library/react';
 import {afterEach,beforeEach,describe,it,expect,vi} from 'vitest';
 import Duel from '../src/duel/App.jsx';
-import {createDuel,startBattle,chooseRoute,playCard,advanceBatter,readDuel,saveDuel,createV10Duel,enterV10Node,saveV10Duel} from '../src/duel/engine.js';
+import {createDuel,startBattle,chooseRoute,playCard,advanceBatter,readDuel,saveDuel,createV10Duel,enterV10Node,saveV10Duel,readV10Duel} from '../src/duel/engine.js';
 import {planAction} from '../src/duel/policy.js';
 import {presentationFor,presentationTimeline} from '../src/duel/presentation.js';
 import {BUILDS,CARDS,ZONES,DECKBUILDER_BUILD,ROUTE_CHOICES} from '../src/duel/cards.js';
@@ -105,7 +105,7 @@ describe('9-zone strategic UI',()=>{
     expect(arena.querySelector('.judgement-layer')).toBeTruthy();
     expect(arena.querySelector('.pixel-cinema')).toBeTruthy();
     expect(arena.querySelector('.pixel-vfx-canvas')).toBeTruthy();
-    const timeline=presentationTimeline(presentationFor(readDuel(localStorage)));
+    const timeline=presentationTimeline(presentationFor(readV10Duel(localStorage)));
     act(()=>vi.advanceTimersByTime(timeline.impactAt+1));
     expect(arena.className).toContain('fx-stage-impact');
     expect(arena.querySelector('.sprite-batter.pose-contact')).toBeTruthy();
@@ -160,7 +160,7 @@ describe('9-zone strategic UI',()=>{
     fireEvent.click(screen.getByTestId('execute-action'));
     expect(document.querySelector('.sprite-batter.pose-load.v2-sequence')).toBeTruthy();
     expect(document.querySelector('.sprite-pitcher.pose-legkick.v2-sequence')).toBeTruthy();
-    const timeline=presentationTimeline(presentationFor(readDuel(localStorage)));
+    const timeline=presentationTimeline(presentationFor(readV10Duel(localStorage)));
     act(()=>vi.advanceTimersByTime(timeline.impactAt+1));
     expect(document.querySelector('.sprite-batter.pose-contact')).toBeTruthy();
     expect(document.querySelector('.sprite-pitcher.pose-release')).toBeTruthy();
@@ -176,7 +176,7 @@ describe('9-zone strategic UI',()=>{
     fireEvent.click(screen.getByRole('button',{name:'밀어치기',exact:true}));
     fireEvent.click(screen.getByTestId('execute-action'));
     expect(document.querySelector('.presentation-stage-windup')).toBeTruthy();
-    const timeline=presentationTimeline(presentationFor(readDuel(localStorage)));
+    const timeline=presentationTimeline(presentationFor(readV10Duel(localStorage)));
     act(()=>vi.advanceTimersByTime(timeline.impactAt+1));expect(document.querySelector('.presentation-stage-impact')).toBeTruthy();
     act(()=>vi.advanceTimersByTime(timeline.freeze+1));expect(document.querySelector('.presentation-stage-slowmo')).toBeTruthy();
     expect(document.querySelector('.slowmo-mark')?.textContent).toBe('ONE ZONE');
