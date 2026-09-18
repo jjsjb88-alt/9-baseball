@@ -82,7 +82,8 @@
 .golden-master-stage.fx-stage-slowmo .golden-actor.sprite-pitcher{transform:translate3d(-10px,2px,0) rotate(-2deg) scale(1.025,.975)}
 .golden-master-stage.fx-stage-release .golden-actor.sprite-batter{transform:translate3d(8px,0,0) rotate(1deg)}
 .golden-master-stage.fx-stage-release .golden-actor.sprite-pitcher{transform:translate3d(-6px,2px,0) rotate(-1.2deg)}
-.golden-master-stage.fx-stage-settle .golden-actor{transition:transform .22s steps(4,end)!important}
+.golden-master-stage .golden-actor{transition:transform .095s cubic-bezier(.2,.72,.2,1),filter .095s linear}
+.golden-master-stage.fx-stage-settle .golden-actor{transition:transform .18s cubic-bezier(.18,.7,.2,1),filter .14s linear!important}
 .golden-master-stage.fx-stage-impact .golden-actor .actor-contact-shadow{transform:scaleX(1.44);opacity:.9}
 .golden-master-stage.fx-stage-slowmo .golden-actor .actor-contact-shadow{transform:scaleX(1.52);opacity:.88}
 
@@ -240,8 +241,8 @@
 
 /* Windup owns the pitcher. The batter remains readable, but waits in tension. */
 .golden-master-stage.fx-stage-windup .gm-pitch-tunnel{opacity:.9;animation:gmTunnelHandoff .32s cubic-bezier(.2,.75,.2,1) both}
-.golden-master-stage.fx-stage-windup .gm-release-ring{opacity:1;animation:gmReleaseLock .32s steps(4,end) both}
-.golden-master-stage.fx-stage-windup .gm-foot-plant{opacity:1;animation:gmFootPlant .34s steps(4,end) both}
+.golden-master-stage.fx-stage-windup .gm-release-ring{opacity:1;animation:gmReleaseLock .32s cubic-bezier(.2,.72,.2,1) both}
+.golden-master-stage.fx-stage-windup .gm-foot-plant{opacity:1;animation:gmFootPlant .34s cubic-bezier(.2,.72,.2,1) both}
 .golden-master-stage.fx-stage-windup .gm-pitcher-light{opacity:1;filter:blur(6px)}
 .golden-master-stage.fx-stage-windup .gm-batter-light{opacity:.36}
 .golden-master-stage.fx-stage-windup .sprite-pitcher .duel-sprite{
@@ -250,7 +251,7 @@
 .golden-master-stage.fx-stage-windup .sprite-batter .duel-sprite{filter:brightness(.92) contrast(1.15) saturate(.94) drop-shadow(-1px 0 0 rgba(0,7,9,.96)) drop-shadow(0 10px 4px rgba(0,4,6,.72))!important}
 
 /* Contact hands the frame back to the hitter. */
-.golden-master-stage.fx-stage-impact .gm-bat-arc{opacity:1;animation:gmBatArc .18s steps(4,end) both}
+.golden-master-stage.fx-stage-impact .gm-bat-arc{opacity:1;animation:gmBatArc .18s cubic-bezier(.2,.72,.2,1) both}
 .golden-master-stage.fx-stage-impact .gm-pitch-tunnel{opacity:.12;transform:skewY(-7deg) scaleX(1.03)}
 .golden-master-stage.fx-stage-impact .gm-release-ring{opacity:.12;transform:scale(1.42)}
 .golden-master-stage.fx-stage-impact .gm-batter-light{opacity:1;filter:blur(5px)}
@@ -725,4 +726,24 @@
 }
 @media (prefers-reduced-motion:reduce){
   .golden-master-stage .golden-actor.v3-authored{transition:none!important}
+}
+
+
+/* GM07 — animation fluidity.
+   Frame art stays crisp, but actor motion and authored-frame handoff no longer snap. */
+.golden-master-stage .golden-actor .duel-sprite{
+  backface-visibility:hidden;
+  transform:translateZ(0);
+  will-change:transform,opacity,filter
+}
+.golden-master-stage .golden-actor.v3-authored .duel-sprite{
+  animation:gmAuthoredFrameIn .085s cubic-bezier(.18,.7,.2,1) both
+}
+@keyframes gmAuthoredFrameIn{
+  0%{opacity:.82;transform:translate3d(0,2px,0) scale(.992)}
+  100%{opacity:1;transform:translate3d(0,0,0) scale(1)}
+}
+@media (prefers-reduced-motion:reduce){
+  .golden-master-stage .golden-actor,
+  .golden-master-stage .golden-actor .duel-sprite{transition:none!important;animation:none!important}
 }
