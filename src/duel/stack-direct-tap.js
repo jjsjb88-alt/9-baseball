@@ -222,7 +222,8 @@ function collapseSecondaryUi(root=document){
   close(':scope > .zone-panel','zone-info-open','.landscape-zone-info-toggle','INFO');
   close(':scope > .pitch-read','read-open','.landscape-read-toggle',button=>button.dataset.summary||'READ +');
   close('.decision-preview','choice-info-open','.landscape-choice-toggle','DETAIL');
-  close('.v10-relic-rack','relic-info-open','.v10-relic-rack',null);
+  const relics=combat.querySelector('.v10-relic-rack');
+  if(relics){relics.classList.remove('relic-info-open');relics.setAttribute('aria-expanded','false');}
 }
 function setPlacementFocus(root,on){
   combatRoot(root)?.classList.toggle('card-placement-focus',!!on);
