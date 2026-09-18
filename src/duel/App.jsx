@@ -99,9 +99,17 @@ function CoverageMini({zones}){return <div className="coverage-mini" aria-label=
 const BATTER_POSES={idle:batterIdle,load:batterLoad,contact:batterContact,follow:batterFollow,homer:batterHomer,miss:batterMiss};
 const PITCHER_POSES={idle:pitcherIdle,set:pitcherSet,legkick:pitcherLegkick,release:pitcherRelease,follow:pitcherFollow,strikeout:pitcherStrikeout};
 const PITCHER_RELEASE_V3={sinker:pitcherSinkerReleaseV3,high:pitcherHighReleaseV3,closer:pitcherCloserReleaseV3};
+const ACTOR_ASSETS=[...new Set([...BATTER_SWING_V2,...BATTER_MISS_V2,...PITCHER_PITCH_V2,...PITCHER_K_V2,batterHomerHeroV3,...Object.values(PITCHER_RELEASE_V3)])];
+function useActorAssetPreload(){
+  useEffect(()=>{
+    if(typeof Image==='undefined')return;
+    const images=ACTOR_ASSETS.map(src=>{const img=new Image();img.decoding='async';img.src=src;img.decode?.().catch(()=>{});return img;});
+    return ()=>images.forEach(img=>{img.onload=null;img.onerror=null;});
+  },[]);
+}
 const authoredActorArt=(who,pose,stage,shot,variant)=>{
   if(who==='batter'&&pose==='homer'&&['release','settle'].includes(stage)&&['homer','grand-slam'].includes(shot?.grade))return batterHomerHeroV3;
-  if(who==='pitcher'&&PITCHER_RELEASE_V3[variant]&&['impact','slowmo'].includes(stage)&&!(shot?.grade==='strikeout'||shot?.grade?.endsWith('-k')))return PITCHER_RELEASE_V3[variant];
+  if(who==='pitcher'&&PITCHER_RELEASE_V3[variant]&&stage==='slowmo'&&!(shot?.grade==='strikeout'||shot?.grade?.endsWith('-k')))return PITCHER_RELEASE_V3[variant];
   return null;
 };
 function actorPose(who,stage,shot){
@@ -131,24 +139,31 @@ function stageDuration(stage,shot){
   if(stage==='settle')return Math.max(80,m.duration-m.settleAt);
   return 0;
 }
+const sequencePlaybackDuration=(stage,duration,count)=>{
+  const minFrameMs=stage==='impact'?38:stage==='windup'?44:48;
+  const cap=stage==='release'?260:stage==='settle'?180:stage==='windup'?320:stage==='impact'?120:220;
+  return Math.min(Math.max(minFrameMs*Math.max(1,count-1),80),Math.max(80,Math.min(duration,cap)));
+};
 function sequenceSpec(who,stage,shot){
   if(!stage||!shot||['read','lock','expand','signal','survive','draw'].includes(shot.grade))return null;
   const hit=['dead-center','solid','jammed','lucky','extra','homer','grand-slam'].includes(shot.grade);
   const miss=['near-miss','near-miss-k','chase','chase-k','fooled','strikeout'].includes(shot.grade);
   if(who==='pitcher'){
-    if((shot.grade==='strikeout'||shot.grade?.endsWith('-k'))&&['release','settle'].includes(stage))
-      return {frames:PITCHER_K_V2,start:0,end:PITCHER_K_V2.length-1,duration:stageDuration(stage,shot)};
+    if((shot.grade==='strikeout'||shot.grade?.endsWith('-k'))&&stage==='release')
+      return {frames:PITCHER_K_V2,start:0,end:PITCHER_K_V2.length-1,duration:sequencePlaybackDuration(stage,stageDuration(stage,shot),PITCHER_K_V2.length)};
+    if((shot.grade==='strikeout'||shot.grade?.endsWith('-k'))&&stage==='settle')
+      return {frames:PITCHER_K_V2,start:PITCHER_K_V2.length-1,end:PITCHER_K_V2.length-1,duration:0};
     const ranges={windup:[0,5],impact:[6,7],slowmo:[7,7],release:[8,11],settle:[11,11]},r=ranges[stage];
-    return r?{frames:PITCHER_PITCH_V2,start:r[0],end:r[1],duration:stageDuration(stage,shot)}:null;
+    return r?{frames:PITCHER_PITCH_V2,start:r[0],end:r[1],duration:sequencePlaybackDuration(stage,stageDuration(stage,shot),r[1]-r[0]+1)}:null;
   }
   if(hit){
     if(['homer','grand-slam'].includes(shot.grade)&&['release','settle'].includes(stage))return null;
     const ranges={windup:[0,4],impact:[5,6],slowmo:[6,6],release:[7,11],settle:[11,11]},r=ranges[stage];
-    return r?{frames:BATTER_SWING_V2,start:r[0],end:r[1],duration:stageDuration(stage,shot)}:null;
+    return r?{frames:BATTER_SWING_V2,start:r[0],end:r[1],duration:sequencePlaybackDuration(stage,stageDuration(stage,shot),r[1]-r[0]+1)}:null;
   }
   if(miss){
     const ranges={windup:[0,2],impact:[3,4],slowmo:[4,4],release:[4,5],settle:[5,5]},r=ranges[stage];
-    return r?{frames:BATTER_MISS_V2,start:r[0],end:r[1],duration:stageDuration(stage,shot)}:null;
+    return r?{frames:BATTER_MISS_V2,start:r[0],end:r[1],duration:sequencePlaybackDuration(stage,stageDuration(stage,shot),r[1]-r[0]+1)}:null;
   }
   return null;
 }
@@ -156,11 +171,19 @@ function useSpriteFrame(spec,key){
   const [index,setIndex]=useState(spec?.start||0);
   useEffect(()=>{
     if(!spec?.frames?.length){setIndex(0);return;}
-    let i=spec.start;setIndex(i);
-    if(spec.end<=spec.start)return;
-    const count=spec.end-spec.start+1,step=Math.max(24,Math.floor(spec.duration/count));
-    const timer=setInterval(()=>{i+=1;if(i>spec.end){clearInterval(timer);return;}setIndex(i);},step);
-    return ()=>clearInterval(timer);
+    const start=spec.start,end=spec.end;setIndex(start);
+    if(end<=start)return;
+    const duration=Math.max(1,spec.duration||1),span=end-start;
+    let raf=0,startedAt=null,last=start;
+    const tick=now=>{
+      if(startedAt===null)startedAt=now;
+      const progress=Math.min(1,(now-startedAt)/duration);
+      const next=Math.min(end,start+Math.round(progress*span));
+      if(next!==last){last=next;setIndex(next);}
+      if(progress<1)raf=requestAnimationFrame(tick);
+    };
+    raf=requestAnimationFrame(tick);
+    return ()=>cancelAnimationFrame(raf);
   },[spec?.frames,spec?.start,spec?.end,spec?.duration,key]);
   return spec?.frames?.[Math.min(index,spec.frames.length-1)]||null;
 }
@@ -587,6 +610,7 @@ function RunStory({s,compact=false}){
 }
 
 export default function Duel(){
+  useActorAssetPreload();
   const [initial]=useState(()=>{
     let v10=null;try{v10=readV10Duel(localStorage)}catch{}
     try{return {save:readDuel(localStorage),v10}}catch{return {error:'저장을 읽지 못했습니다. 새 런을 시작할 수 있습니다.',v10}}
