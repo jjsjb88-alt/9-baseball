@@ -410,3 +410,117 @@
   .golden-master-stage .gm-light-shaft,.golden-master-stage .gm-depth-back,.golden-master-stage .gm-depth-front{transition:none!important}
   .golden-master-stage.fx-stage-windup .gm-light-shaft,.golden-master-stage.fx-stage-impact .gm-light-shaft{transform:none!important}
 }
+
+
+/* GOLDEN MASTER 04 — result-specific cinematic timing.
+   No new spectacle layer: each outcome hands visual priority to a different subject over time. */
+
+/* Power contact: inhale before contact, white-hot hitter at impact, then let the park answer. */
+.golden-master-stage.grade-homer.fx-stage-windup .gm-depth-back,
+.golden-master-stage.grade-grand-slam.fx-stage-windup .gm-depth-back{
+  filter:brightness(.66) saturate(.72);transform:scale(1.018) translate3d(-.2%,.1%,0)
+}
+.golden-master-stage.grade-homer.fx-stage-windup .gm-depth-front,
+.golden-master-stage.grade-grand-slam.fx-stage-windup .gm-depth-front{
+  filter:brightness(.72) saturate(.76);transform:scale(1.045) translate3d(-.5%,.9%,0)
+}
+.golden-master-stage.grade-homer.fx-stage-impact .gm-contact-halo,
+.golden-master-stage.grade-grand-slam.fx-stage-impact .gm-contact-halo{
+  opacity:1;transform:scale(1.38);filter:contrast(1.12) brightness(1.16)
+}
+.golden-master-stage.grade-grand-slam.fx-stage-impact .gm-contact-halo{transform:scale(1.52)}
+.golden-master-stage.grade-homer.fx-stage-impact .gm-batter-light,
+.golden-master-stage.grade-grand-slam.fx-stage-impact .gm-batter-light{
+  opacity:1;filter:blur(4px) brightness(1.3)
+}
+.golden-master-stage.grade-homer.fx-stage-impact .gm-pitcher-light,
+.golden-master-stage.grade-grand-slam.fx-stage-impact .gm-pitcher-light{opacity:.16}
+.golden-master-stage.grade-homer.fx-stage-impact .gm-depth-back,
+.golden-master-stage.grade-grand-slam.fx-stage-impact .gm-depth-back{filter:brightness(.74) saturate(.8)}
+.golden-master-stage.grade-homer.fx-stage-slowmo .gm-depth-back,
+.golden-master-stage.grade-grand-slam.fx-stage-slowmo .gm-depth-back{filter:brightness(.54) saturate(.58)}
+.golden-master-stage.grade-homer.fx-stage-slowmo .gm-depth-front,
+.golden-master-stage.grade-grand-slam.fx-stage-slowmo .gm-depth-front{filter:brightness(.58) saturate(.62)}
+.golden-master-stage.grade-homer.fx-stage-slowmo .gm-batter-light,
+.golden-master-stage.grade-grand-slam.fx-stage-slowmo .gm-batter-light{opacity:.98;filter:blur(7px)}
+.golden-master-stage.grade-homer.fx-stage-release .gm-concourse-windows>i:nth-child(3n),
+.golden-master-stage.grade-grand-slam.fx-stage-release .gm-concourse-windows>i{
+  filter:brightness(1.38);transition:filter .24s ease-out
+}
+.golden-master-stage.grade-homer.fx-stage-release .golden-actor.sprite-batter,
+.golden-master-stage.grade-grand-slam.fx-stage-release .golden-actor.sprite-batter{
+  transform:translate3d(13px,-2px,0) rotate(2.2deg) scale(1.035,.99)
+}
+
+/* Clean contact is a short, precise snap rather than a miniature home-run sequence. */
+.golden-master-stage.grade-dead-center.fx-stage-impact .gm-contact-halo,
+.golden-master-stage.grade-extra.fx-stage-impact .gm-contact-halo{opacity:.92;transform:scale(1.12)}
+.golden-master-stage.grade-dead-center.fx-stage-impact .gm-depth-front,
+.golden-master-stage.grade-extra.fx-stage-impact .gm-depth-front{filter:brightness(.74) saturate(.8)}
+.golden-master-stage.grade-dead-center.fx-stage-release .gm-batter-light,
+.golden-master-stage.grade-extra.fx-stage-release .gm-batter-light{opacity:.62}
+.golden-master-stage.grade-dead-center.fx-stage-release .gm-light-shaft,
+.golden-master-stage.grade-extra.fx-stage-release .gm-light-shaft{opacity:.2}
+
+/* Failure owns the opposite side of the frame: the pitcher and ball stay dominant. */
+.golden-master-stage.grade-near-miss.fx-stage-impact .gm-batter-light,
+.golden-master-stage.grade-near-miss-k.fx-stage-impact .gm-batter-light,
+.golden-master-stage.grade-chase.fx-stage-impact .gm-batter-light,
+.golden-master-stage.grade-chase-k.fx-stage-impact .gm-batter-light,
+.golden-master-stage.grade-strikeout.fx-stage-impact .gm-batter-light,
+.golden-master-stage.grade-called-k.fx-stage-impact .gm-batter-light{opacity:.2}
+.golden-master-stage.grade-near-miss.fx-stage-impact .gm-pitcher-light,
+.golden-master-stage.grade-near-miss-k.fx-stage-impact .gm-pitcher-light,
+.golden-master-stage.grade-chase.fx-stage-impact .gm-pitcher-light,
+.golden-master-stage.grade-chase-k.fx-stage-impact .gm-pitcher-light,
+.golden-master-stage.grade-strikeout.fx-stage-impact .gm-pitcher-light,
+.golden-master-stage.grade-called-k.fx-stage-impact .gm-pitcher-light{
+  opacity:1;filter:blur(5px) brightness(1.14)
+}
+.golden-master-stage.grade-near-miss.fx-stage-impact .gm-contact-halo,
+.golden-master-stage.grade-near-miss-k.fx-stage-impact .gm-contact-halo,
+.golden-master-stage.grade-chase.fx-stage-impact .gm-contact-halo,
+.golden-master-stage.grade-chase-k.fx-stage-impact .gm-contact-halo,
+.golden-master-stage.grade-strikeout.fx-stage-impact .gm-contact-halo,
+.golden-master-stage.grade-called-k.fx-stage-impact .gm-contact-halo{opacity:0}
+.golden-master-stage.grade-near-miss.fx-stage-slowmo .gm-pitch-tunnel,
+.golden-master-stage.grade-near-miss-k.fx-stage-slowmo .gm-pitch-tunnel{
+  opacity:.52;transform:skewY(-7deg) scaleX(1.08)
+}
+.golden-master-stage.grade-near-miss.fx-stage-slowmo .gm-depth-back,
+.golden-master-stage.grade-near-miss-k.fx-stage-slowmo .gm-depth-back{
+  filter:brightness(.66) saturate(.54)
+}
+.golden-master-stage.grade-chase-k.fx-stage-release .gm-depth-mid,
+.golden-master-stage.grade-strikeout.fx-stage-release .gm-depth-mid,
+.golden-master-stage.grade-called-k.fx-stage-release .gm-depth-mid{
+  transform:scale(1.035) translate3d(-1.1%,.2%,0);filter:brightness(.72) saturate(.62)
+}
+.golden-master-stage.grade-chase-k.fx-stage-release .golden-actor.sprite-batter,
+.golden-master-stage.grade-strikeout.fx-stage-release .golden-actor.sprite-batter{
+  transform:translate3d(-8px,3px,0) rotate(-2.4deg) scale(.985,.98);filter:brightness(.76)
+}
+.golden-master-stage.grade-called-k.fx-stage-release .golden-actor.sprite-batter{
+  transform:translate3d(-4px,1px,0) scale(.985);filter:brightness(.7) saturate(.7)
+}
+.golden-master-stage.grade-chase-k.fx-stage-release .golden-actor.sprite-pitcher,
+.golden-master-stage.grade-strikeout.fx-stage-release .golden-actor.sprite-pitcher,
+.golden-master-stage.grade-called-k.fx-stage-release .golden-actor.sprite-pitcher{
+  transform:translate3d(-2px,-1px,0) rotate(-.4deg) scale(1.035);filter:brightness(1.08)
+}
+
+/* Preserve accessibility: outcome identity remains through static light balance without motion. */
+@media (prefers-reduced-motion:reduce){
+  .golden-master-stage.grade-homer .gm-depth-back,
+  .golden-master-stage.grade-grand-slam .gm-depth-back,
+  .golden-master-stage.grade-near-miss .gm-depth-back,
+  .golden-master-stage.grade-near-miss-k .gm-depth-back,
+  .golden-master-stage.grade-chase-k .gm-depth-mid,
+  .golden-master-stage.grade-strikeout .gm-depth-mid,
+  .golden-master-stage.grade-called-k .gm-depth-mid{transform:none!important}
+  .golden-master-stage.grade-homer .golden-actor,
+  .golden-master-stage.grade-grand-slam .golden-actor,
+  .golden-master-stage.grade-chase-k .golden-actor,
+  .golden-master-stage.grade-strikeout .golden-actor,
+  .golden-master-stage.grade-called-k .golden-actor{transform:none!important}
+}
