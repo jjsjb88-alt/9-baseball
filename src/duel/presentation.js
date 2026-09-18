@@ -48,6 +48,10 @@ const MOTION={
   nearMiss:{duration:1460,impactAt:250,settleAt:1050,freeze:24,slowmo:360,haptic:[8,70,10],shake:'soft'},
   chase:{duration:1120,impactAt:240,settleAt:800,freeze:18,slowmo:0,haptic:[9],shake:'medium'},
   fooled:{duration:1180,impactAt:250,settleAt:840,freeze:22,slowmo:80,haptic:[10],shake:'medium'},
+  nearMissK:{duration:1660,impactAt:270,settleAt:1210,freeze:32,slowmo:430,haptic:[8,62,12,34,18],shake:'soft'},
+  chaseK:{duration:1420,impactAt:255,settleAt:1010,freeze:30,slowmo:110,haptic:[12,34,20,48],shake:'strong'},
+  strikeout:{duration:1540,impactAt:270,settleAt:1110,freeze:44,slowmo:150,haptic:[14,42,20,58],shake:'strong'},
+  calledK:{duration:1620,impactAt:285,settleAt:1180,freeze:58,slowmo:190,haptic:[10,48,12,64],shake:'medium'},
   foul:{duration:980,impactAt:220,settleAt:680,freeze:38,slowmo:0,haptic:[10,18,10],shake:'soft'},
   battleFoul:{duration:1160,impactAt:230,settleAt:830,freeze:42,slowmo:90,haptic:[11,20,11],shake:'soft'},
   ball:{duration:820,impactAt:200,settleAt:560,freeze:0,slowmo:0,haptic:[4],shake:'none'},
@@ -90,16 +94,16 @@ export function presentationFor(state){
   }
   if(revealed.kind==='whiff'){
     const strikeout=label.includes('삼진');
-    if(strikeout&&grade==='near-miss')return withMotion({kind:'near-miss',grade:'near-miss-k',cue:'nearMiss',kicker:'JUST MISSED · K',title:'한 칸 차이로 끝',detail:`${zone} · 마지막 공이 커버 바로 옆을 통과했다`},MOTION.nearMiss);
-    if(strikeout&&grade==='chase')return withMotion({kind:'chase',grade:'chase-k',cue:'strikeout',kicker:'CHASED · K',title:'쫓아가다 끝',detail:'존 밖 유인구에 마지막 스윙을 내줬다'},MOTION.chase);
-    if(strikeout)return withMotion({kind:'whiff',grade:'strikeout',cue:'strikeout',kicker:'STRIKE THREE',title:'놓쳤다',detail:`${zone} · 이 타석은 여기서 끝`},MOTION.fooled);
+    if(strikeout&&grade==='near-miss')return withMotion({kind:'near-miss',grade:'near-miss-k',cue:'nearMiss',kicker:'JUST MISSED · K',title:'한 칸 차이로 끝',detail:`${zone} · 마지막 공이 커버 바로 옆을 통과했다`},MOTION.nearMissK);
+    if(strikeout&&grade==='chase')return withMotion({kind:'chase',grade:'chase-k',cue:'strikeout',kicker:'CHASED · K',title:'쫓아가다 끝',detail:'존 밖 유인구에 마지막 스윙을 내줬다'},MOTION.chaseK);
+    if(strikeout)return withMotion({kind:'whiff',grade:'strikeout',cue:'strikeout',kicker:'STRIKE THREE',title:'놓쳤다',detail:`${zone} · 이 타석은 여기서 끝`},MOTION.strikeout);
     if(grade==='near-miss')return withMotion({kind:'near-miss',grade,cue:'nearMiss',kicker:'JUST MISSED',title:'한 칸 차이',detail:`${zone} · 커버 바로 옆을 통과했다`},MOTION.nearMiss);
     if(grade==='chase')return withMotion({kind:'chase',grade,cue:'chase',kicker:'CHASED',title:'쫓았다',detail:'존 밖 공에 배트가 따라 나갔다'},MOTION.chase);
     return withMotion({kind:'whiff',grade,cue:'fooled',kicker:'WRONG READ',title:'속았다',detail:`${zone} · 기다린 범위에서 멀어졌다`},MOTION.fooled);
   }
   if(revealed.kind==='foul'){
     const strikeout=label.includes('삼진');
-    if(strikeout)return withMotion({kind:'whiff',grade:'strikeout',cue:'strikeout',kicker:'STRIKE THREE',title:'끝났다',detail:`${zone} · 번트 파울 삼진`},MOTION.fooled);
+    if(strikeout)return withMotion({kind:'whiff',grade:'strikeout',cue:'strikeout',kicker:'STRIKE THREE',title:'끝났다',detail:`${zone} · 번트 파울 삼진`},MOTION.strikeout);
     if(grade==='battle-foul')return withMotion({kind:'battle-foul',grade,cue:'battleFoul',kicker:'TWO STRIKES · ALIVE',title:'끝까지 버텼다',detail:`${zone} · 마지막 스트라이크를 파울로 지웠다`},MOTION.battleFoul);
     return withMotion({kind:'foul',grade,cue:'foul',kicker:'STAY ALIVE',title:'살아남았다',detail:`${zone} · ${label}`},MOTION.foul);
   }
@@ -110,7 +114,7 @@ export function presentationFor(state){
   }
   if(revealed.kind==='called'){
     const strikeout=label.includes('삼진');
-    return withMotion({kind:'called',grade,cue:strikeout?'strikeout':'called',kicker:strikeout?'CALLED STRIKE THREE':'CALLED STRIKE',title:strikeout?'굳었다':'지켜봤다',detail:`${zone} · 배트를 내지 않았다`},MOTION.called);
+    return withMotion({kind:'called',grade:strikeout?'called-k':grade,cue:strikeout?'strikeout':'called',kicker:strikeout?'CALLED STRIKE THREE':'CALLED STRIKE',title:strikeout?'굳었다':'지켜봤다',detail:`${zone} · 배트를 내지 않았다`},strikeout?MOTION.calledK:MOTION.called);
   }
   if(revealed.kind==='sacrifice'){
     if((last?.runs||0)>0)return withMotion({kind:'sacrifice-run',grade:'sacrifice-run',cue:'sacrifice',kicker:'PRODUCTIVE OUT',title:'점을 만들었다',detail:`${zone} · 아웃 하나를 득점으로 바꿨다`},MOTION.sacrifice);
