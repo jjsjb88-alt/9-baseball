@@ -12,7 +12,7 @@ export default function GoldenMasterStage({stage=null,shot=null,rival=false,matc
   return <>
     <div className={'gm-depth-back'+state} aria-hidden="true">
       <span className="gm-skyline">
-        {Array.from({length:11},(_,i)=><i key={i} style={{'--gm-i':i}}/>)}
+        {Array.from({length:11},(_,i)=><i key={i} style={{'--gm-h':`${28+i*2.4}%`}}/>)}
       </span>
       <span className="gm-roof-truss gm-truss-left">{Array.from({length:7},(_,i)=><i key={i}/>)}</span>
       <span className="gm-roof-truss gm-truss-right">{Array.from({length:7},(_,i)=><i key={i}/>)}</span>
