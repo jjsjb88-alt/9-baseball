@@ -174,7 +174,7 @@ function hiddenAimAt(drawer,zone,state){
     const editor=drawer.querySelector('.stack-aim-editor');
     const button=editor?.querySelectorAll('.assist-zone-grid button')?.[zone];
     if(button)safeClick(button,state);
-    state.armed=null;
+    state.armed=null;setPlacementFocus(state.root,false);
     const live=swingDrawer(state.root);refresh(live,state.root,null);
     requestAnimationFrame(()=>placementImpact(swingDrawer(state.root),zone,state));
   });
@@ -187,18 +187,18 @@ function placeCardAtZone(drawer,card,zone,state){
   // No effect card yet, BASIC is being chosen, or BASIC is being replaced by a real card.
   if(!currentMain||card.classList.contains('basic-card')||(currentMain.classList.contains('basic-card')&&card!==currentMain)){
     if(card!==currentMain)safeClick(card,state);
-    raf2(()=>{safeClick(zoneCells(state.root)[zone],state);state.armed=null;const live=swingDrawer(state.root);refresh(live,state.root,null);requestAnimationFrame(()=>placementImpact(swingDrawer(state.root),zone,state));});
+    raf2(()=>{safeClick(zoneCells(state.root)[zone],state);state.armed=null;setPlacementFocus(state.root,false);const live=swingDrawer(state.root);refresh(live,state.root,null);requestAnimationFrame(()=>placementImpact(swingDrawer(state.root),zone,state));});
     return true;
   }
   // Moving the first/effect card is just moving its aim zone.
   if(card===currentMain){
-    safeClick(cell,state);state.armed=null;refresh(drawer,state.root,null);requestAnimationFrame(()=>placementImpact(swingDrawer(state.root),zone,state));return true;
+    safeClick(cell,state);state.armed=null;setPlacementFocus(state.root,false);refresh(drawer,state.root,null);requestAnimationFrame(()=>placementImpact(swingDrawer(state.root),zone,state));return true;
   }
 
   const candidate=candidateFor(drawer,card);
   if(!candidate){
     // A stale DOM edge case: treat the card as a new effect card rather than dead-ending the player.
-    safeClick(card,state);raf2(()=>{safeClick(zoneCells(state.root)[zone],state);state.armed=null;const live=swingDrawer(state.root);refresh(live,state.root,null);requestAnimationFrame(()=>placementImpact(swingDrawer(state.root),zone,state));});
+    safeClick(card,state);raf2(()=>{safeClick(zoneCells(state.root)[zone],state);state.armed=null;setPlacementFocus(state.root,false);const live=swingDrawer(state.root);refresh(live,state.root,null);requestAnimationFrame(()=>placementImpact(swingDrawer(state.root),zone,state));});
     return true;
   }
   if(candidate.disabled&&!candidate.classList.contains('picked')){
@@ -279,7 +279,7 @@ export function installSwingStackDirectTap(root=document){
   if(root.__swingStackDirectTapInstalled)return ()=>{};
   root.__swingStackDirectTapInstalled=true;
   const state={root,bypass:false,armed:null,drag:null,suppressClickUntil:0,scheduled:false};
-  const schedule=()=>{if(state.scheduled)return;state.scheduled=true;requestAnimationFrame(()=>{state.scheduled=false;const drawer=swingDrawer(root);if(!drawer){state.armed=null;clearTokens(root);return;}if(state.armed&&(!drawer.contains(state.armed)||!isUsable(state.armed)))state.armed=null;refresh(drawer,root,state.armed);});};
+  const schedule=()=>{if(state.scheduled)return;state.scheduled=true;requestAnimationFrame(()=>{state.scheduled=false;const drawer=swingDrawer(root);if(!drawer){state.armed=null;clearTokens(root);setPlacementFocus(root,false);return;}if(state.armed&&(!drawer.contains(state.armed)||!isUsable(state.armed))){state.armed=null;if(!state.drag?.moved)setPlacementFocus(root,false);}refresh(drawer,root,state.armed);});};
   const observer=new MutationObserver(schedule);observer.observe(root.documentElement||root,{subtree:true,childList:true,attributes:true,attributeFilter:['class','aria-pressed']});
 
   const finishDrag=(e,cancel=false)=>{
