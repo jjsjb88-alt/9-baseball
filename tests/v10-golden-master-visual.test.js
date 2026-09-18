@@ -24,15 +24,20 @@ describe('visual reboot golden master 01',()=>{
     expect(app).toContain('golden-actor');
   });
 
-  it('builds separate far and foreground stadium depth layers with no input interception',()=>{
+  it('builds separate far, middle and foreground stadium depth layers with no input interception',()=>{
     expect(stage).toContain('gm-depth-back');
     expect(stage).toContain('gm-scoreboard-shell');
     expect(stage).toContain('gm-light-tower');
     expect(stage).toContain('gm-backstop-net');
+    expect(stage).toContain('gm-depth-mid');
+    expect(stage).toContain('gm-side-crowd');
+    expect(stage).toContain('gm-dugout-mouth');
+    expect(stage).toContain('gm-actor-light');
+    expect(stage).toContain('gm-contact-halo');
     expect(stage).toContain('gm-depth-front');
     expect(stage).toContain('gm-dugout-rail');
     expect(stage).toContain('gm-camera-fence');
-    expect(css).toContain('.gm-depth-back,.gm-depth-front{position:absolute;inset:0;pointer-events:none');
+    expect(css).toContain('.gm-depth-back,.gm-depth-mid,.gm-depth-front{position:absolute;inset:0;pointer-events:none');
   });
 
   it('gives hitter and pitcher distinct weight transfer and grounded silhouettes',()=>{
@@ -52,6 +57,24 @@ describe('visual reboot golden master 01',()=>{
     expect(renderer).toContain('float concourse=rectMask');
     expect(renderer).toContain('float board=rectMask');
     expect(renderer).toContain('float bankL=rectMask');
+  });
+
+  it('adds a third parallax speed and spatial contact lighting between field and actors',()=>{
+    expect(css).toContain('.gm-depth-mid{z-index:8');
+    expect(css).toContain('.golden-master-stage.fx-stage-windup .gm-depth-mid');
+    expect(css).toContain('scale(1.034)');
+    expect(css).toContain('.golden-master-stage.fx-stage-impact .gm-depth-mid');
+    expect(css).toContain('scale(1.085)');
+    expect(css).toContain('.golden-master-stage.fx-stage-impact .gm-contact-halo');
+    expect(css).toContain('.gm-depth-mid.gm-danger .gm-contact-halo{opacity:0}');
+  });
+
+  it('lets cinematic UI recede while keeping pitcher HP as the persistent objective',()=>{
+    expect(css).toContain('.duel-combat.cinematic-focus>.zone-panel{opacity:.10!important');
+    expect(css).toContain('.duel-combat.cinematic-focus>.duel-table{opacity:.24!important');
+    expect(css).toContain('.duel-combat.cinematic-focus>.v10-combat-hp{opacity:.98!important');
+    expect(css).toContain('.duel-combat.fx-stage-impact>.v10-combat-hp');
+    expect(css).toContain('z-index:80!important');
   });
 
   it('keeps responsive actor clamps and reduced-motion fallbacks',()=>{
