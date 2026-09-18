@@ -1,0 +1,36 @@
+name: TEMP Golden Master 03 Final
+
+on:
+  push:
+    branches:
+      - codex/golden-master-03-stadium-depth
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Full tests
+        run: pnpm test
+      - name: First pitcher smoke
+        run: node scripts/zone-report.js 10
+      - name: Main run smoke
+        run: node scripts/v9-report.js 30
+      - name: Growth smoke
+        run: node scripts/growth-report.js 2
+      - name: Deck relic smoke
+        run: node scripts/deck-report.js 1
+      - name: Production build
+        run: pnpm run build
