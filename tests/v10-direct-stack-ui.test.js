@@ -13,6 +13,7 @@ const ZONE_NAMES=Array.from({length:9},(_,i)=>`존${i+1}`);
 
 function fixture({withMain=true}={}){
   document.body.innerHTML=`
+  <main class="duel-combat">
   <section class="zone-panel" aria-label="9존 타격 계획">
     <div class="zone-grid">${ZONE_NAMES.map((name,i)=>`<button class="zone-cell" aria-label="${name}" aria-pressed="${withMain&&i===0?'true':'false'}"><span>${name}</span><strong>${10+i}%</strong><small>비숙련</small></button>`).join('')}</div>
   </section>
@@ -30,7 +31,8 @@ function fixture({withMain=true}={}){
       <div class="stack-aim-editor"><div class="stack-aim-title"><div></div><button>빼기</button></div><div class="assist-zone-grid">${ZONE_NAMES.map((name,i)=>`<button data-zone="${i}">${name}</button>`).join('')}</div></div>
     </section>
     <div class="decision-preview"><button data-testid="execute-action">스윙</button></div>
-  </section>`;
+  </section>
+  </main>`;
   const cards=[...document.querySelectorAll('.duel-hand .duel-card')],zones=[...document.querySelectorAll('.zone-grid .zone-cell')],candidates=[...document.querySelectorAll('.stack-candidates button')],slots=[...document.querySelectorAll('.stack-slot.support')];
   zones.forEach((zone,i)=>zone.addEventListener('click',()=>zones.forEach((x,j)=>x.setAttribute('aria-pressed',j===i?'true':'false'))));
   cards.forEach(card=>card.addEventListener('click',()=>{
@@ -129,6 +131,56 @@ describe('V10 9-zone card placement interaction',()=>{
     expect(ui.slots[0].querySelector('small').textContent).toContain('존3');
     expect(ui.drawer.querySelector('.stack-aim-editor').classList.contains('direct-open')).toBe(false);
     expect(ui.drawer.classList.contains('direct-stack-aiming')).toBe(false);
+    cleanup();
+  });
+
+  it('드래그가 셀 사이에 놓여도 가장 가까운 9존으로 자석처럼 붙고 현재 드롭 존을 보여준다',async()=>{
+    const ui=fixture(),cleanup=installSwingStackDirectTap(document);await tick();
+    const grid=document.querySelector('.zone-grid');
+    grid.getBoundingClientRect=()=>({left:100,top:100,right:280,bottom:280,width:180,height:180});
+    ui.zones.forEach((zone,i)=>{
+      const col=i%3,row=Math.floor(i/3),left=100+col*60,top=100+row*60;
+      zone.getBoundingClientRect=()=>({left,top,right:left+50,bottom:top+50,width:50,height:50});
+    });
+    document.elementFromPoint=vi.fn(()=>null);
+
+    pointer(ui.second,'pointerdown',30,320);
+    pointer(ui.second,'pointermove',158,125);
+    expect(ui.zones[1].classList.contains('board-drop-hot')).toBe(true);
+    expect(document.querySelector('.zone-card-drag-ghost small')?.textContent).toBe('존2');
+
+    pointer(ui.second,'pointerup',158,125);
+    await settle();
+    expect(ui.candidates[0].classList.contains('picked')).toBe(true);
+    expect(ui.slots[0].querySelector('small').textContent).toContain('존2');
+    expect(document.querySelector('.zone-card-drag-ghost')?.classList.contains('accepted')).toBe(true);
+    expect(document.querySelector('.zone-card-drag-ghost')?.style.left).toBe('185px');
+    expect(ui.zones.some(z=>z.classList.contains('board-drop-hot'))).toBe(false);
+    cleanup();
+  });
+
+  it('카드 배치를 시작하면 보조 INFO/READ/DETAIL/유물 이름을 자동으로 접고 전투 집중 모드가 된다',async()=>{
+    const ui=fixture(),combat=document.querySelector('.duel-combat'),panel=document.querySelector('.zone-panel');
+    panel.classList.add('zone-info-open');
+    const info=document.createElement('button');info.className='landscape-zone-info-toggle active';info.setAttribute('aria-expanded','true');panel.prepend(info);
+    const read=document.createElement('div');read.className='pitch-read read-open';read.innerHTML='<button class="landscape-read-toggle active" aria-expanded="true" data-summary="READ · OUT">READ −</button><b>상세</b>';combat.appendChild(read);
+    const preview=document.querySelector('.decision-preview');preview.classList.add('choice-info-open');
+    const detail=document.createElement('button');detail.className='landscape-choice-toggle active';detail.setAttribute('aria-expanded','true');preview.prepend(detail);
+    const relic=document.createElement('div');relic.className='v10-relic-rack relic-info-open';relic.setAttribute('aria-expanded','true');combat.appendChild(relic);
+
+    const cleanup=installSwingStackDirectTap(document);await tick();
+    ui.second.click();await tick();
+
+    expect(panel.classList.contains('zone-info-open')).toBe(false);
+    expect(read.classList.contains('read-open')).toBe(false);
+    expect(read.querySelector('.landscape-read-toggle').textContent).toBe('READ · OUT');
+    expect(preview.classList.contains('choice-info-open')).toBe(false);
+    expect(relic.classList.contains('relic-info-open')).toBe(false);
+    expect(relic.getAttribute('aria-expanded')).toBe('false');
+    expect(combat.classList.contains('card-placement-focus')).toBe(true);
+
+    ui.zones[4].click();await settle();
+    expect(combat.classList.contains('card-placement-focus')).toBe(false);
     cleanup();
   });
 
