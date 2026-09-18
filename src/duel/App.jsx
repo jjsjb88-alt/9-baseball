@@ -30,6 +30,10 @@ import pitcherLegkick from '../../assets/sprites-v1/pitcher-legkick.png';
 import pitcherRelease from '../../assets/sprites-v1/pitcher-release.png';
 import pitcherFollow from '../../assets/sprites-v1/pitcher-follow.png';
 import pitcherStrikeout from '../../assets/sprites-v1/pitcher-strikeout.png';
+import batterHomerHeroV3 from '../../assets/sprites-v3/batter-homer-hero.svg';
+import pitcherSinkerReleaseV3 from '../../assets/sprites-v3/pitcher-sinker-release.svg';
+import pitcherHighReleaseV3 from '../../assets/sprites-v3/pitcher-high-release.svg';
+import pitcherCloserReleaseV3 from '../../assets/sprites-v3/pitcher-closer-release.svg';
 
 /* 엔진은 lastCombat.choice를 카드 kind로, actualPitch를 존 번호로 준다. 화면 문구로 옮기는 건 연결부 일이다. */
 const v10ZoneName=zone=>zone===9?'존 밖':ZONES[zone]||'코스 미확인';
@@ -94,6 +98,12 @@ function Card({kind,plus,onClick,selected,problem,preview,label,relation,note,di
 function CoverageMini({zones}){return <div className="coverage-mini" aria-label={'커버 '+zones.length+'칸'}>{ZONES.map((_,z)=><i key={z} className={zones.includes(z)?'filled':''}/>)}</div>;}
 const BATTER_POSES={idle:batterIdle,load:batterLoad,contact:batterContact,follow:batterFollow,homer:batterHomer,miss:batterMiss};
 const PITCHER_POSES={idle:pitcherIdle,set:pitcherSet,legkick:pitcherLegkick,release:pitcherRelease,follow:pitcherFollow,strikeout:pitcherStrikeout};
+const PITCHER_RELEASE_V3={sinker:pitcherSinkerReleaseV3,high:pitcherHighReleaseV3,closer:pitcherCloserReleaseV3};
+const authoredActorArt=(who,pose,stage,shot,variant)=>{
+  if(who==='batter'&&pose==='homer'&&['release','settle'].includes(stage)&&['homer','grand-slam'].includes(shot?.grade))return batterHomerHeroV3;
+  if(who==='pitcher'&&PITCHER_RELEASE_V3[variant]&&['impact','slowmo'].includes(stage)&&!(shot?.grade==='strikeout'||shot?.grade?.endsWith('-k')))return PITCHER_RELEASE_V3[variant];
+  return null;
+};
 function actorPose(who,stage,shot){
   if(who==='pitcher'){
     if(!shot)return 'idle';
@@ -156,8 +166,8 @@ function useSpriteFrame(spec,key){
 }
 function Sprite({who,stage=null,shot=null,golden=false,variant=null}){
   const pose=actorPose(who,stage,shot),spec=sequenceSpec(who,stage,shot),animated=useSpriteFrame(spec,who+'-'+stage+'-'+(shot?.grade||'idle')+'-'+(variant||'base'));
-  const legacy=(who==='pitcher'?PITCHER_POSES:BATTER_POSES)[pose],v2=golden?V2_FALLBACKS[who]?.[pose]?.():null,src=animated||v2||legacy;
-  return <span className={'sprite-stage sprite-'+who+' pose-'+pose+(animated?' v2-sequence':'')+(golden?' golden-actor':'')+(variant?' variant-'+variant:'')}>
+  const legacy=(who==='pitcher'?PITCHER_POSES:BATTER_POSES)[pose],v2=golden?V2_FALLBACKS[who]?.[pose]?.():null,authored=golden?authoredActorArt(who,pose,stage,shot,variant):null,src=authored||animated||v2||legacy;
+  return <span className={'sprite-stage sprite-'+who+' pose-'+pose+(animated&&!authored?' v2-sequence':'')+(authored?' v3-authored':'')+(golden?' golden-actor':'')+(variant?' variant-'+variant:'')}>
     {golden&&<i className="actor-contact-shadow" aria-hidden="true"/>}
     <img aria-hidden="true" className="sprite-echo echo-back" src={src}/>
     <img aria-hidden="true" className="sprite-echo echo-mid" src={src}/>

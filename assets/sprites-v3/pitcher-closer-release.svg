@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 176" shape-rendering="crispEdges">
+  <g fill="none" stroke="#061014" stroke-width="5" stroke-linejoin="miter" stroke-linecap="square">
+    <path d="M80 29h18l8 8-4 13-13 5-15-7-2-10z" fill="#d8a06b"/>
+    <path d="M75 30l8-9h19l10 7-2 9H79z" fill="#102a31"/>
+    <path d="M70 53l24 2 20 15 4 22-15 19-30 4-25-13 1-27z" fill="#e5dfc8"/>
+    <path d="M105 61l17 2 16 9-2 12-20-2-22-9z" fill="#d8a06b"/>
+    <path d="M53 64l-15 7-23 18 7 10 29-13 16-12z" fill="#d8a06b"/>
+    <path d="M61 105l27 8 23-7 12 10-15 14-33 2-23-13z" fill="#17343a"/>
+    <path d="M73 127l-12 22-23 12 7 12 28-11 14-22z" fill="#e5dfc8"/>
+    <path d="M99 127l19 10 18 1 2 13-27 3-25-15z" fill="#e5dfc8"/>
+    <path d="M34 160h23l4 10H31z" fill="#102a31"/>
+    <path d="M125 139h17l2 11-22 4z" fill="#102a31"/>
+    <path d="M18 82l-10 4 1 12 12 5 9-9-2-10z" fill="#17343a"/>
+  </g>
+  <rect x="76" y="62" width="8" height="31" fill="#64b9ad"/>
+  <rect x="85" y="62" width="8" height="31" fill="#64b9ad"/>
+  <rect x="49" y="101" width="11" height="9" fill="#f0d08a"/>
+  <rect x="91" y="36" width="4" height="4" fill="#061014"/>
+  <rect x="125" y="66" width="10" height="7" fill="#f0d08a"/>
+</svg>
