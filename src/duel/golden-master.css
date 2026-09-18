@@ -9,8 +9,9 @@
 .golden-master-stage .intent{z-index:42!important}
 .golden-master-stage .judgement-layer,.golden-master-stage .duel-fx{z-index:45!important}
 
-.gm-depth-back,.gm-depth-front{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.gm-depth-back,.gm-depth-mid,.gm-depth-front{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 .gm-depth-back{z-index:2;perspective:680px;transform-origin:50% 64%}
+.gm-depth-mid{z-index:8;perspective:540px;transform-origin:50% 72%}
 .gm-depth-front{z-index:31;transform-origin:50% 100%}
 
 /* Far architecture: crisp geometry, not a blurred wallpaper. */
@@ -125,4 +126,69 @@
 @media (prefers-reduced-motion:reduce){
   .golden-master-stage .golden-actor,.golden-master-stage .gm-depth-back,.golden-master-stage .gm-depth-front{transform:none!important;transition:none!important;animation:none!important}
   .golden-master-stage .gm-light-tower>i{box-shadow:0 0 0 1px rgba(76,73,54,.42)!important}
+}
+
+
+/* GOLDEN MASTER 01.1 — true middle plane + contact lighting + cinematic HUD focus. */
+.gm-side-crowd{position:absolute;top:34%;width:34%;height:24%;opacity:.72;border-top:2px solid rgba(87,112,108,.32);border-bottom:3px solid rgba(3,10,12,.72);
+  background:radial-gradient(circle,rgba(211,178,111,.34) 0 1px,transparent 1.2px) 0 0/11px 8px,
+  radial-gradient(circle,rgba(112,163,152,.28) 0 1px,transparent 1.2px) 5px 4px/13px 10px,
+  linear-gradient(180deg,rgba(13,34,36,.58),rgba(4,15,18,.88))}
+.gm-crowd-left{left:-2%;clip-path:polygon(0 5%,92% 0,100% 100%,0 100%)}
+.gm-crowd-right{right:-2%;clip-path:polygon(8% 0,100% 5%,100% 100%,0 100%)}
+.gm-dugout-mouth{position:absolute;bottom:18%;width:22%;height:14%;overflow:hidden;border-top:3px solid rgba(151,126,76,.48);background:linear-gradient(180deg,rgba(18,31,31,.92),rgba(2,9,11,.98));box-shadow:inset 0 8px 0 rgba(0,0,0,.34),0 -4px 12px rgba(0,0,0,.2)}
+.gm-dugout-left{left:1%;transform:skewY(-3deg)}.gm-dugout-right{right:1%;transform:skewY(3deg)}
+.gm-dugout-mouth>i{position:absolute;top:34%;width:22%;height:38%;border-radius:50% 50% 24% 24%;background:#122224;box-shadow:0 -3px 0 #263b39}
+.gm-dugout-mouth>i:nth-child(1){left:13%}.gm-dugout-mouth>i:nth-child(2){left:39%}.gm-dugout-mouth>i:nth-child(3){left:65%}
+.gm-mid-haze{position:absolute;left:8%;right:8%;top:36%;height:39%;opacity:.56;filter:blur(8px);background:linear-gradient(180deg,rgba(124,161,151,.025),rgba(172,155,107,.09) 50%,rgba(101,123,111,.035) 76%,transparent)}
+.gm-actor-light{position:absolute;bottom:3%;width:31%;height:68%;filter:blur(8px);opacity:.72}
+.gm-batter-light{left:-2%;background:radial-gradient(ellipse at 46% 70%,rgba(255,220,142,.20),rgba(218,153,74,.06) 42%,transparent 70%)}
+.gm-pitcher-light{right:-2%;background:radial-gradient(ellipse at 54% 63%,rgba(133,224,215,.18),rgba(62,140,149,.05) 44%,transparent 70%)}
+.gm-contact-halo{position:absolute;left:25%;top:36%;width:34%;height:49%;opacity:0;transform:scale(.62);transform-origin:43% 58%;background:radial-gradient(circle at 43% 58%,rgba(255,248,198,.94) 0 1.5%,rgba(255,209,103,.42) 2% 6%,rgba(239,145,71,.13) 7% 17%,transparent 33%);mix-blend-mode:screen}
+.gm-contact-halo>i,.gm-contact-halo>b{position:absolute;left:43%;top:58%;display:block;background:rgba(255,227,143,.58);transform:translate(-50%,-50%);box-shadow:0 0 12px rgba(255,207,96,.22)}
+.gm-contact-halo>i{width:34%;height:2px}.gm-contact-halo>b{width:2px;height:31%}
+.gm-depth-mid.gm-rival .gm-mid-haze{background:linear-gradient(180deg,rgba(148,92,78,.03),rgba(178,92,69,.09) 54%,transparent)}
+.gm-depth-mid.gm-danger .gm-batter-light{opacity:.42}.gm-depth-mid.gm-danger .gm-pitcher-light{opacity:.95}
+
+/* Third parallax speed sits between back and foreground. */
+.golden-master-stage.fx-stage-windup .gm-depth-mid{transform:scale(1.034) translate3d(.1%,.55%,0)}
+.golden-master-stage.fx-stage-impact .gm-depth-mid{transform:scale(1.085) translate3d(.25%,.85%,0)}
+.golden-master-stage.fx-stage-slowmo .gm-depth-mid{transform:scale(1.102) translate3d(.45%,.95%,0);filter:saturate(.82) brightness(.82)}
+.golden-master-stage.fx-stage-release .gm-depth-mid{transform:scale(1.047) translate3d(-.15%,.35%,0);transition:transform .34s cubic-bezier(.2,.8,.2,1),filter .34s ease}
+.golden-master-stage.fx-stage-settle .gm-depth-mid{transform:none;filter:none;transition:transform .28s ease-out,filter .28s ease-out}
+
+/* Contact light is spatial: it appears at the barrel, expands in slow motion, then decays. */
+.golden-master-stage.fx-stage-impact .gm-contact-halo{opacity:.82;transform:scale(1.02);transition:opacity .045s steps(2,end),transform .075s steps(2,end)}
+.golden-master-stage.fx-stage-impact .gm-depth-mid.gm-power .gm-contact-halo{opacity:1;transform:scale(1.16)}
+.golden-master-stage.fx-stage-impact .gm-depth-mid.gm-danger .gm-contact-halo{opacity:0}
+.golden-master-stage.fx-stage-slowmo .gm-contact-halo{opacity:.34;transform:scale(1.42);filter:blur(2px)}
+.golden-master-stage.fx-stage-slowmo .gm-depth-mid.gm-danger .gm-contact-halo{opacity:0}
+.golden-master-stage.fx-stage-release .gm-contact-halo{opacity:0;transform:scale(1.8);transition:opacity .18s ease-out,transform .24s ease-out}
+
+/* When the pitch starts, the scene owns the eye. Pitcher HP remains the objective. */
+.duel-combat.cinematic-focus>.battle-ribbon{opacity:.32!important;transition:opacity .1s ease!important}
+.duel-combat.cinematic-focus>.scoreboard{opacity:.42!important;filter:saturate(.62) brightness(.76)!important;transition:opacity .1s ease,filter .1s ease!important}
+.duel-combat.cinematic-focus>.zone-panel{opacity:.10!important;filter:saturate(.48) brightness(.68)!important;transition:opacity .1s ease,filter .1s ease!important}
+.duel-combat.cinematic-focus>.pitch-read{opacity:.14!important;transition:opacity .1s ease!important}
+.duel-combat.cinematic-focus>.duel-table{opacity:.24!important;filter:saturate(.62) brightness(.72)!important;transition:opacity .1s ease,filter .1s ease!important}
+.duel-combat.cinematic-focus .v10-relic-rack{opacity:.26!important;transition:opacity .1s ease!important}
+.duel-combat.cinematic-focus>.v10-combat-hp{opacity:.98!important;filter:brightness(1.07) saturate(1.08)!important;z-index:80!important;transition:filter .1s ease!important}
+.duel-combat.fx-stage-impact>.v10-combat-hp{filter:brightness(1.2) saturate(1.13) drop-shadow(0 0 14px rgba(255,123,78,.24))!important}
+.duel-combat.cinematic-focus>.duel-arena .intent,.duel-combat.cinematic-focus>.duel-arena .batter-nameplate,.duel-combat.cinematic-focus>.duel-arena .pitcher-nameplate{opacity:.28!important;transition:opacity .1s ease!important}
+
+@media (orientation:landscape) and (max-height:430px){
+  .gm-side-crowd{top:31%;height:18%;opacity:.52}.gm-dugout-mouth{height:10%;bottom:17%}.gm-mid-haze{opacity:.36}
+  .duel-combat.cinematic-focus>.scoreboard{opacity:.3!important}.duel-combat.cinematic-focus>.duel-table{opacity:.18!important}
+  .duel-combat.cinematic-focus>.v10-combat-hp{opacity:1!important}
+}
+@media (orientation:portrait){
+  .gm-side-crowd{width:38%;height:20%}.gm-dugout-mouth{width:25%;height:11%}.gm-mid-haze{opacity:.42}
+  .gm-actor-light{width:38%}.gm-contact-halo{left:18%;width:47%}
+  .duel-combat.cinematic-focus>.zone-panel{opacity:.18!important}.duel-combat.cinematic-focus>.duel-table{opacity:.34!important}
+}
+@media (prefers-reduced-motion:reduce){
+  .golden-master-stage .gm-depth-mid,.golden-master-stage .gm-contact-halo,
+  .duel-combat.cinematic-focus>.battle-ribbon,.duel-combat.cinematic-focus>.scoreboard,.duel-combat.cinematic-focus>.zone-panel,
+  .duel-combat.cinematic-focus>.pitch-read,.duel-combat.cinematic-focus>.duel-table,.duel-combat.cinematic-focus>.v10-combat-hp{transition:none!important;animation:none!important}
+  .golden-master-stage.fx-stage-windup .gm-depth-mid,.golden-master-stage.fx-stage-impact .gm-depth-mid,.golden-master-stage.fx-stage-slowmo .gm-depth-mid,.golden-master-stage.fx-stage-release .gm-depth-mid{transform:none!important;filter:none!important}
 }
