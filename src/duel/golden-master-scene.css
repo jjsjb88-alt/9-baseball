@@ -1,0 +1,184 @@
+/* GOLDEN MASTER SCENE — structural 2.5D depth, cinematic camera and actor staging.
+   This layer owns presentation only. It never changes hit logic, input, HP math or save state. */
+
+.cinematic-stadium-depth{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.cinematic-stadium-depth>.depth-back,
+.cinematic-stadium-depth>.depth-mid,
+.cinematic-stadium-depth>.depth-front{position:absolute;inset:0;pointer-events:none;transform-origin:50% 64%;will-change:transform,filter}
+.cinematic-stadium-depth>.depth-back{z-index:1}
+.cinematic-stadium-depth>.depth-mid{z-index:3}
+.cinematic-stadium-depth>.depth-front{z-index:41}
+
+/* FAR PLANE — architecture first, decoration second. */
+.depth-skyline{position:absolute;left:-3%;right:-3%;top:4%;height:28%;opacity:.78;
+  background:
+    linear-gradient(90deg,transparent 0 4%,#06141a 4% 9%,transparent 9% 12%,#07171d 12% 18%,transparent 18% 20%,#06141a 20% 27%,transparent 27% 31%,#081920 31% 39%,transparent 39% 43%,#06141a 43% 49%,transparent 49% 54%,#08171e 54% 62%,transparent 62% 66%,#06131a 66% 74%,transparent 74% 78%,#081820 78% 86%,transparent 86% 91%,#06131a 91% 96%,transparent 96%),
+    linear-gradient(180deg,rgba(7,22,29,.15),rgba(3,12,17,.84));
+  clip-path:polygon(0 100%,0 54%,4% 54%,4% 29%,8% 29%,8% 67%,12% 67%,12% 38%,18% 38%,18% 71%,23% 71%,23% 22%,28% 22%,28% 65%,33% 65%,33% 42%,39% 42%,39% 72%,44% 72%,44% 31%,49% 31%,49% 66%,54% 66%,54% 19%,59% 19%,59% 59%,64% 59%,64% 36%,70% 36%,70% 69%,76% 69%,76% 26%,82% 26%,82% 62%,88% 62%,88% 40%,93% 40%,93% 68%,100% 68%,100% 100%)}
+.depth-skyline:after{content:"";position:absolute;inset:18% 3% 8%;opacity:.48;
+  background:radial-gradient(circle,#e8ce8299 0 1px,transparent 1.3px) 0 0/24px 18px}
+
+.depth-score-tower{position:absolute;left:50%;top:7%;width:74px;height:34px;transform:translateX(-50%);
+  border:2px solid #263b3d;background:linear-gradient(#07161a,#0a2024);box-shadow:0 8px 18px #0008}
+.depth-score-tower:before{content:"09";position:absolute;inset:5px;display:grid;place-items:center;border:1px solid #7b6846;
+  color:#d7bd75;font:1000 13px/1 ui-monospace,monospace;letter-spacing:5px;text-indent:5px;text-shadow:0 0 8px #d6aa5266}
+.depth-score-tower:after{content:"";position:absolute;left:11px;right:11px;bottom:-22px;height:22px;
+  background:linear-gradient(80deg,transparent 46%,#223438 47% 52%,transparent 53%),linear-gradient(100deg,transparent 46%,#223438 47% 52%,transparent 53%)}
+.depth-score-tower i{display:none}
+
+.depth-light-tower{position:absolute;top:-3%;width:38px;height:50%;opacity:.84}
+.depth-light-tower.tower-left{left:3%}.depth-light-tower.tower-right{right:3%;transform:scaleX(-1)}
+.depth-light-tower:before{content:"";position:absolute;left:17px;top:24px;bottom:0;width:3px;background:#26393b;
+  box-shadow:-7px 0 #16272b,7px 0 #16272b}
+.depth-light-tower:after{content:"";position:absolute;left:2px;top:9px;width:34px;height:22px;border:2px solid #384b49;
+  background:repeating-linear-gradient(90deg,#f2dc9f 0 5px,#a89b6b 5px 7px);box-shadow:0 0 28px #e9ca7355}
+.depth-light-tower i{position:absolute;left:9px;top:15px;width:4px;height:4px;background:#fff2b6;box-shadow:8px 0 #fff2b6,16px 0 #fff2b6}
+
+.depth-haze{position:absolute;left:-10%;right:-10%;pointer-events:none}
+.haze-back{top:16%;height:36%;opacity:.55;filter:blur(9px);
+  background:linear-gradient(180deg,transparent,rgba(118,157,149,.10) 48%,rgba(184,166,117,.07) 72%,transparent)}
+.haze-mid{top:37%;height:36%;opacity:.5;filter:blur(7px);
+  background:radial-gradient(ellipse at 25% 60%,rgba(226,192,117,.10),transparent 32%),radial-gradient(ellipse at 76% 50%,rgba(113,205,205,.08),transparent 30%)}
+
+/* MID PLANE — crowd mass, dugouts and local key lights. */
+.depth-crowd{position:absolute;top:22%;width:45%;height:18%;opacity:.68;
+  background:
+    radial-gradient(circle,#a99b7166 0 1px,transparent 1.4px) 0 0/9px 7px,
+    linear-gradient(180deg,#101f22aa,#071317dd);
+  border-top:1px solid #445250;border-bottom:2px solid #1a292b}
+.depth-crowd.crowd-left{left:0;clip-path:polygon(0 0,93% 7%,100% 100%,0 100%)}
+.depth-crowd.crowd-right{right:0;clip-path:polygon(7% 7%,100% 0,100% 100%,0 100%)}
+.depth-dugout{position:absolute;bottom:17%;width:19%;height:11%;background:linear-gradient(180deg,#1c2827,#071214);
+  border-top:3px solid #6b6041;box-shadow:inset 0 8px 0 #0005}
+.depth-dugout:before{content:"";position:absolute;left:8%;right:8%;top:27%;height:2px;background:#33423f;box-shadow:0 9px #1f302e}
+.depth-dugout.dugout-left{left:1%;transform:skewY(-3deg)}.depth-dugout.dugout-right{right:1%;transform:skewY(3deg)}
+
+.depth-keylight{position:absolute;bottom:5%;width:28%;height:66%;opacity:.82;filter:blur(7px)}
+.key-batter{left:-1%;background:radial-gradient(ellipse at 45% 70%,rgba(255,218,131,.19),rgba(248,182,81,.06) 42%,transparent 70%)}
+.key-pitcher{right:-1%;background:radial-gradient(ellipse at 55% 63%,rgba(132,225,222,.17),rgba(75,160,175,.05) 43%,transparent 70%)}
+.depth-contact-light{position:absolute;left:26%;top:37%;width:28%;height:45%;opacity:0;transform:scale(.7);
+  background:radial-gradient(circle at 48% 57%,rgba(255,248,193,.98) 0 2%,rgba(255,202,91,.46) 3% 8%,rgba(255,151,72,.15) 9% 19%,transparent 35%);
+  mix-blend-mode:screen}
+
+/* FOREGROUND PLANE — intentionally clips only the bottom corners so actors remain readable. */
+.depth-fence{position:absolute;left:-4%;right:-4%;bottom:-6%;height:20%;opacity:.42;
+  background:
+    repeating-linear-gradient(58deg,transparent 0 16px,#1b2a2c 16px 18px,transparent 18px 34px),
+    repeating-linear-gradient(122deg,transparent 0 16px,#1b2a2c 16px 18px,transparent 18px 34px);
+  mask-image:linear-gradient(180deg,transparent,#000 42%);-webkit-mask-image:linear-gradient(180deg,transparent,#000 42%)}
+.depth-rail{position:absolute;bottom:-8%;width:31%;height:27%;background:linear-gradient(180deg,#142326,#040b0d 45%,#020607);
+  border-top:3px solid #304245;box-shadow:0 -4px 18px #0007}
+.rail-left{left:-13%;transform:rotate(8deg)}.rail-right{right:-13%;transform:rotate(-8deg)}
+.depth-grass-blade{position:absolute;bottom:-1%;width:10%;height:11%;opacity:.65;
+  background:repeating-linear-gradient(80deg,transparent 0 7px,#18392b 8px 10px,transparent 11px 15px)}
+.grass-a{left:21%;transform:skewX(-13deg)}.grass-b{right:20%;transform:scaleX(-1) skewX(-13deg)}
+.depth-dust-front{position:absolute;left:17%;right:17%;bottom:4%;height:15%;opacity:.28;filter:blur(4px);
+  background:radial-gradient(ellipse at 34% 70%,rgba(196,157,91,.22),transparent 24%),radial-gradient(ellipse at 67% 68%,rgba(188,152,91,.18),transparent 27%)}
+
+/* PARALLAX CAMERA — each plane moves at a different rate. */
+.fx-stage-windup .cinematic-stadium-depth>.depth-back{transform:scale(1.008) translateX(-.15%)}
+.fx-stage-windup .cinematic-stadium-depth>.depth-mid{transform:scale(1.018) translateX(-.4%)}
+.fx-stage-windup .cinematic-stadium-depth>.depth-front{transform:scale(1.035) translateX(-.8%)}
+.fx-stage-impact .cinematic-stadium-depth>.depth-back{transform:scale(1.018)}
+.fx-stage-impact .cinematic-stadium-depth>.depth-mid{transform:scale(1.045) translateX(-.4%)}
+.fx-stage-impact .cinematic-stadium-depth>.depth-front{transform:scale(1.085) translateX(-1.1%)}
+.fx-stage-slowmo .cinematic-stadium-depth>.depth-back{transform:scale(1.028) translateX(.25%);filter:saturate(.72) brightness(.72)}
+.fx-stage-slowmo .cinematic-stadium-depth>.depth-mid{transform:scale(1.06) translateX(.7%);filter:saturate(.78) brightness(.76)}
+.fx-stage-slowmo .cinematic-stadium-depth>.depth-front{transform:scale(1.105) translateX(1.3%);filter:saturate(.72) brightness(.7)}
+.fx-stage-release .cinematic-stadium-depth.depth-power>.depth-back{transform:scale(1.004) translateY(-.5%)}
+.fx-stage-release .cinematic-stadium-depth.depth-power>.depth-mid{transform:scale(1.015) translateY(-1%)}
+.fx-stage-release .cinematic-stadium-depth.depth-power>.depth-front{transform:scale(1.035) translateY(-2%)}
+.fx-stage-settle .cinematic-stadium-depth>.depth-back,
+.fx-stage-settle .cinematic-stadium-depth>.depth-mid,
+.fx-stage-settle .cinematic-stadium-depth>.depth-front{transition:transform .28s cubic-bezier(.2,.72,.2,1),filter .28s ease;transform:none;filter:none}
+
+.fx-stage-impact .depth-contact-light{opacity:.92;transform:scale(1.05);transition:opacity .04s steps(2,end),transform .08s steps(2,end)}
+.fx-stage-slowmo .depth-contact-light{opacity:.32;transform:scale(1.36);filter:blur(3px)}
+.fx-stage-release .depth-contact-light{opacity:0;transform:scale(1.7);transition:opacity .18s ease-out,transform .24s ease-out}
+.depth-danger .key-batter{opacity:.5}.depth-danger .key-pitcher{opacity:1}
+
+/* The duelists own the frame. Existing pixel assets keep their native raster,
+   while staging, outline and weight transfer stop them reading as background props. */
+.duel-arena.renderer2-host .actor-left,
+.duel-arena.renderer2-host .actor-right{z-index:42!important;transform-origin:50% 100%!important;transition:transform .12s steps(3,end),filter .12s ease!important}
+.duel-arena.renderer2-host .duel-sprite{
+  image-rendering:pixelated!important;image-rendering:crisp-edges!important;
+  filter:contrast(1.16) saturate(1.08)
+    drop-shadow(1px 0 0 rgba(238,224,174,.28))
+    drop-shadow(-1px 0 0 rgba(0,5,8,.98))
+    drop-shadow(0 1px 0 rgba(0,5,8,.98))
+    drop-shadow(0 -1px 0 rgba(0,5,8,.94))
+    drop-shadow(0 12px 4px rgba(0,4,7,.72))!important}
+.duel-arena.renderer2-host .actor-left .duel-sprite{filter:contrast(1.17) saturate(1.10) drop-shadow(1px 0 0 rgba(255,219,137,.38)) drop-shadow(-1px 0 0 rgba(0,5,8,.98)) drop-shadow(0 1px 0 rgba(0,5,8,.98)) drop-shadow(0 -1px 0 rgba(0,5,8,.9)) drop-shadow(0 12px 4px rgba(0,4,7,.72))!important}
+.duel-arena.renderer2-host .actor-right .duel-sprite{filter:contrast(1.18) saturate(1.04) drop-shadow(-1px 0 0 rgba(129,225,218,.36)) drop-shadow(1px 0 0 rgba(0,5,8,.98)) drop-shadow(0 1px 0 rgba(0,5,8,.98)) drop-shadow(0 -1px 0 rgba(0,5,8,.9)) drop-shadow(0 11px 4px rgba(0,4,7,.70))!important}
+.fx-stage-windup .duel-arena.renderer2-host .actor-left{transform:translate3d(-5px,2px,0) rotate(-.7deg)!important}
+.fx-stage-windup .duel-arena.renderer2-host .actor-right{transform:translate3d(-10px,-4px,0) rotate(.7deg)!important}
+.fx-stage-impact .duel-arena.renderer2-host .actor-left{transform:translate3d(16px,-1px,0) rotate(-1.2deg)!important}
+.fx-stage-impact .duel-arena.renderer2-host .actor-right{transform:translate3d(-9px,1px,0) rotate(.7deg)!important}
+.fx-stage-impact .duel-arena.renderer2-host .actor-left .sprite-bloom{opacity:.54!important;filter:blur(10px)!important}
+.fx-stage-impact .duel-arena.renderer2-host .actor-right .sprite-bloom{opacity:.34!important}
+.fx-stage-slowmo .duel-arena.renderer2-host .actor-left{transform:translate3d(18px,-2px,0) rotate(-1deg)!important}
+.fx-stage-slowmo .duel-arena.renderer2-host .actor-right{transform:translate3d(-11px,1px,0) rotate(.5deg)!important}
+.fx-stage-release .duel-arena.renderer2-host .actor-left{transform:translate3d(10px,-1px,0)!important}
+.fx-stage-release .duel-arena.renderer2-host .actor-right{transform:translate3d(-5px,2px,0)!important}
+.fx-stage-settle .duel-arena.renderer2-host .actor-left,
+.fx-stage-settle .duel-arena.renderer2-host .actor-right{transform:none!important;transition:transform .26s steps(4,end),filter .26s ease!important}
+
+/* During the pitch, information yields to the scene. Pitcher HP remains legible because it is the objective. */
+.duel-combat.cinematic-focus>.scoreboard{opacity:.48!important;filter:saturate(.65) brightness(.78)!important;transition:opacity .12s ease,filter .12s ease!important}
+.duel-combat.cinematic-focus>.zone-panel{opacity:.16!important;filter:saturate(.55) brightness(.72)!important;transition:opacity .12s ease,filter .12s ease!important}
+.duel-combat.cinematic-focus>.pitch-read{opacity:.18!important;transition:opacity .12s ease!important}
+.duel-combat.cinematic-focus>.duel-table{opacity:.32!important;filter:saturate(.7) brightness(.76)!important;transition:opacity .12s ease,filter .12s ease!important}
+.duel-combat.cinematic-focus>.v10-combat-hp{opacity:.96!important;filter:brightness(1.06) saturate(1.08)!important;z-index:75!important;transition:filter .12s ease!important}
+.duel-combat.fx-stage-impact>.v10-combat-hp{filter:brightness(1.18) saturate(1.12) drop-shadow(0 0 13px rgba(255,126,83,.22))!important}
+.duel-combat.cinematic-focus>.duel-arena .intent{opacity:.28!important}
+.duel-combat.cinematic-focus>.duel-arena .batter-nameplate{opacity:.28!important}
+
+/* Strong cinematic framing without covering the combatants. */
+.duel-arena.renderer2-host .cinematic-stadium-depth:before,
+.duel-arena.renderer2-host .cinematic-stadium-depth:after{content:"";position:absolute;left:0;right:0;z-index:50;height:0;background:#020709;pointer-events:none;transition:height .12s ease}
+.fx-stage-impact .duel-arena.renderer2-host .cinematic-stadium-depth:before,
+.fx-stage-impact .duel-arena.renderer2-host .cinematic-stadium-depth:after,
+.fx-stage-slowmo .duel-arena.renderer2-host .cinematic-stadium-depth:before,
+.fx-stage-slowmo .duel-arena.renderer2-host .cinematic-stadium-depth:after{height:5px}
+.cinematic-stadium-depth:before{top:0}.cinematic-stadium-depth:after{bottom:0}
+
+@media (orientation:landscape){
+  .duel-combat.landscape-declutter>.duel-arena.renderer2-host .actor-left,
+  .duel-combat.landscape-declutter>.duel-arena.renderer2-host .actor-right{z-index:43!important}
+  .duel-combat.landscape-declutter>.duel-arena.renderer2-host .key-batter{left:-3%;width:31%}
+  .duel-combat.landscape-declutter>.duel-arena.renderer2-host .key-pitcher{right:-3%;width:31%}
+  .duel-combat.landscape-declutter>.duel-arena.renderer2-host .depth-score-tower{top:4%}
+}
+@media (orientation:landscape) and (max-height:430px){
+  .depth-score-tower{transform:translateX(-50%) scale(.72);transform-origin:50% 0}
+  .depth-light-tower{height:44%;opacity:.68}
+  .depth-crowd{top:20%;height:14%}.depth-dugout{height:8%;bottom:16%}
+  .depth-fence{height:16%}.depth-rail{height:21%}
+  .duel-combat.cinematic-focus>.scoreboard{opacity:.34!important}
+  .duel-combat.cinematic-focus>.duel-table{opacity:.22!important}
+}
+@media (orientation:portrait){
+  .depth-light-tower{opacity:.55}.depth-score-tower{top:9%;transform:translateX(-50%) scale(.78)}
+  .depth-crowd{height:15%}.depth-dugout{width:24%}
+  .depth-rail{width:36%;height:20%}.rail-left{left:-17%}.rail-right{right:-17%}
+  .duel-arena.renderer2-host .actor-left,.duel-arena.renderer2-host .actor-right{z-index:43!important}
+  .duel-combat.cinematic-focus>.zone-panel{opacity:.25!important}
+  .duel-combat.cinematic-focus>.duel-table{opacity:.42!important}
+}
+@media (min-width:1280px) and (min-height:720px){
+  .depth-score-tower{width:90px;height:40px}
+  .depth-light-tower{width:44px}.depth-crowd{top:21%;height:19%}
+  .depth-rail{height:29%}
+}
+@media (prefers-reduced-motion:reduce){
+  .cinematic-stadium-depth>.depth-back,.cinematic-stadium-depth>.depth-mid,.cinematic-stadium-depth>.depth-front,
+  .depth-contact-light,.duel-arena.renderer2-host .actor-left,.duel-arena.renderer2-host .actor-right,
+  .duel-combat.cinematic-focus>.scoreboard,.duel-combat.cinematic-focus>.zone-panel,.duel-combat.cinematic-focus>.pitch-read,
+  .duel-combat.cinematic-focus>.duel-table,.duel-combat.cinematic-focus>.v10-combat-hp,
+  .duel-arena.renderer2-host .cinematic-stadium-depth:before,.duel-arena.renderer2-host .cinematic-stadium-depth:after{transition:none!important;animation:none!important}
+  .fx-stage-windup .cinematic-stadium-depth>.depth-back,.fx-stage-windup .cinematic-stadium-depth>.depth-mid,.fx-stage-windup .cinematic-stadium-depth>.depth-front,
+  .fx-stage-impact .cinematic-stadium-depth>.depth-back,.fx-stage-impact .cinematic-stadium-depth>.depth-mid,.fx-stage-impact .cinematic-stadium-depth>.depth-front,
+  .fx-stage-slowmo .cinematic-stadium-depth>.depth-back,.fx-stage-slowmo .cinematic-stadium-depth>.depth-mid,.fx-stage-slowmo .cinematic-stadium-depth>.depth-front,
+  .fx-stage-release .cinematic-stadium-depth>.depth-back,.fx-stage-release .cinematic-stadium-depth>.depth-mid,.fx-stage-release .cinematic-stadium-depth>.depth-front{transform:none!important}
+}
