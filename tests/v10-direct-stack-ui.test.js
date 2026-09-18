@@ -169,7 +169,7 @@ describe('V10 9-zone card placement interaction',()=>{
     const relic=document.createElement('div');relic.className='v10-relic-rack relic-info-open';relic.setAttribute('aria-expanded','true');combat.appendChild(relic);
 
     const cleanup=installSwingStackDirectTap(document);await tick();
-    ui.second.click();await tick();
+    pointer(ui.second,'pointerdown',30,320);pointer(ui.second,'pointermove',60,270);
 
     expect(panel.classList.contains('zone-info-open')).toBe(false);
     expect(read.classList.contains('read-open')).toBe(false);
@@ -179,7 +179,7 @@ describe('V10 9-zone card placement interaction',()=>{
     expect(relic.getAttribute('aria-expanded')).toBe('false');
     expect(combat.classList.contains('card-placement-focus')).toBe(true);
 
-    ui.zones[4].click();await settle();
+    pointer(ui.second,'pointercancel',60,270);await tick();
     expect(combat.classList.contains('card-placement-focus')).toBe(false);
     cleanup();
   });
