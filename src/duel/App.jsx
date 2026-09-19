@@ -8,6 +8,7 @@ import {createV10Duel,enterV10Node,playV10Action,advanceV10Pitch,advanceV10Batte
 import {deckProfile,diagnose,applyRewardToDeck,rewardProblem,profileDelta,relationsFor,growthConflict} from './deck.js';
 import './duel.css';
 import './v11-stack-core.css';
+import './adaptive-performance.css';
 import {coverageText} from './information.js';
 import {cue} from './audio.js';
 import {presentationFor,presentationTimeline} from './presentation.js';
