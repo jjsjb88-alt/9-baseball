@@ -47,7 +47,8 @@ describe('golden master 02 duel choreography',()=>{
     expect(renderer).toContain('float handoff=smoothstep(.18,.92,u_phase)');
     expect(renderer).toContain('pan=mix(.038,-.020,handoff)');
     expect(renderer).toContain('zoom=1.118');
-    expect(renderer).toContain('zoom=1.138');
+    expect(renderer).toContain('if(u_director==2){zoom=1.160');
+    expect(renderer).toContain('else if(u_director==3){zoom=1.095');
     expect(renderer).toContain('releasePulse=u_stage==1');
     expect(renderer).toContain('float tunnel=lineMask');
   });
