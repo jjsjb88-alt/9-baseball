@@ -644,7 +644,7 @@ export default function Duel(){
   const scoreboardRef=useRef(null),arenaRef=useRef(null),drawerRef=useRef(null),prepareRef=useRef(null),swingRef=useRef(null),watchRef=useRef(null),eventsRef=useRef(null);
   const showPreview=id=>{const p=previewCard(s,id);return {...p,coverageLabel:p.coverage?coverageText(s,id):undefined};};
   const b=s?.battle,isV10=s?.version===10,showBattle=screen==='run'&&b&&(['battle','pitch','between'].includes(s.phase)||fx),fxPresentation=fx?presentationFor(s):null,fxStakes=fx?stakesFor(s):null,resultPresentation=b?.revealed?presentationFor(s):null,byId=id=>s.deck.find(c=>c.id===id);
-  const perfTier=useAdaptivePerformance(!!(showBattle&&isV10));
+  const perfTier=useAdaptivePerformance(!!(showBattle&&isV10&&fxStage));
   const pile=modal&&['draw','discard','deck'].includes(modal)?(modal==='deck'?s.deck:b[modal].map(byId)):null;
   const hand=b?b.hand.map(id=>({id,entry:byId(id),preview:showPreview(id)})):[];
   const prepareHand=hand.filter(x=>CARDS[x.entry.kind].type==='skill'),swingHand=hand.filter(x=>CARDS[x.entry.kind].type!=='skill');
