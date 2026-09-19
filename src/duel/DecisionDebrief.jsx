@@ -8,6 +8,7 @@ const zoneName=z=>z===9?'존 밖':(ZONES[z]||'알 수 없음');
 function planText(combat){
   if(!combat)return '';
   const count=combat.cardCount||1,kind=combat.choice||'basic';
+  if(kind==='take')return '지켜보기 · 카드/스윙 보존';
   if(count>1)return count+'장 STACK · CONNECT '+(combat.connectCount||0)+'/'+Math.max(0,count-1)+' · HP '+pct(combat.damageRate)+'%';
   if(kind==='place')return '1존 정타 · 정확 적중 ×1.5';
   if(kind==='strike')return '세로 3존 · 안정 커버';
@@ -21,6 +22,10 @@ function lessonFor(combat,revealed){
   const count=combat.cardCount||1,links=Math.max(0,count-1),connect=combat.connectCount||0;
   const actual=revealed.zone;
   const main=new Set(revealed.primaryCoverage||[]);
+  if(combat.choice==='take'){
+    if(actual===9)return {tone:'success',title:'볼을 골라냈습니다.',text:'스윙하지 않고 볼카운트와 다음 선택을 확보했습니다. 존 밖 확률이 높을 때 지켜보기의 값입니다.'};
+    return {tone:'neutral',title:'스트라이크를 확인했습니다.',text:'카운트 하나를 지불했지만 카드를 쓰지 않았습니다. 다음 공에는 읽기와 남은 스트라이크를 함께 보세요.'};
+  }
   const supportOnly=!!revealed.assistOnly||revealed.label==='겹친 카드 단타';
   const exactPrecision=(combat.precisionBonus||0)>0;
 
