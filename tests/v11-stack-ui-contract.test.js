@@ -52,6 +52,22 @@ describe('V11 tactical StackBoard contract',()=>{
     expect(css).toContain('.rail-actions button.neutral');
   });
 
+  it('supports pointer drag without removing the accessible arrow controls',()=>{
+    expect(board).toContain('className="rail-drag-handle"');
+    expect(board).toContain('onPointerDown={e=>beginDrag(e,step,actualIndex)}');
+    expect(board).toContain('onPointerMove={moveDrag}');
+    expect(board).toContain('onPointerUp={e=>finishDrag(e,false)}');
+    expect(board).toContain('onPointerCancel={e=>finishDrag(e,true)}');
+    expect(board).toContain('data-stack-index={i}');
+    expect(board).toContain('stackReorderPreview');
+    expect(board).toContain('disabled={earlier==null||!!drag}');
+    expect(board).toContain('disabled={later==null||!!drag}');
+    expect(css).toContain('.rail-drag-handle');
+    expect(css).toContain('touch-action:none');
+    expect(css).toContain('.rail-cards>div.drag-source');
+    expect(css).toContain('.rail-cards>div.drag-target');
+  });
+
   it('shows BASE → CONNECT → FINAL HP efficiency without recalculating engine data',()=>{
     expect(board).toContain('BASE');
     expect(board).toContain('CONNECT');
