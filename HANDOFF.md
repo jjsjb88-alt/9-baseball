@@ -1,5 +1,34 @@
 # 9ZONE SHOWDOWN — Codex 인수인계
 
+## 최우선 인수인계 V11 · 2026-09-19
+
+**모든 세션은 작업 전에 `docs/V11-9ZONE-STACK-SYSTEM.md`와 `AGENTS.md`를 먼저 읽는다.**
+
+현재 최우선 제품 방향:
+> 투수의 의도를 읽고, 9존 위에 카드를 순서대로 배치해 하나의 스윙을 설계하고, 투수를 무너뜨리는 야구 덱빌딩 로그라이트.
+
+V11.1 계약:
+- READ → PLACE → STACK → ORDER → CONNECT → PREVIEW → SWING.
+- 메인 1 + 지원 최대 3장.
+- 지원 배열 순서가 실제 Swing Order다.
+- 이전 aimZone과 다음 aimZone이 8방향 인접/동일이면 CONNECT.
+- 기존 피해 효율 100/80/65/50%를 유지하되 CONNECT 1개당 +5%p 회복.
+- 지원 적중은 V11.1에서 기존처럼 단타.
+- UI에서 지원 카드 순서를 직접 앞/뒤로 바꿀 수 있어야 한다.
+- 3×3 미니 Stack Path 보드에 ①②③④와 CONNECT/BREAK가 보여야 한다.
+- GM08 60Hz actor rig를 제거하거나 frame-step 방식으로 되돌리지 않는다.
+
+병렬 작업 소유권:
+- **INTEGRATOR(현재 세션)**: `engine.js`, `App.jsx`, 통합 테스트, merge/deploy.
+- **SESSION B**: 새 `StackBoard.jsx`, `v11-stack.css`, Stack UX QA. App/engine 수정 금지.
+- **SESSION C**: balance report/test/docs. App/engine 수정 금지.
+- **SESSION D**: V11.1 merge 뒤 Stack Resolve 연쇄 연출.
+
+공용 파일을 건드릴 필요가 있으면 먼저 이슈에 이유를 남기고 INTEGRATOR merge 이후 rebase한다.
+오래된 PR #1은 V11 작업에 사용하지 않는다.
+
+---
+
 ## 최우선 인수인계 V9.2 · 2026-09-15
 
 현재 개발 브랜치는 `codex/v9-deckbuilder`, 제품 계약은 `docs/V9.md`다.
