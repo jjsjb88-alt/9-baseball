@@ -115,6 +115,26 @@ export function v10SwingDamageRate(cardCount=1){
   const n=Math.max(1,Math.min(V10_SWING_STACK_MAX,Number(cardCount)||1));
   return V10_SWING_DAMAGE_RATES[n-1];
 }
+export const V11_STACK_CONNECT_BONUS=.05;
+export function v11StackZonesConnect(a,b){
+  if(!Number.isInteger(a)||!Number.isInteger(b)||a<0||a>8||b<0||b>8)return false;
+  const ar=Math.floor(a/3),ac=a%3,br=Math.floor(b/3),bc=b%3;
+  return Math.abs(ar-br)<=1&&Math.abs(ac-bc)<=1;
+}
+export function v11StackPlan(s,primaryId,supports=[]){
+  const cardCount=1+(Array.isArray(supports)?supports.length:0),baseDamageRate=v10SwingDamageRate(cardCount);
+  const mainAim=s?.battle?.aimZone;
+  const steps=[{order:1,id:primaryId,kind:primaryId==='basic'?'basic':card(s,primaryId)?.kind||null,aimZone:mainAim,main:true},
+    ...(supports||[]).map((x,i)=>({order:i+2,id:x.id,kind:card(s,x.id)?.kind||null,aimZone:x.aimZone,main:false}))];
+  const links=steps.slice(1).map((step,i)=>({
+    fromOrder:i+1,toOrder:i+2,fromZone:steps[i].aimZone,toZone:step.aimZone,
+    connected:v11StackZonesConnect(steps[i].aimZone,step.aimZone),
+  }));
+  const connectCount=links.filter(x=>x.connected).length,connectBonus=connectCount*V11_STACK_CONNECT_BONUS;
+  const orderedDamageRate=Math.min(1,baseDamageRate+connectBonus);
+  const damageRate=v10RelicDamageRate(s?.relics||[],cardCount,orderedDamageRate);
+  return {steps,links,cardCount,connectCount,baseDamageRate,connectBonus,orderedDamageRate,damageRate,perfect:links.length>0&&connectCount===links.length};
+}
 export function stackSupportProblem(s,primaryId,supports=[]){
   if(!Array.isArray(supports)||!supports.length)return null;
   if(s?.version!==10)return '카드 겹치기는 MAIN RUN에서만 사용할 수 있습니다.';
@@ -262,9 +282,10 @@ export function previewV10Stack(s,id,supports=[],probabilities=publicProbabiliti
   });
   const basesFor=label=>label.includes('홈런')?4:label.includes('2루타')?2:1;
   const types=[...mass].map(([label,m])=>({label,bases:basesFor(label),p:hit?m/hit:0}));
-  const hr=types.find(t=>t.bases===4)?.p||0,cardCount=1+supports.length,damageRate=v10RelicDamageRate(s.relics||[],cardCount,v10SwingDamageRate(cardCount));
-  return {...base,label:'스윙 스택 · '+cardCount+'장을 겹쳐 커버합니다',coverage:combined,primaryCoverage:main,supportCoverages,
-    supports:supportCoverages.map(({coverage,...x})=>x),cardCount,damageRate,hit,foul,whiff,out,sacrifice:0,types,
+  const hr=types.find(t=>t.bases===4)?.p||0,stackPlan=v11StackPlan(s,id,supports),cardCount=stackPlan.cardCount,damageRate=stackPlan.damageRate;
+  return {...base,label:'스윙 스택 · '+cardCount+'장 · CONNECT '+stackPlan.connectCount+'/'+Math.max(0,cardCount-1),coverage:combined,primaryCoverage:main,supportCoverages,
+    supports:supportCoverages.map(({coverage,...x})=>x),cardCount,damageRate,stackPlan,connectCount:stackPlan.connectCount,connectBonus:stackPlan.connectBonus,
+    baseStackDamageRate:stackPlan.baseDamageRate,orderedStackDamageRate:stackPlan.orderedDamageRate,hit,foul,whiff,out,sacrifice:0,types,
     matchup:matchup(s,id,s.battle.aimZone,combined.length),expectedBases:hit*types.reduce((v,t)=>v+t.p*t.bases,0),
     fortuneChance:s.battle.growthMode==='fortune'?hit*(1-hr):0};
 }
@@ -356,10 +377,13 @@ function resolve(state,id,supports=[]){
   }
   if(id&&mode==='patience'){growthEvents.unshift('기다린 한 공 · '+b.waitCharge+'중첩 사용');b.waitCharge=0;s.growthStats.patienceSwings++;}
   if(id&&!(mode==='fortune'&&result.kind!=='hit'))b.growthMode='normal';
-  const firstSupport=supportItems[0]||null;
+  const firstSupport=supportItems[0]||null,stackPlan=id?v11StackPlan(s,id,supports):null;
   b.revealed={zone:pending.zone,label:result.label,kind:result.kind,coverage:usedCoverage,primaryCoverage:mainCoverage,
     supportCoverages:supportItems.map(x=>({id:x.id,kind:x.entry.kind,aimZone:x.aimZone,coverage:x.coverage})),
     supportKinds:supportItems.map(x=>x.entry.kind),supportZones:supportItems.map(x=>x.aimZone),stackCardCount:id?1+supportItems.length:0,
+    stackConnectCount:stackPlan?.connectCount||0,stackConnectBonus:stackPlan?.connectBonus||0,
+    stackBaseDamageRate:stackPlan?.baseDamageRate??1,stackOrderedDamageRate:stackPlan?.orderedDamageRate??1,
+    stackLinks:stackPlan?.links||[],stackSteps:stackPlan?.steps||[],
     assistCoverage:firstSupport?.coverage||[],assistZone:firstSupport?.aimZone??null,assistKind:firstSupport?.entry?.kind||null,
     assistOnly:!!result.assistOnly,aimZone:id?b.aimZone:null,action:k||'take',ballsBefore:countBefore.balls,strikesBefore:countBefore.strikes,growthEvents};
   b.history.push({zone:pending.zone,label:result.label,aimZone:id?b.aimZone:null,turn:b.turn,...countBefore});
@@ -668,7 +692,8 @@ export function playV10Action(state,action){
     return next;
   }
   const r=next.battle?.revealed;if(!r)return next;
-  const stackCardCount=action.type==='card'?(r.stackCardCount||1):1,stackDamageRate=v10SwingDamageRate(stackCardCount);
+  const stackCardCount=action.type==='card'?(r.stackCardCount||1):1;
+  const stackDamageRate=action.type==='card'?(r.stackOrderedDamageRate??v10SwingDamageRate(stackCardCount)):1;
   const outcome={kind:r.kind,label:r.label,bases:v10BasesForReveal(r),zone:r.zone,aimZone:r.aimZone,
     covered:Array.isArray(r.coverage)&&r.coverage.includes(r.zone)};
   const pitchInPA=Math.max(1,(next.battle?.history||[]).filter(h=>h.turn===next.battle.turn).length);
@@ -680,7 +705,9 @@ export function playV10Action(state,action){
   next.v10={...next.v10,lastCombat:{
     choice,choiceLabel:[v10ChoiceLabel(choice),...supportNames].join(' + '),aimZone:r.aimZone,aimLabel:[v10ZoneLabel(r.aimZone),...supportAims].join(' + '),
     actualPitch:r.zone,pitchLabel:v10ZoneLabel(r.zone),pitchName:next.battle?.intent?.name||'',
-    verdict:r.label,damage:applied.result.damage,baseDamage:applied.result.baseDamage,damageRate:relicPlan.damageRate,baseStackDamageRate:stackDamageRate,
+    verdict:r.label,damage:applied.result.damage,baseDamage:applied.result.baseDamage,damageRate:relicPlan.damageRate,
+    baseStackDamageRate:r.stackBaseDamageRate??v10SwingDamageRate(stackCardCount),orderedStackDamageRate:stackDamageRate,
+    connectCount:r.stackConnectCount||0,connectBonus:r.stackConnectBonus||0,stackLinks:r.stackLinks||[],stackSteps:r.stackSteps||[],
     relicBonus:relicPlan.damageBonus,relicEvents:relicPlan.events,cardCount:stackCardCount,hpAfter:applied.result.hpAfter,
   }};
   if(relicPlan.events.length&&next.last?.events)next.last.events=[...relicPlan.events.map(e=>'유물 · '+e),...next.last.events];
