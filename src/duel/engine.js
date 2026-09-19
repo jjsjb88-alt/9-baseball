@@ -262,8 +262,9 @@ export function previewCard(s,id,probabilities=publicProbabilities(s)){
 
 export function previewV10Stack(s,id,supports=[],probabilities=publicProbabilities(s)){
   if(!supports?.length){
-    const solo=previewCard(s,id,probabilities);
-    return {...solo,cardCount:1,damageRate:1,primaryCoverage:solo.coverage||[],supportCoverages:[]};
+    const solo=previewCard(s,id,probabilities),stackPlan=v11StackPlan(s,id,[]);
+    return {...solo,cardCount:1,damageRate:stackPlan.damageRate,stackPlan,connectCount:0,connectBonus:0,
+      baseStackDamageRate:1,orderedStackDamageRate:1,primaryCoverage:solo.coverage||[],supportCoverages:[]};
   }
   const problem=cardProblem(s,id)||stackSupportProblem(s,id,supports);if(problem)return {problem};
   const base=previewCard(s,id,probabilities),main=coverage(s,id);
