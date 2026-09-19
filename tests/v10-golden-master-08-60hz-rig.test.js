@@ -2,6 +2,7 @@ import {describe,expect,it} from 'vitest';
 import fs from 'node:fs';
 
 const app=fs.readFileSync(new URL('../src/duel/App.jsx',import.meta.url),'utf8');
+const canvas=fs.readFileSync(new URL('../src/duel/V4CanvasSprite.jsx',import.meta.url),'utf8');
 const css=fs.readFileSync(new URL('../src/duel/duel.css',import.meta.url),'utf8');
 const generator=fs.readFileSync(new URL('../scripts/generate-v4-sprites.py',import.meta.url),'utf8');
 
@@ -11,39 +12,55 @@ const pngSize=path=>{
   return {width:b.readUInt32BE(16),height:b.readUInt32BE(20)};
 };
 
-describe('GM08 hotfix — real V4 60-frame pixel sprites',()=>{
-  it('ships five real 10×6 raster sheets, exactly 60 cells each',()=>{
+describe('GM08 hotfix — continuous Canvas V4 pixel playback',()=>{
+  it('ships five 10×6 raster sheets at mobile-safe 192px cells',()=>{
     for(const name of ['batter-swing','batter-miss','batter-homer','pitcher-pitch','pitcher-strikeout']){
-      expect(pngSize('../assets/sprites-v4/'+name+'-60.png')).toEqual({width:2560,height:1536});
+      expect(pngSize('../assets/sprites-v4/'+name+'-60.png')).toEqual({width:1920,height:1152});
     }
   });
 
-  it('generates sixty in-between raster frames from authored pixel poses',()=>{
+  it('still generates sixty optical-flow in-between raster frames',()=>{
     expect(generator).toContain('TOTAL=60');
+    expect(generator).toContain('CELL=192');
     expect(generator).toContain('calcOpticalFlowFarneback');
-    expect(generator).toContain("save_sheet('batter-swing'");
-    expect(generator).toContain("save_sheet('pitcher-pitch'");
   });
 
-  it('routes live golden actors through V4 sheets, not the SVG puppet',()=>{
-    expect(app).toContain("import batterSwingV4 from '../../assets/sprites-v4/batter-swing-60.png'");
-    expect(app).toContain("import pitcherPitchV4 from '../../assets/sprites-v4/pitcher-pitch-60.png'");
-    expect(app).toContain('function v4SpriteSpec');
-    expect(app).toContain('function V4Frame');
-    expect(app).toContain("v4?' v4-sequence':''");
+  it('routes live actors through Canvas and never the SVG puppet',()=>{
+    expect(app).toContain("import V4CanvasSprite from './V4CanvasSprite.jsx'");
+    expect(app).toContain('<V4CanvasSprite sheet={v4Sheet}');
     expect(app).not.toContain("import SmoothActor from './SmoothActor.jsx'");
     expect(app).not.toContain('<SmoothActor ');
   });
 
-  it('covers the whole cinematic timeline with non-overlapping 60-frame ranges',()=>{
-    expect(app).toContain("const V4_STAGE_RANGES={windup:[0,17],impact:[18,23],slowmo:[24,31],release:[32,52],settle:[53,59]}");
-    expect(app).toContain("const V4_K_RANGES={release:[0,39],settle:[40,59]}");
+  it('does not rerender React on every animation frame',()=>{
+    expect(canvas).toContain("requestAnimationFrame(tick)");
+    expect(canvas).toContain("ctx.drawImage");
+    expect(canvas).toContain("desynchronized:true");
+    expect(canvas).not.toContain('useState(');
+    expect(canvas).not.toContain('setIndex(');
   });
 
-  it('uses one decoded sprite sheet and changes only its cell',()=>{
-    expect(css).toContain('background-size:1000% 600%');
-    expect(css).toContain('will-change:background-position');
-    expect(css).toContain('.sprite-stage.v4-sequence');
+  it('uses one continuous pitch timeline independent of presentation stage changes',()=>{
+    expect(canvas).toContain('function frameAt(who,shot,elapsed)');
+    expect(canvas).toContain("const anchor=who==='pitcher'?(strikeout?20:23):18");
+    expect(canvas).toContain('playToken,shot?.grade');
+    expect(canvas).not.toContain('stage,');
+  });
+
+  it('subframe-blends adjacent authored frames on every display refresh',()=>{
+    expect(canvas).toContain('const lo=Math.floor(f),hi=Math.min(59,lo+1),mix=f-lo');
+    expect(canvas).toContain('drawCell(ctx,img,lo,1-mix)');
+    expect(canvas).toContain('drawCell(ctx,img,hi,mix)');
+  });
+
+  it('does not globally preload all five decoded V4 textures',()=>{
+    expect(app).toContain('batterSwingV4,pitcherPitchV4');
+    expect(app).not.toContain('const V4_SHEETS=');
+  });
+
+  it('keeps the Canvas free of legacy stepped actor motion',()=>{
+    expect(css).toContain('.sprite-stage.v4-sequence .v4-canvas');
     expect(css).toContain('animation:none!important');
+    expect(css).not.toContain('.v4-sheet-frame');
   });
 });

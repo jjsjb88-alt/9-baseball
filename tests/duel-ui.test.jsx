@@ -108,7 +108,7 @@ describe('9-zone strategic UI',()=>{
     const timeline=presentationTimeline(presentationFor(readV10Duel(localStorage)));
     act(()=>vi.advanceTimersByTime(timeline.impactAt+1));
     expect(arena.className).toContain('fx-stage-impact');
-    expect(arena.querySelector('.sprite-batter.v4-sequence.pose-contact')).toBeTruthy();
+    expect(arena.querySelector('.sprite-batter.v4-sequence.pose-contact canvas.v4-canvas')).toBeTruthy();
     finish();
   });
 
@@ -158,12 +158,12 @@ describe('9-zone strategic UI',()=>{
     fireEvent.click(screen.getByRole('button',{name:'스윙하기',exact:true}));
     fireEvent.click(screen.getByRole('button',{name:'밀어치기',exact:true}));
     fireEvent.click(screen.getByTestId('execute-action'));
-    expect(document.querySelector('.sprite-batter.v4-sequence.pose-load')).toBeTruthy();
-    expect(document.querySelector('.sprite-pitcher.v4-sequence.pose-legkick')).toBeTruthy();
+    expect(document.querySelector('.sprite-batter.v4-sequence.pose-load canvas.v4-canvas')).toBeTruthy();
+    expect(document.querySelector('.sprite-pitcher.v4-sequence.pose-legkick canvas.v4-canvas')).toBeTruthy();
     const timeline=presentationTimeline(presentationFor(readV10Duel(localStorage)));
     act(()=>vi.advanceTimersByTime(timeline.impactAt+1));
-    expect(document.querySelector('.sprite-batter.v4-sequence.pose-contact')).toBeTruthy();
-    expect(document.querySelector('.sprite-pitcher.v4-sequence.pose-release')).toBeTruthy();
+    expect(document.querySelector('.sprite-batter.v4-sequence.pose-contact canvas.v4-canvas')).toBeTruthy();
+    expect(document.querySelector('.sprite-pitcher.v4-sequence.pose-release canvas.v4-canvas')).toBeTruthy();
     expect(document.querySelector('.read-trace')).toBeTruthy();
     expect(document.querySelector('.read-trace .actual')).toBeTruthy();
     finish();

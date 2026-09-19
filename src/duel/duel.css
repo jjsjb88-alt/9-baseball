@@ -1256,7 +1256,7 @@ button.stack-slot{cursor:pointer}
 }
 
 
-/* V4 real 60-frame pixel sprite sheets */
+/* V4 real 60-frame pixel sprite sheets — Canvas direct renderer */
 .sprite-stage.v4-sequence{
   animation:none!important;
   transition:none!important;
@@ -1274,23 +1274,31 @@ button.stack-slot{cursor:pointer}
   animation:none!important;
   transition:none!important;
 }
-.sprite-stage .v4-sheet-frame{
+.sprite-stage.v4-sequence .v4-underlay{
+  position:absolute;
+  inset:0;
+  z-index:0;
+  opacity:.9;
+}
+.sprite-stage.v4-sequence .v4-canvas{
+  position:absolute;
+  inset:0;
+  z-index:1;
   display:block;
   width:100%;
   height:100%;
-  background-repeat:no-repeat;
-  background-size:1000% 600%;
+  opacity:0;
   image-rendering:pixelated;
   filter:drop-shadow(0 9px 3px #061117b8) drop-shadow(0 0 1px #e9d8ad66);
-  will-change:background-position;
   transform:translateZ(0);
   backface-visibility:hidden;
+  pointer-events:none;
 }
 .golden-master-stage .golden-actor.v4-sequence .sprite-echo{display:none!important}
-.golden-master-stage .golden-actor.v4-sequence .bat-smear{opacity:.08!important}
-.golden-master-stage.fx-stage-impact .golden-actor.v4-sequence .bat-smear{opacity:.18!important}
+.golden-master-stage .golden-actor.v4-sequence .bat-smear{opacity:.06!important}
+.golden-master-stage.fx-stage-impact .golden-actor.v4-sequence .bat-smear{opacity:.14!important}
 @media (orientation:landscape) and (max-height:430px){
-  .sprite-stage .v4-sheet-frame{filter:drop-shadow(0 6px 2px #061117b5)}
+  .sprite-stage.v4-sequence .v4-canvas{filter:drop-shadow(0 6px 2px #061117b5)}
 }
 @media (prefers-reduced-motion:reduce){
   .sprite-stage.v4-sequence,.sprite-stage.v4-sequence *{animation:none!important;transition:none!important}
