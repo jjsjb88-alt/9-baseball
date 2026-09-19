@@ -1,0 +1,69 @@
+.read-trace .trace-grid{position:relative}
+.stack-route-echo{position:absolute;z-index:3;inset:0;pointer-events:none}
+.stack-route-echo svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.stack-route-echo line,.stack-route-echo circle{
+  fill:none;
+  stroke-width:2.2;
+  vector-effect:non-scaling-stroke;
+  opacity:.72;
+}
+.stack-route-echo .connected{stroke:#7be0b3;filter:drop-shadow(0 0 2px #64d89e)}
+.stack-route-echo .broken{stroke:#d47b70;stroke-dasharray:5 4;opacity:.48}
+.stack-route-echo.perfect .connected{stroke-width:2.7;opacity:.94}
+.stack-echo-token{
+  position:absolute;
+  z-index:4;
+  display:grid;
+  place-items:center;
+  width:12px;
+  height:12px;
+  border:1px solid #a0e4ca;
+  border-radius:50%;
+  background:#173b35;
+  color:#effff7;
+  box-shadow:0 1px 3px #000b,0 0 0 1px #071719;
+  font-size:6px;
+  line-height:1;
+  font-weight:1000;
+  transform:translate(-50%,-50%);
+}
+.stack-echo-token.main{border-color:#f0d17e;background:#6d572a;color:#fff3c4}
+.trace-kicker.stack-trace{display:flex;align-items:center;justify-content:space-between;gap:4px}
+.trace-kicker.stack-trace b{font-size:5px;letter-spacing:.5px;color:#90dfb9;font-variant-numeric:tabular-nums}
+.trace-stage-impact .stack-route-echo line,
+.trace-stage-impact .stack-route-echo circle{
+  animation:stackEchoLink .2s steps(4,end) both;
+  animation-delay:calc(var(--echo-link) * 42ms);
+}
+.trace-stage-impact .stack-echo-token{
+  animation:stackEchoToken .18s steps(3,end) both;
+  animation-delay:calc(var(--echo-step) * 36ms);
+}
+.trace-stage-slowmo .stack-route-echo{opacity:.9}
+.trace-stage-release .stack-route-echo{animation:stackEchoRelease .38s steps(5,end) both}
+
+@keyframes stackEchoLink{
+  0%{opacity:0;stroke-dashoffset:16}
+  45%{opacity:1}
+  100%{opacity:.82;stroke-dashoffset:0}
+}
+@keyframes stackEchoToken{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.55)}
+  60%{opacity:1;transform:translate(-50%,-50%) scale(1.18)}
+  100%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+}
+@keyframes stackEchoRelease{
+  0%{opacity:.9}
+  62%{opacity:.62}
+  100%{opacity:0}
+}
+
+@media(max-width:760px){
+  .stack-echo-token{width:10px;height:10px;font-size:5px}
+  .stack-route-echo line,.stack-route-echo circle{stroke-width:1.8}
+  .trace-kicker.stack-trace b{font-size:4px}
+}
+@media(prefers-reduced-motion:reduce){
+  .stack-route-echo,.stack-route-echo line,.stack-route-echo circle,.stack-echo-token{animation:none!important}
+  .stack-route-echo{opacity:.72}
+}
