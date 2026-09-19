@@ -11,9 +11,10 @@ describe('V10 build relics',()=>{
   });
   it('makes the two-card stack a real build direction',()=>{
     expect(v10RelicDamageRate([],2,.8)).toBe(.8);
-    expect(v10RelicDamageRate(['twoStack'],2,.8)).toBe(1);
+    expect(v10RelicDamageRate(['twoStack'],2,.8)).toBeCloseTo(.9);
+    expect(v10RelicDamageRate(['twoStack'],2,.87)).toBeCloseTo(.97);
     const plan=v10RelicDamagePlan({relics:['twoStack'],outcome:{kind:'hit',bases:1,zone:4},cardCount:2,damageRate:.8,pitchInPA:2});
-    expect(plan.damageRate).toBe(1);expect(plan.events.join(' ')).toContain('더블 그립');
+    expect(plan.damageRate).toBeCloseTo(.9);expect(plan.events.join(' ')).toContain('더블 그립');
   });
   it('stacks situational HP bonuses without changing base damage tables',()=>{
     const plan=v10RelicDamagePlan({relics:['firstPitch','awayBadge','slugBand'],outcome:{kind:'hit',bases:2,zone:5},cardCount:1,damageRate:1,pitchInPA:1});
