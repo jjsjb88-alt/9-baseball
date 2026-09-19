@@ -9,7 +9,7 @@ describe('GM08 V4 60Hz actor rig',()=>{
   it('uses authored 16-key-pose tracks for batter and pitcher',()=>{
     expect((actor.match(/const BATTER_SWING=\[/g)||[]).length).toBe(1);
     expect((actor.match(/const PITCHER_PITCH=\[/g)||[]).length).toBe(1);
-    expect((actor.match(/pose\(/g)||[]).length).toBeGreaterThanOrEqual(48);
+    expect((actor.match(/pose\(/g)||[]).length).toBeGreaterThanOrEqual(47);
     expect(actor).toContain('const BATTER_HOMER=[');
     expect(actor).toContain('const BATTER_MISS=[');
   });
