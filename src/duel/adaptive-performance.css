@@ -1,0 +1,26 @@
+/* Adaptive background budget.
+   Actor canvases are intentionally untouched: quality tiers only reduce secondary scene cost. */
+.duel-combat.perf-balanced .gm-atmosphere>i:nth-child(n+9){display:none}
+.duel-combat.perf-balanced .gm-haze-band{filter:blur(5px)}
+.duel-combat.perf-balanced .gm-mid-haze{filter:blur(4px)}
+.duel-combat.perf-balanced .gm-light-shaft{filter:blur(2px)}
+.duel-combat.perf-balanced .gm-actor-light{filter:blur(5px)}
+
+.duel-combat.perf-low .gm-atmosphere>i:nth-child(n+5){display:none}
+.duel-combat.perf-low .gm-haze-band,
+.duel-combat.perf-low .gm-mid-haze,
+.duel-combat.perf-low .gm-light-shaft{filter:none!important}
+.duel-combat.perf-low .gm-actor-light{filter:blur(3px)}
+.duel-combat.perf-low .gm-contact-halo{filter:none!important}
+.duel-combat.perf-low.fx-stage-slowmo .gm-depth-back,
+.duel-combat.perf-low.fx-stage-slowmo .gm-depth-mid,
+.duel-combat.perf-low.fx-stage-slowmo .gm-depth-front{filter:none!important}
+.duel-combat.perf-low.fx-stage-impact .gm-atmosphere{filter:none!important}
+.duel-combat.perf-low .gm-skyline{filter:none}
+.duel-combat.perf-low .gm-camera-well,
+.duel-combat.perf-low .gm-roof-truss{filter:none!important}
+
+@media (orientation:landscape) and (max-height:430px){
+  .duel-combat.perf-balanced .gm-atmosphere>i:nth-child(n+7){display:none}
+  .duel-combat.perf-low .gm-atmosphere>i:nth-child(n+3){display:none}
+}
