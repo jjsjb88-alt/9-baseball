@@ -262,8 +262,8 @@ export function previewCard(s,id,probabilities=publicProbabilities(s)){
 
 export function previewV10Stack(s,id,supports=[],probabilities=publicProbabilities(s)){
   if(!supports?.length){
-    const solo=previewCard(s,id,probabilities),stackPlan=v11StackPlan(s,id,[]);
-    return {...solo,cardCount:1,damageRate:stackPlan.damageRate,stackPlan,connectCount:0,connectBonus:0,
+    const solo=previewCard(s,id,probabilities),stackPlan=v11StackPlan(s,id,[]),precisionPressure=id==='basic'?0:(CARDS[card(s,id)?.kind]?.pressure||0);
+    return {...solo,cardCount:1,damageRate:stackPlan.damageRate,stackPlan,connectCount:0,connectBonus:0,precisionPressure,
       baseStackDamageRate:1,orderedStackDamageRate:1,primaryCoverage:solo.coverage||[],supportCoverages:[]};
   }
   const problem=cardProblem(s,id)||stackSupportProblem(s,id,supports);if(problem)return {problem};
@@ -283,9 +283,10 @@ export function previewV10Stack(s,id,supports=[],probabilities=publicProbabiliti
   });
   const basesFor=label=>label.includes('홈런')?4:label.includes('2루타')?2:1;
   const types=[...mass].map(([label,m])=>({label,bases:basesFor(label),p:hit?m/hit:0}));
-  const hr=types.find(t=>t.bases===4)?.p||0,stackPlan=v11StackPlan(s,id,supports),cardCount=stackPlan.cardCount,damageRate=stackPlan.damageRate;
+  const hr=types.find(t=>t.bases===4)?.p||0,stackPlan=v11StackPlan(s,id,supports),cardCount=stackPlan.cardCount,damageRate=stackPlan.damageRate,
+    precisionPressure=CARDS[card(s,id)?.kind]?.pressure||0;
   return {...base,label:'스윙 스택 · '+cardCount+'장 · CONNECT '+stackPlan.connectCount+'/'+Math.max(0,cardCount-1),coverage:combined,primaryCoverage:main,supportCoverages,
-    supports:supportCoverages.map(({coverage,...x})=>x),cardCount,damageRate,stackPlan,connectCount:stackPlan.connectCount,connectBonus:stackPlan.connectBonus,
+    supports:supportCoverages.map(({coverage,...x})=>x),cardCount,damageRate,stackPlan,connectCount:stackPlan.connectCount,connectBonus:stackPlan.connectBonus,precisionPressure,
     baseStackDamageRate:stackPlan.baseDamageRate,orderedStackDamageRate:stackPlan.orderedDamageRate,hit,foul,whiff,out,sacrifice:0,types,
     matchup:matchup(s,id,s.battle.aimZone,combined.length),expectedBases:hit*types.reduce((v,t)=>v+t.p*t.bases,0),
     fortuneChance:s.battle.growthMode==='fortune'?hit*(1-hr):0};
@@ -558,7 +559,7 @@ export function readDuel(storage){
 // ---- V10 additive run contract -------------------------------------------------
 // V9 remains untouched above. V10 UI must use these entry points so score-target
 // transitions cannot bypass pitcher HP or the deterministic run map.
-import {createPitcherHp,applyPitcherOutcome,pitcherSelector} from './pitcher-hp.js';
+import {createPitcherHp,applyPitcherOutcome,pitcherSelector,damageForOutcome} from './pitcher-hp.js';
 import {createRunMap,selectRunNode,completeRunNode,getRunNode,isCombatNode,runMapSelector} from './run-map.js';
 import {V10_SAVE_KEY as V10_STORAGE_KEY,saveV10State,readV10State} from './v10-storage.js';
 import {V10_RELICS,v10RelicOffers,v10RelicDamagePlan,v10RelicDamageRate} from './v10-relics.js';
@@ -699,7 +700,12 @@ export function playV10Action(state,action){
     covered:Array.isArray(r.coverage)&&r.coverage.includes(r.zone)};
   const pitchInPA=Math.max(1,(next.battle?.history||[]).filter(h=>h.turn===next.battle.turn).length);
   const relicPlan=v10RelicDamagePlan({relics:next.relics||[],outcome,cardCount:stackCardCount,damageRate:stackDamageRate,pitchInPA});
-  const applied=applyPitcherOutcome(next.pitcher,outcome,{pitchId:next.stats.pitches,damageMultiplier:relicPlan.damageRate,damageBonus:relicPlan.damageBonus});
+  const precisionRate=action.type==='card'&&r.kind==='hit'&&!r.assistOnly&&Array.isArray(r.primaryCoverage)&&r.primaryCoverage.includes(r.zone)
+    ?(CARDS[choice]?.pressure||0):0;
+  const pressureBase=precisionRate?damageForOutcome(outcome,next.pitcher.foulStreak||0).damage:0;
+  const precisionBonus=precisionRate?Math.max(0,Math.round(pressureBase*relicPlan.damageRate*precisionRate)):0;
+  const applied=applyPitcherOutcome(next.pitcher,outcome,{pitchId:next.stats.pitches,damageMultiplier:relicPlan.damageRate,
+    damageBonus:relicPlan.damageBonus+precisionBonus});
   next.pitcher=applied.pitcher;
   const supportNames=(r.supportKinds||[]).map(k=>CARDS[k]?.name||k);
   const supportAims=(r.supportZones||[]).map(v10ZoneLabel);
@@ -709,9 +715,12 @@ export function playV10Action(state,action){
     verdict:r.label,damage:applied.result.damage,baseDamage:applied.result.baseDamage,damageRate:relicPlan.damageRate,
     baseStackDamageRate:r.stackBaseDamageRate??v10SwingDamageRate(stackCardCount),orderedStackDamageRate:stackDamageRate,
     connectCount:r.stackConnectCount||0,connectBonus:r.stackConnectBonus||0,stackLinks:r.stackLinks||[],stackSteps:r.stackSteps||[],
-    relicBonus:relicPlan.damageBonus,relicEvents:relicPlan.events,cardCount:stackCardCount,hpAfter:applied.result.hpAfter,
+    relicBonus:relicPlan.damageBonus,precisionRate,precisionBonus,totalDamageBonus:relicPlan.damageBonus+precisionBonus,
+    relicEvents:relicPlan.events,cardCount:stackCardCount,hpAfter:applied.result.hpAfter,
   }};
-  if(relicPlan.events.length&&next.last?.events)next.last.events=[...relicPlan.events.map(e=>'유물 · '+e),...next.last.events];
+  const pressureEvents=precisionBonus?['정타 노림 · 정확 적중 +'+precisionBonus+' HP']:[];
+  if((relicPlan.events.length||pressureEvents.length)&&next.last?.events)
+    next.last.events=[...pressureEvents,...relicPlan.events.map(e=>'유물 · '+e),...next.last.events];
   if(next.pitcher.hp<=0){
     const node=currentV10Node(next),finalBoss=node?.type==='boss'&&node.act===3;
     const events=[...(next.last?.events||[]),next.pitcher.name+' HP 0 · 강판'];
