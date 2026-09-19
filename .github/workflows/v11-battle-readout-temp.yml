@@ -1,0 +1,27 @@
+name: TEMP V11 Battle Readout Verify
+
+on:
+  push:
+    branches:
+      - codex/v11-battle-readout
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Test
+        run: pnpm test
+      - name: Build
+        run: pnpm run build
