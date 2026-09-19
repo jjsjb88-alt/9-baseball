@@ -52,7 +52,8 @@ describe('visual reboot golden master 01',()=>{
     expect(css).toContain('.golden-master-stage.fx-stage-impact .gm-depth-back');
     expect(css).toContain('.golden-master-stage.fx-stage-impact .gm-depth-front');
     expect(renderer).toContain('zoom=1.118');
-    expect(renderer).toContain('zoom=1.138');
+    expect(renderer).toContain('if(u_director==2){zoom=1.160');
+    expect(renderer).toContain('else if(u_director==4){zoom=1.082');
     expect(renderer).toContain('vec2(384.,216.)');
     expect(renderer).toContain('float concourse=rectMask');
     expect(renderer).toContain('float board=rectMask');

@@ -2,7 +2,7 @@ import {CARDS,ZONES} from './cards.js';
 
 const actualZone=revealed=>revealed?.zone===9?'존 밖':ZONES[revealed?.zone]||'코스 미확인';
 const covered=revealed=>Array.isArray(revealed?.coverage)&&revealed.coverage.includes(revealed.zone);
-const withMotion=(shot,motion)=>({...shot,motion});
+const withMotion=(shot,motion)=>({...shot,motion,director:cinemaDirector(shot)});
 const gridDistance=(a,b)=>a>8||b>8?99:Math.max(Math.abs(Math.floor(a/3)-Math.floor(b/3)),Math.abs(a%3-b%3));
 const coverageDistance=revealed=>{
   if(!Array.isArray(revealed?.coverage)||revealed.zone>8||!revealed.coverage.length)return 99;
@@ -31,6 +31,24 @@ export function contactGrade(revealed){
   return revealed.kind||'pitch';
 }
 
+export const DIRECTOR_PROFILES={
+  neutral:{key:'neutral',code:0,ownership:['pitcher','result']},
+  contact:{key:'contact',code:1,ownership:['pitcher','contact','result']},
+  power:{key:'power',code:2,ownership:['pitcher','contact','ball','stadium']},
+  nearMiss:{key:'near-miss',code:3,ownership:['pitcher','passing-ball','batter']},
+  strikeout:{key:'strikeout',code:4,ownership:['pitcher','passing-ball','pitcher','batter']},
+  scrappy:{key:'scrappy',code:5,ownership:['pitcher','contact','result']},
+};
+export function cinemaDirector(shot){
+  const grade=shot?.grade||shot?.kind||'';
+  if(['extra','homer','grand-slam'].includes(grade))return DIRECTOR_PROFILES.power;
+  if(['dead-center','solid'].includes(grade))return DIRECTOR_PROFILES.contact;
+  if(['near-miss','near-miss-k'].includes(grade))return DIRECTOR_PROFILES.nearMiss;
+  if(['chase','chase-k','fooled','strikeout','called-k','frozen'].includes(grade))return DIRECTOR_PROFILES.strikeout;
+  if(['jammed','lucky','foul','battle-foul','sacrifice','sacrifice-run','out'].includes(grade))return DIRECTOR_PROFILES.scrappy;
+  return DIRECTOR_PROFILES.neutral;
+}
+
 const MOTION={
   read:{duration:900,impactAt:120,settleAt:610,freeze:0,slowmo:0,haptic:[7,22,7],shake:'none'},
   lock:{duration:760,impactAt:90,settleAt:500,freeze:0,slowmo:0,haptic:[5],shake:'none'},
@@ -38,20 +56,20 @@ const MOTION={
   signal:{duration:820,impactAt:110,settleAt:540,freeze:0,slowmo:0,haptic:[8,26,8],shake:'soft'},
   survive:{duration:780,impactAt:100,settleAt:520,freeze:0,slowmo:0,haptic:[5],shake:'none'},
   draw:{duration:720,impactAt:80,settleAt:470,freeze:0,slowmo:0,haptic:[4],shake:'none'},
-  deadCenter:{duration:1180,impactAt:250,settleAt:820,freeze:70,slowmo:100,haptic:[18,18,38],shake:'strong'},
-  solid:{duration:1080,impactAt:230,settleAt:760,freeze:58,slowmo:0,haptic:[16,18,32],shake:'medium'},
+  deadCenter:{duration:1040,impactAt:240,settleAt:720,freeze:60,slowmo:70,haptic:[18,18,38],shake:'strong'},
+  solid:{duration:960,impactAt:225,settleAt:660,freeze:50,slowmo:0,haptic:[16,18,32],shake:'medium'},
   jammed:{duration:1240,impactAt:240,settleAt:900,freeze:48,slowmo:180,haptic:[12,22,18],shake:'soft'},
   lucky:{duration:1340,impactAt:245,settleAt:960,freeze:42,slowmo:260,haptic:[10,28,12],shake:'soft'},
-  extra:{duration:1380,impactAt:260,settleAt:960,freeze:72,slowmo:120,haptic:[18,18,42,28,24],shake:'strong'},
-  homer:{duration:1820,impactAt:300,settleAt:1280,freeze:92,slowmo:180,haptic:[24,18,54,34,82],shake:'epic'},
-  grandSlam:{duration:2320,impactAt:330,settleAt:1660,freeze:110,slowmo:260,haptic:[32,20,70,38,110,45,140],shake:'epic'},
-  nearMiss:{duration:1460,impactAt:250,settleAt:1050,freeze:24,slowmo:360,haptic:[8,70,10],shake:'soft'},
-  chase:{duration:1120,impactAt:240,settleAt:800,freeze:18,slowmo:0,haptic:[9],shake:'medium'},
-  fooled:{duration:1180,impactAt:250,settleAt:840,freeze:22,slowmo:80,haptic:[10],shake:'medium'},
-  nearMissK:{duration:1660,impactAt:270,settleAt:1210,freeze:32,slowmo:430,haptic:[8,62,12,34,18],shake:'soft'},
-  chaseK:{duration:1420,impactAt:255,settleAt:1010,freeze:30,slowmo:110,haptic:[12,34,20,48],shake:'strong'},
-  strikeout:{duration:1540,impactAt:270,settleAt:1110,freeze:44,slowmo:150,haptic:[14,42,20,58],shake:'strong'},
-  calledK:{duration:1620,impactAt:285,settleAt:1180,freeze:58,slowmo:190,haptic:[10,48,12,64],shake:'medium'},
+  extra:{duration:1360,impactAt:255,settleAt:940,freeze:68,slowmo:80,haptic:[18,18,42,28,24],shake:'strong'},
+  homer:{duration:1780,impactAt:290,settleAt:1260,freeze:76,slowmo:110,haptic:[24,18,54,34,82],shake:'epic'},
+  grandSlam:{duration:2240,impactAt:320,settleAt:1600,freeze:92,slowmo:170,haptic:[32,20,70,38,110,45,140],shake:'epic'},
+  nearMiss:{duration:1460,impactAt:245,settleAt:1070,freeze:16,slowmo:380,haptic:[8,70,10],shake:'soft'},
+  chase:{duration:1140,impactAt:235,settleAt:850,freeze:12,slowmo:0,haptic:[9],shake:'medium'},
+  fooled:{duration:1220,impactAt:245,settleAt:900,freeze:18,slowmo:100,haptic:[10],shake:'medium'},
+  nearMissK:{duration:1640,impactAt:260,settleAt:1210,freeze:22,slowmo:430,haptic:[8,62,12,34,18],shake:'soft'},
+  chaseK:{duration:1420,impactAt:250,settleAt:1040,freeze:20,slowmo:90,haptic:[12,34,20,48],shake:'strong'},
+  strikeout:{duration:1500,impactAt:260,settleAt:1100,freeze:28,slowmo:120,haptic:[14,42,20,58],shake:'strong'},
+  calledK:{duration:1580,impactAt:275,settleAt:1140,freeze:38,slowmo:140,haptic:[10,48,12,64],shake:'medium'},
   foul:{duration:980,impactAt:220,settleAt:680,freeze:38,slowmo:0,haptic:[10,18,10],shake:'soft'},
   battleFoul:{duration:1160,impactAt:230,settleAt:830,freeze:42,slowmo:90,haptic:[11,20,11],shake:'soft'},
   ball:{duration:820,impactAt:200,settleAt:560,freeze:0,slowmo:0,haptic:[4],shake:'none'},

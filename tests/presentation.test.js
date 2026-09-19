@@ -1,5 +1,5 @@
 import {describe,it,expect} from 'vitest';
-import {contactGrade,presentationFor,presentationTimeline} from '../src/duel/presentation.js';
+import {contactGrade,presentationFor,presentationTimeline,cinemaDirector} from '../src/duel/presentation.js';
 
 const state=(kind,label,zone=4,coverage=[],aimZone=4,context={})=>({
   last:{kind:kind==='skill'?'skill':'pitch',text:label,events:kind==='skill'?['중간 높이 확인']:[],runs:context.runs||0},
@@ -40,11 +40,43 @@ describe('master presentation language',()=>{
     const near=presentationTimeline(presentationFor(state('whiff','헛스윙',1,[4],4)));
     const normal=presentationTimeline(presentationFor(state('hit','중전안타',5,[5],4)));
     const lucky=presentationTimeline(presentationFor(state('hit','바가지 안타 · 행운의 단타',2,[2],1)));
-    expect(near.slowmo).toBe(360);
+    expect(near.slowmo).toBe(380);
     expect(lucky.slowmo).toBeGreaterThan(0);
     expect(normal.slowmo).toBe(0);
     expect(near.releaseAt).toBe(near.impactAt+near.freeze+near.slowmo);
     expect(presentationTimeline(presentationFor(state('whiff','헛스윙',1,[4],4)),true)).toMatchObject({duration:60,slowmo:0});
+  });
+
+  it('directs outcomes with different ownership instead of one generic camera grammar',()=>{
+    const contact=presentationFor(state('hit','중전안타',4,[4],4));
+    const power=presentationFor(state('hit','홈런',4,[4],4));
+    const near=presentationFor(state('whiff','헛스윙',1,[4],4));
+    const strikeout=presentationFor(state('whiff','헛스윙 삼진',0,[8],8,{strikesBefore:2}));
+    const scrappy=presentationFor(state('hit','땅볼 안타',5,[5],4));
+
+    expect(contact.director).toMatchObject({key:'contact',code:1});
+    expect(power.director).toMatchObject({key:'power',code:2});
+    expect(near.director).toMatchObject({key:'near-miss',code:3});
+    expect(strikeout.director).toMatchObject({key:'strikeout',code:4});
+    expect(scrappy.director).toMatchObject({key:'scrappy',code:5});
+
+    expect(power.director.ownership).toEqual(['pitcher','contact','ball','stadium']);
+    expect(near.director.ownership).toEqual(['pitcher','passing-ball','batter']);
+    expect(cinemaDirector({grade:'called-k'}).key).toBe('strikeout');
+  });
+
+  it('hands power shots to the ball sooner while near misses linger on the passing pitch',()=>{
+    const homer=presentationTimeline(presentationFor(state('hit','홈런',4,[4],4)));
+    const near=presentationTimeline(presentationFor(state('whiff','헛스윙',1,[4],4)));
+    const solid=presentationTimeline(presentationFor(state('hit','중전안타',5,[5],4)));
+
+    expect(homer.freeze).toBe(76);
+    expect(homer.slowmo).toBe(110);
+    expect(homer.releaseAt).toBe(476);
+    expect(near.freeze).toBe(16);
+    expect(near.slowmo).toBe(380);
+    expect(near.releaseAt).toBe(641);
+    expect(solid.duration).toBeLessThan(1000);
   });
 
   it('gives every non-contact judgement its own readable language',()=>{

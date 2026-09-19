@@ -1,4 +1,5 @@
 import React from 'react';
+import {cinemaDirector} from './presentation.js';
 
 const POWER_GRADES=new Set(['dead-center','extra','homer','grand-slam']);
 const DANGER_GRADES=new Set(['near-miss','near-miss-k','chase','chase-k','fooled','strikeout']);
@@ -6,9 +7,9 @@ const DANGER_GRADES=new Set(['near-miss','near-miss-k','chase','chase-k','fooled
 const ACT_CLASS=match=>' gm-act-'+Math.min(3,Math.max(1,(Number(match)||0)+1));
 
 export default function GoldenMasterStage({stage=null,shot=null,rival=false,match=0}){
-  const grade=shot?.grade||'idle';
+  const grade=shot?.grade||'idle',director=cinemaDirector(shot).key;
   const power=POWER_GRADES.has(grade),danger=DANGER_GRADES.has(grade);
-  const state=' gm-'+(stage||'idle')+(power?' gm-power':'')+(danger?' gm-danger':'')+(rival?' gm-rival':'')+ACT_CLASS(match);
+  const state=' gm-'+(stage||'idle')+' gm-director-'+director+(power?' gm-power':'')+(danger?' gm-danger':'')+(rival?' gm-rival':'')+ACT_CLASS(match);
   return <>
     <div className={'gm-depth-back'+state} aria-hidden="true">
       <span className="gm-skyline">

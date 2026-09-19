@@ -747,3 +747,90 @@
   .golden-master-stage .golden-actor,
   .golden-master-stage .golden-actor .duel-sprite{transition:none!important;animation:none!important}
 }
+
+
+/* GM09 · Outcome Director
+   No new FX: existing light/depth assets only hand visual ownership between contact, ball and stadium. */
+.gm-depth-back.gm-director-power.gm-impact{
+  filter:brightness(.62) saturate(.76);
+}
+.gm-depth-front.gm-director-power.gm-impact{
+  filter:brightness(.68) saturate(.72);
+}
+.gm-depth-mid.gm-director-power.gm-impact .gm-contact-halo{
+  opacity:1;
+}
+.gm-depth-back.gm-director-power.gm-release{
+  filter:brightness(1.08) saturate(1.06);
+}
+.gm-depth-mid.gm-director-power.gm-release .gm-batter-light{
+  opacity:.68;
+}
+.gm-depth-mid.gm-director-power.gm-release .gm-contact-halo{
+  opacity:.14;
+}
+.gm-depth-back.gm-director-power.gm-settle{
+  filter:brightness(1.03) saturate(1.02);
+}
+
+.gm-depth-back.gm-director-contact.gm-impact{
+  filter:brightness(.72) saturate(.82);
+}
+.gm-depth-mid.gm-director-contact.gm-impact .gm-contact-halo{
+  opacity:.94;
+}
+.gm-depth-back.gm-director-contact.gm-release,
+.gm-depth-front.gm-director-contact.gm-release{
+  filter:none;
+}
+.gm-depth-mid.gm-director-contact.gm-release .gm-contact-halo{
+  opacity:.08;
+}
+
+.gm-depth-mid.gm-director-near-miss.gm-slowmo .gm-contact-halo{
+  opacity:.04;
+}
+.gm-depth-mid.gm-director-near-miss.gm-slowmo .gm-pitch-tunnel{
+  opacity:.62;
+}
+.gm-depth-mid.gm-director-near-miss.gm-release .gm-batter-light{
+  opacity:.38;
+}
+.gm-depth-back.gm-director-near-miss.gm-release{
+  filter:brightness(.82) saturate(.72);
+}
+
+.gm-depth-mid.gm-director-strikeout.gm-impact .gm-contact-halo,
+.gm-depth-mid.gm-director-strikeout.gm-release .gm-contact-halo{
+  opacity:0;
+}
+.gm-depth-mid.gm-director-strikeout.gm-release .gm-batter-light{
+  opacity:.08;
+}
+.gm-depth-mid.gm-director-strikeout.gm-release .gm-pitcher-light{
+  opacity:.92;
+}
+.gm-depth-mid.gm-director-strikeout.gm-settle .gm-pitcher-light{
+  opacity:.58;
+}
+.gm-depth-back.gm-director-strikeout.gm-release{
+  filter:brightness(.74) saturate(.68);
+}
+
+.gm-depth-mid.gm-director-scrappy.gm-impact .gm-contact-halo{
+  opacity:.46;
+}
+.gm-depth-back.gm-director-scrappy.gm-impact{
+  filter:brightness(.84) saturate(.82);
+}
+.gm-depth-back.gm-director-scrappy.gm-release{
+  filter:brightness(.94) saturate(.9);
+}
+
+@media (prefers-reduced-motion:reduce){
+  .gm-depth-back[class*="gm-director-"],
+  .gm-depth-mid[class*="gm-director-"],
+  .gm-depth-front[class*="gm-director-"]{
+    transition:none!important;
+  }
+}
