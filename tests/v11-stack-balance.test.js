@@ -26,16 +26,17 @@ describe('V11 stack balance diagnostics',()=>{
     expect(v11StackZonesConnect(0,8)).toBe(false);
   });
 
-  it('records the current Double Grip order-erasure as a diagnostic, not a desired invariant',()=>{
+  it('keeps Double Grip valuable without erasing CONNECT order',()=>{
     const broken=v10RelicDamageRate(['twoStack'],2,V10_SWING_DAMAGE_RATES[1]);
     const connected=v10RelicDamageRate(['twoStack'],2,V10_SWING_DAMAGE_RATES[1]+V11_STACK_CONNECT_BONUS);
-    expect(broken).toBe(1);
-    expect(connected).toBe(1);
-    expect(broken).toBe(connected);
+    expect(broken).toBeCloseTo(.90);
+    expect(connected).toBeCloseTo(.97);
+    expect(connected).toBeGreaterThan(broken);
   });
 
-  it('shows why four-card perfect routing currently has weak marginal reward',()=>{
+  it('rewards a perfect four-card route above an unconnected three-card stack',()=>{
     const perfect4=V10_SWING_DAMAGE_RATES[3]+3*V11_STACK_CONNECT_BONUS;
-    expect(perfect4).toBeCloseTo(V10_SWING_DAMAGE_RATES[2]);
+    expect(perfect4).toBeCloseTo(.71);
+    expect(perfect4).toBeGreaterThan(V10_SWING_DAMAGE_RATES[2]);
   });
 });
