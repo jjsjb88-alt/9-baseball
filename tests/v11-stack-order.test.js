@@ -12,7 +12,7 @@ function armed(){
 
 describe('V11 9ZONE STACK ORDER',()=>{
   it('같은 존과 8방향 인접 존을 CONNECT로 판정한다',()=>{
-    expect(V11_STACK_CONNECT_BONUS).toBe(.05);
+    expect(V11_STACK_CONNECT_BONUS).toBe(.07);
     expect(v11StackZonesConnect(0,0)).toBe(true);
     expect(v11StackZonesConnect(0,1)).toBe(true);
     expect(v11StackZonesConnect(0,4)).toBe(true);
@@ -38,12 +38,12 @@ describe('V11 9ZONE STACK ORDER',()=>{
     expect(a.links.map(x=>x.connected)).toEqual([true,true,true]);
     expect(a.connectCount).toBe(3);
     expect(a.baseDamageRate).toBe(.5);
-    expect(a.orderedDamageRate).toBe(.65);
+    expect(a.orderedDamageRate).toBeCloseTo(.71);
     expect(a.perfect).toBe(true);
     expect(b.steps.map(x=>x.aimZone)).toEqual([0,8,4,7]);
     expect(b.links.map(x=>x.connected)).toEqual([false,true,true]);
     expect(b.connectCount).toBe(2);
-    expect(b.orderedDamageRate).toBeCloseTo(.60);
+    expect(b.orderedDamageRate).toBeCloseTo(.64);
     expect(b.perfect).toBe(false);
   });
 
@@ -54,10 +54,10 @@ describe('V11 9ZONE STACK ORDER',()=>{
     ]);
     expect(p.cardCount).toBe(4);
     expect(p.connectCount).toBe(3);
-    expect(p.connectBonus).toBeCloseTo(.15);
+    expect(p.connectBonus).toBeCloseTo(.21);
     expect(p.baseStackDamageRate).toBe(.5);
-    expect(p.orderedStackDamageRate).toBe(.65);
-    expect(p.damageRate).toBe(.65);
+    expect(p.orderedStackDamageRate).toBeCloseTo(.71);
+    expect(p.damageRate).toBeCloseTo(.71);
     expect(p.label).toContain('CONNECT 3/3');
   });
 
@@ -69,10 +69,10 @@ describe('V11 9ZONE STACK ORDER',()=>{
     ]});
     const combat=selectV10Combat(s);
     expect(combat.connectCount).toBe(3);
-    expect(combat.connectBonus).toBeCloseTo(.15);
+    expect(combat.connectBonus).toBeCloseTo(.21);
     expect(combat.baseStackDamageRate).toBe(.5);
-    expect(combat.orderedStackDamageRate).toBe(.65);
-    expect(combat.damageRate).toBe(.65);
+    expect(combat.orderedStackDamageRate).toBeCloseTo(.71);
+    expect(combat.damageRate).toBeCloseTo(.71);
     expect(combat.stackLinks.map(x=>x.connected)).toEqual([true,true,true]);
   });
 
