@@ -115,7 +115,7 @@ export function v10SwingDamageRate(cardCount=1){
   const n=Math.max(1,Math.min(V10_SWING_STACK_MAX,Number(cardCount)||1));
   return V10_SWING_DAMAGE_RATES[n-1];
 }
-export const V11_STACK_CONNECT_BONUS=.05;
+export const V11_STACK_CONNECT_BONUS=.07;
 export function v11StackZonesConnect(a,b){
   if(!Number.isInteger(a)||!Number.isInteger(b)||a<0||a>8||b<0||b>8)return false;
   const ar=Math.floor(a/3),ac=a%3,br=Math.floor(b/3),bc=b%3;
