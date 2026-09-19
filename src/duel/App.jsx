@@ -729,19 +729,23 @@ export default function Duel(){
     if(lock.current||tour.open)return;
     const next=fn(current.current);
     if(next===current.current)return;
-    persist(next);setSelected(null);setSwingStack([]);setStackEdit(null);setGrowthChoice(null);setRewardAction(null);setFacilityChoice(null);setDecisionMode(null);
-    if(!animate)return;
     const reduced=next.version!==10||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    const resolveMs=!reduced&&resolvePlan?.steps?.length>1?stackResolveDuration(resolvePlan):0;
+    const resolveMs=animate&&!reduced&&resolvePlan?.steps?.length>1?stackResolveDuration(resolvePlan):0;
+    setSelected(null);setSwingStack([]);setStackEdit(null);setGrowthChoice(null);setRewardAction(null);setFacilityChoice(null);setDecisionMode(null);
     if(resolveMs){
       lock.current=true;revealArena();
       const token=(next.stats?.pitches||0)+'-'+Date.now();
       setStackResolve({plan:resolvePlan,token});
-      const timer=setTimeout(()=>{setStackResolve(null);startPresentation(next);},resolveMs);
+      const timer=setTimeout(()=>{
+        setStackResolve(null);
+        persist(next);
+        startPresentation(next);
+      },resolveMs);
       timers.current=[timer];
       return;
     }
-    startPresentation(next);
+    persist(next);
+    if(animate)startPresentation(next);
   }
   function freshV10(){setGrowthChoice(null);setRewardAction(null);setFacilityChoice(null);setStackResolve(null);persist(createV10Duel(Number(trialSeed)>>>0));setScreen('run');setModal(null);setSelected(null);setSwingStack([]);setStackEdit(null);setDecisionMode(null);setTour({open:false,step:0});}
   function fresh(){setGrowthChoice(null);setRewardAction(null);setFacilityChoice(null);setStackResolve(null);persist(createDuel(Number(trialSeed)>>>0,build));setScreen('run');setModal(null);setSelected(null);setSwingStack([]);setStackEdit(null);setDecisionMode(null);setTour({open:false,step:0});}
