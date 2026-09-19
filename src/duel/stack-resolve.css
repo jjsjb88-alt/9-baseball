@@ -51,15 +51,18 @@
 }
 .resolve-cell{position:relative;border:1px solid #29464a;border-radius:5px;background:#10292d}
 .resolve-cell small{position:absolute;top:3px;left:4px;font-size:5px;color:#5d7770}
-.stack-resolve-zone svg{position:absolute;z-index:2;inset:6px;width:calc(100% - 12px);height:calc(100% - 12px);overflow:visible}
-.stack-resolve-zone line,.stack-resolve-zone circle{
+.stack-resolve-zone>svg{position:absolute;inset:6px;width:calc(100% - 12px);height:calc(100% - 12px);overflow:visible;pointer-events:none}
+.stack-resolve-route{z-index:2}
+.stack-resolve-route line,.stack-resolve-route circle{
   fill:none;stroke-width:2.4;vector-effect:non-scaling-stroke;
   opacity:0;
   animation:stackResolveLink 145ms ease-out both;
   animation-delay:calc(92ms + var(--link-index) * var(--step-gap));
 }
-.stack-resolve-zone .connected{stroke:var(--resolve-mint);filter:drop-shadow(0 0 4px #78e0b18c)}
-.stack-resolve-zone .broken{stroke:var(--resolve-red);stroke-dasharray:5 5;animation-name:stackResolveBreak}
+.stack-resolve-route .connected{stroke:var(--resolve-mint);filter:drop-shadow(0 0 4px #78e0b18c)}
+.stack-resolve-route .broken{stroke:var(--resolve-red);stroke-dasharray:5 5;animation-name:stackResolveBreak}
+.stack-resolve-lock-route{z-index:5;opacity:0;filter:drop-shadow(0 0 5px #78e0b1b0);animation:stackResolveLockRoute var(--commit-hold) cubic-bezier(.18,.72,.2,1) var(--commit-delay) both}
+.stack-resolve-lock-route line,.stack-resolve-lock-route circle{fill:none;stroke:var(--resolve-mint);stroke-width:4.2;vector-effect:non-scaling-stroke}
 .resolve-token{
   position:absolute;z-index:4;
   width:48px;
@@ -85,6 +88,27 @@
 .resolve-token.main{border-color:#a98b49;background:#322f20}
 .resolve-token.main>b{background:#deb65f;color:#172426}
 .resolve-token.final{animation-name:stackResolveTokenFinal}
+
+.stack-resolve-commit{
+  position:absolute;
+  z-index:7;
+  left:50%;
+  top:50%;
+  min-width:112px;
+  padding:6px 9px;
+  border:1px solid #89d9bb;
+  border-radius:999px;
+  background:linear-gradient(180deg,rgba(13,49,45,.96),rgba(7,27,28,.97));
+  box-shadow:0 8px 22px #000b,0 0 0 1px #78e0b122,0 0 24px #78e0b12b;
+  text-align:center;
+  opacity:0;
+  transform:translate(-50%,-50%) scale(.72);
+  animation:stackResolveCommit var(--commit-hold) cubic-bezier(.12,.78,.16,1) var(--commit-delay) both;
+}
+.stack-resolve-commit span{display:block;font-size:5px;font-weight:950;letter-spacing:1.3px;color:#93cdb8}
+.stack-resolve-commit b{display:block;margin-top:1px;font-size:10px;line-height:1.05;color:#e7fff5}
+.stack-resolve-commit small{display:block;margin-top:2px;font-size:5px;font-weight:900;letter-spacing:.6px;color:#f0cf7d}
+.stack-resolve.perfect .stack-resolve-commit{border-color:#b7f0d5;box-shadow:0 8px 22px #000b,0 0 0 1px #b7f0d544,0 0 32px #78e0b148}
 
 .stack-resolve-chain{
   display:flex;
@@ -134,7 +158,8 @@
   color:#78928a;
 }
 .stack-resolve-board footer>b{font-size:10px;color:#f0cf7d}
-.stack-resolve-board footer>em{font-style:normal;font-size:7px;font-weight:950;letter-spacing:.7px;color:#d9f1e8}
+.stack-resolve-board footer>em{display:flex;align-items:center;gap:4px;font-style:normal;font-size:7px;font-weight:950;letter-spacing:.7px;color:#d9f1e8;opacity:.58;animation:stackResolveHandoff var(--commit-hold) ease-out var(--commit-delay) both}
+.stack-resolve-board footer>em i{display:block;width:16px;height:2px;background:linear-gradient(90deg,transparent,var(--resolve-gold));transform-origin:right center;animation:stackResolveHandoffLine var(--commit-hold) ease-out var(--commit-delay) both}
 .stack-resolve-release{
   position:absolute;
   left:50%;top:50%;
@@ -181,6 +206,26 @@
   0%{opacity:0;transform:scaleX(.2)}
   100%{opacity:1;transform:scaleX(1)}
 }
+@keyframes stackResolveLockRoute{
+  0%{opacity:0;transform:scale(.985)}
+  34%{opacity:1;transform:scale(1.018)}
+  72%{opacity:.88;transform:scale(1)}
+  100%{opacity:0;transform:scale(1.006)}
+}
+@keyframes stackResolveCommit{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.72)}
+  28%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}
+  62%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(.96)}
+}
+@keyframes stackResolveHandoff{
+  0%,18%{opacity:.58}
+  54%,100%{opacity:1;color:#fff0bd;text-shadow:0 0 9px #f0c86e55}
+}
+@keyframes stackResolveHandoffLine{
+  0%,18%{transform:scaleX(.28);opacity:.3}
+  58%,100%{transform:scaleX(1);opacity:1}
+}
 @keyframes stackResolveRelease{
   0%,72%{opacity:0;transform:translate(-50%,-50%) scale(.25)}
   80%{opacity:.92;transform:translate(-50%,-50%) scale(.6)}
@@ -196,7 +241,9 @@
 @media (orientation:landscape) and (max-height:430px){
   .stack-resolve-board{width:min(60%,430px);padding:6px 9px}
   .stack-resolve-zone{width:min(48%,160px);padding:4px}
-  .stack-resolve-zone svg{inset:4px;width:calc(100% - 8px);height:calc(100% - 8px)}
+  .stack-resolve-zone>svg{inset:4px;width:calc(100% - 8px);height:calc(100% - 8px)}
+  .stack-resolve-commit{min-width:94px;padding:4px 7px}
+  .stack-resolve-commit b{font-size:8px}
   .resolve-token{width:39px;min-height:28px;padding:2px 4px}
   .resolve-token>b{width:15px;height:15px}
   .stack-resolve-chain{margin-top:4px;min-height:23px}

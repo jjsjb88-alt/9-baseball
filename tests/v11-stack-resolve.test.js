@@ -16,8 +16,8 @@ describe('V11 ordered Stack Resolve cinematic',()=>{
     expect(resolve).toContain("link.connected?'connected':'broken'");
     expect(resolve).toContain('step.order');
     expect(resolve).toContain("join(' → ')");
-    expect(css).toContain('.stack-resolve-zone .connected');
-    expect(css).toContain('.stack-resolve-zone .broken');
+    expect(css).toContain('.stack-resolve-route .connected');
+    expect(css).toContain('.stack-resolve-route .broken');
     expect(css).toContain('stroke-dasharray:5 5');
   });
 
