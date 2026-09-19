@@ -38,10 +38,11 @@ export default function StackRouteEcho({revealed}){
     </svg>
     {steps.map((step,i)=>{
       const p=point(step.aimZone);
+      const overlap=steps.slice(0,i).filter(prev=>prev.aimZone===step.aimZone).length;
       return <span
         key={step.id||step.order||i}
         className={'stack-echo-token '+(step.main?'main':'support')}
-        style={{left:p.x+'%',top:p.y+'%','--echo-step':i}}
+        style={{left:p.x+'%',top:p.y+'%',marginLeft:overlap*5,marginTop:overlap*-5,'--echo-step':i}}
       >{step.order||i+1}</span>;
     })}
   </div>;
