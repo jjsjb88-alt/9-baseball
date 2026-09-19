@@ -8,7 +8,7 @@ ROOT=Path(__file__).resolve().parents[1]
 SRC=ROOT/'assets'
 OUT=SRC/'sprites-v4'
 OUT.mkdir(parents=True,exist_ok=True)
-CELL=256
+CELL=192
 COLS=10
 ROWS=6
 TOTAL=60
