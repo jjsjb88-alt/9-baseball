@@ -36,7 +36,7 @@ describe('V11 tactical StackBoard contract',()=>{
   it('keeps MAIN fixed while support cards can reorder',()=>{
     expect(app).toContain('moveStackOrder=(id,delta)');
     expect(board).toContain('SWING ORDER');
-    expect(board).toContain('disabled={earlier==null}');
+    expect(board).toContain('disabled={earlier==null||!!drag}');
     expect(board).toContain('onClick={()=>onMove(step.id,-1)}');
     expect(board).toContain('onClick={()=>onMove(step.id,1)}');
     expect(board).toContain('if(index<1||target<1');
@@ -44,7 +44,7 @@ describe('V11 tactical StackBoard contract',()=>{
 
   it('previews reorder value without auto-playing the route',()=>{
     expect(board).toContain('stackMoveConnectDelta');
-    expect(board).toContain('버튼 숫자는 이동 후 CONNECT 변화');
+    expect(board).toContain('≡ 손잡이로 끌거나 버튼으로 이동');
     expect(board).toContain("impactClass(earlier)");
     expect(board).toContain("impactClass(later)");
     expect(css).toContain('.rail-actions button.improves');
