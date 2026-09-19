@@ -11,7 +11,8 @@ export function raisePerfTier(tier){
   return tier==='low'?'balanced':tier==='balanced'?'high':'high';
 }
 
-export const canMeasureFrameBudget=()=>typeof navigator==='undefined'||!/happy-dom|jsdom/i.test(navigator.userAgent||'');
+export const hasFakeFrameClock=()=>!!(globalThis.setTimeout?.clock||globalThis.requestAnimationFrame?.clock||globalThis.Date?.clock);
+export const canMeasureFrameBudget=()=>!hasFakeFrameClock()&&(typeof navigator==='undefined'||!/happy-dom|jsdom/i.test(navigator.userAgent||''));
 
 export default function useAdaptivePerformance(active=true){
   const [tier,setTier]=useState('high');
