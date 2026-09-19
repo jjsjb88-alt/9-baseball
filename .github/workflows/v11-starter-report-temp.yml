@@ -1,0 +1,25 @@
+name: TEMP V11 Starter Identity Report
+
+on:
+  push:
+    branches:
+      - codex/v11-starter-identity
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Starter identity report
+        run: node scripts/report-v11-starter.mjs 80
