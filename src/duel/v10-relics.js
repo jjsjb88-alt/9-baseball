@@ -1,6 +1,6 @@
 export const V10_RELICS=Object.freeze({
   firstPitch:{name:'초구 노림표',mark:'1ST',text:'타석 첫 공에서 HP 피해가 발생하면 +3 HP.'},
-  twoStack:{name:'더블 그립',mark:'2X',text:'2장 SWING STACK의 HP 피해 효율을 100%로 유지.'},
+  twoStack:{name:'더블 그립',mark:'2X',text:'2장 SWING STACK의 HP 피해 효율 +10%p.'},
   foulTape:{name:'커트 테이프',mark:'CUT',text:'파울이 투수 HP에 추가 +2 피해.'},
   awayBadge:{name:'반대 방향 배지',mark:'OUT',text:'바깥쪽 코스를 안타로 만들면 추가 +4 HP.'},
   slugBand:{name:'클린업 손목밴드',mark:'XBH',text:'2루타 이상 장타면 추가 +4 HP.'},
@@ -22,7 +22,7 @@ export function v10RelicOffers({seed=0,act=1,nodeSeed=0,owned=[]}={}){
 }
 
 export function v10RelicDamageRate(relics=[],cardCount=1,baseRate=1){
-  return relics.includes('twoStack')&&cardCount===2?1:baseRate;
+  return relics.includes('twoStack')&&cardCount===2?Math.min(1,baseRate+.10):baseRate;
 }
 
 const damagingOutcome=o=>o?.kind==='hit'||o?.kind==='foul'||o?.kind==='whiff'||o?.kind==='miss'||o?.kind==='ball'||o?.kind==='walk'||o?.kind==='out'||o?.kind==='sacrifice'||o?.label==='볼넷';
@@ -31,7 +31,7 @@ export function v10RelicDamagePlan({relics=[],outcome={},cardCount=1,damageRate=
   const events=[];
   const rate=v10RelicDamageRate(relics,cardCount,damageRate);
   let bonus=0;
-  if(relics.includes('twoStack')&&cardCount===2&&rate!==damageRate)events.push('더블 그립 · 2장 스택 피해 100%');
+  if(relics.includes('twoStack')&&cardCount===2&&rate!==damageRate)events.push('더블 그립 · 2장 스택 피해 +10%p');
   if(relics.includes('firstPitch')&&pitchInPA===1&&damagingOutcome(outcome)){
     bonus+=3;events.push('초구 노림표 · +3 HP');
   }
