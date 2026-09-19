@@ -7,6 +7,7 @@ import {createV10Duel,enterV10Node,playV10Action,advanceV10Pitch,advanceV10Batte
   saveV10Duel,readV10Duel,previewV10Stack,V10_SWING_STACK_MAX,V10_SWING_DAMAGE_RATES} from './engine.js';
 import {deckProfile,diagnose,applyRewardToDeck,rewardProblem,profileDelta,relationsFor,growthConflict} from './deck.js';
 import './duel.css';
+import './v11-stack-core.css';
 import {coverageText} from './information.js';
 import {cue} from './audio.js';
 import {presentationFor,presentationTimeline} from './presentation.js';
@@ -644,6 +645,7 @@ export default function Duel(){
   const stackAllowed=!!(isV10&&selectedEntry&&selectedEntry.kind!=='bunt'&&b.growthMode!=='patience');
   const activeStack=stackAllowed?swingStack.filter(x=>b?.hand.includes(x.id)&&x.id!==selected).slice(0,V10_SWING_STACK_MAX-1):[];
   const stackEditItem=activeStack.find(x=>x.id===stackEdit)||null;
+  const moveStackOrder=(id,delta)=>setSwingStack(xs=>{const i=xs.findIndex(x=>x.id===id),j=i+delta;if(i<0||j<0||j>=xs.length)return xs;const next=[...xs];[next[i],next[j]]=[next[j],next[i]];return next;});
   const rawChoice=selected&&(selected==='basic'||b?.hand.includes(selected))
     ?(isV10&&decisionMode==='swing'&&selectedEntry?previewV10Stack(s,selected,activeStack):showPreview(selected)):null;
   const choice=rawChoice&&rawChoice.coverage?{...rawChoice,coverageLabel:rawChoice.coverage.length+(activeStack.length?'존 스택 커버':'존 커버')}:rawChoice;
