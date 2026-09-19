@@ -24,10 +24,11 @@ describe('V11 ordered Stack Resolve cinematic',()=>{
   it('hands visual ownership to the swing only after resolve completes',()=>{
     expect(app).toContain('resolvePlan?.steps?.length>1?stackResolveDuration(resolvePlan):0');
     expect(app).toContain('setStackResolve({plan:resolvePlan,token})');
-    expect(app).toContain('setStackResolve(null);');
-    expect(app).toContain('persist(next);');
-    expect(app).toContain('startPresentation(next);');
-    expect(app.indexOf('setStackResolve(null);')).toBeLessThan(app.indexOf('startPresentation(next);'));
+    const act=app.slice(app.indexOf('function act(fn,animate=false,resolvePlan=null)'),app.indexOf('function freshV10()'));
+    expect(act).toContain('setStackResolve(null);');
+    expect(act).toContain('persist(next);');
+    expect(act).toContain('startPresentation(next);');
+    expect(act.indexOf('setStackResolve(null);')).toBeLessThan(act.indexOf('startPresentation(next);'));
   });
 
   it('does not reveal the committed result before the stack route finishes',()=>{
