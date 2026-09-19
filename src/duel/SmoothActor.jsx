@@ -175,7 +175,7 @@ export default function SmoothActor({who,stage=null,shot=null,variant='outside'}
     anis.push(animate(bs.current,jointFrames(frames,'bs'),opts));
     if(bat.current)anis.push(animate(bat.current,keyframes(frames,'bat',v=>`rotate(${v}deg)`),opts));
     if(glove.current)anis.push(animate(glove.current,keyframes(frames,'rootX',(_,p)=>tf(0,0,p.ba*.16)),opts));
-    return ()=>anis.forEach(a=>a?.cancel?.());
+    return ()=>anis.forEach(a=>{try{a?.cancel?.();}catch{}});
   },[track,stage,shot?.motion?.duration,shot?.motion?.impactAt,shot?.motion?.settleAt]);
 
   return <span className={'smooth-actor smooth-'+who+' variant-'+variant+(stage?' stage-'+stage:' idle')}><PlayerArt who={who} variant={variant} refs={refs} uid={uid}/></span>;
