@@ -39,7 +39,7 @@ describe('V11 tactical StackBoard contract',()=>{
     expect(board).toContain('disabled={earlier==null||!!drag}');
     expect(board).toContain('onClick={()=>onMove(step.id,-1)}');
     expect(board).toContain('onClick={()=>onMove(step.id,1)}');
-    expect(board).toContain('if(index<1||target<1');
+    expect(board).toContain('if(fromIndex<1||toIndex<1');
   });
 
   it('previews reorder value without auto-playing the route',()=>{
