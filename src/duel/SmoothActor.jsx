@@ -107,34 +107,34 @@ function PlayerArt({who,variant,refs,uid}){
     <ellipse className="smooth-ground-shadow" cx="91" cy="201" rx="47" ry="8"/>
     <g ref={refs.root} className="rig-root" filter={`url(#${id('actorShadow')})`}>
       <g className="rear-leg rig-joint" transform="translate(82 137)">
-        <g ref={refs.bt} className="rig-joint thigh"><path d="M-10 0h19l7 42-18 3-12-33z" fill="url(#${id('jersey')})" stroke="#061116" strokeWidth="5"/>
-          <g ref={refs.bs} className="rig-joint shin" transform="translate(1 39)"><path d="M-4 0h18l5 31-20 2z" fill="url(#${id('navy')})" stroke="#061116" strokeWidth="5"/><path d="M-5 29h28l5 11H-9z" fill="#071820" stroke="#061116" strokeWidth="4"/></g>
+        <g ref={refs.bt} className="rig-joint thigh"><path d="M-10 0h19l7 42-18 3-12-33z" fill={`url(#${id('jersey')})`} stroke="#061116" strokeWidth="5"/>
+          <g ref={refs.bs} className="rig-joint shin" transform="translate(1 39)"><path d="M-4 0h18l5 31-20 2z" fill={`url(#${id('navy')})`} stroke="#061116" strokeWidth="5"/><path d="M-5 29h28l5 11H-9z" fill="#071820" stroke="#061116" strokeWidth="4"/></g>
         </g>
       </g>
       <g className="front-leg rig-joint" transform="translate(103 137)">
-        <g ref={refs.ft} className="rig-joint thigh"><path d="M-9 0h19l5 42-18 3-10-33z" fill="url(#${id('jersey')})" stroke="#061116" strokeWidth="5"/>
-          <g ref={refs.fs} className="rig-joint shin" transform="translate(1 39)"><path d="M-4 0h18l5 31-20 2z" fill="url(#${id('navy')})" stroke="#061116" strokeWidth="5"/><path d="M-5 29h28l5 11H-9z" fill="#071820" stroke="#061116" strokeWidth="4"/></g>
+        <g ref={refs.ft} className="rig-joint thigh"><path d="M-9 0h19l5 42-18 3-10-33z" fill={`url(#${id('jersey')})`} stroke="#061116" strokeWidth="5"/>
+          <g ref={refs.fs} className="rig-joint shin" transform="translate(1 39)"><path d="M-4 0h18l5 31-20 2z" fill={`url(#${id('navy')})`} stroke="#061116" strokeWidth="5"/><path d="M-5 29h28l5 11H-9z" fill="#071820" stroke="#061116" strokeWidth="4"/></g>
         </g>
       </g>
       <g ref={refs.torso} className="rig-joint" transform="translate(90 112)">
-        <path d="M-31-34Q-20-49 0-50Q24-49 33-31L29 18Q9 32-22 23L-34-6z" fill="url(#${id('jersey')})" stroke="#061116" strokeWidth="5"/>
+        <path d="M-31-34Q-20-49 0-50Q24-49 33-31L29 18Q9 32-22 23L-34-6z" fill={`url(#${id('jersey')})`} stroke="#061116" strokeWidth="5"/>
         <path d="M-24-31Q-6-20 27-28M-3-47V20" fill="none" stroke="#0d5260" strokeWidth="5"/>
-        <path d="M-34-24l-14 10 9 20 16-8M32-23l15 9-8 20-16-8" fill="url(#${id('navy')})" stroke="#061116" strokeWidth="5"/>
+        <path d="M-34-24l-14 10 9 20 16-8M32-23l15 9-8 20-16-8" fill={`url(#${id('navy')})`} stroke="#061116" strokeWidth="5"/>
         <rect x="-26" y="17" width="53" height="8" rx="3" fill="#071820"/>
       </g>
       <g ref={refs.ba} className="rig-joint arm back-arm" transform="translate(63 86)">
-        <rect x="-7" y="-2" width="15" height="33" rx="7" fill="url(#${id('navy')})" stroke="#061116" strokeWidth="4"/>
-        <g ref={refs.bf} className="rig-joint forearm" transform="translate(1 29)"><rect x="-6" y="0" width="13" height="31" rx="6" fill="url(#${id('skin')})" stroke="#061116" strokeWidth="4"/><circle cx="1" cy="30" r="7" fill="#efe6ce" stroke="#061116" strokeWidth="3"/></g>
+        <rect x="-7" y="-2" width="15" height="33" rx="7" fill={`url(#${id('navy')})`} stroke="#061116" strokeWidth="4"/>
+        <g ref={refs.bf} className="rig-joint forearm" transform="translate(1 29)"><rect x="-6" y="0" width="13" height="31" rx="6" fill={`url(#${id('skin')})`} stroke="#061116" strokeWidth="4"/><circle cx="1" cy="30" r="7" fill="#efe6ce" stroke="#061116" strokeWidth="3"/></g>
       </g>
       <g ref={refs.fa} className="rig-joint arm front-arm" transform="translate(118 86)">
-        <rect x="-7" y="-2" width="15" height="33" rx="7" fill="url(#${id('navy')})" stroke="#061116" strokeWidth="4"/>
-        <g ref={refs.ff} className="rig-joint forearm" transform="translate(1 29)"><rect x="-6" y="0" width="13" height="31" rx="6" fill="url(#${id('skin')})" stroke="#061116" strokeWidth="4"/><circle cx="1" cy="30" r="7" fill="#efe6ce" stroke="#061116" strokeWidth="3"/></g>
+        <rect x="-7" y="-2" width="15" height="33" rx="7" fill={`url(#${id('navy')})`} stroke="#061116" strokeWidth="4"/>
+        <g ref={refs.ff} className="rig-joint forearm" transform="translate(1 29)"><rect x="-6" y="0" width="13" height="31" rx="6" fill={`url(#${id('skin')})`} stroke="#061116" strokeWidth="4"/><circle cx="1" cy="30" r="7" fill="#efe6ce" stroke="#061116" strokeWidth="3"/></g>
       </g>
       {pitcher&&<g ref={refs.glove} className="pitcher-glove" transform="translate(73 107)"><path d="M-13-11Q-3-20 10-13L17 1 7 16-12 11-19-1z" fill="#70411f" stroke="#061116" strokeWidth="4"/><path d="M-9-7L8 10M-2-12L13 5" stroke="#b97937" strokeWidth="3"/></g>}
-      {!pitcher&&<g ref={refs.bat} className="bat-rig" transform="translate(126 69) rotate(-64)"><path d="M0-4h70l16 4-16 4H0z" fill="url(#${id('bat')})" stroke="#061116" strokeWidth="4"/><rect x="-8" y="-5" width="13" height="10" rx="3" fill="#ecdfc4" stroke="#061116" strokeWidth="3"/></g>}
+      {!pitcher&&<g ref={refs.bat} className="bat-rig" transform="translate(126 69) rotate(-64)"><path d="M0-4h70l16 4-16 4H0z" fill={`url(#${id('bat')})`} stroke="#061116" strokeWidth="4"/><rect x="-8" y="-5" width="13" height="10" rx="3" fill="#ecdfc4" stroke="#061116" strokeWidth="3"/></g>}
       <g ref={refs.head} className="rig-joint head" transform="translate(90 55)">
-        <circle cx="0" cy="0" r="20" fill="url(#${id('skin')})" stroke="#061116" strokeWidth="5"/>
-        <path d="M-22-4Q-19-29 3-29Q24-27 27-8L9-4 1-11-21-8z" fill="url(#${id('navy')})" stroke="#061116" strokeWidth="5"/>
+        <circle cx="0" cy="0" r="20" fill={`url(#${id('skin')})`} stroke="#061116" strokeWidth="5"/>
+        <path d="M-22-4Q-19-29 3-29Q24-27 27-8L9-4 1-11-21-8z" fill={`url(#${id('navy')})`} stroke="#061116" strokeWidth="5"/>
         <path d="M9-4h24v7H11z" fill="#0d3f4d" stroke="#061116" strokeWidth="3"/>
         <circle cx="8" cy="1" r="2.5" fill="#061116"/>
       </g>
