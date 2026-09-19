@@ -18,6 +18,7 @@ export default function StackBoard({
   damageRate=1,
   baseDamageRate=1,
   connectBonus=0,
+  precisionPressure=0,
 }){
   const steps=plan?.steps||[],links=plan?.links||[];
   const connectCount=plan?.connectCount||0;
@@ -93,6 +94,7 @@ export default function StackBoard({
           <i>=</i>
           <div className="final"><span>FINAL</span><b>{Math.round(damageRate*100)}%</b></div>
         </div>
+        {precisionPressure>0&&<div className="stack-precision-note"><span>PRECISION MAIN</span><strong>정확 적중 ×{(1+precisionPressure).toFixed(1)}</strong><small>지원 카드 적중에는 적용되지 않습니다.</small></div>}
         <div className="stack-link-list">
           {links.length?links.map(link=><div key={link.toOrder} className={link.connected?'connected':'broken'}>
             <b>{link.fromOrder} → {link.toOrder}</b>
