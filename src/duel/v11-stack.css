@@ -164,3 +164,20 @@
 @media (prefers-reduced-motion:reduce){
   .stack-route-lines .connected{filter:none}
 }
+
+
+.stack-precision-note{
+  display:grid;
+  grid-template-columns:auto 1fr;
+  grid-template-areas:"tag value" "note note";
+  align-items:center;
+  gap:2px 7px;
+  padding:7px 8px;
+  border:1px solid #8d7641;
+  border-radius:8px;
+  background:linear-gradient(135deg,#2d2a1d,#13272a);
+  box-shadow:inset 0 0 0 1px #f0c86e14;
+}
+.stack-precision-note>span{grid-area:tag;font-size:6px;font-weight:950;letter-spacing:1px;color:#c9a958}
+.stack-precision-note>strong{grid-area:value;justify-self:end;font-size:10px;color:#ffe19a}
+.stack-precision-note>small{grid-area:note;font-size:6px;color:#839b93}

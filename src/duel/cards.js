@@ -2,7 +2,7 @@
 export const ZONES=['몸쪽 높음','가운데 높음','바깥 높음','몸쪽 중간','한가운데','바깥 중간','몸쪽 낮음','가운데 낮음','바깥 낮음'];
 // role/axis/gives/needs drive the deck screens. Every value here restates an engine rule, never a new one.
 export const CARDS={
-  place:{name:'맞혀놓기',type:'attack',art:'bat',shape:'point',power:-1,role:'범위',axis:'point',gives:['1존 커버'],needs:[],text:'선택한 1존 커버. 적중하면 안타 확정. 범위도 장타 보정도 없는 스타터 카드.',flavor:'좋은 덱을 만들기 전에도 공은 맞혀야 한다.'},
+  place:{name:'정타 노림',type:'attack',art:'bat',shape:'point',power:0,pressure:.50,role:'정타',axis:'point',gives:['1존 커버','정확 적중 HP +50%'],needs:[],text:'선택한 1존 커버. 메인 카드로 정확히 적중하면 투수 HP 압박 +50%. 좁게 읽은 공에 가장 효율적인 스타터 카드.',flavor:'넓게 휘두르지 않는다. 한 칸을 맞힌다.'},
   strike:{name:'밀어치기',type:'attack',art:'bat',shape:'column',power:0,role:'범위',axis:'column',gives:['세로 3존 커버'],needs:[],text:'선택한 세로 3존 커버. 적중하면 안타 확정. 바깥쪽에서 타구 질 보너스.',flavor:'바깥 공을 끝까지 보고 반대편으로.'},
   slug:{name:'당겨 넘기기',type:'attack',art:'comet',shape:'point',power:2,role:'장타',axis:'point',gives:['파워 +36'],needs:[],text:'선택한 1존 적중 시 안타 확정. 파워 +36으로 장타 베팅. 빗나가면 헛스윙 위험.',flavor:'내가 기다린 공 하나.'},
   rally:{name:'주자 연결',type:'attack',art:'double',shape:'row',power:0,role:'진루',axis:'row',gives:['가로 3존 커버','주자 2베이스'],needs:[],text:'선택한 가로 3존 커버. 안타 때 기존 주자는 최소 두 베이스 전진.',flavor:'홈으로 부를 공을 기다린다.'},
@@ -19,7 +19,7 @@ export const CARDS={
   flow:{name:'히트앤드런 사인',type:'skill',art:'spark',role:'진루',axis:null,gives:['주자 +1루'],needs:['주자'],text:'준비 1회 · 이번 타석 안타 때 기존 주자 추가 1베이스. 주자가 있어야 사용.',flavor:'사인만으로 주자가 움직이지는 않는다.'},
   calm:{name:'호흡 고르기',type:'skill',art:'moon',role:'생존',axis:null,gives:['파울 생존','카드 +1'],needs:[],text:'준비 1회 · 이번 타석 파울 생존력 증가. 카드 1장 뽑기.',flavor:'몰려도 승부는 끝나지 않았다.'},
 };
-export const ROLES=['관찰','범위','장타','진루','생존','집중','수급'];
+export const ROLES=['관찰','정타','범위','장타','진루','생존','집중','수급'];
 export const AXES=[['point','1존'],['row','가로 3존'],['column','세로 3존'],['cross','십자 5존'],['all','9존']];
 export const AXIS_NAMES=Object.fromEntries(AXES);
 // A `+` card never turns a covered pitch into an out. It only widens range, power, information or advancement.
