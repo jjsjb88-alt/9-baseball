@@ -36,9 +36,20 @@ describe('V11 tactical StackBoard contract',()=>{
   it('keeps MAIN fixed while support cards can reorder',()=>{
     expect(app).toContain('moveStackOrder=(id,delta)');
     expect(board).toContain('SWING ORDER');
-    expect(board).toContain('disabled={i===1}');
+    expect(board).toContain('disabled={earlier==null}');
     expect(board).toContain('onClick={()=>onMove(step.id,-1)}');
     expect(board).toContain('onClick={()=>onMove(step.id,1)}');
+    expect(board).toContain('if(index<1||target<1');
+  });
+
+  it('previews reorder value without auto-playing the route',()=>{
+    expect(board).toContain('stackMoveConnectDelta');
+    expect(board).toContain('버튼 숫자는 이동 후 CONNECT 변화');
+    expect(board).toContain("impactClass(earlier)");
+    expect(board).toContain("impactClass(later)");
+    expect(css).toContain('.rail-actions button.improves');
+    expect(css).toContain('.rail-actions button.worsens');
+    expect(css).toContain('.rail-actions button.neutral');
   });
 
   it('shows BASE → CONNECT → FINAL HP efficiency without recalculating engine data',()=>{

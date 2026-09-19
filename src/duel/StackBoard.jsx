@@ -1,5 +1,6 @@
 import React from 'react';
 import {CARDS,ZONES} from './cards.js';
+import {v11StackZonesConnect} from './engine.js';
 import './v11-stack.css';
 
 const center=zone=>{
@@ -9,6 +10,18 @@ const center=zone=>{
 
 const cardName=(kind,main)=>main?'MAIN SWING':(CARDS[kind]?.name||'SUPPORT');
 const zoneLabel=zone=>ZONES[zone]||('ZONE '+(Number(zone)+1));
+
+export function stackMoveConnectDelta(steps,index,delta){
+  const list=Array.isArray(steps)?steps:[];
+  const target=index+delta;
+  if(index<1||target<1||index>=list.length||target>=list.length)return null;
+  const moved=[...list];
+  [moved[index],moved[target]]=[moved[target],moved[index]];
+  const count=xs=>xs.slice(1).reduce((sum,step,i)=>sum+(v11StackZonesConnect(xs[i]?.aimZone,step?.aimZone)?1:0),0);
+  return count(moved)-count(list);
+}
+const impactClass=delta=>delta>0?'improves':delta<0?'worsens':'neutral';
+const impactText=delta=>delta>0?('+'+delta):String(delta);
 
 export default function StackBoard({
   plan,
@@ -106,20 +119,27 @@ export default function StackBoard({
     </div>
 
     {steps.length>1&&<div className="stack-order-rail" aria-label="스윙 순서 변경">
-      <span className="rail-label">SWING ORDER</span>
+      <div className="rail-heading">
+        <span className="rail-label">SWING ORDER</span>
+        <small>같은 존·8방향 인접 = CONNECT · 버튼 숫자는 이동 후 CONNECT 변화</small>
+      </div>
       <div className="rail-cards">
-        {steps.map((step,i)=><React.Fragment key={step.order}>
-          {i>0&&<i className={links[i-1]?.connected?'connected':'broken'} aria-hidden="true"/>}
-          <div className={(step.main?'main ':'support ')+(step.id===activeId?'active':'')}>
-            <b>{step.order}</b>
-            <span>{cardName(step.kind,step.main)}</span>
-            <small>{zoneLabel(step.aimZone)}</small>
-            {!step.main&&<div className="rail-actions">
-              <button type="button" aria-label={cardName(step.kind,false)+' 순서를 앞으로'} disabled={i===1} onClick={()=>onMove(step.id,-1)}>←</button>
-              <button type="button" aria-label={cardName(step.kind,false)+' 순서를 뒤로'} disabled={i===steps.length-1} onClick={()=>onMove(step.id,1)}>→</button>
-            </div>}
-          </div>
-        </React.Fragment>)}
+        {steps.map((step,i)=>{
+          const earlier=step.main?null:stackMoveConnectDelta(steps,i,-1);
+          const later=step.main?null:stackMoveConnectDelta(steps,i,1);
+          return <React.Fragment key={step.order}>
+            {i>0&&<i className={links[i-1]?.connected?'connected':'broken'} aria-hidden="true"/>}
+            <div className={(step.main?'main ':'support ')+(step.id===activeId?'active':'')}>
+              <b>{step.order}</b>
+              <span>{cardName(step.kind,step.main)}</span>
+              <small>{zoneLabel(step.aimZone)}</small>
+              {!step.main&&<div className="rail-actions">
+                <button type="button" className={earlier==null?'':impactClass(earlier)} aria-label={cardName(step.kind,false)+' 순서를 앞으로 · CONNECT '+(earlier==null?'변경 불가':impactText(earlier))} disabled={earlier==null} onClick={()=>onMove(step.id,-1)}><span>← 앞</span>{earlier!=null&&<b>{impactText(earlier)}</b>}</button>
+                <button type="button" className={later==null?'':impactClass(later)} aria-label={cardName(step.kind,false)+' 순서를 뒤로 · CONNECT '+(later==null?'변경 불가':impactText(later))} disabled={later==null} onClick={()=>onMove(step.id,1)}><span>뒤 →</span>{later!=null&&<b>{impactText(later)}</b>}</button>
+              </div>}
+            </div>
+          </React.Fragment>;
+        })}
       </div>
     </div>}
   </section>;
