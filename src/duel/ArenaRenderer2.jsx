@@ -90,7 +90,8 @@ function flags(shot){
 }
 const coverMask=zones=>(zones||[]).reduce((m,z)=>z>=0&&z<9?m|(1<<z):m,0);
 
-export default function ArenaRenderer2({stage=null,shot=null,match=0,rival=false,revealed=null,token=0,label='Pixel Cinema Renderer 2.0',onStatus=null}){
+const DPR_CAP={high:2,balanced:1.25,low:1};
+export default function ArenaRenderer2({stage=null,shot=null,match=0,rival=false,revealed=null,token=0,label='Pixel Cinema Renderer 2.0',onStatus=null,quality='high'}){
   const ref=useRef(null);
   useEffect(()=>{
     const canvas=ref.current;if(!canvas)return;
@@ -102,7 +103,7 @@ export default function ArenaRenderer2({stage=null,shot=null,match=0,rival=false
     const code=STAGE[stage]||0,start=performance.now(),duration=durationFor(stage,shot),f=flags(shot);
     const tactical=!!revealed&&['dead-center','solid','jammed','lucky','extra','homer','grand-slam','near-miss','near-miss-k','chase','chase-k','fooled','strikeout'].includes(shot?.grade||'')&&[2,3,4].includes(code);
     let raf=0,alive=true,ro;
-    const resize=()=>{const rect=canvas.getBoundingClientRect?.()||{width:640,height:360},dpr=Math.min(2,globalThis.devicePixelRatio||1),w=Math.max(320,Math.round((rect.width||640)*dpr)),h=Math.max(180,Math.round((rect.height||360)*dpr));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h);}};
+    const resize=()=>{const rect=canvas.getBoundingClientRect?.()||{width:640,height:360},cap=DPR_CAP[quality]||DPR_CAP.high,dpr=Math.min(cap,globalThis.devicePixelRatio||1),w=Math.max(320,Math.round((rect.width||640)*dpr)),h=Math.max(180,Math.round((rect.height||360)*dpr));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h);}canvas.dataset.quality=quality;canvas.dataset.dpr=String(dpr);};
     resize();if(globalThis.ResizeObserver){ro=new ResizeObserver(resize);ro.observe(canvas);}
     const draw=now=>{
       if(!alive)return;resize();const phase=Math.min(1,(now-start)/duration);gl.useProgram(p);
@@ -111,6 +112,6 @@ export default function ArenaRenderer2({stage=null,shot=null,match=0,rival=false
     };
     raf=requestAnimationFrame(draw);
     return ()=>{alive=false;cancelAnimationFrame(raf);ro?.disconnect();gl.deleteProgram(p);};
-  },[stage,shot?.grade,shot?.kind,match,rival,revealed?.zone,revealed?.aimZone,JSON.stringify(revealed?.coverage||[]),token]);
+  },[stage,shot?.grade,shot?.kind,match,rival,revealed?.zone,revealed?.aimZone,JSON.stringify(revealed?.coverage||[]),token,quality]);
   return <canvas ref={ref} className="arena-renderer2" aria-label={label} aria-hidden="true"/>;
 }
