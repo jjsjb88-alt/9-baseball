@@ -141,3 +141,41 @@ Why +7 instead of a more aggressive +8~10:
 - It preserves a meaningful gap from solo.
 - It keeps the base card-count penalty unchanged, so the balance identity remains coverage vs resource/pressure.
 - The report should be rerun after the tuning patch; simulation informs the next playtest but does not replace it.
+
+
+## Post-tuning verification — CONNECT +7%p / Double Grip +10%p
+
+Action: `35437767521`  
+Full test suite and production build passed.
+
+The exact same 80 opening battles and 37,520 sampled plans were rerun after tuning.
+
+| cards | before avg HP | after avg HP | after avg HP/card | after avg final rate |
+|---|---:|---:|---:|---:|
+| 1 | 2.355 | 2.355 | 2.355 | 100.00% |
+| 2 | 2.762 | 2.801 | 1.401 | 84.26% |
+| 3 | 2.958 | 3.057 | 1.019 | 73.49% |
+| 4 | 2.889 | **3.064** | 0.766 | 62.74% |
+
+### What changed
+
+- Four-card stacking no longer loses raw pressure to three-card stacking on average.
+- The gap is intentionally tiny: 3.057 vs 3.064 expected HP. Four cards are a commitment, not a default upgrade.
+- Per-card economy still collapses as cards are added, so resource scarcity remains meaningful.
+- Perfect four-card routing is now **71%**, six points above an unconnected three-card base rate of 65%.
+- Solo remains 100%, preserving the identity of a confident one-card read.
+- Pressure-only diagnostic choice moved from 7.5% → 18.75% four-card usage.
+- Economy and practical diagnostics still choose one card 100% of the time, confirming that multi-stack has not become free value.
+
+### Double Grip after tuning
+
+- 2-card BREAK: **90%**
+- 2-card CONNECT: **97%**
+- Order is no longer erased.
+- The relic remains strong because both values sit materially above the ordinary 80% / 87% pair.
+
+### Decision
+
+Ship the +7%p CONNECT reward and +10%p Double Grip version for human playtesting.
+
+Do **not** increase CONNECT further before play feedback. The current numbers already make four-card pressure competitive while preserving a steep card-economy cost.
