@@ -45,7 +45,7 @@ describe('adaptive 60fps background budget',()=>{
   });
 
   it('integrates quality into background renderers but never V4CanvasSprite',()=>{
-    expect(app).toContain('useAdaptivePerformance(!!(showBattle&&isV10))');
+    expect(app).toContain('useAdaptivePerformance(!!(showBattle&&isV10&&fxStage))');
     expect(app).toContain('data-perf-tier={perfTier}');
     expect(app).toContain('label="실전 WebGL 경기장" quality={perfTier}');
     expect(app).toContain('drawCore={false} quality={perfTier}');
