@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  generate:
+  verify:
     if: ${{ !contains(github.event.head_commit.message, '[v4-generated]') }}
     runs-on: ubuntu-latest
     steps:
@@ -32,3 +32,15 @@ jobs:
             git commit -m "[v4-generated] art(animation): generate 60-frame pixel sprite sheets"
             git push origin HEAD:codex/hotfix-v4-real-60frame-sprites
           fi
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Test
+        run: pnpm test
+      - name: Build
+        run: pnpm run build
