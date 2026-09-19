@@ -68,6 +68,19 @@ describe('V11 tactical StackBoard contract',()=>{
     expect(css).toContain('.rail-cards>div.drag-target');
   });
 
+  it('turns StackBoard into the direct support-zone editor without changing engine math',()=>{
+    expect(app).toContain('onAim={(id,z)=>setSwingStack');
+    expect(board).toContain('stackAimConnectPreview');
+    expect(board).toContain('aimEditing?onAim(activeId,zone)');
+    expect(board).toContain('disabled={!here.length&&!aimEditing}');
+    expect(board).toContain('각 존의 LINK 수와 CONNECT 변화량');
+    expect(board).toContain('stack-aim-hint');
+    expect(css).toContain('.stack-zone-cell.aim-full');
+    expect(css).toContain('.stack-zone-cell.aim-partial');
+    expect(css).toContain('.stack-zone-cell.aim-break');
+    expect(css).toContain('.stack-aim-hint');
+  });
+
   it('shows BASE → CONNECT → FINAL HP efficiency without recalculating engine data',()=>{
     expect(board).toContain('BASE');
     expect(board).toContain('CONNECT');
