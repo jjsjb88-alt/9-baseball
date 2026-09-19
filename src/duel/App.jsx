@@ -106,7 +106,7 @@ function CoverageMini({zones}){return <div className="coverage-mini" aria-label=
 const BATTER_POSES={idle:batterIdle,load:batterLoad,contact:batterContact,follow:batterFollow,homer:batterHomer,miss:batterMiss};
 const PITCHER_POSES={idle:pitcherIdle,set:pitcherSet,legkick:pitcherLegkick,release:pitcherRelease,follow:pitcherFollow,strikeout:pitcherStrikeout};
 const PITCHER_RELEASE_V3={sinker:pitcherSinkerReleaseV3,high:pitcherHighReleaseV3,closer:pitcherCloserReleaseV3};
-const ACTOR_ASSETS=[...new Set([...BATTER_SWING_V2,...BATTER_MISS_V2,...PITCHER_PITCH_V2,...PITCHER_K_V2,batterHomerHeroV3,...Object.values(PITCHER_RELEASE_V3)])];
+const ACTOR_ASSETS=[...new Set([...BATTER_SWING_V2,...BATTER_MISS_V2,...PITCHER_PITCH_V2,...PITCHER_K_V2,batterSwingV4,pitcherPitchV4,batterHomerHeroV3,...Object.values(PITCHER_RELEASE_V3)])];
 function useActorAssetPreload(){
   useEffect(()=>{
     if(typeof Image==='undefined')return;
