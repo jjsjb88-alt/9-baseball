@@ -40,7 +40,7 @@ export default function StackResolve({plan,token=0}){
           {links.map((link,i)=>{
             const a=center(link.fromZone),b=center(link.toZone),same=link.fromZone===link.toZone;
             const cls=link.connected?'connected':'broken';
-            const style={{'--link-index':i}};
+            const style={'--link-index':i};
             return same
               ? <circle key={i} className={cls} style={style} cx={a.x} cy={a.y} r="8"/>
               : <line key={i} className={cls} style={style} x1={a.x} y1={a.y} x2={b.x} y2={b.y}/>;
