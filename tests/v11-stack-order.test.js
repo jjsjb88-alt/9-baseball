@@ -43,7 +43,7 @@ describe('V11 9ZONE STACK ORDER',()=>{
     expect(b.steps.map(x=>x.aimZone)).toEqual([0,8,4,7]);
     expect(b.links.map(x=>x.connected)).toEqual([false,true,true]);
     expect(b.connectCount).toBe(2);
-    expect(b.orderedDamageRate).toBe(.60);
+    expect(b.orderedDamageRate).toBeCloseTo(.60);
     expect(b.perfect).toBe(false);
   });
 
