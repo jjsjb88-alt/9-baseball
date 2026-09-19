@@ -62,7 +62,7 @@ describe('V10 스윙 스택',()=>{
     expect(combat.damageRate).toBeCloseTo(.57);
     expect(combat.connectCount).toBe(1);
     expect(combat.cardCount).toBe(4);
-    expect(combat.choiceLabel).toBe('밀어치기 + 맞혀놓기 + 맞혀놓기 + 맞혀놓기');
+    expect(combat.choiceLabel).toBe('밀어치기 + 정타 노림 + 정타 노림 + 정타 노림');
     expect(combat.aimLabel).toContain('바깥 낮음');
     expect(validateV10State(s)).toBe(true);
   });
