@@ -33,7 +33,7 @@ export default function StackResolve({plan,token=0}){
       <header>
         <span>SWING ROUTE</span>
         <strong>{plan?.perfect?'PERFECT CONNECT':'STACK RESOLVE'}</strong>
-        <small>① → {steps.length>2?'② → ':''}{steps.length>3?'③ → ':''}{steps.length}</small>
+        <small>{steps.map(step=>['','①','②','③','④'][step.order]||step.order).join(' → ')}</small>
       </header>
       <div className="stack-resolve-zone">
         <svg viewBox="0 0 100 100" aria-hidden="true">
