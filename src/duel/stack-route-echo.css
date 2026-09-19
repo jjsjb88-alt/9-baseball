@@ -1,4 +1,5 @@
 .read-trace .trace-grid{position:relative}
+.read-trace .trace-grid i.actual{z-index:5}
 .stack-route-echo{position:absolute;z-index:3;inset:0;pointer-events:none}
 .stack-route-echo svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 .stack-route-echo line,.stack-route-echo circle{
@@ -30,6 +31,7 @@
 .stack-echo-token.main{border-color:#f0d17e;background:#6d572a;color:#fff3c4}
 .trace-kicker.stack-trace{display:flex;align-items:center;justify-content:space-between;gap:4px}
 .trace-kicker.stack-trace b{font-size:5px;letter-spacing:.5px;color:#90dfb9;font-variant-numeric:tabular-nums}
+.trace-legend i{font-style:normal;color:#8eddb7;font-weight:950}
 .trace-stage-impact .stack-route-echo line,
 .trace-stage-impact .stack-route-echo circle{
   animation:stackEchoLink .2s steps(4,end) both;
