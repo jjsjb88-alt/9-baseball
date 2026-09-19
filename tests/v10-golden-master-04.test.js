@@ -12,7 +12,7 @@ const reveal=(kind,label,zone=4,coverage=[0],aimZone=4)=>({
 describe('golden master 04 cinematic timing',()=>{
   it('gives strikeouts a longer authored beat than an ordinary whiff',()=>{
     const miss=presentationFor(reveal('whiff','헛스윙',4,[0],0));
-    const strikeout=presentationFor(reveal('whiff','헛스윙 삼진',4,[0],0));
+    const strikeout=presentationFor(reveal('whiff','헛스윙 삼진',8,[0],0));
     const missTimeline=presentationTimeline(miss);
     const kTimeline=presentationTimeline(strikeout);
     expect(strikeout.grade).toBe('strikeout');
