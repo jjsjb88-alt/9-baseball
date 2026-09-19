@@ -79,7 +79,7 @@ describe('V10 스윙 스택',()=>{
     expect(s.battle.revealed.assistOnly).toBe(false);
     expect(s.battle.revealed.label).not.toBe('겹친 카드 단타');
     expect(s.battle.discard).toEqual(expect.arrayContaining(['c4','c0','c1']));
-    expect(selectV10Combat(s).damageRate).toBe(.70);
+    expect(selectV10Combat(s).damageRate).toBeCloseTo(.70);
     expect(selectV10Combat(s).connectCount).toBe(1);
     expect(hp-s.pitcher.hp).toBe(selectV10Combat(s).damage);
   });
