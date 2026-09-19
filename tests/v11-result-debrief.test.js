@@ -45,6 +45,21 @@ describe('V11 result debrief',()=>{
     expect(lesson.text).toContain('57%');
   });
 
+  it('debriefs watching a pitch without pretending it was a swing',()=>{
+    const ball=lessonFor(
+      {choice:'take',cardCount:1,damageRate:1},
+      {zone:9,primaryCoverage:[],assistOnly:false,label:'볼'}
+    );
+    const strike=lessonFor(
+      {choice:'take',cardCount:1,damageRate:1},
+      {zone:4,primaryCoverage:[],assistOnly:false,label:'루킹 스트라이크'}
+    );
+    expect(planText({choice:'take',cardCount:1})).toContain('지켜보기');
+    expect(ball.tone).toBe('success');
+    expect(ball.title).toContain('볼을 골라냈습니다');
+    expect(strike.title).toContain('스트라이크를 확인했습니다');
+  });
+
   it('calls out chasing a pitch outside the zone',()=>{
     const lesson=lessonFor(
       {choice:'strike',cardCount:1,damageRate:1},
