@@ -36,9 +36,10 @@ describe('V11 tactical StackBoard contract',()=>{
   it('keeps MAIN fixed while support cards can reorder',()=>{
     expect(app).toContain('moveStackOrder=(id,delta)');
     expect(board).toContain('SWING ORDER');
-    expect(board).toContain('disabled={i===1}');
+    expect(board).toContain('disabled={earlier==null}');
     expect(board).toContain('onClick={()=>onMove(step.id,-1)}');
     expect(board).toContain('onClick={()=>onMove(step.id,1)}');
+    expect(board).toContain('if(index<1||target<1');
   });
 
   it('previews reorder value without auto-playing the route',()=>{
