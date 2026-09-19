@@ -1,4 +1,5 @@
 import React,{useEffect,useRef} from 'react';
+import {PERF_PARTICLE_SCALE} from './useAdaptivePerformance.js';
 
 const PALETTES={
   success:['#fff7c7','#f6d879','#e8a85c','#9fe2a8'],
@@ -38,8 +39,7 @@ function ray(ctx,x,y,angle,len,color,alpha){
   const dx=Math.cos(angle),dy=Math.sin(angle);ctx.globalAlpha=alpha;ctx.fillStyle=color;
   for(let i=0;i<len;i+=3)ctx.fillRect(Math.round(x+dx*i),Math.round(y+dy*i),2,2);
 }
-const QUALITY_SCALE={high:1,balanced:.68,low:.42};
-const qcount=(n,quality,min=1)=>Math.max(min,Math.round(n*(QUALITY_SCALE[quality]||1)));
+const qcount=(n,quality,min=1)=>Math.max(min,Math.round(n*(PERF_PARTICLE_SCALE[quality]||1)));
 function buildParticles(seed,shot,quality='high'){
   const random=rng(seed),impactBase=shot?.grade==='grand-slam'?58:shot?.grade==='homer'?46:dangerGrades.has(shot?.grade)?30:36,impactCount=qcount(impactBase,quality,14);
   return {
