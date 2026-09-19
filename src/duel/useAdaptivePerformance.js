@@ -11,12 +11,14 @@ export function raisePerfTier(tier){
   return tier==='low'?'balanced':tier==='balanced'?'high':'high';
 }
 
+export const canMeasureFrameBudget=()=>typeof navigator==='undefined'||!/happy-dom|jsdom/i.test(navigator.userAgent||'');
+
 export default function useAdaptivePerformance(active=true){
   const [tier,setTier]=useState('high');
   const tierRef=useRef('high');
 
   useEffect(()=>{
-    if(!active||typeof requestAnimationFrame!=='function')return;
+    if(!active||typeof requestAnimationFrame!=='function'||!canMeasureFrameBudget())return;
     let raf=0,last=performance.now(),ema=16.7,badMs=0,goodMs=0,lastShift=last;
     const visible=()=>typeof document==='undefined'||document.visibilityState!=='hidden';
     const commit=next=>{
