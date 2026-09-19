@@ -22,6 +22,7 @@ import GoldenMasterStage from './GoldenMasterStage.jsx';
 import V4CanvasSprite from './V4CanvasSprite.jsx';
 import StackBoard from './StackBoard.jsx';
 import StackResolve,{stackResolveDuration} from './StackResolve.jsx';
+import StackRouteEcho from './StackRouteEcho.jsx';
 import BattleReadout from './BattleReadout.jsx';
 import DecisionDebrief from './DecisionDebrief.jsx';
 import useAdaptivePerformance from './useAdaptivePerformance.js';
@@ -237,12 +238,12 @@ function ReadTrace({s,stage,shot}){
   if(!r||!shot||!['impact','slowmo','release'].includes(stage))return null;
   const tactical=['dead-center','solid','jammed','lucky','extra','homer','grand-slam','near-miss','near-miss-k','chase','chase-k','fooled','strikeout'];
   if(!tactical.includes(shot.grade))return null;
-  const outside=r.zone===9,cover=new Set(r.coverage||[]);
-  return <div className={'read-trace trace-'+shot.grade+' trace-stage-'+stage} aria-hidden="true">
-    <span className="trace-kicker">READ TRACE</span>
-    <div className="trace-grid">{ZONES.map((_,z)=><i key={z} className={(cover.has(z)?'covered ':'')+(r.aimZone===z?'aim ':'')+(r.zone===z?'actual ':'')}><b>{z+1}</b></i>)}</div>
+  const outside=r.zone===9,cover=new Set(r.coverage||[]),stackCount=r.stackSteps?.length||0,stackTrace=stackCount>1;
+  return <div className={'read-trace trace-'+shot.grade+' trace-stage-'+stage+(stackTrace?' has-stack-trace':'')} aria-hidden="true">
+    <span className={'trace-kicker '+(stackTrace?'stack-trace':'')}>{stackTrace?'STACK TRACE':'READ TRACE'}{stackTrace&&<b>{r.stackConnectCount||0}/{Math.max(0,stackCount-1)} CONNECT</b>}</span>
+    <div className="trace-grid"><StackRouteEcho revealed={r}/>{ZONES.map((_,z)=><i key={z} className={(cover.has(z)?'covered ':'')+(r.aimZone===z?'aim ':'')+(r.zone===z?'actual ':'')}><b>{z+1}</b></i>)}</div>
     <div className={'trace-outside '+(outside?'actual':'')}>OUT</div>
-    <span className="trace-legend"><b>□</b> 커버 <em>◆</em> 실제 공</span>
+    <span className="trace-legend"><b>□</b> 커버 <em>◆</em> 실제 공{stackTrace&&<> <i>①→</i> 스택 경로</>}</span>
   </div>;
 }
 function stakesFor(s){
