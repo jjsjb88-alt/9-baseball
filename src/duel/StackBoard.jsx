@@ -1,4 +1,4 @@
-import React from 'react';
+import React,{useState} from 'react';
 import {CARDS,ZONES} from './cards.js';
 import {v11StackZonesConnect} from './engine.js';
 import './v11-stack.css';
@@ -11,14 +11,32 @@ const center=zone=>{
 const cardName=(kind,main)=>main?'MAIN SWING':(CARDS[kind]?.name||'SUPPORT');
 const zoneLabel=zone=>ZONES[zone]||('ZONE '+(Number(zone)+1));
 
-export function stackMoveConnectDelta(steps,index,delta){
+const stackLinks=steps=>(steps||[]).slice(1).map((step,i)=>({
+  fromOrder:i+1,
+  toOrder:i+2,
+  fromZone:steps[i]?.aimZone,
+  toZone:step?.aimZone,
+  connected:v11StackZonesConnect(steps[i]?.aimZone,step?.aimZone),
+}));
+const stackConnectCount=steps=>stackLinks(steps).filter(link=>link.connected).length;
+
+export function stackReorderPreview(steps,fromIndex,toIndex){
   const list=Array.isArray(steps)?steps:[];
-  const target=index+delta;
-  if(index<1||target<1||index>=list.length||target>=list.length)return null;
+  if(fromIndex<1||toIndex<1||fromIndex>=list.length||toIndex>=list.length)return null;
+  const before=stackConnectCount(list);
   const moved=[...list];
-  [moved[index],moved[target]]=[moved[target],moved[index]];
-  const count=xs=>xs.slice(1).reduce((sum,step,i)=>sum+(v11StackZonesConnect(xs[i]?.aimZone,step?.aimZone)?1:0),0);
-  return count(moved)-count(list);
+  if(fromIndex!==toIndex){
+    const [item]=moved.splice(fromIndex,1);
+    moved.splice(toIndex,0,item);
+  }
+  const ordered=moved.map((step,i)=>({...step,order:i+1}));
+  const links=stackLinks(ordered),connectCount=links.filter(link=>link.connected).length;
+  return {steps:ordered,links,connectCount,delta:connectCount-before,perfect:links.length>0&&connectCount===links.length};
+}
+
+export function stackMoveConnectDelta(steps,index,delta){
+  const preview=stackReorderPreview(steps,index,index+delta);
+  return preview?preview.delta:null;
 }
 const impactClass=delta=>delta>0?'improves':delta<0?'worsens':'neutral';
 const impactText=delta=>delta>0?('+'+delta):String(delta);
@@ -36,22 +54,49 @@ export default function StackBoard({
   const steps=plan?.steps||[],links=plan?.links||[];
   const connectCount=plan?.connectCount||0;
   const perfect=!!plan?.perfect&&links.length>0;
+  const [drag,setDrag]=useState(null);
+  const dragPreview=drag?stackReorderPreview(steps,drag.fromIndex,drag.targetIndex):null;
+  const viewSteps=dragPreview?.steps||steps,viewLinks=dragPreview?.links||links;
+  const viewConnectCount=dragPreview?.connectCount??connectCount,viewPerfect=dragPreview?.perfect??perfect;
+  const dragDelta=dragPreview?.delta||0;
   const slots=new Map();
-  for(const step of steps){
+  for(const step of viewSteps){
     const list=slots.get(step.aimZone)||[];
     list.push(step);
     slots.set(step.aimZone,list);
   }
 
-  return <section className={'stack-board '+(perfect?'perfect-route ':'')+(steps.length>1?'has-route':'solo-route')} aria-label="9존 스윙 경로 설계">
+  const beginDrag=(e,step,index)=>{
+    if(step.main||(e.pointerType==='mouse'&&e.button!==0))return;
+    e.preventDefault();e.stopPropagation();
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+    setDrag({id:step.id,fromIndex:index,targetIndex:index,pointerId:e.pointerId});
+    onSelect(step.id);
+  };
+  const moveDrag=e=>{
+    if(!drag||drag.pointerId!==e.pointerId)return;
+    const el=globalThis.document?.elementFromPoint?.(e.clientX,e.clientY);
+    const target=el?.closest?.('[data-stack-index]');
+    const next=Number(target?.dataset?.stackIndex);
+    if(!Number.isInteger(next)||next<1||next>=steps.length||next===drag.targetIndex)return;
+    setDrag({...drag,targetIndex:next});
+  };
+  const finishDrag=(e,cancel=false)=>{
+    if(!drag||drag.pointerId!==e.pointerId)return;
+    e.preventDefault();e.stopPropagation();
+    if(!cancel&&drag.targetIndex!==drag.fromIndex)onMove(drag.id,drag.targetIndex-drag.fromIndex);
+    setDrag(null);
+  };
+
+  return <section className={'stack-board '+(viewPerfect?'perfect-route ':'')+(steps.length>1?'has-route ':'solo-route ')+(drag?'dragging':'')} aria-label="9존 스윙 경로 설계">
     <header className="stack-board-head">
       <div className="stack-board-title">
         <span>SWING ROUTE / 9ZONE</span>
-        <strong>{steps.length>1?(perfect?'경로 완성 · 전부 이어졌다':'순서를 바꿔 연결을 만든다'):'메인 스윙에서 시작'}</strong>
-        <small>{steps.length>1?'①부터 마지막 카드까지 하나의 배트 궤도로 연결합니다.':'지원 카드를 추가하면 경로 설계가 시작됩니다.'}</small>
+        <strong>{drag?('놓으면 '+viewConnectCount+'/'+Math.max(0,viewSteps.length-1)+' CONNECT'):steps.length>1?(perfect?'경로 완성 · 전부 이어졌다':'순서를 바꿔 연결을 만든다'):'메인 스윙에서 시작'}</strong>
+        <small>{drag?'손을 떼면 미리 본 순서로 확정됩니다.':steps.length>1?'①부터 마지막 카드까지 하나의 배트 궤도로 연결합니다.':'지원 카드를 추가하면 경로 설계가 시작됩니다.'}</small>
       </div>
       <div className="stack-board-chain" aria-label={'커넥트 '+connectCount+'개'}>
-        <b>{connectCount}</b>
+        <b>{viewConnectCount}</b>
         <span>CONNECT</span>
         <small>/ {Math.max(0,steps.length-1)}</small>
       </div>
@@ -60,7 +105,7 @@ export default function StackBoard({
     <div className="stack-board-stage">
       <div className="stack-board-zone" aria-label="3x3 스택 보드">
         <svg className="stack-route-lines" viewBox="0 0 100 100" aria-hidden="true">
-          {links.map((link,i)=>{
+          {viewLinks.map((link,i)=>{
             const a=center(link.fromZone),b=center(link.toZone);
             const same=link.fromZone===link.toZone;
             return same
@@ -96,9 +141,9 @@ export default function StackBoard({
 
       <aside className="stack-board-readout" aria-label="스택 결과">
         <div className="stack-route-status">
-          <span>{perfect?'ROUTE LOCKED':steps.length>1?'ROUTE CHECK':'SOLO'}</span>
-          <strong>{perfect?'PERFECT CONNECT':steps.length>1?connectCount+' / '+links.length+' CONNECT':'100% POWER'}</strong>
-          <small>{perfect?'모든 지원 카드가 앞 카드와 이어집니다.':'끊긴 링크는 피해 효율을 회복하지 못합니다.'}</small>
+          <span>{drag?'DRAG PREVIEW':viewPerfect?'ROUTE LOCKED':steps.length>1?'ROUTE CHECK':'SOLO'}</span>
+          <strong>{drag?('CONNECT '+impactText(dragDelta)):viewPerfect?'PERFECT CONNECT':steps.length>1?viewConnectCount+' / '+viewLinks.length+' CONNECT':'100% POWER'}</strong>
+          <small>{drag?'현재 위치에 놓았을 때의 경로입니다.':viewPerfect?'모든 지원 카드가 앞 카드와 이어집니다.':'끊긴 링크는 피해 효율을 회복하지 못합니다.'}</small>
         </div>
         <div className="stack-damage-flow" aria-label="HP 피해 효율 계산">
           <div><span>BASE</span><b>{Math.round(baseDamageRate*100)}%</b></div>
@@ -109,7 +154,7 @@ export default function StackBoard({
         </div>
         {precisionPressure>0&&<div className="stack-precision-note"><span>PRECISION MAIN</span><strong>정확 적중 ×{(1+precisionPressure).toFixed(1)}</strong><small>지원 카드 적중에는 적용되지 않습니다.</small></div>}
         <div className="stack-link-list">
-          {links.length?links.map(link=><div key={link.toOrder} className={link.connected?'connected':'broken'}>
+          {viewLinks.length?viewLinks.map(link=><div key={link.toOrder} className={link.connected?'connected':'broken'}>
             <b>{link.fromOrder} → {link.toOrder}</b>
             <span>{link.connected?'CONNECTED':'BREAK'}</span>
             <small>{zoneLabel(link.fromZone)} → {zoneLabel(link.toZone)}</small>
@@ -121,21 +166,32 @@ export default function StackBoard({
     {steps.length>1&&<div className="stack-order-rail" aria-label="스윙 순서 변경">
       <div className="rail-heading">
         <span className="rail-label">SWING ORDER</span>
-        <small>같은 존·8방향 인접 = CONNECT · 버튼 숫자는 이동 후 CONNECT 변화</small>
+        <small>≡ 손잡이로 끌거나 버튼으로 이동 · 같은 존·8방향 인접 = CONNECT</small>
       </div>
       <div className="rail-cards">
-        {steps.map((step,i)=>{
-          const earlier=step.main?null:stackMoveConnectDelta(steps,i,-1);
-          const later=step.main?null:stackMoveConnectDelta(steps,i,1);
-          return <React.Fragment key={step.order}>
-            {i>0&&<i className={links[i-1]?.connected?'connected':'broken'} aria-hidden="true"/>}
-            <div className={(step.main?'main ':'support ')+(step.id===activeId?'active':'')}>
+        {viewSteps.map((step,i)=>{
+          const actualIndex=steps.findIndex(x=>x.id===step.id);
+          const earlier=step.main?null:stackMoveConnectDelta(steps,actualIndex,-1);
+          const later=step.main?null:stackMoveConnectDelta(steps,actualIndex,1);
+          const dragSource=drag?.id===step.id,dragTarget=!!drag&&drag.targetIndex===i;
+          return <React.Fragment key={step.id||step.order}>
+            {i>0&&<i className={viewLinks[i-1]?.connected?'connected':'broken'} aria-hidden="true"/>}
+            <div data-stack-index={i} className={(step.main?'main ':'support ')+(step.id===activeId?'active ':'')+(dragSource?'drag-source ':'')+(dragTarget?'drag-target':'')}>
               <b>{step.order}</b>
               <span>{cardName(step.kind,step.main)}</span>
               <small>{zoneLabel(step.aimZone)}</small>
+              {!step.main&&<button
+                type="button"
+                className="rail-drag-handle"
+                aria-label={cardName(step.kind,false)+' 끌어서 순서 변경'}
+                onPointerDown={e=>beginDrag(e,step,actualIndex)}
+                onPointerMove={moveDrag}
+                onPointerUp={e=>finishDrag(e,false)}
+                onPointerCancel={e=>finishDrag(e,true)}
+              ><span>≡</span><small>DRAG</small></button>}
               {!step.main&&<div className="rail-actions">
-                <button type="button" className={earlier==null?'':impactClass(earlier)} aria-label={cardName(step.kind,false)+' 순서를 앞으로 · CONNECT '+(earlier==null?'변경 불가':impactText(earlier))} disabled={earlier==null} onClick={()=>onMove(step.id,-1)}><span>← 앞</span>{earlier!=null&&<b>{impactText(earlier)}</b>}</button>
-                <button type="button" className={later==null?'':impactClass(later)} aria-label={cardName(step.kind,false)+' 순서를 뒤로 · CONNECT '+(later==null?'변경 불가':impactText(later))} disabled={later==null} onClick={()=>onMove(step.id,1)}><span>뒤 →</span>{later!=null&&<b>{impactText(later)}</b>}</button>
+                <button type="button" className={earlier==null?'':impactClass(earlier)} aria-label={cardName(step.kind,false)+' 순서를 앞으로 · CONNECT '+(earlier==null?'변경 불가':impactText(earlier))} disabled={earlier==null||!!drag} onClick={()=>onMove(step.id,-1)}><span>← 앞</span>{earlier!=null&&<b>{impactText(earlier)}</b>}</button>
+                <button type="button" className={later==null?'':impactClass(later)} aria-label={cardName(step.kind,false)+' 순서를 뒤로 · CONNECT '+(later==null?'변경 불가':impactText(later))} disabled={later==null||!!drag} onClick={()=>onMove(step.id,1)}><span>뒤 →</span>{later!=null&&<b>{impactText(later)}</b>}</button>
               </div>}
             </div>
           </React.Fragment>;

@@ -36,20 +36,36 @@ describe('V11 tactical StackBoard contract',()=>{
   it('keeps MAIN fixed while support cards can reorder',()=>{
     expect(app).toContain('moveStackOrder=(id,delta)');
     expect(board).toContain('SWING ORDER');
-    expect(board).toContain('disabled={earlier==null}');
+    expect(board).toContain('disabled={earlier==null||!!drag}');
     expect(board).toContain('onClick={()=>onMove(step.id,-1)}');
     expect(board).toContain('onClick={()=>onMove(step.id,1)}');
-    expect(board).toContain('if(index<1||target<1');
+    expect(board).toContain('if(fromIndex<1||toIndex<1');
   });
 
   it('previews reorder value without auto-playing the route',()=>{
     expect(board).toContain('stackMoveConnectDelta');
-    expect(board).toContain('버튼 숫자는 이동 후 CONNECT 변화');
+    expect(board).toContain('≡ 손잡이로 끌거나 버튼으로 이동');
     expect(board).toContain("impactClass(earlier)");
     expect(board).toContain("impactClass(later)");
     expect(css).toContain('.rail-actions button.improves');
     expect(css).toContain('.rail-actions button.worsens');
     expect(css).toContain('.rail-actions button.neutral');
+  });
+
+  it('supports pointer drag without removing the accessible arrow controls',()=>{
+    expect(board).toContain('className="rail-drag-handle"');
+    expect(board).toContain('onPointerDown={e=>beginDrag(e,step,actualIndex)}');
+    expect(board).toContain('onPointerMove={moveDrag}');
+    expect(board).toContain('onPointerUp={e=>finishDrag(e,false)}');
+    expect(board).toContain('onPointerCancel={e=>finishDrag(e,true)}');
+    expect(board).toContain('data-stack-index={i}');
+    expect(board).toContain('stackReorderPreview');
+    expect(board).toContain('disabled={earlier==null||!!drag}');
+    expect(board).toContain('disabled={later==null||!!drag}');
+    expect(css).toContain('.rail-drag-handle');
+    expect(css).toContain('touch-action:none');
+    expect(css).toContain('.rail-cards>div.drag-source');
+    expect(css).toContain('.rail-cards>div.drag-target');
   });
 
   it('shows BASE → CONNECT → FINAL HP efficiency without recalculating engine data',()=>{
