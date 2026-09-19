@@ -38,6 +38,24 @@ export function stackMoveConnectDelta(steps,index,delta){
   const preview=stackReorderPreview(steps,index,index+delta);
   return preview?preview.delta:null;
 }
+
+export function stackAimConnectPreview(steps,id,aimZone){
+  const list=Array.isArray(steps)?steps:[];
+  const index=list.findIndex(step=>step?.id===id);
+  if(index<1||!Number.isInteger(aimZone)||aimZone<0||aimZone>8)return null;
+  const before=stackConnectCount(list);
+  const aimed=list.map((step,i)=>i===index?{...step,aimZone}:step);
+  const links=stackLinks(aimed),connectCount=links.filter(link=>link.connected).length;
+  const local=[links[index-1],links[index]].filter(Boolean);
+  const localConnected=local.filter(link=>link.connected).length;
+  return {
+    connectCount,
+    delta:connectCount-before,
+    localConnected,
+    localTotal:local.length,
+    localPerfect:local.length>0&&localConnected===local.length,
+  };
+}
 const impactClass=delta=>delta>0?'improves':delta<0?'worsens':'neutral';
 const impactText=delta=>delta>0?('+'+delta):String(delta);
 
@@ -46,6 +64,7 @@ export default function StackBoard({
   activeId=null,
   onSelect=()=>{},
   onMove=()=>{},
+  onAim=null,
   damageRate=1,
   baseDamageRate=1,
   connectBonus=0,
@@ -59,6 +78,8 @@ export default function StackBoard({
   const viewSteps=dragPreview?.steps||steps,viewLinks=dragPreview?.links||links;
   const viewConnectCount=dragPreview?.connectCount??connectCount,viewPerfect=dragPreview?.perfect??perfect;
   const dragDelta=dragPreview?.delta||0;
+  const activeSupport=viewSteps.find(step=>step.id===activeId&&!step.main)||null;
+  const aimEditing=!!activeSupport&&!drag&&typeof onAim==='function';
   const slots=new Map();
   for(const step of viewSteps){
     const list=slots.get(step.aimZone)||[];
@@ -88,12 +109,12 @@ export default function StackBoard({
     setDrag(null);
   };
 
-  return <section className={'stack-board '+(viewPerfect?'perfect-route ':'')+(steps.length>1?'has-route ':'solo-route ')+(drag?'dragging':'')} aria-label="9존 스윙 경로 설계">
+  return <section className={'stack-board '+(viewPerfect?'perfect-route ':'')+(steps.length>1?'has-route ':'solo-route ')+(drag?'dragging ':'')+(aimEditing?'aim-editing':'')} aria-label="9존 스윙 경로 설계">
     <header className="stack-board-head">
       <div className="stack-board-title">
         <span>SWING ROUTE / 9ZONE</span>
-        <strong>{drag?('놓으면 '+viewConnectCount+'/'+Math.max(0,viewSteps.length-1)+' CONNECT'):steps.length>1?(perfect?'경로 완성 · 전부 이어졌다':'순서를 바꿔 연결을 만든다'):'메인 스윙에서 시작'}</strong>
-        <small>{drag?'손을 떼면 미리 본 순서로 확정됩니다.':steps.length>1?'①부터 마지막 카드까지 하나의 배트 궤도로 연결합니다.':'지원 카드를 추가하면 경로 설계가 시작됩니다.'}</small>
+        <strong>{drag?('놓으면 '+viewConnectCount+'/'+Math.max(0,viewSteps.length-1)+' CONNECT'):aimEditing?(activeSupport.order+'번 카드 코스 편집 · 9존을 눌러 이동'):steps.length>1?(perfect?'경로 완성 · 전부 이어졌다':'순서를 바꿔 연결을 만든다'):'메인 스윙에서 시작'}</strong>
+        <small>{drag?'손을 떼면 미리 본 순서로 확정됩니다.':aimEditing?'각 존의 LINK 수와 CONNECT 변화량을 보고 직접 고릅니다.':steps.length>1?'①부터 마지막 카드까지 하나의 배트 궤도로 연결합니다.':'지원 카드를 추가하면 경로 설계가 시작됩니다.'}</small>
       </div>
       <div className="stack-board-chain" aria-label={'커넥트 '+connectCount+'개'}>
         <b>{viewConnectCount}</b>
@@ -117,15 +138,20 @@ export default function StackBoard({
         {Array.from({length:9},(_,zone)=>{
           const here=slots.get(zone)||[];
           const occupied=here.length>0;
+          const aimPreview=aimEditing?stackAimConnectPreview(steps,activeId,zone):null;
+          const aimClass=!aimPreview?'':aimPreview.localPerfect?'aim-full ':aimPreview.localConnected?'aim-partial ':'aim-break ';
+          const aimDelta=aimPreview?impactText(aimPreview.delta):'';
+          const aimLabel=aimPreview?(aimPreview.localConnected+'/'+aimPreview.localTotal+' LINK · CONNECT '+aimDelta):'';
           return <button
             key={zone}
             type="button"
-            className={'stack-zone-cell '+(occupied?'occupied ':'')+(here.some(x=>x.main)?'main-cell ':'')+(here.some(x=>x.id===activeId)?'active-cell':'')}
-            aria-label={(zone+1)+'번 '+zoneLabel(zone)+(occupied?' · '+here.map(x=>x.order+'번째').join(', '):'')}
-            onClick={()=>here.length&&onSelect(here[here.length-1].id)}
-            disabled={!here.length}
+            className={'stack-zone-cell '+(occupied?'occupied ':'')+(here.some(x=>x.main)?'main-cell ':'')+(here.some(x=>x.id===activeId)?'active-cell ':'')+(aimEditing?'aim-candidate ':'')+aimClass}
+            aria-label={(zone+1)+'번 '+zoneLabel(zone)+(aimEditing?' · 이동 시 '+aimLabel:occupied?' · '+here.map(x=>x.order+'번째').join(', '):'')}
+            onClick={()=>aimEditing?onAim(activeId,zone):here.length&&onSelect(here[here.length-1].id)}
+            disabled={!here.length&&!aimEditing}
           >
             <small>{zone+1}</small>
+            {aimPreview&&<span className="stack-aim-hint"><b>{aimPreview.localConnected}/{aimPreview.localTotal}</b><small>{aimPreview.delta===0?'±0':aimDelta}</small></span>}
             <div className="stack-zone-tokens">
               {here.map((step,idx)=><i
                 key={step.order}
