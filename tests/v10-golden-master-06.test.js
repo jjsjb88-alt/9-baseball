@@ -25,7 +25,7 @@ describe('golden master 06 authored actor art',()=>{
   it('routes sinker/high/closer signature release frames through unique assets',()=>{
     expect(app).toContain("const PITCHER_RELEASE_V3={sinker:pitcherSinkerReleaseV3,high:pitcherHighReleaseV3,closer:pitcherCloserReleaseV3}");
     expect(app).toContain("who==='pitcher'&&PITCHER_RELEASE_V3[variant]");
-    expect(app).toContain("['impact','slowmo'].includes(stage)");
+    expect(app).toContain("stage==='slowmo'");
   });
 
   it('does not replace strikeout celebration with the generic archetype release art',()=>{

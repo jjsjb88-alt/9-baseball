@@ -31,7 +31,9 @@ describe('V10 스윙 스택',()=>{
     expect(stack.supportCoverages.map(x=>x.coverage)).toEqual([[8],[7],[2]]);
     expect(stack.coverage).toEqual([0,2,3,6,7,8]);
     expect(stack.cardCount).toBe(4);
-    expect(stack.damageRate).toBe(.5);
+    expect(stack.damageRate).toBe(.55);
+    expect(stack.connectCount).toBe(1);
+    expect(stack.connectBonus).toBe(.05);
     expect(stack.matchup.widthPenalty).toBe(main.matchup.widthPenalty+21);
     expect(stack.label).toContain('4장');
   });
@@ -53,11 +55,12 @@ describe('V10 스윙 스택',()=>{
     expect(s.battle.discard).toEqual(expect.arrayContaining(['c4','c0','c1','c2']));
     expect(s.stats.cards-cards).toBe(4);
     expect(s.stats.pitches-pitches).toBe(1);
-    expect(hp-s.pitcher.hp).toBe(6);
+    expect(hp-s.pitcher.hp).toBe(7);
     const combat=selectV10Combat(s);
-    expect(combat.damage).toBe(6);
+    expect(combat.damage).toBe(7);
     expect(combat.baseDamage).toBe(12);
-    expect(combat.damageRate).toBe(.5);
+    expect(combat.damageRate).toBe(.55);
+    expect(combat.connectCount).toBe(1);
     expect(combat.cardCount).toBe(4);
     expect(combat.choiceLabel).toBe('밀어치기 + 맞혀놓기 + 맞혀놓기 + 맞혀놓기');
     expect(combat.aimLabel).toContain('바깥 낮음');
@@ -76,7 +79,8 @@ describe('V10 스윙 스택',()=>{
     expect(s.battle.revealed.assistOnly).toBe(false);
     expect(s.battle.revealed.label).not.toBe('겹친 카드 단타');
     expect(s.battle.discard).toEqual(expect.arrayContaining(['c4','c0','c1']));
-    expect(selectV10Combat(s).damageRate).toBe(.65);
+    expect(selectV10Combat(s).damageRate).toBeCloseTo(.70);
+    expect(selectV10Combat(s).connectCount).toBe(1);
     expect(hp-s.pitcher.hp).toBe(selectV10Combat(s).damage);
   });
 
