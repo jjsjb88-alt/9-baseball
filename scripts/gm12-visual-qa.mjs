@@ -15,7 +15,7 @@ const cases=[
   ['continuity-sheet-844x900',844,900,'?compare=1','compare'],
   ['cinema-windup-844x390',844,390,'?cinema=windup','cinema-windup'],
   ['cinema-contact-1440x900',1440,900,'?cinema=contact','cinema-contact'],
-  ['cinema-miss-390x844',390,844,'?cinema=miss','cinema-miss'],
+  ['cinema-miss-844x390',844,390,'?cinema=miss','cinema-miss'],
 ];
 await mkdir(out,{recursive:true});
 const browser=await chromium.launch();
@@ -58,7 +58,7 @@ for(const [name,width,height,query,mode] of cases){
       await page.locator('button.cinema-entry').click();
       await page.waitForSelector('.cinema-lab-stage .sprite-batter',{state:'visible',timeout:7000});
       const caseName=mode==='cinema-miss'?'한 칸 차이':'정확 적중';
-      await page.getByRole('button',{name:caseName,exact:true}).click();
+      await page.locator('.cinema-case-grid button',{hasText:caseName}).click();
       const stage=mode==='cinema-windup'?'windup':mode==='cinema-contact'?'impact':'release';
       await page.waitForFunction(stage=>document.querySelector('.cinema-lab-stage')?.classList.contains('fx-stage-'+stage),stage,{timeout:4000,polling:16});
       if(mode==='cinema-windup')await page.waitForTimeout(80);
