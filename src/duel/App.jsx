@@ -20,6 +20,7 @@ import RunMap from './RunMap.jsx';
 import ArenaRenderer2 from './ArenaRenderer2.jsx';
 import GoldenMasterStage from './GoldenMasterStage.jsx';
 import V4CanvasSprite from './V4CanvasSprite.jsx';
+import V7KeyPose from './V7KeyPose.jsx';
 import StackBoard from './StackBoard.jsx';
 import StackResolve,{stackResolveDuration} from './StackResolve.jsx';
 import StackRouteEcho from './StackRouteEcho.jsx';
@@ -40,10 +41,6 @@ import pitcherRelease from '../../assets/sprites-v1/pitcher-release.png';
 import pitcherFollow from '../../assets/sprites-v1/pitcher-follow.png';
 import pitcherStrikeout from '../../assets/sprites-v1/pitcher-strikeout.png';
 import batterHomerHeroV3 from '../../assets/sprites-v3/batter-homer-hero.svg';
-import batterIdleHeroV6 from '../../assets/sprites-v6/batter-idle-hero.svg';
-import batterContactHeroV6 from '../../assets/sprites-v6/batter-contact-hero.svg';
-import batterHomerHeroV6 from '../../assets/sprites-v6/batter-homer-hero.svg';
-import batterMissHeroV6 from '../../assets/sprites-v6/batter-miss-hero.svg';
 import pitcherSinkerReleaseV3 from '../../assets/sprites-v3/pitcher-sinker-release.svg';
 import pitcherHighReleaseV3 from '../../assets/sprites-v3/pitcher-high-release.svg';
 import pitcherCloserReleaseV3 from '../../assets/sprites-v3/pitcher-closer-release.svg';
@@ -117,8 +114,13 @@ function CoverageMini({zones}){return <div className="coverage-mini" aria-label=
 const BATTER_POSES={idle:batterIdle,load:batterLoad,contact:batterContact,follow:batterFollow,homer:batterHomer,miss:batterMiss};
 const PITCHER_POSES={idle:pitcherIdle,set:pitcherSet,legkick:pitcherLegkick,release:pitcherRelease,follow:pitcherFollow,strikeout:pitcherStrikeout};
 const PITCHER_RELEASE_V3={sinker:pitcherSinkerReleaseV3,high:pitcherHighReleaseV3,closer:pitcherCloserReleaseV3};
-const BATTER_HERO_V6={idle:batterIdleHeroV6,contact:batterContactHeroV6,homer:batterHomerHeroV6,miss:batterMissHeroV6};
-const ACTOR_ASSETS=[...new Set([...BATTER_SWING_V2,...BATTER_MISS_V2,...PITCHER_PITCH_V2,...PITCHER_K_V2,batterSwingV4,pitcherPitchV4,batterHomerHeroV3,...Object.values(BATTER_HERO_V6),...Object.values(PITCHER_RELEASE_V3)])];
+const BATTER_HERO_V7={
+  idle:{sheet:batterSwingV4,frame:0},
+  contact:{sheet:batterSwingV4,frame:12},
+  homer:{sheet:batterHomerV4,frame:42},
+  miss:{sheet:batterMissV4,frame:18},
+};
+const ACTOR_ASSETS=[...new Set([...BATTER_SWING_V2,...BATTER_MISS_V2,...PITCHER_PITCH_V2,...PITCHER_K_V2,batterSwingV4,batterMissV4,batterHomerV4,pitcherPitchV4,pitcherStrikeoutV4,batterHomerHeroV3,...Object.values(PITCHER_RELEASE_V3)])];
 function useActorAssetPreload(){
   useEffect(()=>{
     if(typeof Image==='undefined')return;
@@ -133,10 +135,10 @@ const authoredActorArt=(who,pose,stage,shot,variant)=>{
 };
 export const batterHeroPoseFor=(pose,stage,shot)=>{
   const grade=shot?.grade||'';
-  if(pose==='idle'&&!stage)return BATTER_HERO_V6.idle;
-  if(pose==='contact'&&['impact','slowmo'].includes(stage)&&['dead-center','solid','extra','homer','grand-slam'].includes(grade))return BATTER_HERO_V6.contact;
-  if(pose==='homer'&&['release','settle'].includes(stage)&&['homer','grand-slam'].includes(grade))return BATTER_HERO_V6.homer;
-  if(pose==='miss'&&['slowmo','release'].includes(stage)&&['near-miss','near-miss-k','chase','chase-k','fooled','strikeout'].includes(grade))return BATTER_HERO_V6.miss;
+  if(pose==='idle'&&!stage)return BATTER_HERO_V7.idle;
+  if(pose==='contact'&&['impact','slowmo'].includes(stage)&&['dead-center','solid','extra','homer','grand-slam'].includes(grade))return BATTER_HERO_V7.contact;
+  if(pose==='homer'&&['release','settle'].includes(stage)&&['homer','grand-slam'].includes(grade))return BATTER_HERO_V7.homer;
+  if(pose==='miss'&&['slowmo','release'].includes(stage)&&['near-miss','near-miss-k','chase','chase-k','fooled','strikeout'].includes(grade))return BATTER_HERO_V7.miss;
   return null;
 };
 function actorPose(who,stage,shot){
@@ -228,10 +230,10 @@ function Sprite({who,stage=null,shot=null,golden=false,variant=null,playToken=0}
   const pose=actorPose(who,stage,shot),v4Sheet=golden&&stage? v4SheetFor(who,shot):null;
   const hero=golden&&who==='batter'?batterHeroPoseFor(pose,stage,shot):null;
   const spec=v4Sheet?null:sequenceSpec(who,stage,shot),animated=useSpriteFrame(spec,who+'-'+stage+'-'+(shot?.grade||'idle')+'-'+(variant||'base'));
-  const legacy=(who==='pitcher'?PITCHER_POSES:BATTER_POSES)[pose],v2=golden?V2_FALLBACKS[who]?.[pose]?.():null,authored=!v4Sheet&&golden?authoredActorArt(who,pose,stage,shot,variant):null,src=hero&&!v4Sheet?hero:authored||animated||v2||legacy;
-  return <span className={'sprite-stage sprite-'+who+' pose-'+pose+(v4Sheet?' v4-sequence':'')+(animated&&!authored?' v2-sequence':'')+(authored?' v3-authored':'')+(hero?' v6-hero-pose':'')+(golden?' golden-actor':'')+(variant?' variant-'+variant:'')}>
+  const legacy=(who==='pitcher'?PITCHER_POSES:BATTER_POSES)[pose],v2=golden?V2_FALLBACKS[who]?.[pose]?.():null,authored=!v4Sheet&&golden?authoredActorArt(who,pose,stage,shot,variant):null,src=authored||animated||v2||legacy;
+  return <span className={'sprite-stage sprite-'+who+' pose-'+pose+(v4Sheet?' v4-sequence':'')+(animated&&!authored?' v2-sequence':'')+(authored?' v3-authored':'')+(hero?' v7-hero-pose':'')+(golden?' golden-actor':'')+(variant?' variant-'+variant:'')}>
     {golden&&<i className="actor-contact-shadow" aria-hidden="true"/>}
-    {v4Sheet?<><img aria-hidden="true" className="duel-sprite v4-underlay" src={src}/><V4CanvasSprite sheet={v4Sheet} who={who} shot={shot} playToken={playToken}/>{hero&&<img aria-hidden="true" className="duel-sprite v6-hero-layer" src={hero}/>}</>:<><img aria-hidden="true" className="sprite-echo echo-back" src={src}/><img aria-hidden="true" className="sprite-echo echo-mid" src={src}/><img aria-hidden="true" className="duel-sprite" src={src}/></>}
+    {v4Sheet?<><img aria-hidden="true" className="duel-sprite v4-underlay" src={src}/><V4CanvasSprite sheet={v4Sheet} who={who} shot={shot} playToken={playToken}/>{hero&&<V7KeyPose hero={hero}/>}</>:hero?<V7KeyPose hero={hero}/>:<><img aria-hidden="true" className="sprite-echo echo-back" src={src}/><img aria-hidden="true" className="sprite-echo echo-mid" src={src}/><img aria-hidden="true" className="duel-sprite" src={src}/></>}
     {who==='batter'&&<i className="bat-smear" aria-hidden="true"/>}
     <i className="sprite-bloom" aria-hidden="true"/>
   </span>;

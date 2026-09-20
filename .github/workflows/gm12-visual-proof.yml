@@ -45,6 +45,12 @@ jobs:
           pnpm add --save-dev --lockfile=false playwright
           pnpm exec playwright install --with-deps chromium
 
+      - name: Validate V7 Golden Master contracts
+        run: pnpm vitest run tests/gm12-batter-golden-master.test.jsx
+
+      - name: Build production bundle
+        run: pnpm run build
+
       - name: Freeze CinemaLab stages for visual QA
         run: |
           node scripts/gm12-freeze-lab.mjs src/duel/App.jsx

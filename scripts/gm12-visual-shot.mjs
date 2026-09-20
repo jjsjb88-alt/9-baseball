@@ -32,13 +32,13 @@ async function openLab(url,width,height,pose='idle'){
 
 async function assertAfterPose(page,pose){
   if(pose==='idle'){
-    const actor=page.locator('.actor-left .sprite-batter.v6-hero-pose.pose-idle');
+    const actor=page.locator('.actor-left .sprite-batter.v7-hero-pose.pose-idle');
     await actor.waitFor({state:'visible',timeout:1500});
     return;
   }
-  const actor=page.locator('.actor-left .sprite-batter.v6-hero-pose.pose-'+pose);
+  const actor=page.locator('.actor-left .sprite-batter.v7-hero-pose.pose-'+pose);
   await actor.waitFor({state:'visible',timeout:1500});
-  const hero=actor.locator('.v6-hero-layer');
+  const hero=actor.locator('.v7-hero-layer');
   await hero.waitFor({state:'visible',timeout:1500});
   const [stageClass,actorClass,src]=await Promise.all([
     page.locator('.cinema-lab-stage').getAttribute('class'),

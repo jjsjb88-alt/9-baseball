@@ -4,63 +4,55 @@ import {batterHeroPoseFor} from '../src/duel/App.jsx';
 
 const app=fs.readFileSync(new URL('../src/duel/App.jsx',import.meta.url),'utf8');
 const css=fs.readFileSync(new URL('../src/duel/golden-master.css',import.meta.url),'utf8');
-const asset=path=>fs.readFileSync(new URL('../'+path,import.meta.url),'utf8');
+const keyPose=fs.readFileSync(new URL('../src/duel/V7KeyPose.jsx',import.meta.url),'utf8');
 
-describe('GM12 batter golden master',()=>{
-  it('uses authored idle only outside active pitch motion',()=>{
-    expect(batterHeroPoseFor('idle',null,null)).toContain('data:image/svg+xml');
+describe('GM12 batter golden master · V7 raster key poses',()=>{
+  it('uses the original high-density idle frame only outside active pitch motion',()=>{
+    const idle=batterHeroPoseFor('idle',null,null);
+    expect(idle).toMatchObject({frame:0});
+    expect(idle.sheet).toBeTruthy();
     expect(batterHeroPoseFor('idle','windup',{grade:'solid'})).toBeNull();
   });
 
-  it('lets authored contact own impact and selective slowmo without replacing motion phases',()=>{
+  it('hands contact ownership to the clean extension frame without replacing motion phases',()=>{
     const contact=batterHeroPoseFor('contact','impact',{grade:'dead-center'});
-    expect(contact).toContain('data:image/svg+xml');
+    expect(contact).toMatchObject({frame:12});
     expect(batterHeroPoseFor('contact','slowmo',{grade:'solid'})).toBe(contact);
     expect(batterHeroPoseFor('contact','impact',{grade:'extra'})).toBe(contact);
     expect(batterHeroPoseFor('contact','impact',{grade:'jammed'})).toBeNull();
     expect(batterHeroPoseFor('contact','release',{grade:'solid'})).toBeNull();
   });
 
-  it('gives homer and miss distinct authored silhouettes while preserving windup',()=>{
+  it('uses distinct clean silhouettes for power finish and off-balance miss',()=>{
     const homer=batterHeroPoseFor('homer','release',{grade:'homer'});
     const miss=batterHeroPoseFor('miss','slowmo',{grade:'near-miss'});
-    expect(homer).toContain('data:image/svg+xml');
+    expect(homer).toMatchObject({frame:42});
+    expect(miss).toMatchObject({frame:18});
     expect(batterHeroPoseFor('homer','settle',{grade:'grand-slam'})).toBe(homer);
-    expect(miss).toContain('data:image/svg+xml');
     expect(batterHeroPoseFor('miss','release',{grade:'strikeout'})).toBe(miss);
-    expect(homer).not.toBe(miss);
+    expect(homer.frame).not.toBe(miss.frame);
     expect(batterHeroPoseFor('miss','windup',{grade:'strikeout'})).toBeNull();
   });
 
-  it('keeps the V4 60 Hz canvas alive under authored key-pose ownership',()=>{
+  it('keeps the real 60 Hz V4 canvas alive beneath V7 key-pose ownership',()=>{
     expect(app).toContain('<V4CanvasSprite sheet={v4Sheet}');
-    expect(app).toContain('className="duel-sprite v6-hero-layer"');
-    expect(css).toContain('.golden-master-stage .golden-actor.v6-hero-pose .v4-canvas');
+    expect(app).toContain('<V7KeyPose hero={hero}/>');
+    expect(css).toContain('.golden-master-stage .golden-actor.v7-hero-pose .v4-canvas');
     expect(css).toContain('opacity:.18!important');
-    expect(css).not.toContain('.v6-hero-pose .v4-canvas{display:none');
-    expect(app).not.toContain('v5-hero-layer');
+    expect(css).not.toContain('.v7-hero-pose .v4-canvas{display:none');
+    expect(app).not.toContain('v6-hero');
   });
 
-  it('ships four dense crisp SVG poses rather than palette-swapped copies',()=>{
-    const files=[
-      'assets/sprites-v6/batter-idle-hero.svg',
-      'assets/sprites-v6/batter-contact-hero.svg',
-      'assets/sprites-v6/batter-homer-hero.svg',
-      'assets/sprites-v6/batter-miss-hero.svg',
-    ];
-    const svgs=files.map(asset);
-    expect(new Set(svgs).size).toBe(4);
-    for(const svg of svgs){
-      expect(svg).toContain('viewBox="0 0 192 192"');
-      expect(svg).toContain('shape-rendering="crispEdges"');
-      const colors=new Set([...svg.matchAll(/#[0-9a-fA-F]{6}/g)].map(m=>m[0].toLowerCase()));
-      expect(colors.size).toBeGreaterThanOrEqual(12);
-      expect((svg.match(/<path/g)||[]).length).toBeGreaterThanOrEqual(30);
-      expect(svg).toContain('#071216');
-      expect(svg).toContain('#5fb7aa');
-      expect(svg).toContain('#f0ce83');
-      expect(svg).toContain('#f1c294');
-    }
+  it('draws V7 directly from the 10x6 192px raster sheets with smoothing disabled',()=>{
+    expect(keyPose).toContain("ctx.imageSmoothingEnabled=false");
+    expect(keyPose).toContain("img.naturalWidth/10");
+    expect(keyPose).toContain("img.naturalHeight/6");
+    expect(keyPose).toContain('width="192" height="192"');
+    expect(keyPose).toContain('className="duel-sprite v7-hero-layer"');
+    expect(app).toContain("idle:{sheet:batterSwingV4,frame:0}");
+    expect(app).toContain("contact:{sheet:batterSwingV4,frame:12}");
+    expect(app).toContain("homer:{sheet:batterHomerV4,frame:42}");
+    expect(app).toContain("miss:{sheet:batterMissV4,frame:18}");
   });
 
   it('retains portrait, low-height landscape and reduced-motion contracts',()=>{
@@ -70,6 +62,6 @@ describe('GM12 batter golden master',()=>{
     expect(css).toContain('width:110%');
     expect(css).toContain('width:108%');
     expect(css).toContain('transform:none!important');
-    expect(css).not.toContain('.v6-hero-layer{filter:none!important}');
+    expect(css).not.toContain('.v7-hero-layer{filter:none!important}');
   });
 });
