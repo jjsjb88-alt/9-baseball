@@ -1,75 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" shape-rendering="crispEdges" data-art="gm12-batter" data-pose="contact">
-<title>9ZONE batter contact golden master</title>
-<g id="batter-contact">
-<!-- bat at contact: long horizontal weapon line -->
-<path fill="#071216" d="M137 79l7-6 44-2 4 7-3 7-47 4-9-4z"/>
-<path fill="#7b5b36" d="M144 77l43-2 1 6-45 4z"/>
-<path fill="#d8c18d" d="M148 77l38-1 0 3-39 4z"/>
-<rect x="176" y="74" width="10" height="3" fill="#fff0b0"/>
-<!-- back leg pivot -->
-<path fill="#071216" d="M86 119l31 6 18 21 4 24-9 14-22-4-7-23-19-15z"/>
-<path fill="#e9e1c9" d="M92 125l21 5 14 18 4 18-5 9-11-2-8-20-20-13z"/>
-<path fill="#c9c3ad" d="M111 132l11 14 4 17-8 2-9-20z"/>
-<rect x="117" y="159" width="10" height="7" fill="#5fb7aa"/>
-<path fill="#071216" d="M113 171l18 1 12 7-4 8-31-1-5-7z"/>
-<path fill="#102a31" d="M116 177h16l5 4-24 2z"/>
-<!-- braced front leg -->
-<path fill="#071216" d="M78 116l21 15-19 14-17 28-14 10-22-3-4-10 18-12 14-30z"/>
-<path fill="#e9e1c9" d="M79 124l11 8-15 9-18 27-10 7-12-2 11-10 15-31z"/>
-<path fill="#fff4d2" d="M55 134l8 2-8 20-10 8 7-18z"/>
-<path fill="#c9c3ad" d="M65 138l9 3-12 21-8 4z"/>
-<rect x="45" y="160" width="11" height="7" fill="#5fb7aa"/>
-<path fill="#071216" d="M35 169l22 2 10 7-5 8-36-1-4-8z"/>
-<path fill="#102a31" d="M35 176h19l5 5-28 0z"/>
-<!-- hips rotated open -->
-<path fill="#071216" d="M55 105l58 4 19 15-9 21-31 6-36-11-14-18z"/>
-<path fill="#17343a" d="M53 112l56 4 15 10-7 12-26 5-31-9-9-13z"/>
-<path fill="#347a73" d="M58 114l50 4 6 7-55-1z"/>
-<path fill="#f0ce83" d="M80 115l18 1-1 7-18-2z"/>
-<rect x="85" y="117" width="6" height="4" fill="#071216"/>
-<!-- torso twist: rear shoulder forward -->
-<path fill="#071216" d="M57 60l27-11 31 8 22 18 6 24-13 20-37 12-38-11-18-22 5-26z"/>
-<path fill="#e9e1c9" d="M61 64l24-8 27 7 18 15 5 18-10 15-33 11-32-9-14-18 4-20z"/>
-<path fill="#c9c3ad" d="M54 75l23-12 9 9 0 43-24-8-10-15z"/>
-<path fill="#fff4d2" d="M91 58l20 6 16 13-11 11-25-13z"/>
-<path fill="#918c7d" d="M112 88l22 6-5 15-18 7-9-14z"/>
-<path fill="#5fb7aa" d="M84 61l10 2-1 51-11-2z"/>
-<path fill="#347a73" d="M96 64l8 2-2 45-7 2z"/>
-<!-- rear arm drives through -->
-<path fill="#071216" d="M109 66l20 2 26 11 8 14-8 11-14-3-13-10-21-6z"/>
-<path fill="#d39a70" d="M114 71l13 2 23 10 7 8-5 7-8-3-13-10-20-5z"/>
-<path fill="#f1c294" d="M128 76l18 8-3 5-18-8z"/>
-<!-- lead arm extended, elbow not a block -->
-<path fill="#071216" d="M66 66l-17 9-16 17 5 13 17 4 19-12 24-7-2-14-26 4z"/>
-<path fill="#d39a70" d="M64 72l-12 7-12 13 2 8 11 3 17-10 23-7-1-8-23 4z"/>
-<path fill="#f1c294" d="M48 85l11-8 5 3-13 12z"/>
-<!-- hands layered around handle -->
-<path fill="#071216" d="M125 78l13-8 15 5 5 11-10 11-15 0-11-9z"/>
-<path fill="#f0ce83" d="M129 79l10-5 9 3 5 7-7 8-10 0-8-6z"/>
-<path fill="#fff0b0" d="M136 77l8 1 5 5-4 3-8-3z"/>
-<rect x="132" y="86" width="10" height="4" fill="#d8c18d"/>
-<!-- neck -->
-<path fill="#071216" d="M77 46l23-2 10 16-8 13-21 0-10-12z"/>
-<path fill="#d39a70" d="M81 48l16 0 7 11-5 8-14 0-8-8z"/>
-<!-- helmet/head turned at ball -->
-<!-- face -->
-<path fill="#071216" d="M63 20l14-11 28-2 20 10 9 15-6 12-12 2-6 16-17 10-20-7-9-17-7-7z"/>
-<path fill="#17343a" d="M69 21l10-7 24-1 15 7 8 9-5 8-21 0-11 7-19-4-5-9z"/>
-<path fill="#347a73" d="M79 14l22 0 15 7 5 6-31-2-14 7-8-4z"/>
-<rect x="82" y="14" width="17" height="4" fill="#5fb7aa"/>
-<path fill="#071216" d="M118 28h25l7 5-4 8-25-2z"/>
-<path fill="#102a31" d="M121 31h19l4 3-2 3-20-1z"/>
-<path fill="#d39a70" d="M76 38l16-8 25 6 3 14-9 13-17 5-16-8-6-13z"/>
-<path fill="#a86f50" d="M77 49l11 2 5 12-10-4-6-8z"/>
-<path fill="#f1c294" d="M93 34l18 4 4 6-13 2-10-4z"/>
-<rect x="106" y="44" width="6" height="4" fill="#071216"/>
-<rect x="113" y="53" width="8" height="3" fill="#a86f50"/>
-<rect x="98" y="59" width="11" height="3" fill="#071216"/>
-<!-- contact sparks stay authored, tiny and geometric -->
-<rect x="181" y="66" width="7" height="3" fill="#fff4d2"/>
-<rect x="176" y="61" width="4" height="4" fill="#f0ce83"/>
-<rect x="186" y="88" width="4" height="5" fill="#5fb7aa"/>
-<rect x="71" y="116" width="8" height="3" fill="#f0ce83"/>
-<rect x="106" y="117" width="8" height="3" fill="#f0ce83"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" shape-rendering="crispEdges">
+<g stroke="#071216" stroke-width="5" stroke-linejoin="miter" stroke-linecap="square">
+<path fill="#142d34" d="M71 30l12-11h24l12 8-3 12-12 5H79l-11-7z"/>
+<path fill="#d39a70" d="M78 40h29l7 10-6 15-17 6-16-8-4-13z"/>
+<path fill="#f1c294" stroke="none" d="M82 44h18v5H82zM78 51h8v7h-8z"/>
+<path fill="#e9e1c9" d="M55 69l31-10 34 9 18 22-11 29-34 15-39-8-18-24z"/>
+<path fill="#b8b29d" stroke="none" d="M58 72l25-8v10l-21 8zM110 66l10 4 13 16-8 4-15-12z"/>
+<path fill="#5fb7aa" stroke="none" d="M80 70h10v39H80zM94 68h10v40H94z"/>
+<path fill="#d39a70" d="M60 76L43 83 23 102l9 11 27-12 19-10z"/>
+<path fill="#d39a70" d="M119 74l22 5 20 11-5 11-27-4-22-8z"/>
+<path fill="#f0ce83" stroke="none" d="M24 102h14v10H24zM151 89h13v10h-13z"/>
+<path fill="#17343a" d="M54 119l37 8 34-11 13 13-20 23H65l-25-17z"/>
+<path fill="#e9e1c9" d="M73 143l-22 25-23 6-5-12 20-11 13-20z"/>
+<path fill="#e9e1c9" d="M111 145l24 18 29 2 1 13-34 2-33-22z"/>
+<path fill="#102a31" d="M26 162h29l4 10-37 8zM141 163h30l2 12-38 4z"/>
+<path fill="#d8c18d" d="M149 87l7-9 8 5-6 11z"/>
+<path fill="#d8c18d" d="M155 80l31-15 3 5-29 18z"/>
 </g>
+<rect x="89" y="48" width="5" height="5" fill="#071216"/>
+<rect x="66" y="123" width="11" height="7" fill="#f0ce83"/>
+<rect x="112" y="121" width="11" height="7" fill="#f0ce83"/>
+<path d="M164 72h19v4h-19z" fill="#fff0b0"/>
+<path d="M169 66h14v3h-14z" fill="#f2c96d"/>
+<rect x="44" y="147" width="9" height="7" fill="#5fb7aa"/>
+<rect x="127" y="153" width="9" height="7" fill="#5fb7aa"/>
 </svg>
