@@ -944,6 +944,22 @@
   .cinema-case-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.cinema-case-grid button{min-height:58px;padding:7px}.cinema-case-grid button strong{font-size:9px}
 }
 
+/* GM12 QA / real low-height landscape: keep the complete arena above the fold.
+   Controls remain below the stage and are reached by scrolling; the first screen is gameplay, not chrome. */
+@media (orientation:landscape) and (max-height:430px){
+  .cinema-lab{min-height:100vh;padding-bottom:0}
+  .cinema-lab-head{min-height:54px;padding:6px 12px 5px;align-items:center;gap:10px}
+  .cinema-lab-head .eyebrow{font-size:7px;letter-spacing:1.5px}
+  .cinema-lab-head h1{margin:2px 0 0;font-size:16px;line-height:1.05}
+  .cinema-lab-head p{display:none}
+  .cinema-lab-head-actions{gap:5px;flex-wrap:nowrap}
+  .cinema-lab-head-actions button{min-height:30px;padding:5px 9px;font-size:9px;white-space:nowrap}
+  .cinema-lab-head-actions .renderer-toggle{min-width:64px}
+  .cinema-lab-head-actions .renderer-status{padding:4px 6px;font-size:6px}
+  .cinema-lab-stage{height:300px!important;min-height:300px!important}
+  .cinema-lab-controls{margin-top:0}
+}
+
 
 /* ---------- PIXEL CINEMA RENDERER 2.0 · native WebGL2 spatial arena ---------- */
 .renderer2-host{isolation:isolate;background-color:#07141b}
