@@ -12,6 +12,7 @@ const cases=[
   ['after-1440x900',1440,900,'','live'],
   ['pose-sheet-390x844',390,844,'?sheet=1','pose'],
   ['rig-sheet-844x900',844,900,'?rig=1','rig'],
+  ['continuity-sheet-844x900',844,900,'?compare=1','compare'],
 ];
 await mkdir(out,{recursive:true});
 const browser=await chromium.launch();
@@ -34,6 +35,17 @@ for(const [name,width,height,query,mode] of cases){
         return canvases.length===8&&canvases.every(canvas=>{
           const ctx=canvas.getContext('2d');
           const pixels=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+          for(let i=3;i<pixels.length;i+=4)if(pixels[i])return true;
+          return false;
+        });
+      },null,{timeout:5000});
+    }else if(mode==='compare'){
+      await page.waitForSelector('.qa-continuity-sheet .qa-pose-card',{state:'visible',timeout:5000});
+      await page.waitForFunction(()=>{
+        const cards=[...document.querySelectorAll('.qa-continuity-sheet .qa-pose-card')];
+        const canvases=[...document.querySelectorAll('.qa-continuity-sheet canvas')];
+        return cards.length===8&&[...document.images].every(img=>img.complete&&img.naturalWidth>0)&&canvases.length===4&&canvases.every(canvas=>{
+          const pixels=canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data;
           for(let i=3;i<pixels.length;i+=4)if(pixels[i])return true;
           return false;
         });
@@ -75,6 +87,8 @@ for(const [name,width,height,query,mode] of cases){
     }else if(mode==='rig'){
       const expected=[['swing',0],['swing',6],['swing',11],['swing',15],['swing',18],['swing',34],['homer',59],['miss',59]];
       if(state.rigFrames.length!==8||expected.some(([action,frame],i)=>state.rigFrames[i]?.action!==action||state.rigFrames[i]?.frame!==frame))failures++;
+    }else if(mode==='compare'){
+      if(state.body.scrollWidth>state.viewport.w+1)failures++;
     }
     if(errors.length)failures++;
   }catch(error){
