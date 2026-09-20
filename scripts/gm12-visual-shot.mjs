@@ -38,7 +38,7 @@ async function select(page,name,delay,pose=null){
 async function viewportProof(label,url,name,width,height){
   const {page,errors}=await openLab(url,width,height);
   await page.screenshot({path:`${out}/${label}-${name}-idle.png`,fullPage:false});
-  await select(page,'정확 적중',325,'contact');
+  await select(page,'정확 적중',325,label==='after'?'contact':null);
   await page.screenshot({path:`${out}/${label}-${name}-contact.png`,fullPage:false});
   if(errors.length)console.log(`${label} ${name} console errors: ${errors.join(' | ')}`);
   await page.close();
@@ -51,10 +51,10 @@ async function closeups(label,url){
   await select(page,'정확 적중',325);
   await stage.screenshot({path:`${out}/${label}-close-contact.png`});
   await page.waitForTimeout(900);
-  await select(page,'홈런',560,'homer');
+  await select(page,'홈런',560,label==='after'?'homer':null);
   await stage.screenshot({path:`${out}/${label}-close-homer.png`});
   await page.waitForTimeout(1300);
-  await select(page,'한 칸 차이',420,'miss');
+  await select(page,'한 칸 차이',420,label==='after'?'miss':null);
   await stage.screenshot({path:`${out}/${label}-close-miss.png`});
   if(errors.length)console.log(`${label} closeups console errors: ${errors.join(' | ')}`);
   await page.close();
