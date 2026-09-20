@@ -208,13 +208,17 @@ function renderGoldenBatter(ctx,shot,frame){
 
   const chestY=Math.min(p.sb[1],p.sf[1]),waistY=Math.max(p.hb[1],p.hf[1]);
   const torso=[
-    [p.sb[0]-9,p.sb[1]-3],[p.sb[0]-6,chestY-7],[p.sf[0]+6,chestY-6],[p.sf[0]+9,p.sf[1]-1],
-    [p.hf[0]+9,p.hf[1]+5],[(p.hb[0]+p.hf[0])/2+4,waistY+10],[p.hb[0]-9,p.hb[1]+5]
+    [p.sb[0]-8,p.sb[1]-4],[p.sb[0]-10,p.sb[1]+2],[p.hb[0]-9,p.hb[1]-2],[p.hb[0]-8,p.hb[1]+5],
+    [(p.hb[0]+p.hf[0])/2-5,waistY+10],[(p.hb[0]+p.hf[0])/2+5,waistY+10],[p.hf[0]+9,p.hf[1]+5],
+    [p.hf[0]+10,p.hf[1]-2],[p.sf[0]+10,p.sf[1]+2],[p.sf[0]+8,p.sf[1]-4],
+    [p.sf[0]+3,chestY-7],[p.sb[0]-3,chestY-7]
   ];
   poly(ctx,torso,c.outline);
   poly(ctx,[
-    [p.sb[0]-6,p.sb[1]-1],[p.sb[0]-4,chestY-4],[p.sf[0]+4,chestY-3],[p.sf[0]+6,p.sf[1]+1],
-    [p.hf[0]+6,p.hf[1]+3],[(p.hb[0]+p.hf[0])/2+3,waistY+7],[p.hb[0]-6,p.hb[1]+3]
+    [p.sb[0]-5,p.sb[1]-2],[p.sb[0]-7,p.sb[1]+2],[p.hb[0]-6,p.hb[1]-1],[p.hb[0]-5,p.hb[1]+3],
+    [(p.hb[0]+p.hf[0])/2-4,waistY+7],[(p.hb[0]+p.hf[0])/2+4,waistY+7],[p.hf[0]+6,p.hf[1]+3],
+    [p.hf[0]+7,p.hf[1]-1],[p.sf[0]+7,p.sf[1]+2],[p.sf[0]+5,p.sf[1]-2],
+    [p.sf[0]+2,chestY-4],[p.sb[0]-2,chestY-4]
   ],c.jersey);
   poly(ctx,[
     [p.sb[0]-4,p.sb[1]+1],[p.hb[0]-5,p.hb[1]+2],[(p.hb[0]+p.hf[0])/2-1,waistY+5],
@@ -227,16 +231,16 @@ function renderGoldenBatter(ctx,shot,frame){
   segment(ctx,[(p.hb[0]+p.hf[0])/2-1,(p.sb[1]+p.sf[1])/2+3],[(p.hb[0]+p.hf[0])/2,(p.hb[1]+p.hf[1])/2+1],4,2,c.teal,c.tealHi);
   segment(ctx,[p.hb[0]-1,p.hb[1]+1],[p.hf[0]+1,p.hf[1]+1],4,2,c.tealDark,c.tealHi);
 
-  const sbSleeve=pt(p.sb,p.eb,.43),sfSleeve=pt(p.sf,p.ef,.43);
-  pixelJoint(ctx,p.sb,8,7,c.jersey,c.jerseyHi);
-  taperedLimb(ctx,p.sb,sbSleeve,8.2,7.2,6.2,5.3,c.jerseyShadow,c.jerseyHi);
-  taperedLimb(ctx,sbSleeve,p.eb,7.1,6.5,5.2,4.7,c.skinShadow,c.skin);
+  const sbSleeve=pt(p.sb,p.eb,.31),sfSleeve=pt(p.sf,p.ef,.31);
+  pixelJoint(ctx,p.sb,6.8,6,c.jersey,c.jerseyHi);
+  taperedLimb(ctx,p.sb,sbSleeve,7.1,5.9,5.4,4.3,c.jerseyShadow,c.jerseyHi);
+  taperedLimb(ctx,sbSleeve,p.eb,7.0,6.5,5.2,4.7,c.skinShadow,c.skin);
   pixelJoint(ctx,p.eb,6.2,5.4,c.skin,c.skinHi);
   taperedLimb(ctx,p.eb,p.hbnd,6.8,5.2,5.0,3.8,c.skin,c.skinHi);
 
-  pixelJoint(ctx,p.sf,8.4,7.2,c.jersey,c.jerseyHi);
-  taperedLimb(ctx,p.sf,sfSleeve,8.5,7.3,6.4,5.4,c.jersey,c.jerseyHi);
-  taperedLimb(ctx,sfSleeve,p.ef,7.3,6.6,5.4,4.8,c.skin,c.skinHi);
+  pixelJoint(ctx,p.sf,7,6.1,c.jersey,c.jerseyHi);
+  taperedLimb(ctx,p.sf,sfSleeve,7.2,6,5.5,4.4,c.jersey,c.jerseyHi);
+  taperedLimb(ctx,sfSleeve,p.ef,7.2,6.6,5.4,4.8,c.skin,c.skinHi);
   pixelJoint(ctx,p.ef,6.2,5.4,c.skin,c.skinHi);
   taperedLimb(ctx,p.ef,p.hfnd,6.9,5.3,5.1,3.9,c.skin,c.skinHi);
   glove(ctx,p.hbnd);glove(ctx,p.hfnd);
@@ -244,15 +248,17 @@ function renderGoldenBatter(ctx,shot,frame){
   pixelJoint(ctx,[p.neck[0],p.neck[1]+1],5.5,4.5,c.skin,c.skinHi);
 
   const hx=Math.round(p.head[0]),hy=Math.round(p.head[1]);
-  poly(ctx,[[hx-10,hy-5],[hx-7,hy-8],[hx+5,hy-7],[hx+9,hy-3],[hx+10,hy+3],[hx+6,hy+9],[hx-5,hy+9],[hx-10,hy+4]],c.outline);
-  poly(ctx,[[hx-8,hy-4],[hx-5,hy-6],[hx+4,hy-5],[hx+7,hy-2],[hx+7,hy+3],[hx+4,hy+7],[hx-4,hy+7],[hx-8,hy+3]],c.skin);
-  rect(ctx,hx-5,hy-2,7,3,c.skinHi);
-  rect(ctx,hx+4,hy-1,3,3,c.outline);
-  rect(ctx,hx+5,hy+4,4,2,c.skinShadow);
-  rect(ctx,hx-7,hy+2,3,3,c.skinShadow);
+  poly(ctx,[[hx-10,hy-5],[hx-7,hy-8],[hx+4,hy-7],[hx+8,hy-4],[hx+11,hy-1],[hx+9,hy+2],[hx+8,hy+6],[hx+4,hy+10],[hx-4,hy+10],[hx-9,hy+6],[hx-11,hy+1]],c.outline);
+  poly(ctx,[[hx-8,hy-4],[hx-5,hy-6],[hx+3,hy-5],[hx+6,hy-3],[hx+9,hy],[hx+6,hy+2],[hx+6,hy+5],[hx+3,hy+8],[hx-3,hy+8],[hx-7,hy+5],[hx-8,hy]],c.skin);
+  rect(ctx,hx-5,hy-3,7,3,c.skinHi);
+  rect(ctx,hx+4,hy-2,2,2,c.outline);
+  rect(ctx,hx+7,hy,4,2,c.skin);
+  rect(ctx,hx+5,hy+5,4,2,c.skinShadow);
+  rect(ctx,hx-8,hy+2,3,4,c.skinShadow);
+  rect(ctx,hx-7,hy+1,2,2,c.skinHi);
 
-  poly(ctx,[[hx-11,hy-5],[hx-10,hy-10],[hx-6,hy-14],[hx-1,hy-16],[hx+7,hy-14],[hx+12,hy-10],[hx+13,hy-5],[hx+8,hy-2],[hx-10,hy-2]],c.outline);
-  poly(ctx,[[hx-9,hy-5],[hx-8,hy-9],[hx-4,hy-12],[hx,hy-14],[hx+6,hy-12],[hx+10,hy-9],[hx+10,hy-5],[hx+6,hy-3],[hx-8,hy-3]],c.helmet);
+  poly(ctx,[[hx-11,hy-5],[hx-10,hy-10],[hx-6,hy-14],[hx-1,hy-16],[hx+6,hy-14],[hx+11,hy-10],[hx+12,hy-6],[hx+8,hy-3],[hx-10,hy-2]],c.outline);
+  poly(ctx,[[hx-9,hy-5],[hx-8,hy-9],[hx-4,hy-12],[hx,hy-14],[hx+5,hy-12],[hx+9,hy-9],[hx+9,hy-6],[hx+5,hy-4],[hx-8,hy-3]],c.helmet);
   poly(ctx,[[hx-6,hy-8],[hx-2,hy-11],[hx+4,hy-10],[hx+7,hy-8],[hx,hy-7]],c.helmetHi);
   rect(ctx,hx+6,hy-5,8,3,c.outline);
   rect(ctx,hx+7,hy-4,6,1,c.helmetHi);
