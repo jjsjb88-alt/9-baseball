@@ -14,18 +14,20 @@ const browser=await chromium.launch({headless:true});
 
 async function openLab(url,width,height){
   const page=await browser.newPage({viewport:{width,height},deviceScaleFactor:1});
+  await page.clock.install({time:new Date('2026-09-20T00:00:00Z')});
   const errors=[];
   page.on('console',message=>message.type()==='error'&&errors.push(message.text()));
   page.on('pageerror',error=>errors.push(String(error)));
   await page.goto(url+'/?cinema=1',{waitUntil:'networkidle'});
   await page.waitForSelector('.cinema-lab-stage');
   await page.waitForTimeout(200);
+  await page.clock.pauseAt(new Date('2026-09-20T00:00:05Z'));
   return {page,errors};
 }
 async function select(page,name,delay,pose=null){
   const button=page.locator('.cinema-case-grid button').filter({hasText:name}).first();
   await button.click();
-  await page.waitForTimeout(delay);
+  await page.clock.runFor(delay);
   if(pose){
     const actor=page.locator('.actor-left .sprite-batter.v6-hero-pose.pose-'+pose);
     await actor.waitFor({state:'visible',timeout:1200});
@@ -50,10 +52,10 @@ async function closeups(label,url){
   await stage.screenshot({path:`${out}/${label}-close-idle.png`});
   await select(page,'정확 적중',325);
   await stage.screenshot({path:`${out}/${label}-close-contact.png`});
-  await page.waitForTimeout(900);
+  await page.clock.runFor(900);
   await select(page,'홈런',560,label==='after'?'homer':null);
   await stage.screenshot({path:`${out}/${label}-close-homer.png`});
-  await page.waitForTimeout(1300);
+  await page.clock.runFor(1300);
   await select(page,'한 칸 차이',420,label==='after'?'miss':null);
   await stage.screenshot({path:`${out}/${label}-close-miss.png`});
   if(errors.length)console.log(`${label} closeups console errors: ${errors.join(' | ')}`);
