@@ -70,6 +70,30 @@ for(const [name,width,height,query,mode] of cases){
         frame:Number(card.dataset.frame),
         label:card.textContent?.trim(),
       })),
+      continuityMetrics:(()=>{
+        const cards=[...document.querySelectorAll('.qa-continuity-sheet .qa-pose-card')];
+        const alphaStats=source=>{
+          const canvas=document.createElement('canvas');canvas.width=96;canvas.height=96;
+          const ctx=canvas.getContext('2d',{willReadFrequently:true});
+          if(source instanceof HTMLImageElement)ctx.drawImage(source,0,0,96,96);
+          else ctx.drawImage(source,0,0);
+          const data=ctx.getImageData(0,0,96,96).data;
+          let count=0,minX=96,minY=96,maxX=-1,maxY=-1;
+          for(let y=0;y<96;y++)for(let x=0;x<96;x++){
+            if(data[(y*96+x)*4+3]>32){
+              count++;minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);
+            }
+          }
+          return {count,w:maxX>=minX?maxX-minX+1:0,h:maxY>=minY?maxY-minY+1:0};
+        };
+        const out=[];
+        for(let i=0;i+1<cards.length;i+=2){
+          const hero=cards[i].querySelector('img'),rig=cards[i+1].querySelector('canvas');
+          if(!hero||!rig)continue;
+          out.push({hero:alphaStats(hero),rig:alphaStats(rig),label:cards[i].textContent?.trim()});
+        }
+        return out;
+      })(),
       viewport:{w:innerWidth,h:innerHeight},
       body:{scrollWidth:document.body.scrollWidth,scrollHeight:document.body.scrollHeight},
       arena:document.querySelector('.duel-arena')?.getBoundingClientRect?.().toJSON?.()||null,
@@ -89,6 +113,13 @@ for(const [name,width,height,query,mode] of cases){
       if(state.rigFrames.length!==8||expected.some(([action,frame],i)=>state.rigFrames[i]?.action!==action||state.rigFrames[i]?.frame!==frame))failures++;
     }else if(mode==='compare'){
       if(state.body.scrollWidth>state.viewport.w+1)failures++;
+      if(state.continuityMetrics.length!==4)failures++;
+      for(const pair of state.continuityMetrics){
+        const area=pair.hero.count?pair.rig.count/pair.hero.count:0;
+        const width=pair.hero.w?pair.rig.w/pair.hero.w:0;
+        const height=pair.hero.h?pair.rig.h/pair.hero.h:0;
+        if(area<.62||area>1.48||width<.76||width>1.26||height<.76||height>1.26)failures++;
+      }
     }
     if(errors.length)failures++;
   }catch(error){
