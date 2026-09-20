@@ -64,15 +64,15 @@ function drawCell(ctx,img,index,alpha){
  * lower-body weight stay readable on the smallest viewport.
  */
 const BATTER_GM={
-  idle:{head:[47,18],neck:[46,27],sb:[39,31],sf:[51,31],hb:[41,50],hf:[52,50],eb:[36,39],hbnd:[52,38],ef:[50,39],hfnd:[56,39],kb:[35,64],fb:[27,80],kf:[58,64],ff:[67,80],knob:[56,38],tip:[75,11]},
-  load:{head:[44,18],neck:[44,27],sb:[35,31],sf:[49,30],hb:[38,50],hf:[50,50],eb:[30,39],hbnd:[49,36],ef:[46,39],hfnd:[53,37],kb:[32,64],fb:[25,80],kf:[56,62],ff:[64,78],knob:[52,36],tip:[70,8]},
-  trigger:{head:[45,19],neck:[45,28],sb:[36,32],sf:[50,31],hb:[39,50],hf:[52,49],eb:[31,39],hbnd:[49,39],ef:[48,38],hfnd:[55,40],kb:[34,63],fb:[26,80],kf:[57,61],ff:[68,77],knob:[54,39],tip:[76,14]},
-  swingStart:{head:[47,20],neck:[47,29],sb:[38,33],sf:[53,32],hb:[43,50],hf:[55,48],eb:[37,41],hbnd:[54,42],ef:[51,40],hfnd:[60,43],kb:[38,62],fb:[31,79],kf:[61,59],ff:[72,77],knob:[59,42],tip:[82,26]},
-  contact:{head:[49,21],neck:[49,30],sb:[40,34],sf:[56,32],hb:[46,51],hf:[59,48],eb:[47,41],hbnd:[61,43],ef:[57,39],hfnd:[66,43],kb:[43,63],fb:[38,80],kf:[64,60],ff:[75,79],knob:[65,43],tip:[92,40]},
-  follow:{head:[50,21],neck:[49,30],sb:[42,33],sf:[57,35],hb:[49,50],hf:[61,50],eb:[49,37],hbnd:[59,31],ef:[59,38],hfnd:[64,31],kb:[47,63],fb:[44,80],kf:[64,61],ff:[75,80],knob:[63,30],tip:[36,13]},
-  homer:{head:[51,18],neck:[50,28],sb:[42,31],sf:[57,33],hb:[49,49],hf:[61,49],eb:[46,33],hbnd:[54,26],ef:[56,35],hfnd:[61,26],kb:[47,62],fb:[45,80],kf:[64,61],ff:[76,80],knob:[59,25],tip:[31,10]},
-  miss:{head:[51,23],neck:[50,31],sb:[44,35],sf:[58,38],hb:[50,51],hf:[62,52],eb:[52,43],hbnd:[65,48],ef:[61,44],hfnd:[70,49],kb:[50,64],fb:[48,80],kf:[66,65],ff:[78,79],knob:[69,49],tip:[89,61]},
-  missFollow:{head:[51,24],neck:[50,32],sb:[45,36],sf:[58,40],hb:[51,52],hf:[63,54],eb:[55,44],hbnd:[64,53],ef:[63,46],hfnd:[69,54],kb:[52,65],fb:[50,80],kf:[67,66],ff:[80,79],knob:[68,54],tip:[83,73]},
+  idle:{head:[46,22],neck:[45,31],sb:[33,35],sf:[56,34],hb:[34,57],hf:[59,57],eb:[24,45],hbnd:[43,48],ef:[50,44],hfnd:[64,45],kb:[31,70],fb:[21,84],kf:[59,70],ff:[70,84],knob:[63,45],tip:[82,12]},
+  load:{head:[43,21],neck:[43,31],sb:[31,35],sf:[54,33],hb:[34,57],hf:[57,55],eb:[22,44],hbnd:[42,43],ef:[48,43],hfnd:[60,41],kb:[30,69],fb:[20,84],kf:[57,68],ff:[68,82],knob:[59,41],tip:[77,9]},
+  trigger:{head:[44,22],neck:[44,32],sb:[32,36],sf:[55,34],hb:[36,57],hf:[59,55],eb:[24,45],hbnd:[44,45],ef:[51,43],hfnd:[63,45],kb:[33,69],fb:[21,84],kf:[61,67],ff:[73,81],knob:[62,45],tip:[83,19]},
+  swingStart:{head:[46,23],neck:[46,33],sb:[34,37],sf:[58,35],hb:[40,58],hf:[63,55],eb:[31,47],hbnd:[52,49],ef:[56,44],hfnd:[67,49],kb:[37,68],fb:[28,83],kf:[65,66],ff:[77,82],knob:[66,49],tip:[88,33]},
+  contact:{head:[49,24],neck:[49,34],sb:[37,38],sf:[61,35],hb:[44,59],hf:[67,55],eb:[43,48],hbnd:[63,49],ef:[60,44],hfnd:[71,48],kb:[42,69],fb:[36,84],kf:[68,67],ff:[79,83],knob:[70,48],tip:[95,45]},
+  follow:{head:[50,24],neck:[49,34],sb:[39,37],sf:[62,39],hb:[47,58],hf:[68,58],eb:[46,42],hbnd:[58,34],ef:[59,42],hfnd:[66,33],kb:[46,69],fb:[43,84],kf:[68,68],ff:[78,84],knob:[65,32],tip:[34,11]},
+  homer:{head:[51,21],neck:[50,32],sb:[39,35],sf:[62,38],hb:[47,57],hf:[68,57],eb:[43,38],hbnd:[53,29],ef:[57,39],hfnd:[63,28],kb:[46,68],fb:[43,84],kf:[68,67],ff:[79,84],knob:[61,27],tip:[28,9]},
+  miss:{head:[51,26],neck:[50,35],sb:[40,39],sf:[62,42],hb:[47,60],hf:[68,61],eb:[49,48],hbnd:[64,54],ef:[61,48],hfnd:[72,55],kb:[48,71],fb:[45,84],kf:[70,71],ff:[82,83],knob:[71,55],tip:[92,67]},
+  missFollow:{head:[51,27],neck:[50,36],sb:[41,40],sf:[62,44],hb:[48,61],hf:[69,63],eb:[52,49],hbnd:[64,59],ef:[63,51],hfnd:[72,60],kb:[50,72],fb:[47,84],kf:[71,72],ff:[83,83],knob:[71,60],tip:[86,78]},
 };
 const BATTER_POINT_KEYS=['head','neck','sb','sf','hb','hf','eb','hbnd','ef','hfnd','kb','fb','kf','ff','knob','tip'];
 const BATTER_TIMELINES={
@@ -131,16 +131,16 @@ function segment(ctx,a,b,outlineWidth,fillWidth,fill,highlight){
 }
 function shoe(ctx,p){
   const x=Math.round(p[0]),y=Math.round(p[1]);
-  poly(ctx,[[x-7,y-3],[x+5,y-3],[x+8,y-1],[x+7,y+4],[x-7,y+4],[x-9,y+1]],BATTER_PALETTE.outline);
-  rect(ctx,x-6,y-2,11,3,BATTER_PALETTE.shoe);
-  rect(ctx,x-4,y-2,6,1,BATTER_PALETTE.shoeHi);
-  rect(ctx,x+3,y+1,5,2,BATTER_PALETTE.deep);
+  poly(ctx,[[x-8,y-4],[x+5,y-4],[x+9,y-1],[x+8,y+4],[x-8,y+4],[x-10,y+1]],BATTER_PALETTE.outline);
+  rect(ctx,x-7,y-2,13,4,BATTER_PALETTE.shoe);
+  rect(ctx,x-5,y-2,7,1,BATTER_PALETTE.shoeHi);
+  rect(ctx,x+3,y+1,6,2,BATTER_PALETTE.deep);
 }
 function glove(ctx,p){
   const x=Math.round(p[0]),y=Math.round(p[1]);
-  rect(ctx,x-4,y-4,8,8,BATTER_PALETTE.outline);
-  rect(ctx,x-3,y-3,6,6,BATTER_PALETTE.glove);
-  rect(ctx,x-2,y-2,4,2,BATTER_PALETTE.gloveHi);
+  rect(ctx,x-5,y-5,10,10,BATTER_PALETTE.outline);
+  rect(ctx,x-4,y-4,8,8,BATTER_PALETTE.glove);
+  rect(ctx,x-3,y-3,6,2,BATTER_PALETTE.gloveHi);
 }
 function bat(ctx,knob,tip){
   segment(ctx,knob,tip,6,3,BATTER_PALETTE.bat,BATTER_PALETTE.batHi);
@@ -158,40 +158,50 @@ function renderGoldenBatter(ctx,shot,frame){
   const batFront=p.tip[0]>84||batterAction(shot)==='miss';
   if(!batFront)bat(ctx,p.knob,p.tip);
 
-  segment(ctx,p.hb,p.kb,11,7,c.pantsShadow,c.pants);
-  segment(ctx,p.kb,p.fb,10,6,c.pants,c.jerseyHi);
-  segment(ctx,p.hf,p.kf,12,8,c.pants,c.jerseyHi);
-  segment(ctx,p.kf,p.ff,10,6,c.pants,c.jerseyHi);
+  segment(ctx,p.hb,p.kb,14,10,c.pantsShadow,c.pants);
+  segment(ctx,p.kb,p.fb,12,8,c.pants,c.jerseyHi);
+  segment(ctx,p.hf,p.kf,15,11,c.pants,c.jerseyHi);
+  segment(ctx,p.kf,p.ff,12,8,c.pants,c.jerseyHi);
   shoe(ctx,p.fb);shoe(ctx,p.ff);
 
-  const torso=[[p.sb[0]-3,p.sb[1]-3],[p.sf[0]+3,p.sf[1]-2],[p.hf[0]+4,p.hf[1]+4],[p.hb[0]-4,p.hb[1]+4]];
+  const torso=[
+    [p.sb[0]-6,p.sb[1]-4],[p.sf[0]+6,p.sf[1]-3],[p.hf[0]+7,p.hf[1]+4],
+    [(p.hb[0]+p.hf[0])/2+2,Math.max(p.hb[1],p.hf[1])+8],[p.hb[0]-7,p.hb[1]+4]
+  ];
   poly(ctx,torso,c.outline);
-  poly(ctx,[[p.sb[0]-1,p.sb[1]-1],[p.sf[0]+1,p.sf[1]],[p.hf[0]+2,p.hf[1]+2],[p.hb[0]-2,p.hb[1]+2]],c.jersey);
-  poly(ctx,[[p.sb[0],p.sb[1]],[p.hb[0]-1,p.hb[1]+1],[(p.hb[0]+p.hf[0])/2-1,(p.hb[1]+p.hf[1])/2+2],[(p.sb[0]+p.sf[0])/2,(p.sb[1]+p.sf[1])/2+1]],c.jerseyShadow);
+  poly(ctx,[
+    [p.sb[0]-3,p.sb[1]-1],[p.sf[0]+3,p.sf[1]],[p.hf[0]+4,p.hf[1]+2],
+    [(p.hb[0]+p.hf[0])/2+1,Math.max(p.hb[1],p.hf[1])+5],[p.hb[0]-4,p.hb[1]+2]
+  ],c.jersey);
+  poly(ctx,[
+    [p.sb[0]-2,p.sb[1]+1],[p.hb[0]-4,p.hb[1]+1],[(p.hb[0]+p.hf[0])/2-1,Math.max(p.hb[1],p.hf[1])+4],
+    [(p.sb[0]+p.sf[0])/2-2,(p.sb[1]+p.sf[1])/2+2]
+  ],c.jerseyShadow);
   segment(ctx,[(p.hb[0]+p.hf[0])/2-1,(p.sb[1]+p.sf[1])/2+3],[(p.hb[0]+p.hf[0])/2,(p.hb[1]+p.hf[1])/2+1],4,2,c.teal,c.tealHi);
   segment(ctx,[p.hb[0]-1,p.hb[1]+1],[p.hf[0]+1,p.hf[1]+1],4,2,c.tealDark,c.tealHi);
 
-  segment(ctx,p.sb,p.eb,9,5,c.skinShadow,c.skin);
-  segment(ctx,p.eb,p.hbnd,8,4,c.skin,c.skinHi);
-  segment(ctx,p.sf,p.ef,9,5,c.skin,c.skinHi);
-  segment(ctx,p.ef,p.hfnd,8,4,c.skin,c.skinHi);
+  segment(ctx,p.sb,p.eb,11,7,c.skinShadow,c.skin);
+  segment(ctx,p.eb,p.hbnd,10,6,c.skin,c.skinHi);
+  segment(ctx,p.sf,p.ef,11,7,c.skin,c.skinHi);
+  segment(ctx,p.ef,p.hfnd,10,6,c.skin,c.skinHi);
   glove(ctx,p.hbnd);glove(ctx,p.hfnd);
 
   segment(ctx,[p.neck[0],p.neck[1]-1],[p.neck[0],p.neck[1]+4],7,4,c.skin,c.skinHi);
 
   const hx=Math.round(p.head[0]),hy=Math.round(p.head[1]);
-  poly(ctx,[[hx-7,hy-4],[hx+5,hy-3],[hx+7,hy+1],[hx+5,hy+7],[hx-4,hy+6],[hx-7,hy+2]],c.outline);
-  poly(ctx,[[hx-5,hy-2],[hx+4,hy-2],[hx+5,hy+1],[hx+3,hy+5],[hx-3,hy+4],[hx-5,hy+2]],c.skin);
-  rect(ctx,hx-3,hy-2,5,2,c.skinHi);
-  rect(ctx,hx+3,hy,2,2,c.outline);
-  rect(ctx,hx+3,hy+4,3,2,c.skinShadow);
+  poly(ctx,[[hx-9,hy-5],[hx+6,hy-4],[hx+9,hy],[hx+7,hy+8],[hx-5,hy+8],[hx-9,hy+3]],c.outline);
+  poly(ctx,[[hx-7,hy-3],[hx+5,hy-3],[hx+7,hy],[hx+5,hy+6],[hx-4,hy+6],[hx-7,hy+2]],c.skin);
+  rect(ctx,hx-5,hy-2,7,3,c.skinHi);
+  rect(ctx,hx+4,hy-1,3,3,c.outline);
+  rect(ctx,hx+5,hy+4,4,2,c.skinShadow);
+  rect(ctx,hx-7,hy+2,3,3,c.skinShadow);
 
-  poly(ctx,[[hx-8,hy-4],[hx-6,hy-9],[hx-2,hy-12],[hx+5,hy-11],[hx+9,hy-7],[hx+9,hy-3],[hx+5,hy-2],[hx-7,hy-2]],c.outline);
-  poly(ctx,[[hx-6,hy-4],[hx-5,hy-7],[hx-1,hy-10],[hx+4,hy-9],[hx+7,hy-7],[hx+7,hy-4],[hx+4,hy-3],[hx-5,hy-3]],c.helmet);
-  poly(ctx,[[hx-4,hy-7],[hx-1,hy-9],[hx+3,hy-8],[hx+5,hy-7],[hx-1,hy-6]],c.helmetHi);
-  rect(ctx,hx+5,hy-4,8,3,c.outline);
-  rect(ctx,hx+6,hy-3,6,1,c.helmetHi);
-  rect(ctx,hx-5,hy-2,3,5,c.deep);
+  poly(ctx,[[hx-10,hy-5],[hx-8,hy-11],[hx-3,hy-14],[hx+6,hy-13],[hx+11,hy-9],[hx+11,hy-4],[hx+6,hy-2],[hx-9,hy-2]],c.outline);
+  poly(ctx,[[hx-8,hy-5],[hx-7,hy-9],[hx-2,hy-12],[hx+5,hy-11],[hx+9,hy-8],[hx+9,hy-5],[hx+5,hy-3],[hx-7,hy-3]],c.helmet);
+  poly(ctx,[[hx-6,hy-8],[hx-2,hy-11],[hx+4,hy-10],[hx+7,hy-8],[hx,hy-7]],c.helmetHi);
+  rect(ctx,hx+6,hy-5,10,4,c.outline);
+  rect(ctx,hx+7,hy-4,8,2,c.helmetHi);
+  rect(ctx,hx-7,hy-2,4,6,c.deep);
 
   const cx=Math.round((p.sb[0]+p.sf[0]+p.hb[0]+p.hf[0])/4)+2,cy=Math.round((p.sb[1]+p.sf[1]+p.hb[1]+p.hf[1])/4);
   rect(ctx,cx-3,cy-5,6,2,c.tealDark);rect(ctx,cx+1,cy-4,2,8,c.tealDark);rect(ctx,cx-3,cy+1,5,2,c.tealDark);
