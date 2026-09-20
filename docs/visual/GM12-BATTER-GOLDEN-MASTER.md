@@ -65,3 +65,17 @@ The GM12 workflow now runs:
 - idle/contact/homer/miss closeups
 
 A successful workflow is evidence generation, not automatic art approval. Captures must still be reviewed visually before LOOP 1 is declared complete.
+
+
+## Pitcher continuity fix
+
+The same review exposed a pitcher continuity problem: strikeout outcomes selected the strikeout reaction sheet for the entire pitch, and QA captures could land on baked ghost frames late in the normal pitch sheet.
+
+V7 now also pins clean pitcher raster anchors:
+
+- idle — pitch frame 0
+- release / impact — pitch frame 39
+- follow-through — pitch frame 46
+- strikeout reaction — strikeout frame 52
+
+The strikeout reaction sheet is now restricted to release / settle. Windup, impact and slow-motion keep the normal 60-frame pitch sheet.

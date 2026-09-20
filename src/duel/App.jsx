@@ -120,6 +120,12 @@ const BATTER_HERO_V7={
   homer:{sheet:batterHomerV4,frame:42},
   miss:{sheet:batterMissV4,frame:18},
 };
+const PITCHER_HERO_V7={
+  idle:{sheet:pitcherPitchV4,frame:0},
+  release:{sheet:pitcherPitchV4,frame:39},
+  follow:{sheet:pitcherPitchV4,frame:46},
+  strikeout:{sheet:pitcherStrikeoutV4,frame:52},
+};
 const ACTOR_ASSETS=[...new Set([...BATTER_SWING_V2,...BATTER_MISS_V2,...PITCHER_PITCH_V2,...PITCHER_K_V2,batterSwingV4,batterMissV4,batterHomerV4,pitcherPitchV4,pitcherStrikeoutV4,batterHomerHeroV3,...Object.values(PITCHER_RELEASE_V3)])];
 function useActorAssetPreload(){
   useEffect(()=>{
@@ -139,6 +145,15 @@ export const batterHeroPoseFor=(pose,stage,shot)=>{
   if(pose==='contact'&&['impact','slowmo'].includes(stage)&&['dead-center','solid','extra','homer','grand-slam'].includes(grade))return BATTER_HERO_V7.contact;
   if(pose==='homer'&&['release','settle'].includes(stage)&&['homer','grand-slam'].includes(grade))return BATTER_HERO_V7.homer;
   if(pose==='miss'&&['slowmo','release'].includes(stage)&&['near-miss','near-miss-k','chase','chase-k','fooled','strikeout'].includes(grade))return BATTER_HERO_V7.miss;
+  return null;
+};
+export const pitcherHeroPoseFor=(pose,stage,shot)=>{
+  const grade=shot?.grade||'';
+  const strikeout=grade==='strikeout'||grade.endsWith('-k')||grade==='called-k'||grade==='frozen';
+  if(pose==='idle'&&!stage)return PITCHER_HERO_V7.idle;
+  if(pose==='release'&&['impact','slowmo'].includes(stage))return PITCHER_HERO_V7.release;
+  if(strikeout&&['release','settle'].includes(stage))return PITCHER_HERO_V7.strikeout;
+  if(!strikeout&&pose==='follow'&&['release','settle'].includes(stage))return PITCHER_HERO_V7.follow;
   return null;
 };
 function actorPose(who,stage,shot){
@@ -216,19 +231,19 @@ function useSpriteFrame(spec,key){
   },[spec?.frames,spec?.start,spec?.end,spec?.duration,key]);
   return spec?.frames?.[Math.min(index,spec.frames.length-1)]||null;
 }
-function v4SheetFor(who,shot){
+function v4SheetFor(who,stage,shot){
   if(!shot)return null;
   if(who==='pitcher'){
-    const strikeout=shot.grade==='strikeout'||shot.grade?.endsWith?.('-k');
-    return strikeout?pitcherStrikeoutV4:pitcherPitchV4;
+    const strikeout=shot.grade==='strikeout'||shot.grade?.endsWith?.('-k')||shot.grade==='called-k'||shot.grade==='frozen';
+    return strikeout&&['release','settle'].includes(stage)?pitcherStrikeoutV4:pitcherPitchV4;
   }
   const miss=['near-miss','near-miss-k','chase','chase-k','fooled','strikeout'].includes(shot.grade);
   const homer=['homer','grand-slam'].includes(shot.grade);
   return homer?batterHomerV4:miss?batterMissV4:batterSwingV4;
 }
 function Sprite({who,stage=null,shot=null,golden=false,variant=null,playToken=0}){
-  const pose=actorPose(who,stage,shot),v4Sheet=golden&&stage? v4SheetFor(who,shot):null;
-  const hero=golden&&who==='batter'?batterHeroPoseFor(pose,stage,shot):null;
+  const pose=actorPose(who,stage,shot),v4Sheet=golden&&stage? v4SheetFor(who,stage,shot):null;
+  const hero=golden?(who==='batter'?batterHeroPoseFor(pose,stage,shot):pitcherHeroPoseFor(pose,stage,shot)):null;
   const spec=v4Sheet?null:sequenceSpec(who,stage,shot),animated=useSpriteFrame(spec,who+'-'+stage+'-'+(shot?.grade||'idle')+'-'+(variant||'base'));
   const legacy=(who==='pitcher'?PITCHER_POSES:BATTER_POSES)[pose],v2=golden?V2_FALLBACKS[who]?.[pose]?.():null,authored=!v4Sheet&&golden?authoredActorArt(who,pose,stage,shot,variant):null,src=authored||animated||v2||legacy;
   return <span className={'sprite-stage sprite-'+who+' pose-'+pose+(v4Sheet?' v4-sequence':'')+(animated&&!authored?' v2-sequence':'')+(authored?' v3-authored':'')+(hero?' v7-hero-pose':'')+(golden?' golden-actor':'')+(variant?' variant-'+variant:'')}>

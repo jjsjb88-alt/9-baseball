@@ -802,6 +802,22 @@
     drop-shadow(0 12px 5px rgba(0,4,7,.68))
     drop-shadow(0 0 11px rgba(242,194,95,.16))!important;
 }
+.golden-master-stage .golden-actor.sprite-pitcher.v7-hero-pose .v7-hero-layer{
+  filter:
+    brightness(1.02) contrast(1.07) saturate(.98)
+    drop-shadow(-1px 0 0 rgba(124,221,210,.26))
+    drop-shadow(1px 0 0 rgba(2,8,11,.98))
+    drop-shadow(0 1px 0 rgba(2,8,11,.98))
+    drop-shadow(0 10px 4px rgba(0,4,7,.64))!important;
+}
+.golden-master-stage.fx-stage-impact .golden-actor.sprite-pitcher.v7-hero-pose .v7-hero-layer,
+.golden-master-stage.fx-stage-slowmo .golden-actor.sprite-pitcher.v7-hero-pose .v7-hero-layer{
+  filter:
+    brightness(1.08) contrast(1.08)
+    drop-shadow(-1px 0 0 rgba(147,232,221,.34))
+    drop-shadow(1px 0 0 rgba(2,8,11,.98))
+    drop-shadow(0 11px 4px rgba(0,4,7,.66))!important;
+}
 .golden-master-stage.director-power.fx-stage-impact .golden-actor.v7-hero-pose .v7-hero-layer{
   transform:translate3d(2px,-1px,0) scale(1.015);
 }

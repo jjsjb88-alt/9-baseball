@@ -1,6 +1,6 @@
 import {describe,it,expect} from 'vitest';
 import fs from 'node:fs';
-import {batterHeroPoseFor} from '../src/duel/App.jsx';
+import {batterHeroPoseFor,pitcherHeroPoseFor} from '../src/duel/App.jsx';
 
 const app=fs.readFileSync(new URL('../src/duel/App.jsx',import.meta.url),'utf8');
 const css=fs.readFileSync(new URL('../src/duel/golden-master.css',import.meta.url),'utf8');
@@ -32,6 +32,14 @@ describe('GM12 batter golden master · V7 raster key poses',()=>{
     expect(batterHeroPoseFor('miss','release',{grade:'strikeout'})).toBe(miss);
     expect(homer.frame).not.toBe(miss.frame);
     expect(batterHeroPoseFor('miss','windup',{grade:'strikeout'})).toBeNull();
+  });
+
+  it('gives the pitcher clean raster anchors without starting strikeouts on the celebration sheet',()=>{
+    expect(pitcherHeroPoseFor('idle',null,null)).toMatchObject({frame:0});
+    expect(pitcherHeroPoseFor('release','impact',{grade:'dead-center'})).toMatchObject({frame:39});
+    expect(pitcherHeroPoseFor('follow','release',{grade:'homer'})).toMatchObject({frame:46});
+    expect(pitcherHeroPoseFor('strikeout','release',{grade:'strikeout'})).toMatchObject({frame:52});
+    expect(app).toContain("strikeout&&['release','settle'].includes(stage)?pitcherStrikeoutV4:pitcherPitchV4");
   });
 
   it('keeps the real 60 Hz V4 canvas alive beneath V7 key-pose ownership',()=>{
