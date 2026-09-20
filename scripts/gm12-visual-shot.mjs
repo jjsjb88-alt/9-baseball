@@ -26,6 +26,12 @@ async function openLab(url,width,height,pose='idle'){
   page.on('pageerror',error=>errors.push(String(error)));
   await page.goto(url+'/?cinema=1'+poseQuery[pose],{waitUntil:'networkidle'});
   await page.waitForSelector('.cinema-lab-stage');
+  // Static Golden Master proof must not inherit the live camera-shake transform.
+  // We are judging authored silhouettes here; motion itself remains covered by the live V4 renderer.
+  await page.addStyleTag({content:`
+    .cinema-lab[class*="shake-"]{animation:none!important;transform:none!important}
+    .cinema-lab-stage{animation:none!important}
+  `});
   await page.waitForTimeout(120);
   return {page,errors};
 }
@@ -68,7 +74,10 @@ async function closeups(label,url){
   for(const pose of ['idle','contact','homer','miss']){
     const opened=await openLab(url,1440,900,pose);
     if(label==='after')await assertAfterPose(opened.page,pose);
-    await opened.page.locator('.cinema-lab-stage').screenshot({path:`${out}/${label}-close-${pose}.png`});
+    const stage=opened.page.locator('.cinema-lab-stage');
+    await stage.scrollIntoViewIfNeeded();
+    await opened.page.waitForTimeout(40);
+    await stage.screenshot({path:`${out}/${label}-close-${pose}.png`});
     if(opened.errors.length){
       errors+=opened.errors.length;
       console.log(`${label} close ${pose} console errors: ${opened.errors.join(' | ')}`);
