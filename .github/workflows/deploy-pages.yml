@@ -15,6 +15,7 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  issues: write
 
 concurrency:
   group: pages
@@ -104,3 +105,11 @@ jobs:
       - name: Deploy stable root plus previews
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Confirm GM12 playable preview
+        if: github.event_name == 'push' && contains(github.event.head_commit.message, 'verify GM12 preview deployment marker')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api repos/${{ github.repository }}/issues/82/comments \
+            -f body='✅ GM12 PLAYABLE PREVIEW DEPLOYED — https://jjsjb88-alt.github.io/9-baseball/gm12/ — source: codex/gm12-batter-golden-master-redraw'
