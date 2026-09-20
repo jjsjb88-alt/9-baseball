@@ -22,15 +22,23 @@ async function openLab(url,width,height){
   await page.waitForTimeout(200);
   return {page,errors};
 }
-async function select(page,name,delay){
+async function select(page,name,delay,pose=null){
   const button=page.locator('.cinema-case-grid button').filter({hasText:name}).first();
   await button.click();
   await page.waitForTimeout(delay);
+  if(pose){
+    const actor=page.locator('.actor-left .sprite-batter.v6-hero-pose.pose-'+pose);
+    await actor.waitFor({state:'visible',timeout:1200});
+    await actor.locator('.v6-hero-layer').waitFor({state:'visible',timeout:1200});
+    const stage=await page.locator('.cinema-lab-stage').getAttribute('class');
+    const actorClass=await actor.getAttribute('class');
+    console.log(`GM12 pose proof · ${name} · ${stage} · ${actorClass}`);
+  }
 }
 async function viewportProof(label,url,name,width,height){
   const {page,errors}=await openLab(url,width,height);
   await page.screenshot({path:`${out}/${label}-${name}-idle.png`,fullPage:false});
-  await select(page,'정확 적중',325);
+  await select(page,'정확 적중',325,'contact');
   await page.screenshot({path:`${out}/${label}-${name}-contact.png`,fullPage:false});
   if(errors.length)console.log(`${label} ${name} console errors: ${errors.join(' | ')}`);
   await page.close();
@@ -43,10 +51,10 @@ async function closeups(label,url){
   await select(page,'정확 적중',325);
   await stage.screenshot({path:`${out}/${label}-close-contact.png`});
   await page.waitForTimeout(900);
-  await select(page,'홈런',560);
+  await select(page,'홈런',560,'homer');
   await stage.screenshot({path:`${out}/${label}-close-homer.png`});
   await page.waitForTimeout(1300);
-  await select(page,'한 칸 차이',420);
+  await select(page,'한 칸 차이',420,'miss');
   await stage.screenshot({path:`${out}/${label}-close-miss.png`});
   if(errors.length)console.log(`${label} closeups console errors: ${errors.join(' | ')}`);
   await page.close();
