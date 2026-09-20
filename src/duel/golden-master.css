@@ -834,3 +834,121 @@
     transition:none!important;
   }
 }
+
+
+/* GM10 · Actor Focus Relay
+   Outcome Director now owns actor blocking as well as camera/light.
+   V4 Canvas keeps its native 60Hz frame interpolation; only the outer actor containers move. */
+.golden-master-stage[class*="director-"] .actor-left,
+.golden-master-stage[class*="director-"] .actor-right{
+  transition:transform .14s cubic-bezier(.18,.72,.2,1),filter .14s linear,opacity .14s linear;
+  will-change:transform,filter;
+}
+
+/* Pitcher owns the opening beat regardless of result. */
+.golden-master-stage.fx-stage-windup[class*="director-"] .actor-right{
+  transform:translate3d(-8px,-4px,0) scale(1.055);
+  filter:brightness(1.08) contrast(1.04) drop-shadow(-13px 9px 8px rgba(1,7,9,.56));
+}
+.golden-master-stage.fx-stage-windup[class*="director-"] .actor-left{
+  transform:translate3d(-5px,2px,0) scale(.972);
+  filter:brightness(.88) saturate(.88) drop-shadow(8px 10px 7px rgba(1,7,9,.54));
+}
+
+/* Clean contact: the hitter takes the frame at barrel impact, pitcher falls one plane back. */
+.golden-master-stage.director-contact.fx-stage-impact .actor-left{
+  transform:translate3d(15px,-3px,0) scale(1.09);
+  filter:brightness(1.14) contrast(1.06) drop-shadow(13px 12px 8px rgba(1,7,9,.58));
+}
+.golden-master-stage.director-contact.fx-stage-impact .actor-right{
+  transform:translate3d(-11px,4px,0) scale(.952);
+  filter:brightness(.72) saturate(.74) drop-shadow(-7px 8px 6px rgba(1,7,9,.48));
+}
+.golden-master-stage.director-contact.fx-stage-release .actor-left{
+  transform:translate3d(10px,-1px,0) scale(1.045);
+}
+.golden-master-stage.director-contact.fx-stage-release .actor-right{transform:translate3d(-6px,3px,0) scale(.975)}
+
+/* Power contact exaggerates the weight transfer, then yields ownership to ball/stadium. */
+.golden-master-stage.director-power.fx-stage-impact .actor-left{
+  transform:translate3d(21px,-5px,0) scale(1.125);
+  filter:brightness(1.2) contrast(1.08) drop-shadow(15px 13px 9px rgba(1,7,9,.6));
+}
+.golden-master-stage.director-power.fx-stage-impact .actor-right{
+  transform:translate3d(-15px,5px,0) scale(.925);
+  filter:brightness(.62) saturate(.66) drop-shadow(-6px 8px 6px rgba(1,7,9,.44));
+}
+.golden-master-stage.director-power.fx-stage-slowmo .actor-left{
+  transform:translate3d(18px,-4px,0) scale(1.095);
+  filter:brightness(1.02) contrast(1.05) saturate(.92) drop-shadow(13px 12px 8px rgba(1,7,9,.58));
+}
+.golden-master-stage.director-power.fx-stage-slowmo .actor-right{
+  transform:translate3d(-12px,5px,0) scale(.93);
+  filter:brightness(.58) saturate(.58) drop-shadow(-5px 8px 6px rgba(1,7,9,.42));
+}
+.golden-master-stage.director-power.fx-stage-release .actor-left{transform:translate3d(11px,-1px,0) scale(1.035);filter:brightness(.94) saturate(.9)}
+.golden-master-stage.director-power.fx-stage-release .actor-right{transform:translate3d(-7px,3px,0) scale(.945);filter:brightness(.63) saturate(.62)}
+
+/* Near miss: both actors recede while the passing ball owns slowmo; batter reaction claims release. */
+.golden-master-stage.director-near-miss.fx-stage-impact .actor-left,
+.golden-master-stage.director-near-miss.fx-stage-impact .actor-right{transform:scale(.972);filter:brightness(.75) saturate(.72)}
+.golden-master-stage.director-near-miss.fx-stage-slowmo .actor-left{transform:translate3d(5px,1px,0) scale(.965);filter:brightness(.66) saturate(.65)}
+.golden-master-stage.director-near-miss.fx-stage-slowmo .actor-right{transform:translate3d(-4px,0,0) scale(.97);filter:brightness(.7) saturate(.7)}
+.golden-master-stage.director-near-miss.fx-stage-release .actor-left{
+  transform:translate3d(13px,3px,0) scale(1.065);
+  filter:brightness(.95) contrast(1.06) drop-shadow(10px 11px 8px rgba(1,7,9,.58));
+}
+.golden-master-stage.director-near-miss.fx-stage-release .actor-right{transform:translate3d(-7px,-1px,0) scale(.955);filter:brightness(.68) saturate(.68)}
+
+/* Strikeout: pitcher keeps authority through release; batter contracts instead of competing for attention. */
+.golden-master-stage.director-strikeout.fx-stage-impact .actor-left{transform:translate3d(-3px,2px,0) scale(.95);filter:brightness(.64) saturate(.62)}
+.golden-master-stage.director-strikeout.fx-stage-impact .actor-right{transform:translate3d(-10px,-4px,0) scale(1.06);filter:brightness(1.07) contrast(1.05)}
+.golden-master-stage.director-strikeout.fx-stage-slowmo .actor-left{transform:translate3d(-5px,3px,0) scale(.94);filter:brightness(.58) saturate(.55)}
+.golden-master-stage.director-strikeout.fx-stage-slowmo .actor-right{transform:translate3d(-9px,-3px,0) scale(1.045);filter:brightness(.93) saturate(.9)}
+.golden-master-stage.director-strikeout.fx-stage-release .actor-left{transform:translate3d(-9px,5px,0) scale(.91);filter:brightness(.54) saturate(.5)}
+.golden-master-stage.director-strikeout.fx-stage-release .actor-right{
+  transform:translate3d(-12px,-5px,0) scale(1.09);
+  filter:brightness(1.11) contrast(1.06) drop-shadow(-13px 10px 8px rgba(1,7,9,.6));
+}
+.golden-master-stage.director-strikeout.fx-stage-settle .actor-left{transform:translate3d(-5px,3px,0) scale(.95)}
+.golden-master-stage.director-strikeout.fx-stage-settle .actor-right{transform:translate3d(-7px,-2px,0) scale(1.045)}
+
+/* Scrappy outcomes stay physical but restrained. */
+.golden-master-stage.director-scrappy.fx-stage-impact .actor-left{transform:translate3d(9px,-1px,0) scale(1.045);filter:brightness(1.01) contrast(1.03)}
+.golden-master-stage.director-scrappy.fx-stage-impact .actor-right{transform:translate3d(-6px,2px,0) scale(.98);filter:brightness(.78) saturate(.8)}
+.golden-master-stage.director-scrappy.fx-stage-release .actor-left{transform:translate3d(6px,0,0) scale(1.018)}
+.golden-master-stage.director-scrappy.fx-stage-release .actor-right{transform:translate3d(-4px,1px,0) scale(.99)}
+
+/* Grounding follows visual ownership instead of glowing both characters equally. */
+.golden-master-stage.director-contact.fx-stage-impact .actor-left::before,
+.golden-master-stage.director-power.fx-stage-impact .actor-left::before{opacity:.88;left:12%;right:12%;filter:blur(6px)}
+.golden-master-stage.director-contact.fx-stage-impact .actor-right::before,
+.golden-master-stage.director-power.fx-stage-impact .actor-right::before{opacity:.34;left:24%;right:24%}
+.golden-master-stage.director-strikeout.fx-stage-release .actor-right::before{opacity:.9;left:12%;right:12%;filter:blur(6px)}
+.golden-master-stage.director-strikeout.fx-stage-release .actor-left::before{opacity:.28;left:25%;right:25%}
+
+@media(max-width:700px){
+  .golden-master-stage.fx-stage-windup[class*="director-"] .actor-right{transform:translate3d(-4px,-2px,0) scale(1.03)}
+  .golden-master-stage.fx-stage-windup[class*="director-"] .actor-left{transform:translate3d(-2px,1px,0) scale(.985)}
+  .golden-master-stage.director-contact.fx-stage-impact .actor-left{transform:translate3d(8px,-2px,0) scale(1.055)}
+  .golden-master-stage.director-power.fx-stage-impact .actor-left{transform:translate3d(10px,-3px,0) scale(1.07)}
+  .golden-master-stage.director-power.fx-stage-impact .actor-right{transform:translate3d(-7px,3px,0) scale(.95)}
+  .golden-master-stage.director-near-miss.fx-stage-release .actor-left{transform:translate3d(7px,2px,0) scale(1.035)}
+  .golden-master-stage.director-strikeout.fx-stage-release .actor-left{transform:translate3d(-5px,3px,0) scale(.94)}
+  .golden-master-stage.director-strikeout.fx-stage-release .actor-right{transform:translate3d(-6px,-3px,0) scale(1.055)}
+}
+
+@media (orientation:landscape) and (max-height:430px){
+  .golden-master-stage[class*="director-"] .actor-left,
+  .golden-master-stage[class*="director-"] .actor-right{filter:none}
+  .golden-master-stage.director-power.fx-stage-impact .actor-left{transform:translate3d(8px,-2px,0) scale(1.055)}
+  .golden-master-stage.director-strikeout.fx-stage-release .actor-right{transform:translate3d(-5px,-2px,0) scale(1.045)}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .golden-master-stage[class*="director-"] .actor-left,
+  .golden-master-stage[class*="director-"] .actor-right{
+    transition:none!important;
+    transform:none!important;
+  }
+}
