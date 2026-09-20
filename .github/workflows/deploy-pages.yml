@@ -106,6 +106,14 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
+      - name: Confirm MAIN batter stand-in deployment
+        if: github.event_name == 'push' && contains(github.event.head_commit.message, 'verify main batter stand-in deployment marker')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api repos/${{ github.repository }}/issues/22/comments \
+            -f body='✅ MAIN BATTER STAND-IN DEPLOYED — https://jjsjb88-alt.github.io/9-baseball/ — unfinished batter character removed from production'
+
       - name: Confirm GM12 playable preview
         if: github.event_name == 'push' && contains(github.event.head_commit.message, 'verify GM12 preview deployment marker')
         env:
