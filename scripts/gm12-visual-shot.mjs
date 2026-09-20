@@ -9,58 +9,75 @@ const sizes=[
   ['landscape-844x390',844,390],
   ['desktop-1440x900',1440,900],
 ];
+const poseQuery={
+  idle:'',
+  contact:'&qaCase=dead&qaStage=impact',
+  homer:'&qaCase=homer&qaStage=release',
+  miss:'&qaCase=near&qaStage=slowmo',
+};
+
 await mkdir(out,{recursive:true});
 const browser=await chromium.launch({headless:true});
 
-async function openLab(url,width,height){
+async function openLab(url,width,height,pose='idle'){
   const page=await browser.newPage({viewport:{width,height},deviceScaleFactor:1});
-  await page.clock.install({time:new Date('2026-09-20T00:00:00Z')});
   const errors=[];
   page.on('console',message=>message.type()==='error'&&errors.push(message.text()));
   page.on('pageerror',error=>errors.push(String(error)));
-  await page.goto(url+'/?cinema=1',{waitUntil:'networkidle'});
+  await page.goto(url+'/?cinema=1'+poseQuery[pose],{waitUntil:'networkidle'});
   await page.waitForSelector('.cinema-lab-stage');
-  await page.clock.pauseAt(new Date('2026-09-20T00:01:00Z'));
+  await page.waitForTimeout(120);
   return {page,errors};
 }
-async function select(page,name,delay,pose=null){
-  const button=page.locator('.cinema-case-grid button').filter({hasText:name}).first();
-  await button.click();
-  await page.clock.runFor(delay);
-  if(pose){
-    const actor=page.locator('.actor-left .sprite-batter.v6-hero-pose.pose-'+pose);
-    await actor.waitFor({state:'visible',timeout:1200});
-    await actor.locator('.v6-hero-layer').waitFor({state:'visible',timeout:1200});
-    const stage=await page.locator('.cinema-lab-stage').getAttribute('class');
-    const actorClass=await actor.getAttribute('class');
-    console.log(`GM12 pose proof · ${name} · ${stage} · ${actorClass}`);
+
+async function assertAfterPose(page,pose){
+  if(pose==='idle'){
+    const actor=page.locator('.actor-left .sprite-batter.v6-hero-pose.pose-idle');
+    await actor.waitFor({state:'visible',timeout:1500});
+    return;
   }
+  const actor=page.locator('.actor-left .sprite-batter.v6-hero-pose.pose-'+pose);
+  await actor.waitFor({state:'visible',timeout:1500});
+  const hero=actor.locator('.v6-hero-layer');
+  await hero.waitFor({state:'visible',timeout:1500});
+  const [stageClass,actorClass,src]=await Promise.all([
+    page.locator('.cinema-lab-stage').getAttribute('class'),
+    actor.getAttribute('class'),
+    hero.getAttribute('src'),
+  ]);
+  console.log(`GM12 pose proof · ${pose} · ${stageClass} · ${actorClass} · ${src}`);
 }
+
 async function viewportProof(label,url,name,width,height){
-  const {page,errors}=await openLab(url,width,height);
-  await page.screenshot({path:`${out}/${label}-${name}-idle.png`,fullPage:false});
-  await select(page,'정확 적중',325,label==='after'?'contact':null);
-  await page.screenshot({path:`${out}/${label}-${name}-contact.png`,fullPage:false});
-  if(errors.length)console.log(`${label} ${name} console errors: ${errors.join(' | ')}`);
-  await page.close();
-  return errors.length;
+  let errors=0;
+  for(const pose of ['idle','contact']){
+    const opened=await openLab(url,width,height,pose);
+    if(label==='after')await assertAfterPose(opened.page,pose);
+    await opened.page.screenshot({path:`${out}/${label}-${name}-${pose}.png`,fullPage:false});
+    if(opened.errors.length){
+      errors+=opened.errors.length;
+      console.log(`${label} ${name} ${pose} console errors: ${opened.errors.join(' | ')}`);
+    }
+    await opened.page.close();
+  }
+  return errors;
 }
+
 async function closeups(label,url){
-  const {page,errors}=await openLab(url,1440,900);
-  const stage=page.locator('.cinema-lab-stage');
-  await stage.screenshot({path:`${out}/${label}-close-idle.png`});
-  await select(page,'정확 적중',325);
-  await stage.screenshot({path:`${out}/${label}-close-contact.png`});
-  await page.clock.runFor(900);
-  await select(page,'홈런',560,label==='after'?'homer':null);
-  await stage.screenshot({path:`${out}/${label}-close-homer.png`});
-  await page.clock.runFor(1300);
-  await select(page,'한 칸 차이',420,label==='after'?'miss':null);
-  await stage.screenshot({path:`${out}/${label}-close-miss.png`});
-  if(errors.length)console.log(`${label} closeups console errors: ${errors.join(' | ')}`);
-  await page.close();
-  return errors.length;
+  let errors=0;
+  for(const pose of ['idle','contact','homer','miss']){
+    const opened=await openLab(url,1440,900,pose);
+    if(label==='after')await assertAfterPose(opened.page,pose);
+    await opened.page.locator('.cinema-lab-stage').screenshot({path:`${out}/${label}-close-${pose}.png`});
+    if(opened.errors.length){
+      errors+=opened.errors.length;
+      console.log(`${label} close ${pose} console errors: ${opened.errors.join(' | ')}`);
+    }
+    await opened.page.close();
+  }
+  return errors;
 }
+
 let errors=0;
 for(const [name,width,height] of sizes){
   errors+=await viewportProof('before',before,name,width,height);
