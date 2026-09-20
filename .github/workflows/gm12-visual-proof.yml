@@ -53,12 +53,12 @@ jobs:
           exit 1
 
       - name: Capture required Visual Reboot evidence
-        run: node scripts/gm12-visual-shot.mjs .qa-gm12
+        run: node scripts/gm12-visual-shot.mjs qa-gm12
 
       - name: Upload GM12 evidence
         uses: actions/upload-artifact@v4
         with:
           name: gm12-visual-proof
-          path: .qa-gm12/*.png
+          path: qa-gm12/*.png
           if-no-files-found: error
           retention-days: 30
