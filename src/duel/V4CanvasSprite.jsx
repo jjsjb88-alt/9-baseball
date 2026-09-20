@@ -97,6 +97,19 @@ function batterAction(shot){
   return 'swing';
 }
 
+function batterProjection(action,frame){
+  const contact=smooth(clamp((frame-10)/8,0,1));
+  if(action==='miss'){
+    const finish=smooth(clamp((frame-16)/22,0,1));
+    return {sx:1+.04*contact+.045*finish,sy:1+.04*contact+.045*finish,tx:-2*finish};
+  }
+  if(action==='homer'){
+    const finish=smooth(clamp((frame-18)/26,0,1));
+    return {sx:1+.035*contact+.02*finish,sy:1+.045*contact+.035*finish,tx:-1*finish};
+  }
+  return {sx:1+.035*contact,sy:1+.045*contact,tx:-.8*contact};
+}
+
 function batterPoseAt(action,frame){
   const keys=BATTER_TIMELINES[action]||BATTER_TIMELINES.swing;
   let a=keys[0],b=keys[keys.length-1];
@@ -170,9 +183,14 @@ function bat(ctx,knob,tip){
   rect(ctx,tip[0]-1,tip[1]-1,3,3,BATTER_PALETTE.batHi);
 }
 function renderGoldenBatter(ctx,shot,frame){
-  const p=batterPoseAt(batterAction(shot),frame),c=BATTER_PALETTE;
+  const action=batterAction(shot),p=batterPoseAt(action,frame),c=BATTER_PALETTE;
+  const projection=batterProjection(action,frame);
   ctx.clearRect(0,0,96,96);
   ctx.imageSmoothingEnabled=false;
+  ctx.save();
+  ctx.translate(48+projection.tx,48);
+  ctx.scale(projection.sx,projection.sy);
+  ctx.translate(-48,-48);
 
   ctx.fillStyle='rgba(0,0,0,.28)';
   ctx.beginPath();ctx.ellipse(50,82,33,5,0,0,Math.PI*2);ctx.fill();
@@ -256,9 +274,10 @@ function renderGoldenBatter(ctx,shot,frame){
   rect(ctx,p.knob[0]-3,p.knob[1]-2,5,4,c.outline);
   rect(ctx,p.knob[0]-2,p.knob[1]-1,3,2,c.gloveHi);
 
-  if((batterAction(shot)==='swing'||batterAction(shot)==='homer')&&frame>=17&&frame<=20){
+  if((action==='swing'||action==='homer')&&frame>=17&&frame<=20){
     rect(ctx,p.tip[0]-1,p.tip[1]-1,3,3,c.batHi);
   }
+  ctx.restore();
 }
 
 function startGoldenBatter(canvas,ctx,who,shot,playToken){
