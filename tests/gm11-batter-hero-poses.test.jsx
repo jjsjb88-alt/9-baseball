@@ -8,23 +8,27 @@ const asset=path=>fs.readFileSync(new URL('../'+path,import.meta.url),'utf8');
 
 describe('GM11 batter hero poses',()=>{
   it('uses authored idle only outside active pitch motion',()=>{
-    expect(batterHeroPoseFor('idle',null,null)).toContain('batter-idle-hero');
+    expect(batterHeroPoseFor('idle',null,null)).toContain('data:image/svg+xml');
     expect(batterHeroPoseFor('idle','windup',{grade:'solid'})).toBeNull();
   });
 
   it('cuts to contact art only for decisive contact at impact',()=>{
-    expect(batterHeroPoseFor('contact','impact',{grade:'dead-center'})).toContain('batter-contact-hero');
-    expect(batterHeroPoseFor('contact','impact',{grade:'solid'})).toContain('batter-contact-hero');
-    expect(batterHeroPoseFor('contact','impact',{grade:'extra'})).toContain('batter-contact-hero');
+    const contact=batterHeroPoseFor('contact','impact',{grade:'dead-center'});
+    expect(contact).toContain('data:image/svg+xml');
+    expect(batterHeroPoseFor('contact','impact',{grade:'solid'})).toBe(contact);
+    expect(batterHeroPoseFor('contact','impact',{grade:'extra'})).toBe(contact);
     expect(batterHeroPoseFor('contact','impact',{grade:'jammed'})).toBeNull();
     expect(batterHeroPoseFor('contact','release',{grade:'solid'})).toBeNull();
   });
 
   it('owns homer release/settle and miss slowmo/release without replacing windup',()=>{
-    expect(batterHeroPoseFor('homer','release',{grade:'homer'})).toContain('batter-homer-hero');
-    expect(batterHeroPoseFor('homer','settle',{grade:'grand-slam'})).toContain('batter-homer-hero');
-    expect(batterHeroPoseFor('miss','slowmo',{grade:'near-miss'})).toContain('batter-miss-hero');
-    expect(batterHeroPoseFor('miss','release',{grade:'strikeout'})).toContain('batter-miss-hero');
+    const homer=batterHeroPoseFor('homer','release',{grade:'homer'});
+    const miss=batterHeroPoseFor('miss','slowmo',{grade:'near-miss'});
+    expect(homer).toContain('data:image/svg+xml');
+    expect(batterHeroPoseFor('homer','settle',{grade:'grand-slam'})).toBe(homer);
+    expect(miss).toContain('data:image/svg+xml');
+    expect(batterHeroPoseFor('miss','release',{grade:'strikeout'})).toBe(miss);
+    expect(homer).not.toBe(miss);
     expect(batterHeroPoseFor('miss','windup',{grade:'strikeout'})).toBeNull();
   });
 
