@@ -1,7 +1,6 @@
 import React from 'react';
 import {createRoot} from 'react-dom/client';
 import Duel from './App.jsx';
-import {BUILDS} from './cards.js';
 import {createV10Duel,enterV10Node,saveV10Duel} from './engine.js';
 import oldIdle from './gm12-old-idle.svg';
 import newIdle from '../../assets/sprites-v6/batter-idle-hero.png';
@@ -45,9 +44,6 @@ function PoseSheet(){
 function seedBattle(){
   localStorage.clear();
   let state=createV10Duel(1);
-  state.build='away';
-  state.deck=BUILDS.away.cards.map((kind,index)=>({id:'qa'+index,kind}));
-  state.nextId=state.deck.length;
   state=enterV10Node(state,'a1-entry');
   state.battle.pending={zone:5,roll:.5,powerRoll:.95};
   saveV10Duel(localStorage,state);
