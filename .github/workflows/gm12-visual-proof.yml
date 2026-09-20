@@ -45,6 +45,11 @@ jobs:
           pnpm add --save-dev --lockfile=false playwright
           pnpm exec playwright install --with-deps chromium
 
+      - name: Freeze CinemaLab stages for visual QA
+        run: |
+          node scripts/gm12-freeze-lab.mjs src/duel/App.jsx
+          node scripts/gm12-freeze-lab.mjs baseline/src/duel/App.jsx
+
       - name: Start before and after preview servers
         run: |
           (cd baseline && ../node_modules/.bin/vite --host 127.0.0.1 --port 5198 --strictPort > /tmp/gm12-before.log 2>&1 &)
