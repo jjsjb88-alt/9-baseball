@@ -285,10 +285,11 @@ const CINEMA_CASES=[
   {key:'rival',name:'라이벌 격파',group:'FINALE',state:{last:{kind:'pitch',text:'홈런',runs:1},battle:{revealed:{kind:'hit',label:'홈런',zone:4,coverage:[4],aimZone:4}}},stakes:'rival-champion'},
 ];
 const labFlight=r=>!r?'flight-line':r.label?.includes('홈런')?'flight-homer':r.label?.includes('땅볼')?'flight-ground':r.label?.includes('바가지')?'flight-bloop':'flight-line';
-const arenaPresentationClass=(stage,shot)=>[
+export const arenaPresentationClass=(stage,shot)=>[
   stage?'fx-stage-'+stage:'',
   shot?.kind?'fx-'+shot.kind:'',
   shot?.grade?'grade-'+shot.grade:'',
+  shot?.director?.key?'director-'+shot.director.key:'',
 ].filter(Boolean).join(' ');
 function FlightVisual({revealed,fx=null,showCopy=false}){
   if(!revealed)return null;
