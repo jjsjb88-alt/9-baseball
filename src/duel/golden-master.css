@@ -749,6 +749,105 @@
 }
 
 
+/* GM11 · Batter Hero Pose Inserts
+   V4 keeps rendering underneath; authored poses only own decisive freeze/slowmo frames. */
+.golden-master-stage .golden-actor.v5-hero-pose{
+  position:relative;
+}
+.golden-master-stage .golden-actor.v5-hero-pose .v4-canvas{
+  opacity:.10!important;
+}
+.golden-master-stage .golden-actor.v5-hero-pose .v4-underlay{
+  opacity:.05!important;
+}
+.golden-master-stage .golden-actor .v5-hero-layer{
+  position:absolute;
+  inset:0;
+  z-index:6;
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  image-rendering:pixelated!important;
+  image-rendering:crisp-edges!important;
+  opacity:1;
+  filter:
+    drop-shadow(1px 0 0 rgba(255,222,145,.26))
+    drop-shadow(-1px 0 0 rgba(2,8,11,.96))
+    drop-shadow(0 1px 0 rgba(2,8,11,.96))
+    drop-shadow(0 10px 4px rgba(0,4,7,.62))!important;
+  pointer-events:none;
+  backface-visibility:hidden;
+  transform:translateZ(0);
+}
+.golden-master-stage.fx-stage-impact .golden-actor.v5-hero-pose .v5-hero-layer{
+  filter:
+    brightness(1.06) contrast(1.04)
+    drop-shadow(1px 0 0 rgba(255,229,158,.38))
+    drop-shadow(-1px 0 0 rgba(2,8,11,.98))
+    drop-shadow(0 2px 0 rgba(2,8,11,.98))
+    drop-shadow(0 12px 5px rgba(0,4,7,.68))
+    drop-shadow(0 0 11px rgba(242,194,95,.16))!important;
+}
+.golden-master-stage.director-power.fx-stage-impact .golden-actor.v5-hero-pose .v5-hero-layer{
+  transform:translate3d(2px,-1px,0) scale(1.015);
+}
+.golden-master-stage.director-near-miss.fx-stage-release .golden-actor.v5-hero-pose .v5-hero-layer,
+.golden-master-stage.director-strikeout.fx-stage-release .golden-actor.v5-hero-pose .v5-hero-layer{
+  filter:
+    brightness(.92) saturate(.9) contrast(1.05)
+    drop-shadow(-1px 0 0 rgba(2,8,11,.98))
+    drop-shadow(0 10px 4px rgba(0,4,7,.64))!important;
+}
+.golden-master-stage.grade-homer.fx-stage-release .golden-actor.v5-hero-pose .v5-hero-layer,
+.golden-master-stage.grade-grand-slam.fx-stage-release .golden-actor.v5-hero-pose .v5-hero-layer,
+.golden-master-stage.grade-homer.fx-stage-settle .golden-actor.v5-hero-pose .v5-hero-layer,
+.golden-master-stage.grade-grand-slam.fx-stage-settle .golden-actor.v5-hero-pose .v5-hero-layer{
+  transform:translate3d(2px,-2px,0) scale(1.025);
+  filter:
+    brightness(1.04) contrast(1.05)
+    drop-shadow(1px 0 0 rgba(255,226,147,.36))
+    drop-shadow(-1px 0 0 rgba(2,8,11,.98))
+    drop-shadow(0 12px 5px rgba(0,4,7,.68))
+    drop-shadow(0 0 13px rgba(240,190,83,.17))!important;
+}
+
+/* Hero art owns the bat silhouette; suppress generic smear while it is visible. */
+.golden-master-stage .golden-actor.v5-hero-pose .bat-smear{
+  opacity:0!important;
+}
+
+/* Hero pose still inherits the same grounded footprint as the moving V4 actor. */
+.golden-master-stage .golden-actor.v5-hero-pose .actor-contact-shadow{
+  opacity:.9;
+  transform:scaleX(1.34);
+}
+
+@media(max-width:700px){
+  .golden-master-stage .golden-actor .v5-hero-layer{
+    filter:
+      drop-shadow(1px 0 0 rgba(255,222,145,.22))
+      drop-shadow(-1px 0 0 rgba(2,8,11,.95))
+      drop-shadow(0 8px 3px rgba(0,4,7,.58))!important;
+  }
+  .golden-master-stage.director-power.fx-stage-impact .golden-actor.v5-hero-pose .v5-hero-layer{
+    transform:translate3d(1px,-1px,0) scale(1.008);
+  }
+}
+
+@media (orientation:landscape) and (max-height:430px){
+  .golden-master-stage .golden-actor.v5-hero-pose .v4-canvas{opacity:.14!important}
+  .golden-master-stage .golden-actor .v5-hero-layer{filter:none!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .golden-master-stage .golden-actor .v5-hero-layer{
+    animation:none!important;
+    transition:none!important;
+    transform:none!important;
+  }
+}
+
 /* GM09 · Outcome Director
    No new FX: existing light/depth assets only hand visual ownership between contact, ball and stadium. */
 .gm-depth-back.gm-director-power.gm-impact{
@@ -953,102 +1052,3 @@
   }
 }
 
-
-/* GM11 · Batter Hero Pose Inserts
-   V4 keeps rendering underneath; authored poses only own decisive freeze/slowmo frames. */
-.golden-master-stage .golden-actor.v5-hero-pose{
-  position:relative;
-}
-.golden-master-stage .golden-actor.v5-hero-pose .v4-canvas{
-  opacity:.10!important;
-}
-.golden-master-stage .golden-actor.v5-hero-pose .v4-underlay{
-  opacity:.05!important;
-}
-.golden-master-stage .golden-actor .v5-hero-layer{
-  position:absolute;
-  inset:0;
-  z-index:6;
-  display:block;
-  width:100%;
-  height:100%;
-  object-fit:contain;
-  image-rendering:pixelated!important;
-  image-rendering:crisp-edges!important;
-  opacity:1;
-  filter:
-    drop-shadow(1px 0 0 rgba(255,222,145,.26))
-    drop-shadow(-1px 0 0 rgba(2,8,11,.96))
-    drop-shadow(0 1px 0 rgba(2,8,11,.96))
-    drop-shadow(0 10px 4px rgba(0,4,7,.62))!important;
-  pointer-events:none;
-  backface-visibility:hidden;
-  transform:translateZ(0);
-}
-.golden-master-stage.fx-stage-impact .golden-actor.v5-hero-pose .v5-hero-layer{
-  filter:
-    brightness(1.06) contrast(1.04)
-    drop-shadow(1px 0 0 rgba(255,229,158,.38))
-    drop-shadow(-1px 0 0 rgba(2,8,11,.98))
-    drop-shadow(0 2px 0 rgba(2,8,11,.98))
-    drop-shadow(0 12px 5px rgba(0,4,7,.68))
-    drop-shadow(0 0 11px rgba(242,194,95,.16))!important;
-}
-.golden-master-stage.director-power.fx-stage-impact .golden-actor.v5-hero-pose .v5-hero-layer{
-  transform:translate3d(2px,-1px,0) scale(1.015);
-}
-.golden-master-stage.director-near-miss.fx-stage-release .golden-actor.v5-hero-pose .v5-hero-layer,
-.golden-master-stage.director-strikeout.fx-stage-release .golden-actor.v5-hero-pose .v5-hero-layer{
-  filter:
-    brightness(.92) saturate(.9) contrast(1.05)
-    drop-shadow(-1px 0 0 rgba(2,8,11,.98))
-    drop-shadow(0 10px 4px rgba(0,4,7,.64))!important;
-}
-.golden-master-stage.grade-homer.fx-stage-release .golden-actor.v5-hero-pose .v5-hero-layer,
-.golden-master-stage.grade-grand-slam.fx-stage-release .golden-actor.v5-hero-pose .v5-hero-layer,
-.golden-master-stage.grade-homer.fx-stage-settle .golden-actor.v5-hero-pose .v5-hero-layer,
-.golden-master-stage.grade-grand-slam.fx-stage-settle .golden-actor.v5-hero-pose .v5-hero-layer{
-  transform:translate3d(2px,-2px,0) scale(1.025);
-  filter:
-    brightness(1.04) contrast(1.05)
-    drop-shadow(1px 0 0 rgba(255,226,147,.36))
-    drop-shadow(-1px 0 0 rgba(2,8,11,.98))
-    drop-shadow(0 12px 5px rgba(0,4,7,.68))
-    drop-shadow(0 0 13px rgba(240,190,83,.17))!important;
-}
-
-/* Hero art owns the bat silhouette; suppress generic smear while it is visible. */
-.golden-master-stage .golden-actor.v5-hero-pose .bat-smear{
-  opacity:0!important;
-}
-
-/* Hero pose still inherits the same grounded footprint as the moving V4 actor. */
-.golden-master-stage .golden-actor.v5-hero-pose .actor-contact-shadow{
-  opacity:.9;
-  transform:scaleX(1.34);
-}
-
-@media(max-width:700px){
-  .golden-master-stage .golden-actor .v5-hero-layer{
-    filter:
-      drop-shadow(1px 0 0 rgba(255,222,145,.22))
-      drop-shadow(-1px 0 0 rgba(2,8,11,.95))
-      drop-shadow(0 8px 3px rgba(0,4,7,.58))!important;
-  }
-  .golden-master-stage.director-power.fx-stage-impact .golden-actor.v5-hero-pose .v5-hero-layer{
-    transform:translate3d(1px,-1px,0) scale(1.008);
-  }
-}
-
-@media (orientation:landscape) and (max-height:430px){
-  .golden-master-stage .golden-actor.v5-hero-pose .v4-canvas{opacity:.14!important}
-  .golden-master-stage .golden-actor .v5-hero-layer{filter:none!important}
-}
-
-@media(prefers-reduced-motion:reduce){
-  .golden-master-stage .golden-actor .v5-hero-layer{
-    animation:none!important;
-    transition:none!important;
-    transform:none!important;
-  }
-}
