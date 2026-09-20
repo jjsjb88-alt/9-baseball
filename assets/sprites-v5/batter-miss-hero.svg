@@ -1,25 +1,74 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" shape-rendering="crispEdges">
-<g stroke="#071216" stroke-width="5" stroke-linejoin="miter" stroke-linecap="square">
-<path fill="#142d34" d="M67 29l11-10h23l13 8-2 12-10 6H76l-11-7z"/>
-<path fill="#d39a70" d="M75 40h28l7 11-7 15-17 5-15-9-3-13z"/>
-<path fill="#f1c294" stroke="none" d="M78 44h18v5H78zM73 51h8v7h-8z"/>
-<path fill="#e9e1c9" d="M54 67l29-8 31 9 20 25-5 30-29 15-38-7-21-26z"/>
-<path fill="#b8b29d" stroke="none" d="M58 71l22-6v10l-19 7zM104 66l10 5 14 17-8 4-15-13z"/>
-<path fill="#5fb7aa" stroke="none" d="M77 69h10v39H77zM91 68h10v40H91z"/>
-<path fill="#d39a70" d="M57 74L38 80 18 98l8 11 27-11 19-11z"/>
-<path fill="#d39a70" d="M113 74l20 4 24 13-6 11-28-5-22-9z"/>
-<path fill="#f0ce83" stroke="none" d="M19 98h13v10H19zM148 91h13v10h-13z"/>
-<path fill="#17343a" d="M59 123l31 8 31-6 14 14-19 20H71l-22-18z"/>
-<path fill="#e9e1c9" d="M72 151l-24 20-23 4-4-12 19-8 17-17z"/>
-<path fill="#e9e1c9" d="M106 153l22 18 27 0 1 12-34 3-31-20z"/>
-<path fill="#102a31" d="M23 162h29l4 10-36 8zM135 169h28l2 12-36 3z"/>
-<path fill="#d8c18d" d="M151 88l7-9 8 5-6 11z"/>
-<path fill="#d8c18d" d="M158 81l26 11-2 5-28-8z"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" shape-rendering="crispEdges" data-art="gm12-batter" data-pose="miss">
+<title>9ZONE batter miss golden master</title>
+<g id="batter-miss">
+<!-- bat late and trailing low-right -->
+<path fill="#071216" d="M135 95l8-3 43 17 3 8-5 6-47-19-7-6z"/>
+<path fill="#7b5b36" d="M143 96l41 16 1 6-44-17z"/>
+<path fill="#d8c18d" d="M147 97l36 14 1 3-38-14z"/>
+<rect x="176" y="108" width="9" height="3" fill="#fff0b0"/>
+<!-- back leg collapsing/pivot -->
+<path fill="#071216" d="M88 119l30 4 14 17 10 28-8 15-22 1-8-24-20-16z"/>
+<path fill="#e9e1c9" d="M94 125l20 4 10 13 9 23-4 10-11 1-8-21-20-14z"/>
+<path fill="#c9c3ad" d="M112 132l8 11 8 19-7 4-9-18z"/>
+<rect x="119" y="159" width="10" height="7" fill="#5fb7aa"/>
+<path fill="#071216" d="M116 172l19 0 13 6-3 8-33 2-6-7z"/>
+<path fill="#102a31" d="M120 177h15l6 4-24 3z"/>
+<!-- front leg reaches but knee loses structure -->
+<path fill="#071216" d="M77 115l23 15-14 16-21 25-14 8-23-5-3-11 18-8 17-28z"/>
+<path fill="#e9e1c9" d="M78 123l13 8-11 11-20 23-10 6-13-3 13-8 16-29z"/>
+<path fill="#fff4d2" d="M57 134l8 3-10 18-10 6 8-14z"/>
+<path fill="#c9c3ad" d="M65 142l9 3-12 17-8 4z"/>
+<rect x="47" y="156" width="11" height="7" fill="#5fb7aa"/>
+<path fill="#071216" d="M36 163l20 4 10 9-5 7-36-5-3-8z"/>
+<path fill="#102a31" d="M36 169l18 3 5 5-28-4z"/>
+<!-- hips over-rotated -->
+<path fill="#071216" d="M54 105l57 3 21 16-6 22-31 8-38-10-16-18z"/>
+<path fill="#17343a" d="M53 113l54 2 17 11-5 13-26 7-32-9-10-12z"/>
+<path fill="#347a73" d="M58 115l48 2 8 7-53 2z"/>
+<path fill="#f0ce83" d="M77 116l18 0 0 7-18 0z"/>
+<rect x="83" y="117" width="6" height="4" fill="#071216"/>
+<!-- torso lunges / head out in front -->
+<path fill="#071216" d="M58 61l25-11 32 8 22 19 7 25-12 21-36 14-40-10-19-21 3-28z"/>
+<path fill="#e9e1c9" d="M62 65l22-8 28 7 18 16 6 19-10 16-31 13-34-9-15-17 3-21z"/>
+<path fill="#c9c3ad" d="M52 76l22-12 10 8 2 47-25-7-11-14z"/>
+<path fill="#fff4d2" d="M91 60l19 6 16 14-10 11-24-14z"/>
+<path fill="#918c7d" d="M111 91l23 6-5 16-20 9-11-14z"/>
+<path fill="#5fb7aa" d="M83 62l10 2 1 55-11-1z"/>
+<path fill="#347a73" d="M95 65l8 2 1 49-7 2z"/>
+<!-- lead arm yanked across -->
+<path fill="#071216" d="M66 68l-18 8-20 17 4 15 17 6 22-12 28-6-1-14-30 5z"/>
+<path fill="#d39a70" d="M64 74l-13 6-15 14 1 8 11 4 19-10 26-6-1-7-26 5z"/>
+<path fill="#f1c294" d="M44 88l10-8 5 3-12 11z"/>
+<!-- rear arm late -->
+<path fill="#071216" d="M109 68l18 1 26 15 12 15-6 12-15-1-13-12-24-8z"/>
+<path fill="#d39a70" d="M114 73l11 2 23 13 10 10-4 7-8-1-13-11-22-8z"/>
+<path fill="#a86f50" d="M141 87l12 10-2 7-6-1-8-9z"/>
+<!-- hands separated slightly to communicate loss of barrel -->
+<path fill="#071216" d="M126 84l13-7 14 6 5 11-9 10-15-1-11-9z"/>
+<path fill="#f0ce83" d="M130 85l9-4 9 4 5 7-6 7-10-1-8-6z"/>
+<path fill="#fff0b0" d="M138 83l7 2 5 5-4 3-8-4z"/>
+<rect x="130" y="96" width="9" height="4" fill="#d8c18d"/>
+<!-- neck -->
+<path fill="#071216" d="M79 47l23 1 9 17-10 13-22-2-9-14z"/>
+<path fill="#d39a70" d="M83 50l16 1 6 12-6 8-15-1-7-9z"/>
+<!-- head pulled forward/down, eyes still to right -->
+<path fill="#071216" d="M65 23l13-11 26-2 20 9 10 14-5 13-12 3-6 16-18 10-20-7-9-17-7-8z"/>
+<path fill="#17343a" d="M71 23l10-7 22-1 15 7 8 8-4 9-21 1-12 7-19-4-5-9z"/>
+<path fill="#347a73" d="M81 16l20 0 14 7 6 6-30-2-14 7-8-4z"/>
+<rect x="84" y="16" width="16" height="4" fill="#5fb7aa"/>
+<path fill="#071216" d="M119 31h24l7 5-4 8-24-1z"/>
+<path fill="#102a31" d="M122 34h18l4 3-2 3-20-1z"/>
+<path fill="#d39a70" d="M77 40l16-8 24 6 3 14-10 13-17 5-15-8-6-13z"/>
+<path fill="#a86f50" d="M77 51l11 2 5 12-10-4-6-8z"/>
+<path fill="#f1c294" d="M94 36l17 4 4 6-13 2-10-4z"/>
+<rect x="106" y="46" width="6" height="4" fill="#071216"/>
+<rect x="113" y="55" width="8" height="3" fill="#a86f50"/>
+<rect x="98" y="61" width="11" height="3" fill="#071216"/>
+<!-- ball passes cleanly beyond barrel -->
+<rect x="176" y="72" width="7" height="7" fill="#fff4d2"/>
+<rect x="174" y="70" width="3" height="3" fill="#5fb7aa"/>
+<rect x="184" y="80" width="4" height="3" fill="#5fb7aa"/>
+<rect x="70" y="120" width="8" height="3" fill="#f0ce83"/>
+<rect x="106" y="119" width="8" height="3" fill="#f0ce83"/>
 </g>
-<rect x="85" y="48" width="5" height="5" fill="#071216"/>
-<rect x="67" y="128" width="10" height="7" fill="#f0ce83"/>
-<rect x="110" y="128" width="10" height="7" fill="#f0ce83"/>
-<path d="M165 102h16v3h-16zM168 108h12v3h-12z" fill="#9fdad1"/>
-<rect x="41" y="151" width="9" height="7" fill="#5fb7aa"/>
-<rect x="121" y="159" width="9" height="7" fill="#5fb7aa"/>
 </svg>
