@@ -29,6 +29,7 @@ import './golden-master.css';
 const params=new URLSearchParams(window.location.search);
 const sheet=params.get('sheet')==='1';
 const rig=params.get('rig')==='1';
+const compare=params.get('compare')==='1';
 const before=params.get('before')==='1';
 
 const QA_STYLE=`
@@ -83,6 +84,29 @@ function RigFrame({label,action='swing',frame=0}){
   </figure>;
 }
 
+function ContinuitySheet(){
+  const pairs=[
+    ['IDLE',newIdle,'swing',0],
+    ['CONTACT',contact,'swing',18],
+    ['HOMER',homer,'homer',59],
+    ['MISS',miss,'miss',59],
+  ];
+  return <main className="qa-pose-sheet qa-continuity-sheet">
+    <header><b>GM12 · HERO ↔ 60HZ CONTINUITY</b><span>same silhouette / body mass / head scale / hands / bat ownership must survive the handoff</span></header>
+    <section>{pairs.flatMap(([label,src,action,frame])=>[
+      <figure className="qa-pose-card" key={label+'-hero'}>
+        <div className="qa-frame"><img src={src} alt="" /></div><figcaption>{label} · V6 HERO</figcaption>
+      </figure>,
+      <RigFrame key={label+'-rig'} label={label+' · 60HZ RIG'} action={action} frame={frame}/>,
+    ])}</section>
+    <style>{QA_STYLE+`
+      .qa-continuity-sheet section{grid-template-columns:repeat(2,minmax(0,1fr));max-width:760px}
+      .qa-continuity-sheet .qa-pose-card:nth-child(4n+1),.qa-continuity-sheet .qa-pose-card:nth-child(4n+2){border-color:#478c82}
+      @media(min-width:700px){.qa-continuity-sheet section{grid-template-columns:repeat(4,minmax(0,1fr))}}
+    `}</style>
+  </main>;
+}
+
 function RigSheet(){
   const poses=[
     ['01 · IDLE','swing',0],
@@ -128,6 +152,7 @@ function bootLive(){
     setTimeout(()=>{replace();observer.disconnect();},2400);
   }
 }
-if(rig)createRoot(document.getElementById('root')).render(<RigSheet/>);
+if(compare)createRoot(document.getElementById('root')).render(<ContinuitySheet/>);
+else if(rig)createRoot(document.getElementById('root')).render(<RigSheet/>);
 else if(sheet)createRoot(document.getElementById('root')).render(<PoseSheet/>);
 else bootLive();
