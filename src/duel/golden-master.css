@@ -1052,3 +1052,122 @@
   }
 }
 
+
+
+/* MAIN BATTER STAND-IN · 2026-09-21
+   The rejected temporary batter character is intentionally not shown in production.
+   Keep the batting lane readable without pretending unfinished character art is final. */
+.golden-master-stage .batter-standin{
+  position:relative;
+  display:block;
+  width:100%;
+  height:100%;
+  transform-origin:50% 91%;
+}
+.golden-master-stage .batter-standin .batter-presence{
+  position:absolute;
+  inset:8% 5% 7%;
+  display:block;
+  pointer-events:none;
+  transform-origin:48% 86%;
+  filter:drop-shadow(0 12px 5px rgba(0,4,6,.46));
+}
+.golden-master-stage .batter-standin .presence-box{
+  position:absolute;
+  left:7%;
+  right:9%;
+  bottom:4%;
+  height:48%;
+  border:1px solid rgba(228,211,158,.34);
+  border-bottom-color:rgba(228,211,158,.64);
+  background:
+    linear-gradient(90deg,transparent 0 12%,rgba(226,207,151,.08) 12% 13%,transparent 13% 87%,rgba(226,207,151,.08) 87% 88%,transparent 88%),
+    linear-gradient(180deg,rgba(11,31,33,.08),rgba(3,12,15,.42));
+  clip-path:polygon(10% 0,90% 0,100% 100%,0 100%);
+  box-shadow:inset 0 -1px 0 rgba(245,220,156,.16);
+  opacity:.76;
+}
+.golden-master-stage .batter-standin .presence-plate{
+  position:absolute;
+  left:36%;
+  bottom:1%;
+  width:30%;
+  height:17%;
+  background:linear-gradient(180deg,rgba(247,239,206,.92),rgba(181,171,133,.86));
+  clip-path:polygon(13% 0,87% 0,100% 45%,50% 100%,0 45%);
+  box-shadow:0 0 0 2px rgba(4,13,15,.72);
+  opacity:.9;
+}
+.golden-master-stage .batter-standin .presence-bat{
+  position:absolute;
+  left:49%;
+  bottom:18%;
+  width:6px;
+  height:69%;
+  border:2px solid #081216;
+  background:linear-gradient(90deg,#8f6a42 0 25%,#e1c07c 26% 68%,#f2dda6 69% 100%);
+  box-shadow:0 0 0 1px rgba(244,221,160,.12),0 0 15px rgba(225,181,102,.08);
+  transform:rotate(33deg);
+  transform-origin:50% 91%;
+}
+.golden-master-stage .batter-standin .presence-bat:after{
+  content:"";
+  position:absolute;
+  left:-3px;
+  bottom:-4px;
+  width:8px;
+  height:8px;
+  border:2px solid #081216;
+  background:#d2b36f;
+}
+.golden-master-stage .batter-standin .presence-contact{
+  position:absolute;
+  left:67%;
+  top:42%;
+  width:9px;
+  height:9px;
+  border:2px solid rgba(248,225,160,.72);
+  transform:rotate(45deg);
+  opacity:.34;
+  box-shadow:0 0 12px rgba(242,195,104,.12);
+}
+.golden-master-stage .batter-standin .batter-presence>b{
+  position:absolute;
+  left:9%;
+  top:8%;
+  font:900 8px/1 ui-monospace,monospace;
+  letter-spacing:1.6px;
+  color:rgba(238,220,165,.54);
+  text-shadow:0 1px 0 #031014;
+}
+.golden-master-stage .batter-standin.standin-stage-windup .presence-bat{
+  transform:rotate(27deg) translate3d(-2px,1px,0);
+}
+.golden-master-stage .batter-standin.standin-stage-impact .presence-bat,
+.golden-master-stage .batter-standin.standin-stage-slowmo .presence-bat{
+  transform:rotate(53deg) translate3d(5px,-2px,0);
+}
+.golden-master-stage .batter-standin.standin-stage-impact .presence-contact{
+  opacity:1;
+  background:#f7dda0;
+  box-shadow:0 0 0 4px rgba(246,208,122,.12),0 0 22px rgba(246,197,96,.34);
+}
+.golden-master-stage .batter-standin.standin-stage-release .presence-bat,
+.golden-master-stage .batter-standin.standin-stage-settle .presence-bat{
+  transform:rotate(67deg) translate3d(8px,-4px,0);
+}
+.golden-master-stage .batter-standin .presence-bat,
+.golden-master-stage .batter-standin .presence-contact{
+  transition:transform .11s cubic-bezier(.18,.72,.2,1),opacity .08s linear,box-shadow .08s linear;
+}
+@media (orientation:portrait){
+  .golden-master-stage .batter-standin .batter-presence{inset:11% 8% 8%}
+}
+@media (orientation:landscape) and (max-height:430px){
+  .golden-master-stage .batter-standin .batter-presence{inset:10% 8% 8%}
+  .golden-master-stage .batter-standin .presence-contact{box-shadow:none}
+}
+@media (prefers-reduced-motion:reduce){
+  .golden-master-stage .batter-standin .presence-bat,
+  .golden-master-stage .batter-standin .presence-contact{transition:none!important}
+}
