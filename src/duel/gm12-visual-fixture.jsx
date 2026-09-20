@@ -30,6 +30,7 @@ const params=new URLSearchParams(window.location.search);
 const sheet=params.get('sheet')==='1';
 const rig=params.get('rig')==='1';
 const compare=params.get('compare')==='1';
+const cinema=params.get('cinema');
 const before=params.get('before')==='1';
 
 const QA_STYLE=`
@@ -133,6 +134,12 @@ function seedBattle(){
   saveV10Duel(localStorage,state);
   localStorage.setItem('9zone-zones-tour-v5','done');
 }
+function bootCinema(){
+  localStorage.clear();
+  history.replaceState(null,'','/preview/');
+  createRoot(document.getElementById('root')).render(<Duel/>);
+}
+
 function bootLive(){
   seedBattle();
   createRoot(document.getElementById('root')).render(<Duel/>);
@@ -155,4 +162,5 @@ function bootLive(){
 if(compare)createRoot(document.getElementById('root')).render(<ContinuitySheet/>);
 else if(rig)createRoot(document.getElementById('root')).render(<RigSheet/>);
 else if(sheet)createRoot(document.getElementById('root')).render(<PoseSheet/>);
+else if(cinema)bootCinema();
 else bootLive();
