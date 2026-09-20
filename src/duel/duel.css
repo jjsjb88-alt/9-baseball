@@ -1303,3 +1303,98 @@ button.stack-slot{cursor:pointer}
 @media (prefers-reduced-motion:reduce){
   .sprite-stage.v4-sequence,.sprite-stage.v4-sequence *{animation:none!important;transition:none!important}
 }
+
+
+/* ---------- GM12 · BATTER GOLDEN MASTER authored key-pose integration ---------- */
+/* V4 remains the 60 Hz motion bed. These authored poses take visual ownership only at the
+   readable key moments (idle / contact / homer / miss), then hand back to the canvas motion. */
+.sprite-batter.v6-hero-pose{
+  width:106%;
+  height:106%;
+  margin-left:-3%;
+  margin-top:-6%;
+  isolation:isolate;
+}
+.sprite-batter.v6-hero-pose .duel-sprite{
+  object-position:center bottom;
+}
+.sprite-stage.v4-sequence.v6-hero-pose .v4-underlay{
+  opacity:.08;
+}
+.sprite-stage.v4-sequence.v6-hero-pose .v4-canvas{
+  opacity:.18!important;
+}
+.sprite-stage.v4-sequence .v6-hero-layer{
+  position:absolute;
+  inset:0;
+  z-index:3;
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  object-position:center bottom;
+  pointer-events:none;
+  image-rendering:pixelated;
+  filter:
+    drop-shadow(0 10px 3px #031014d6)
+    drop-shadow(1px -1px 0 #f7e7b13d);
+}
+.golden-actor.v6-hero-pose .sprite-echo{
+  display:none!important;
+}
+.golden-actor.v6-hero-pose .actor-contact-shadow{
+  position:absolute;
+  left:16%;
+  right:12%;
+  bottom:3%;
+  height:7%;
+  z-index:-1;
+  display:block;
+  border-radius:50%;
+  background:#0107089e;
+  filter:blur(3px);
+  transform:scaleX(1.08);
+}
+.fx-stage-impact .sprite-batter.v6-hero-pose .v6-hero-layer,
+.fx-stage-slowmo .sprite-batter.v6-hero-pose .v6-hero-layer{
+  filter:
+    brightness(1.05)
+    drop-shadow(0 10px 3px #031014de)
+    drop-shadow(1px -1px 0 #fff0bd59);
+}
+.fx-stage-release .sprite-batter.pose-homer.v6-hero-pose,
+.fx-stage-settle .sprite-batter.pose-homer.v6-hero-pose{
+  width:110%;
+  height:110%;
+  margin-left:-5%;
+  margin-top:-10%;
+}
+.fx-stage-slowmo .sprite-batter.pose-miss.v6-hero-pose,
+.fx-stage-release .sprite-batter.pose-miss.v6-hero-pose{
+  width:108%;
+  height:108%;
+  margin-left:-4%;
+  margin-top:-8%;
+}
+@media (max-width:700px){
+  .sprite-batter.v6-hero-pose{
+    width:110%;
+    height:110%;
+    margin-left:-5%;
+    margin-top:-10%;
+  }
+}
+@media (orientation:landscape) and (max-height:430px){
+  .sprite-batter.v6-hero-pose{
+    width:108%;
+    height:108%;
+    margin-left:-4%;
+    margin-top:-8%;
+  }
+  .sprite-stage.v4-sequence .v6-hero-layer{
+    filter:drop-shadow(0 6px 2px #031014d6);
+  }
+}
+@media (prefers-reduced-motion:reduce){
+  .sprite-stage.v4-sequence.v6-hero-pose .v4-canvas{opacity:.12!important}
+}
