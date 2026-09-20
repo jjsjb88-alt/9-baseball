@@ -7,7 +7,7 @@ const css=fs.readFileSync(new URL('../src/duel/golden-master.css',import.meta.ur
 const asset=path=>fs.readFileSync(new URL('../'+path,import.meta.url),'utf8');
 const expectSvgAsset=(value,file)=>{
   expect(value).toBeTruthy();
-  expect(value).toMatch(new RegExp(`(?:data:image/svg\\+xml|${file.replace(/[.*+?^${}()|[\\]\\\\]/g,'\\\\const asset=path=>fs.readFileSync(new URL('../'+path,import.meta.url),'utf8');')})`));
+  expect(value.startsWith('data:image/svg+xml')||value.includes(file)).toBe(true);
 };
 
 describe('GM11 batter hero poses',()=>{
