@@ -1,0 +1,64 @@
+name: GM12 Visual QA Capture
+
+on:
+  push:
+    branches:
+      - codex/gm12-batter-golden-master-redraw
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install project dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium for QA
+        run: pnpm dlx playwright@1.55.0 install --with-deps chromium
+
+      - name: Start QA server
+        run: |
+          pnpm exec vite --host 127.0.0.1 --port 5199 --strictPort > /tmp/gm12-vite.log 2>&1 &
+          echo $! > /tmp/gm12-vite.pid
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:5199/gm12-visual-fixture.html >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/gm12-vite.log
+          exit 1
+
+      - name: Capture live before-after at required viewports
+        run: |
+          mkdir -p .qa-gm12
+          PW="pnpm dlx playwright@1.55.0 screenshot --browser=chromium --wait-for-timeout=2500"
+          $PW --viewport-size="390,844" "http://127.0.0.1:5199/gm12-visual-fixture.html?before=1" .qa-gm12/before-390x844.png
+          $PW --viewport-size="390,844" "http://127.0.0.1:5199/gm12-visual-fixture.html" .qa-gm12/after-390x844.png
+          $PW --viewport-size="844,390" "http://127.0.0.1:5199/gm12-visual-fixture.html?before=1" .qa-gm12/before-844x390.png
+          $PW --viewport-size="844,390" "http://127.0.0.1:5199/gm12-visual-fixture.html" .qa-gm12/after-844x390.png
+          $PW --viewport-size="1440,900" "http://127.0.0.1:5199/gm12-visual-fixture.html?before=1" .qa-gm12/before-1440x900.png
+          $PW --viewport-size="1440,900" "http://127.0.0.1:5199/gm12-visual-fixture.html" .qa-gm12/after-1440x900.png
+          $PW --viewport-size="390,844" "http://127.0.0.1:5199/gm12-visual-fixture.html?sheet=1" .qa-gm12/pose-sheet-390x844.png
+
+      - name: Upload QA captures
+        uses: actions/upload-artifact@v4
+        with:
+          name: gm12-visual-qa
+          path: .qa-gm12/*.png
+          if-no-files-found: error
+          retention-days: 3
