@@ -38,7 +38,8 @@ describe('GM12 batter golden master · V7 raster key poses',()=>{
     expect(app).toContain('<V4CanvasSprite sheet={v4Sheet}');
     expect(app).toContain('<V7KeyPose hero={hero}/>');
     expect(css).toContain('.golden-master-stage .golden-actor.v7-hero-pose .v4-canvas');
-    expect(css).toContain('opacity:.18!important');
+    expect(css).toContain('.golden-master-stage .golden-actor.v4-sequence .v4-underlay');
+    expect(css).toContain('opacity:0!important');
     expect(css).not.toContain('.v7-hero-pose .v4-canvas{display:none');
     expect(app).not.toContain('v6-hero');
   });

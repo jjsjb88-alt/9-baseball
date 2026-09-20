@@ -764,11 +764,14 @@
 .golden-master-stage .golden-actor.sprite-batter.v7-hero-pose .duel-sprite{
   object-position:center bottom;
 }
+.golden-master-stage .golden-actor.v4-sequence .v4-underlay{
+  opacity:0!important;
+}
 .golden-master-stage .golden-actor.v7-hero-pose .v4-canvas{
-  opacity:.18!important;
+  opacity:0!important;
 }
 .golden-master-stage .golden-actor.v7-hero-pose .v4-underlay{
-  opacity:.04!important;
+  opacity:0!important;
 }
 .golden-master-stage .golden-actor .v7-hero-layer{
   position:absolute;
@@ -858,7 +861,7 @@
     margin-left:-4%;
     margin-top:-8%;
   }
-  .golden-master-stage .golden-actor.v7-hero-pose .v4-canvas{opacity:.14!important}
+  .golden-master-stage .golden-actor.v7-hero-pose .v4-canvas{opacity:0!important}
   .golden-master-stage .golden-actor .v7-hero-layer{
     filter:
       drop-shadow(-1px 0 0 rgba(2,8,11,.96))
