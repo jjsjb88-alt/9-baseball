@@ -34,7 +34,7 @@ jobs:
 
       - name: Start QA server
         run: |
-          pnpm exec vite --host 127.0.0.1 --port 5199 --strictPort > /tmp/gm12-vite.log 2>&1 &
+          pnpm exec vite --base=/ --host 127.0.0.1 --port 5199 --strictPort > /tmp/gm12-vite.log 2>&1 &
           echo $! > /tmp/gm12-vite.pid
           for i in {1..30}; do
             if curl -fsS http://127.0.0.1:5199/gm12-visual-fixture.html >/dev/null; then exit 0; fi
