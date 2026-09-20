@@ -1,0 +1,64 @@
+name: GM12 Visual Proof
+
+on:
+  push:
+    branches:
+      - codex/visual-loop1-batter-gm12
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out GM12 branch
+        uses: actions/checkout@v6
+
+      - name: Check out baseline main
+        uses: actions/checkout@v6
+        with:
+          ref: 9a9e3854b956005d65df3ab9a4b3e1c3d2e36cb5
+          path: baseline
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install project dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright capture runtime
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+
+      - name: Start before and after preview servers
+        run: |
+          (cd baseline && ../node_modules/.bin/vite --host 127.0.0.1 --port 5198 --strictPort > /tmp/gm12-before.log 2>&1 &)
+          (pnpm vite --host 127.0.0.1 --port 5199 --strictPort > /tmp/gm12-after.log 2>&1 &)
+          for i in {1..60}; do
+            curl -fsS http://127.0.0.1:5198 >/dev/null && curl -fsS http://127.0.0.1:5199 >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/gm12-before.log || true
+          cat /tmp/gm12-after.log || true
+          exit 1
+
+      - name: Capture required Visual Reboot evidence
+        run: node scripts/gm12-visual-shot.mjs .qa-gm12
+
+      - name: Upload GM12 evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: gm12-visual-proof
+          path: .qa-gm12/*.png
+          if-no-files-found: error
+          retention-days: 30
