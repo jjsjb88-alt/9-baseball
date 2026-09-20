@@ -37,6 +37,12 @@ jobs:
           ref: codex/v9-deckbuilder
           path: preview-src
 
+      - name: Check out GM12 preview
+        uses: actions/checkout@v6
+        with:
+          ref: codex/gm12-batter-golden-master-redraw
+          path: gm12-src
+
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -47,29 +53,37 @@ jobs:
         with:
           node-version: 22
 
-      - name: Build stable V8 root
+      - name: Build stable root
         working-directory: stable
         run: |
           pnpm install --frozen-lockfile
           pnpm run build
 
-      - name: Install V9 preview dependencies
-        working-directory: preview-src
-        run: pnpm install --frozen-lockfile
-
       - name: Build V9 preview subpath
         working-directory: preview-src
         env:
           VITE_BASE: /9-baseball/preview/
-        run: pnpm run build
-
-      - name: Compose stable root plus V9 preview
         run: |
-          mkdir -p site/preview
+          pnpm install --frozen-lockfile
+          pnpm run build
+
+      - name: Build GM12 preview subpath
+        working-directory: gm12-src
+        env:
+          VITE_BASE: /9-baseball/gm12/
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run build
+
+      - name: Compose stable root plus previews
+        run: |
+          mkdir -p site/preview site/gm12
           cp -a stable/dist/. site/
           cp -a preview-src/dist/. site/preview/
+          cp -a gm12-src/dist/. site/gm12/
           test -f site/index.html
           test -f site/preview/index.html
+          test -f site/gm12/index.html
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
@@ -87,6 +101,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - name: Deploy stable root plus V9 preview
+      - name: Deploy stable root plus previews
         id: deployment
         uses: actions/deploy-pages@v4
