@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - codex/v9-deckbuilder
+      - codex/visual-loop1-batter-gm12
   workflow_dispatch:
 
 permissions:
