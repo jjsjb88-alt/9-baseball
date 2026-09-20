@@ -40,10 +40,10 @@ import pitcherRelease from '../../assets/sprites-v1/pitcher-release.png';
 import pitcherFollow from '../../assets/sprites-v1/pitcher-follow.png';
 import pitcherStrikeout from '../../assets/sprites-v1/pitcher-strikeout.png';
 import batterHomerHeroV3 from '../../assets/sprites-v3/batter-homer-hero.svg';
-import batterIdleHeroV5 from '../../assets/sprites-v5/batter-idle-hero.svg';
-import batterContactHeroV5 from '../../assets/sprites-v5/batter-contact-hero.svg';
-import batterHomerHeroV5 from '../../assets/sprites-v5/batter-homer-hero.svg';
-import batterMissHeroV5 from '../../assets/sprites-v5/batter-miss-hero.svg';
+import batterIdleHeroV6 from '../../assets/sprites-v6/batter-idle-hero.png';
+import batterContactHeroV6 from '../../assets/sprites-v6/batter-contact-hero.png';
+import batterHomerHeroV6 from '../../assets/sprites-v6/batter-homer-hero.png';
+import batterMissHeroV6 from '../../assets/sprites-v6/batter-miss-hero.png';
 import pitcherSinkerReleaseV3 from '../../assets/sprites-v3/pitcher-sinker-release.svg';
 import pitcherHighReleaseV3 from '../../assets/sprites-v3/pitcher-high-release.svg';
 import pitcherCloserReleaseV3 from '../../assets/sprites-v3/pitcher-closer-release.svg';
@@ -117,8 +117,8 @@ function CoverageMini({zones}){return <div className="coverage-mini" aria-label=
 const BATTER_POSES={idle:batterIdle,load:batterLoad,contact:batterContact,follow:batterFollow,homer:batterHomer,miss:batterMiss};
 const PITCHER_POSES={idle:pitcherIdle,set:pitcherSet,legkick:pitcherLegkick,release:pitcherRelease,follow:pitcherFollow,strikeout:pitcherStrikeout};
 const PITCHER_RELEASE_V3={sinker:pitcherSinkerReleaseV3,high:pitcherHighReleaseV3,closer:pitcherCloserReleaseV3};
-const BATTER_HERO_V5={idle:batterIdleHeroV5,contact:batterContactHeroV5,homer:batterHomerHeroV5,miss:batterMissHeroV5};
-const ACTOR_ASSETS=[...new Set([...BATTER_SWING_V2,...BATTER_MISS_V2,...PITCHER_PITCH_V2,...PITCHER_K_V2,batterSwingV4,pitcherPitchV4,batterHomerHeroV3,...Object.values(BATTER_HERO_V5),...Object.values(PITCHER_RELEASE_V3)])];
+const BATTER_HERO_V6={idle:batterIdleHeroV6,contact:batterContactHeroV6,homer:batterHomerHeroV6,miss:batterMissHeroV6};
+const ACTOR_ASSETS=[...new Set([...BATTER_SWING_V2,...BATTER_MISS_V2,...PITCHER_PITCH_V2,...PITCHER_K_V2,batterSwingV4,pitcherPitchV4,batterHomerHeroV3,...Object.values(BATTER_HERO_V6),...Object.values(PITCHER_RELEASE_V3)])];
 function useActorAssetPreload(){
   useEffect(()=>{
     if(typeof Image==='undefined')return;
@@ -133,10 +133,10 @@ const authoredActorArt=(who,pose,stage,shot,variant)=>{
 };
 export const batterHeroPoseFor=(pose,stage,shot)=>{
   const grade=shot?.grade||'';
-  if(pose==='idle'&&!stage)return BATTER_HERO_V5.idle;
-  if(pose==='contact'&&stage==='impact'&&['dead-center','solid','extra','homer','grand-slam'].includes(grade))return BATTER_HERO_V5.contact;
-  if(pose==='homer'&&['release','settle'].includes(stage)&&['homer','grand-slam'].includes(grade))return BATTER_HERO_V5.homer;
-  if(pose==='miss'&&['slowmo','release'].includes(stage)&&['near-miss','near-miss-k','chase','chase-k','fooled','strikeout'].includes(grade))return BATTER_HERO_V5.miss;
+  if(pose==='idle'&&!stage)return BATTER_HERO_V6.idle;
+  if(pose==='contact'&&stage==='impact'&&['dead-center','solid','extra','homer','grand-slam'].includes(grade))return BATTER_HERO_V6.contact;
+  if(pose==='homer'&&['release','settle'].includes(stage)&&['homer','grand-slam'].includes(grade))return BATTER_HERO_V6.homer;
+  if(pose==='miss'&&['slowmo','release'].includes(stage)&&['near-miss','near-miss-k','chase','chase-k','fooled','strikeout'].includes(grade))return BATTER_HERO_V6.miss;
   return null;
 };
 function actorPose(who,stage,shot){
