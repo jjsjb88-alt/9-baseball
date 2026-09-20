@@ -72,6 +72,34 @@ describe('GM12 Batter Golden Master V6 pixel masters',()=>{
     expect(canvas).not.toContain('setInterval(');
   });
 
+  it('keeps visual QA on the same production landscape and visual pipeline as the shipped app',()=>{
+    const fixture=read('src/duel/gm12-visual-fixture.jsx').toString('utf8');
+    const qa=read('scripts/gm12-visual-qa.mjs').toString('utf8');
+    for(const visualImport of [
+      './landscape-first.css',
+      './landscape-scroll-fix.css',
+      './character-master.css',
+      './responsive-master.css',
+      './sts-battleboard.css',
+      './combat-readability.css',
+      './v10-relic-ui.css',
+      './landscape-declutter.css',
+      './golden-master.css',
+    ])expect(fixture).toContain(visualImport);
+    for(const runtimeImport of [
+      './stack-direct-tap.js',
+      './sts-battleboard.js',
+      './combat-readability.js',
+      './v10-relic-ui.js',
+      './landscape-declutter.js',
+    ])expect(fixture).toContain(runtimeImport);
+    expect(fixture).toContain("import {renderGoldenBatter} from './V4CanvasSprite.jsx'");
+    expect(fixture).toContain('GM12 · FULL-MOTION 60HZ BATTER RIG');
+    expect(qa).toContain("['rig-sheet-844x900',844,900,'?rig=1','rig']");
+    expect(qa).toContain('state.declutter&&state.arena&&state.arena.height>=height*.52');
+    expect(qa).toContain('noHorizontalOverflow');
+  });
+
   it('keeps pitcher sheet playback isolated from the new batter rig',()=>{
     const canvas=read('src/duel/V4CanvasSprite.jsx').toString('utf8');
     expect(canvas).toContain('loadSheet(sheet).then(img=>');
