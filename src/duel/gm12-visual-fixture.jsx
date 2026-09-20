@@ -4,10 +4,10 @@ import Duel from './App.jsx';
 import {BUILDS} from './cards.js';
 import {createV10Duel,enterV10Node,saveV10Duel} from './engine.js';
 import oldIdle from './gm12-old-idle.svg';
-import newIdle from '../../assets/sprites-v5/batter-idle-hero.svg';
-import contact from '../../assets/sprites-v5/batter-contact-hero.svg';
-import homer from '../../assets/sprites-v5/batter-homer-hero.svg';
-import miss from '../../assets/sprites-v5/batter-miss-hero.svg';
+import newIdle from '../../assets/sprites-v6/batter-idle-hero.png';
+import contact from '../../assets/sprites-v6/batter-contact-hero.png';
+import homer from '../../assets/sprites-v6/batter-homer-hero.png';
+import miss from '../../assets/sprites-v6/batter-miss-hero.png';
 
 const params=new URLSearchParams(window.location.search);
 const sheet=params.get('sheet')==='1';
@@ -16,10 +16,10 @@ const before=params.get('before')==='1';
 function PoseSheet(){
   const poses=[
     ['BEFORE · GM11 IDLE',oldIdle],
-    ['GM12 · IDLE',newIdle],
-    ['GM12 · CONTACT',contact],
-    ['GM12 · HOMER',homer],
-    ['GM12 · MISS',miss],
+    ['GM12 V2 · IDLE',newIdle],
+    ['GM12 V2 · CONTACT',contact],
+    ['GM12 V2 · HOMER',homer],
+    ['GM12 V2 · MISS',miss],
   ];
   return <main className="qa-pose-sheet">
     <header><b>GM12 BATTER GOLDEN MASTER</b><span>small-screen silhouette / hands / bat path / weight QA</span></header>
@@ -57,7 +57,7 @@ function bootLive(){
   seedBattle();
   createRoot(document.getElementById('root')).render(<Duel/>);
   const timer=setInterval(()=>{
-    const button=[...document.querySelectorAll('button')].find(node=>node.textContent?.trim()==='MAIN RUN 이어하기');
+    const button=[...document.querySelectorAll('button')].find(node=>['이어하기','MAIN RUN 이어하기'].includes(node.textContent?.trim()));
     if(button){button.click();clearInterval(timer);}
   },40);
   setTimeout(()=>clearInterval(timer),3000);
