@@ -37,11 +37,15 @@ for(const [name,width,height,query,sheet] of cases){
       text:document.body.innerText.slice(0,180),
       stage:!!document.querySelector('.golden-master-stage'),
       batter:!!document.querySelector('.golden-master-stage .sprite-batter'),
-      hero:!!document.querySelector('.golden-master-stage .sprite-batter .v5-hero-layer'),
-      images:[...document.images].map(img=>({src:img.currentSrc||img.src,w:img.naturalWidth,h:img.naturalHeight,complete:img.complete})).filter(x=>/batter-(?:idle|contact|homer|miss)-hero/.test(x.src)),
+      hero:!!document.querySelector('.golden-master-stage .sprite-batter img.duel-sprite'),
+      images:[...document.querySelectorAll('.golden-master-stage .sprite-batter img')].map(img=>({src:img.currentSrc||img.src,w:img.naturalWidth,h:img.naturalHeight,complete:img.complete})),
     }));
     console.log(JSON.stringify({name,state,errors}));
-    if(!sheet&&(!state.stage||!state.batter||!state.hero))failures++;
+    if(!sheet){
+      const expected=query.includes('before=1')?'gm12-old-idle.svg':'sprites-v6/batter-idle-hero.png';
+      const correctAsset=state.images.some(img=>img.complete&&img.w>0&&img.h>0&&img.src.includes(expected));
+      if(!state.stage||!state.batter||!state.hero||!correctAsset)failures++;
+    }
     if(errors.length)failures++;
   }catch(error){
     failures++;
