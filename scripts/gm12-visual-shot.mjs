@@ -20,8 +20,7 @@ async function openLab(url,width,height){
   page.on('pageerror',error=>errors.push(String(error)));
   await page.goto(url+'/?cinema=1',{waitUntil:'networkidle'});
   await page.waitForSelector('.cinema-lab-stage');
-  await page.waitForTimeout(200);
-  await page.clock.pauseAt(new Date('2026-09-20T00:00:05Z'));
+  await page.clock.pauseAt(new Date('2026-09-20T00:01:00Z'));
   return {page,errors};
 }
 async function select(page,name,delay,pose=null){
