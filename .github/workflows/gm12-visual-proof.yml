@@ -8,9 +8,14 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: gm12-visual-proof-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   capture:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Check out GM12 branch
         uses: actions/checkout@v6
