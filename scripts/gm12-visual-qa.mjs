@@ -42,8 +42,8 @@ for(const [name,width,height,query,sheet] of cases){
     }));
     console.log(JSON.stringify({name,state,errors}));
     if(!sheet){
-      const expected=query.includes('before=1')?'gm12-old-idle.svg':'sprites-v6/batter-idle-hero.png';
-      const correctAsset=state.images.some(img=>img.complete&&img.w>0&&img.h>0&&img.src.includes(expected));
+      const before=query.includes('before=1');
+      const correctAsset=state.images.some(img=>img.complete&&img.w>0&&img.h>0&&(before?img.src.startsWith('data:image/svg+xml'):img.src.includes('sprites-v6/batter-idle-hero.png')));
       if(!state.stage||!state.batter||!state.hero||!correctAsset)failures++;
     }
     if(errors.length)failures++;
