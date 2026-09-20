@@ -5,16 +5,20 @@ import {batterHeroPoseFor} from '../src/duel/App.jsx';
 const app=fs.readFileSync(new URL('../src/duel/App.jsx',import.meta.url),'utf8');
 const css=fs.readFileSync(new URL('../src/duel/golden-master.css',import.meta.url),'utf8');
 const asset=path=>fs.readFileSync(new URL('../'+path,import.meta.url),'utf8');
+const expectSvgAsset=(value,file)=>{
+  expect(value).toBeTruthy();
+  expect(value).toMatch(new RegExp(`(?:data:image/svg\\+xml|${file.replace(/[.*+?^${}()|[\\]\\\\]/g,'\\\\const asset=path=>fs.readFileSync(new URL('../'+path,import.meta.url),'utf8');')})`));
+};
 
 describe('GM11 batter hero poses',()=>{
   it('uses authored idle only outside active pitch motion',()=>{
-    expect(batterHeroPoseFor('idle',null,null)).toContain('data:image/svg+xml');
+    expectSvgAsset(batterHeroPoseFor('idle',null,null),'batter-idle-hero.svg');
     expect(batterHeroPoseFor('idle','windup',{grade:'solid'})).toBeNull();
   });
 
   it('cuts to contact art only for decisive contact at impact',()=>{
     const contact=batterHeroPoseFor('contact','impact',{grade:'dead-center'});
-    expect(contact).toContain('data:image/svg+xml');
+    expectSvgAsset(contact,'batter-contact-hero.svg');
     expect(batterHeroPoseFor('contact','impact',{grade:'solid'})).toBe(contact);
     expect(batterHeroPoseFor('contact','impact',{grade:'extra'})).toBe(contact);
     expect(batterHeroPoseFor('contact','impact',{grade:'jammed'})).toBeNull();
@@ -24,9 +28,9 @@ describe('GM11 batter hero poses',()=>{
   it('owns homer release/settle and miss slowmo/release without replacing windup',()=>{
     const homer=batterHeroPoseFor('homer','release',{grade:'homer'});
     const miss=batterHeroPoseFor('miss','slowmo',{grade:'near-miss'});
-    expect(homer).toContain('data:image/svg+xml');
+    expectSvgAsset(homer,'batter-homer-hero.svg');
     expect(batterHeroPoseFor('homer','settle',{grade:'grand-slam'})).toBe(homer);
-    expect(miss).toContain('data:image/svg+xml');
+    expectSvgAsset(miss,'batter-miss-hero.svg');
     expect(batterHeroPoseFor('miss','release',{grade:'strikeout'})).toBe(miss);
     expect(homer).not.toBe(miss);
     expect(batterHeroPoseFor('miss','windup',{grade:'strikeout'})).toBeNull();
