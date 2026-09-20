@@ -129,6 +129,28 @@ function segment(ctx,a,b,outlineWidth,fillWidth,fill,highlight){
     ctx.beginPath();ctx.moveTo(Math.round(a[0]-1),Math.round(a[1]-1));ctx.lineTo(Math.round(b[0]-1),Math.round(b[1]-1));ctx.stroke();
   }
 }
+function taperedLimb(ctx,a,b,outerA,outerB,innerA,innerB,fill,highlight){
+  const dx=b[0]-a[0],dy=b[1]-a[1],len=Math.max(1,Math.hypot(dx,dy)),nx=-dy/len,ny=dx/len;
+  const quad=(wa,wb)=>[
+    [a[0]+nx*wa,a[1]+ny*wa],[b[0]+nx*wb,b[1]+ny*wb],
+    [b[0]-nx*wb,b[1]-ny*wb],[a[0]-nx*wa,a[1]-ny*wa],
+  ];
+  poly(ctx,quad(outerA,outerB),BATTER_PALETTE.outline);
+  poly(ctx,quad(innerA,innerB),fill);
+  if(highlight){
+    const ha=Math.max(1,innerA*.46),hb=Math.max(1,innerB*.4);
+    poly(ctx,[
+      [a[0]+nx*ha-1,a[1]+ny*ha-1],[b[0]+nx*hb-1,b[1]+ny*hb-1],
+      [b[0]+nx*.15-1,b[1]+ny*.15-1],[a[0]+nx*.15-1,a[1]+ny*.15-1],
+    ],highlight);
+  }
+}
+function pixelJoint(ctx,p,rx,ry,fill,highlight){
+  const x=p[0],y=p[1];
+  poly(ctx,[[x-rx+2,y-ry],[x+rx-2,y-ry],[x+rx,y-ry+2],[x+rx,y+ry-2],[x+rx-2,y+ry],[x-rx+2,y+ry],[x-rx,y+ry-2],[x-rx,y-ry+2]],BATTER_PALETTE.outline);
+  poly(ctx,[[x-rx+3,y-ry+2],[x+rx-3,y-ry+2],[x+rx-2,y+ry-3],[x-rx+2,y+ry-3]],fill);
+  if(highlight)rect(ctx,x-rx+3,y-ry+2,Math.max(2,rx),2,highlight);
+}
 function shoe(ctx,p){
   const x=Math.round(p[0]),y=Math.round(p[1]);
   poly(ctx,[[x-8,y-4],[x+5,y-4],[x+9,y-1],[x+8,y+4],[x-8,y+4],[x-10,y+1]],BATTER_PALETTE.outline);
@@ -158,46 +180,55 @@ function renderGoldenBatter(ctx,shot,frame){
   const batFront=p.tip[0]>84||batterAction(shot)==='miss';
   if(!batFront)bat(ctx,p.knob,p.tip);
 
-  segment(ctx,p.hb,p.kb,14,10,c.pantsShadow,c.pants);
-  segment(ctx,p.kb,p.fb,12,8,c.pants,c.jerseyHi);
-  segment(ctx,p.hf,p.kf,15,11,c.pants,c.jerseyHi);
-  segment(ctx,p.kf,p.ff,12,8,c.pants,c.jerseyHi);
+  taperedLimb(ctx,p.hb,p.kb,8.6,7.4,6.5,5.5,c.pantsShadow,c.pants);
+  pixelJoint(ctx,p.kb,7,6,c.pants,c.jerseyHi);
+  taperedLimb(ctx,p.kb,p.fb,6.8,5.1,5.0,3.6,c.pants,c.jerseyHi);
+  taperedLimb(ctx,p.hf,p.kf,9.2,7.7,7.0,5.8,c.pants,c.jerseyHi);
+  pixelJoint(ctx,p.kf,7,6,c.pants,c.jerseyHi);
+  taperedLimb(ctx,p.kf,p.ff,7.0,5.2,5.1,3.7,c.pants,c.jerseyHi);
   shoe(ctx,p.fb);shoe(ctx,p.ff);
 
+  const chestY=Math.min(p.sb[1],p.sf[1]),waistY=Math.max(p.hb[1],p.hf[1]);
   const torso=[
-    [p.sb[0]-6,p.sb[1]-4],[p.sf[0]+6,p.sf[1]-3],[p.hf[0]+7,p.hf[1]+4],
-    [(p.hb[0]+p.hf[0])/2+2,Math.max(p.hb[1],p.hf[1])+8],[p.hb[0]-7,p.hb[1]+4]
+    [p.sb[0]-8,p.sb[1]-3],[p.sb[0]-5,chestY-6],[p.sf[0]+5,chestY-5],[p.sf[0]+8,p.sf[1]-1],
+    [p.hf[0]+8,p.hf[1]+5],[(p.hb[0]+p.hf[0])/2+4,waistY+9],[p.hb[0]-8,p.hb[1]+5]
   ];
   poly(ctx,torso,c.outline);
   poly(ctx,[
-    [p.sb[0]-3,p.sb[1]-1],[p.sf[0]+3,p.sf[1]],[p.hf[0]+4,p.hf[1]+2],
-    [(p.hb[0]+p.hf[0])/2+1,Math.max(p.hb[1],p.hf[1])+5],[p.hb[0]-4,p.hb[1]+2]
+    [p.sb[0]-5,p.sb[1]-1],[p.sb[0]-3,chestY-3],[p.sf[0]+3,chestY-2],[p.sf[0]+5,p.sf[1]+1],
+    [p.hf[0]+5,p.hf[1]+3],[(p.hb[0]+p.hf[0])/2+3,waistY+6],[p.hb[0]-5,p.hb[1]+3]
   ],c.jersey);
   poly(ctx,[
-    [p.sb[0]-2,p.sb[1]+1],[p.hb[0]-4,p.hb[1]+1],[(p.hb[0]+p.hf[0])/2-1,Math.max(p.hb[1],p.hf[1])+4],
-    [(p.sb[0]+p.sf[0])/2-2,(p.sb[1]+p.sf[1])/2+2]
+    [p.sb[0]-4,p.sb[1]+1],[p.hb[0]-5,p.hb[1]+2],[(p.hb[0]+p.hf[0])/2-1,waistY+5],
+    [(p.sb[0]+p.sf[0])/2-3,(p.sb[1]+p.sf[1])/2+3]
   ],c.jerseyShadow);
+  poly(ctx,[
+    [p.sf[0]-1,chestY-1],[p.sf[0]+4,p.sf[1]],[p.hf[0]+4,p.hf[1]+1],
+    [(p.hb[0]+p.hf[0])/2+3,waistY+3],[(p.sb[0]+p.sf[0])/2+2,(p.sb[1]+p.sf[1])/2+2]
+  ],c.jerseyHi);
   segment(ctx,[(p.hb[0]+p.hf[0])/2-1,(p.sb[1]+p.sf[1])/2+3],[(p.hb[0]+p.hf[0])/2,(p.hb[1]+p.hf[1])/2+1],4,2,c.teal,c.tealHi);
   segment(ctx,[p.hb[0]-1,p.hb[1]+1],[p.hf[0]+1,p.hf[1]+1],4,2,c.tealDark,c.tealHi);
 
-  segment(ctx,p.sb,p.eb,11,7,c.skinShadow,c.skin);
-  segment(ctx,p.eb,p.hbnd,10,6,c.skin,c.skinHi);
-  segment(ctx,p.sf,p.ef,11,7,c.skin,c.skinHi);
-  segment(ctx,p.ef,p.hfnd,10,6,c.skin,c.skinHi);
+  taperedLimb(ctx,p.sb,p.eb,7.4,6.4,5.5,4.6,c.skinShadow,c.skin);
+  pixelJoint(ctx,p.eb,5.5,5,c.skin,c.skinHi);
+  taperedLimb(ctx,p.eb,p.hbnd,6.2,4.8,4.5,3.4,c.skin,c.skinHi);
+  taperedLimb(ctx,p.sf,p.ef,7.7,6.5,5.8,4.7,c.skin,c.skinHi);
+  pixelJoint(ctx,p.ef,5.5,5,c.skin,c.skinHi);
+  taperedLimb(ctx,p.ef,p.hfnd,6.3,4.9,4.6,3.5,c.skin,c.skinHi);
   glove(ctx,p.hbnd);glove(ctx,p.hfnd);
 
-  segment(ctx,[p.neck[0],p.neck[1]-1],[p.neck[0],p.neck[1]+4],7,4,c.skin,c.skinHi);
+  pixelJoint(ctx,[p.neck[0],p.neck[1]+1],5.5,4.5,c.skin,c.skinHi);
 
   const hx=Math.round(p.head[0]),hy=Math.round(p.head[1]);
-  poly(ctx,[[hx-9,hy-5],[hx+6,hy-4],[hx+9,hy],[hx+7,hy+8],[hx-5,hy+8],[hx-9,hy+3]],c.outline);
-  poly(ctx,[[hx-7,hy-3],[hx+5,hy-3],[hx+7,hy],[hx+5,hy+6],[hx-4,hy+6],[hx-7,hy+2]],c.skin);
+  poly(ctx,[[hx-10,hy-5],[hx-7,hy-8],[hx+5,hy-7],[hx+9,hy-3],[hx+10,hy+3],[hx+6,hy+9],[hx-5,hy+9],[hx-10,hy+4]],c.outline);
+  poly(ctx,[[hx-8,hy-4],[hx-5,hy-6],[hx+4,hy-5],[hx+7,hy-2],[hx+7,hy+3],[hx+4,hy+7],[hx-4,hy+7],[hx-8,hy+3]],c.skin);
   rect(ctx,hx-5,hy-2,7,3,c.skinHi);
   rect(ctx,hx+4,hy-1,3,3,c.outline);
   rect(ctx,hx+5,hy+4,4,2,c.skinShadow);
   rect(ctx,hx-7,hy+2,3,3,c.skinShadow);
 
-  poly(ctx,[[hx-10,hy-5],[hx-8,hy-11],[hx-3,hy-14],[hx+6,hy-13],[hx+11,hy-9],[hx+11,hy-4],[hx+6,hy-2],[hx-9,hy-2]],c.outline);
-  poly(ctx,[[hx-8,hy-5],[hx-7,hy-9],[hx-2,hy-12],[hx+5,hy-11],[hx+9,hy-8],[hx+9,hy-5],[hx+5,hy-3],[hx-7,hy-3]],c.helmet);
+  poly(ctx,[[hx-11,hy-5],[hx-10,hy-10],[hx-6,hy-14],[hx-1,hy-16],[hx+7,hy-14],[hx+12,hy-10],[hx+13,hy-5],[hx+8,hy-2],[hx-10,hy-2]],c.outline);
+  poly(ctx,[[hx-9,hy-5],[hx-8,hy-9],[hx-4,hy-12],[hx,hy-14],[hx+6,hy-12],[hx+10,hy-9],[hx+10,hy-5],[hx+6,hy-3],[hx-8,hy-3]],c.helmet);
   poly(ctx,[[hx-6,hy-8],[hx-2,hy-11],[hx+4,hy-10],[hx+7,hy-8],[hx,hy-7]],c.helmetHi);
   rect(ctx,hx+6,hy-5,10,4,c.outline);
   rect(ctx,hx+7,hy-4,8,2,c.helmetHi);
