@@ -30,7 +30,9 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install Chromium for QA
-        run: pnpm add -D --lockfile=false playwright@1.55.0\n          pnpm exec playwright install --with-deps chromium
+        run: |
+          pnpm add -D --lockfile=false playwright@1.55.0
+          pnpm exec playwright install --with-deps chromium
 
       - name: Start QA server
         run: |
