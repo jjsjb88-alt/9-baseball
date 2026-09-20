@@ -180,23 +180,23 @@ function renderGoldenBatter(ctx,shot,frame){
   const batFront=p.tip[0]>84||batterAction(shot)==='miss';
   if(!batFront)bat(ctx,p.knob,p.tip);
 
-  taperedLimb(ctx,p.hb,p.kb,8.6,7.4,6.5,5.5,c.pantsShadow,c.pants);
-  pixelJoint(ctx,p.kb,7,6,c.pants,c.jerseyHi);
-  taperedLimb(ctx,p.kb,p.fb,6.8,5.1,5.0,3.6,c.pants,c.jerseyHi);
-  taperedLimb(ctx,p.hf,p.kf,9.2,7.7,7.0,5.8,c.pants,c.jerseyHi);
-  pixelJoint(ctx,p.kf,7,6,c.pants,c.jerseyHi);
-  taperedLimb(ctx,p.kf,p.ff,7.0,5.2,5.1,3.7,c.pants,c.jerseyHi);
+  taperedLimb(ctx,p.hb,p.kb,9.5,8.2,7.3,6.2,c.pantsShadow,c.pants);
+  pixelJoint(ctx,p.kb,7.8,6.8,c.pants,c.jerseyHi);
+  taperedLimb(ctx,p.kb,p.fb,7.6,5.8,5.8,4.2,c.pants,c.jerseyHi);
+  taperedLimb(ctx,p.hf,p.kf,10.0,8.6,7.7,6.5,c.pants,c.jerseyHi);
+  pixelJoint(ctx,p.kf,8,7,c.pants,c.jerseyHi);
+  taperedLimb(ctx,p.kf,p.ff,7.8,5.9,5.9,4.3,c.pants,c.jerseyHi);
   shoe(ctx,p.fb);shoe(ctx,p.ff);
 
   const chestY=Math.min(p.sb[1],p.sf[1]),waistY=Math.max(p.hb[1],p.hf[1]);
   const torso=[
-    [p.sb[0]-8,p.sb[1]-3],[p.sb[0]-5,chestY-6],[p.sf[0]+5,chestY-5],[p.sf[0]+8,p.sf[1]-1],
-    [p.hf[0]+8,p.hf[1]+5],[(p.hb[0]+p.hf[0])/2+4,waistY+9],[p.hb[0]-8,p.hb[1]+5]
+    [p.sb[0]-9,p.sb[1]-3],[p.sb[0]-6,chestY-7],[p.sf[0]+6,chestY-6],[p.sf[0]+9,p.sf[1]-1],
+    [p.hf[0]+9,p.hf[1]+5],[(p.hb[0]+p.hf[0])/2+4,waistY+10],[p.hb[0]-9,p.hb[1]+5]
   ];
   poly(ctx,torso,c.outline);
   poly(ctx,[
-    [p.sb[0]-5,p.sb[1]-1],[p.sb[0]-3,chestY-3],[p.sf[0]+3,chestY-2],[p.sf[0]+5,p.sf[1]+1],
-    [p.hf[0]+5,p.hf[1]+3],[(p.hb[0]+p.hf[0])/2+3,waistY+6],[p.hb[0]-5,p.hb[1]+3]
+    [p.sb[0]-6,p.sb[1]-1],[p.sb[0]-4,chestY-4],[p.sf[0]+4,chestY-3],[p.sf[0]+6,p.sf[1]+1],
+    [p.hf[0]+6,p.hf[1]+3],[(p.hb[0]+p.hf[0])/2+3,waistY+7],[p.hb[0]-6,p.hb[1]+3]
   ],c.jersey);
   poly(ctx,[
     [p.sb[0]-4,p.sb[1]+1],[p.hb[0]-5,p.hb[1]+2],[(p.hb[0]+p.hf[0])/2-1,waistY+5],
@@ -209,12 +209,18 @@ function renderGoldenBatter(ctx,shot,frame){
   segment(ctx,[(p.hb[0]+p.hf[0])/2-1,(p.sb[1]+p.sf[1])/2+3],[(p.hb[0]+p.hf[0])/2,(p.hb[1]+p.hf[1])/2+1],4,2,c.teal,c.tealHi);
   segment(ctx,[p.hb[0]-1,p.hb[1]+1],[p.hf[0]+1,p.hf[1]+1],4,2,c.tealDark,c.tealHi);
 
-  taperedLimb(ctx,p.sb,p.eb,7.4,6.4,5.5,4.6,c.skinShadow,c.skin);
-  pixelJoint(ctx,p.eb,5.5,5,c.skin,c.skinHi);
-  taperedLimb(ctx,p.eb,p.hbnd,6.2,4.8,4.5,3.4,c.skin,c.skinHi);
-  taperedLimb(ctx,p.sf,p.ef,7.7,6.5,5.8,4.7,c.skin,c.skinHi);
-  pixelJoint(ctx,p.ef,5.5,5,c.skin,c.skinHi);
-  taperedLimb(ctx,p.ef,p.hfnd,6.3,4.9,4.6,3.5,c.skin,c.skinHi);
+  const sbSleeve=pt(p.sb,p.eb,.43),sfSleeve=pt(p.sf,p.ef,.43);
+  pixelJoint(ctx,p.sb,8,7,c.jersey,c.jerseyHi);
+  taperedLimb(ctx,p.sb,sbSleeve,8.2,7.2,6.2,5.3,c.jerseyShadow,c.jerseyHi);
+  taperedLimb(ctx,sbSleeve,p.eb,7.1,6.5,5.2,4.7,c.skinShadow,c.skin);
+  pixelJoint(ctx,p.eb,6.2,5.4,c.skin,c.skinHi);
+  taperedLimb(ctx,p.eb,p.hbnd,6.8,5.2,5.0,3.8,c.skin,c.skinHi);
+
+  pixelJoint(ctx,p.sf,8.4,7.2,c.jersey,c.jerseyHi);
+  taperedLimb(ctx,p.sf,sfSleeve,8.5,7.3,6.4,5.4,c.jersey,c.jerseyHi);
+  taperedLimb(ctx,sfSleeve,p.ef,7.3,6.6,5.4,4.8,c.skin,c.skinHi);
+  pixelJoint(ctx,p.ef,6.2,5.4,c.skin,c.skinHi);
+  taperedLimb(ctx,p.ef,p.hfnd,6.9,5.3,5.1,3.9,c.skin,c.skinHi);
   glove(ctx,p.hbnd);glove(ctx,p.hfnd);
 
   pixelJoint(ctx,[p.neck[0],p.neck[1]+1],5.5,4.5,c.skin,c.skinHi);
@@ -230,12 +236,16 @@ function renderGoldenBatter(ctx,shot,frame){
   poly(ctx,[[hx-11,hy-5],[hx-10,hy-10],[hx-6,hy-14],[hx-1,hy-16],[hx+7,hy-14],[hx+12,hy-10],[hx+13,hy-5],[hx+8,hy-2],[hx-10,hy-2]],c.outline);
   poly(ctx,[[hx-9,hy-5],[hx-8,hy-9],[hx-4,hy-12],[hx,hy-14],[hx+6,hy-12],[hx+10,hy-9],[hx+10,hy-5],[hx+6,hy-3],[hx-8,hy-3]],c.helmet);
   poly(ctx,[[hx-6,hy-8],[hx-2,hy-11],[hx+4,hy-10],[hx+7,hy-8],[hx,hy-7]],c.helmetHi);
-  rect(ctx,hx+6,hy-5,10,4,c.outline);
-  rect(ctx,hx+7,hy-4,8,2,c.helmetHi);
+  rect(ctx,hx+6,hy-5,8,3,c.outline);
+  rect(ctx,hx+7,hy-4,6,1,c.helmetHi);
   rect(ctx,hx-7,hy-2,4,6,c.deep);
+  rect(ctx,hx+5,hy,2,2,c.skinHi);
+  rect(ctx,hx+6,hy+3,3,2,c.skinShadow);
 
   const cx=Math.round((p.sb[0]+p.sf[0]+p.hb[0]+p.hf[0])/4)+2,cy=Math.round((p.sb[1]+p.sf[1]+p.hb[1]+p.hf[1])/4);
-  rect(ctx,cx-3,cy-5,6,2,c.tealDark);rect(ctx,cx+1,cy-4,2,8,c.tealDark);rect(ctx,cx-3,cy+1,5,2,c.tealDark);
+  rect(ctx,cx-4,cy-6,8,2,c.tealDark);rect(ctx,cx+1,cy-5,2,10,c.tealDark);rect(ctx,cx-4,cy+1,6,2,c.tealDark);
+  rect(ctx,Math.min(p.hb[0],p.hf[0])-4,waistY+2,Math.abs(p.hf[0]-p.hb[0])+9,3,c.tealDark);
+  rect(ctx,Math.min(p.hb[0],p.hf[0])-2,waistY+2,Math.abs(p.hf[0]-p.hb[0])+5,1,c.tealHi);
 
   for(const [knee,foot] of [[p.kb,p.fb],[p.kf,p.ff]]){
     const sx=lerp(knee[0],foot[0],.72),sy=lerp(knee[1],foot[1],.72);
