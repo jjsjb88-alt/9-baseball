@@ -23,7 +23,8 @@ async function openLab(url,width,height){
   return {page,errors};
 }
 async function select(page,name,delay){
-  await page.getByRole('button',{name,exact:true}).click();
+  const button=page.locator('.cinema-case-grid button').filter({hasText:name}).first();
+  await button.click();
   await page.waitForTimeout(delay);
 }
 async function viewportProof(label,url,name,width,height){
