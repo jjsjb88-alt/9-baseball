@@ -20,7 +20,7 @@ describe('GM10 actor focus relay',()=>{
     expect(presentationFor(state('hit','중전안타'))?.director?.key).toBe('contact');
     expect(presentationFor(state('hit','홈런'))?.director?.key).toBe('power');
     expect(presentationFor(state('whiff','헛스윙',1,4))?.director?.key).toBe('near-miss');
-    expect(presentationFor(state('whiff','삼진',7,4))?.director?.key).toBe('strikeout');
+    expect(presentationFor(state('whiff','삼진',8,0))?.director?.key).toBe('strikeout');
     expect(presentationFor(state('foul','파울'))?.director?.key).toBe('scrappy');
   });
 
