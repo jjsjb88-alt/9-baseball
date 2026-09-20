@@ -80,7 +80,7 @@ for(const [name,width,height,query,mode] of cases){
           const data=ctx.getImageData(0,0,96,96).data;
           let count=0,minX=96,minY=96,maxX=-1,maxY=-1;
           for(let y=0;y<96;y++)for(let x=0;x<96;x++){
-            if(data[(y*96+x)*4+3]>32){
+            if(data[(y*96+x)*4+3]>200){
               count++;minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);
             }
           }
