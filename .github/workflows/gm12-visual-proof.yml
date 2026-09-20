@@ -37,8 +37,8 @@ jobs:
 
       - name: Install Playwright capture runtime
         run: |
-          npm install --no-save playwright
-          npx playwright install --with-deps chromium
+          pnpm add --save-dev --lockfile=false playwright
+          pnpm exec playwright install --with-deps chromium
 
       - name: Start before and after preview servers
         run: |
