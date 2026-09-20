@@ -13,6 +13,9 @@ const cases=[
   ['pose-sheet-390x844',390,844,'?sheet=1','pose'],
   ['rig-sheet-844x900',844,900,'?rig=1','rig'],
   ['continuity-sheet-844x900',844,900,'?compare=1','compare'],
+  ['cinema-windup-844x390',844,390,'?cinema=windup','cinema-windup'],
+  ['cinema-contact-1440x900',1440,900,'?cinema=contact','cinema-contact'],
+  ['cinema-miss-390x844',390,844,'?cinema=miss','cinema-miss'],
 ];
 await mkdir(out,{recursive:true});
 const browser=await chromium.launch();
@@ -50,6 +53,15 @@ for(const [name,width,height,query,mode] of cases){
           return false;
         });
       },null,{timeout:5000});
+    }else if(mode.startsWith('cinema-')){
+      await page.waitForSelector('button.cinema-entry',{state:'visible',timeout:5000});
+      await page.locator('button.cinema-entry').click();
+      await page.waitForSelector('.cinema-lab-stage .sprite-batter',{state:'visible',timeout:7000});
+      const caseName=mode==='cinema-miss'?'한 칸 차이':'정확 적중';
+      await page.getByRole('button',{name:caseName,exact:true}).click();
+      const stage=mode==='cinema-windup'?'windup':mode==='cinema-contact'?'impact':'release';
+      await page.waitForFunction(stage=>document.querySelector('.cinema-lab-stage')?.classList.contains('fx-stage-'+stage),stage,{timeout:4000,polling:16});
+      if(mode==='cinema-windup')await page.waitForTimeout(80);
     }else{
       const resume=page.getByRole('button',{name:'이어하기',exact:true});
       if(await resume.count())await resume.click();
@@ -99,6 +111,9 @@ for(const [name,width,height,query,mode] of cases){
       arena:document.querySelector('.duel-arena')?.getBoundingClientRect?.().toJSON?.()||null,
       zone:document.querySelector('.zone-panel')?.getBoundingClientRect?.().toJSON?.()||null,
       table:document.querySelector('.duel-table')?.getBoundingClientRect?.().toJSON?.()||null,
+      cinemaStage:document.querySelector('.cinema-lab-stage')?.className||'',
+      cinemaBatter:document.querySelector('.cinema-lab-stage .sprite-batter')?.getBoundingClientRect?.().toJSON?.()||null,
+      cinemaCanvas:document.querySelector('.cinema-lab-stage .sprite-batter .v4-canvas')?.getBoundingClientRect?.().toJSON?.()||null,
     }),mode);
     console.log(JSON.stringify({name,mode,state,errors}));
 
@@ -118,8 +133,12 @@ for(const [name,width,height,query,mode] of cases){
         const area=pair.hero.count?pair.rig.count/pair.hero.count:0;
         const width=pair.hero.w?pair.rig.w/pair.hero.w:0;
         const height=pair.hero.h?pair.rig.h/pair.hero.h:0;
-        if(area<.62||area>1.48||width<.76||width>1.26||height<.76||height>1.26)failures++;
+        if(area<.85||area>1.18||width<.82||width>1.18||height<.90||height>1.12)failures++;
       }
+    }else if(mode.startsWith('cinema-')){
+      const expected=mode==='cinema-windup'?'fx-stage-windup':mode==='cinema-contact'?'fx-stage-impact':'fx-stage-release';
+      if(!state.cinemaStage.includes(expected)||!state.cinemaBatter||!state.cinemaCanvas||state.cinemaBatter.width<120||state.cinemaBatter.height<120)failures++;
+      if(state.body.scrollWidth>state.viewport.w+1)failures++;
     }
     if(errors.length)failures++;
   }catch(error){
