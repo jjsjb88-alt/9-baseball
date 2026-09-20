@@ -225,6 +225,19 @@ function v4SheetFor(who,shot){
   return homer?batterHomerV4:miss?batterMissV4:batterSwingV4;
 }
 function Sprite({who,stage=null,shot=null,golden=false,variant=null,playToken=0}){
+  if(golden&&who==='batter'){
+    const standinStage=stage||'idle',standinGrade=shot?.grade||'idle';
+    return <span className={'sprite-stage sprite-batter golden-actor batter-standin standin-stage-'+standinStage+' standin-grade-'+standinGrade}>
+      <i className="actor-contact-shadow" aria-hidden="true"/>
+      <span className="batter-presence" aria-hidden="true">
+        <i className="presence-box"/>
+        <i className="presence-plate"/>
+        <i className="presence-bat"/>
+        <i className="presence-contact"/>
+        <b>AT BAT</b>
+      </span>
+    </span>;
+  }
   const pose=actorPose(who,stage,shot),v4Sheet=golden&&stage? v4SheetFor(who,shot):null;
   const hero=golden&&who==='batter'?batterHeroPoseFor(pose,stage,shot):null;
   const spec=v4Sheet?null:sequenceSpec(who,stage,shot),animated=useSpriteFrame(spec,who+'-'+stage+'-'+(shot?.grade||'idle')+'-'+(variant||'base'));
