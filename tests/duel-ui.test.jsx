@@ -108,7 +108,7 @@ describe('9-zone strategic UI',()=>{
     const timeline=presentationTimeline(presentationFor(readV10Duel(localStorage)));
     act(()=>vi.advanceTimersByTime(timeline.impactAt+1));
     expect(arena.className).toContain('fx-stage-impact');
-    expect(arena.querySelector('.sprite-batter.v4-sequence.pose-contact canvas.v4-canvas')).toBeTruthy();
+    expect(arena.querySelector('.sprite-batter.batter-reboot-v1.reboot-pose-contact img.batter-reboot-art')).toBeTruthy();
     finish();
   });
 
@@ -153,16 +153,16 @@ describe('9-zone strategic UI',()=>{
     expect(arena.querySelector('canvas.pixel-vfx-canvas')).toBeTruthy();
   });
 
-  it('animates real 60-frame pixel actors and overlays the tactical read trace',()=>{
+  it('keeps pitcher 60-frame playback while the batter uses authored reboot key poses and overlays the tactical read trace',()=>{
     beginV10();
     fireEvent.click(screen.getByRole('button',{name:'스윙하기',exact:true}));
     fireEvent.click(screen.getByRole('button',{name:'밀어치기',exact:true}));
     fireEvent.click(screen.getByTestId('execute-action'));
-    expect(document.querySelector('.sprite-batter.v4-sequence.pose-load canvas.v4-canvas')).toBeTruthy();
+    expect(document.querySelector('.sprite-batter.batter-reboot-v1.reboot-pose-trigger img.batter-reboot-art')).toBeTruthy();
     expect(document.querySelector('.sprite-pitcher.v4-sequence.pose-legkick canvas.v4-canvas')).toBeTruthy();
     const timeline=presentationTimeline(presentationFor(readV10Duel(localStorage)));
     act(()=>vi.advanceTimersByTime(timeline.impactAt+1));
-    expect(document.querySelector('.sprite-batter.v4-sequence.pose-contact canvas.v4-canvas')).toBeTruthy();
+    expect(document.querySelector('.sprite-batter.batter-reboot-v1.reboot-pose-contact img.batter-reboot-art')).toBeTruthy();
     expect(document.querySelector('.sprite-pitcher.v4-sequence.pose-release canvas.v4-canvas')).toBeTruthy();
     expect(document.querySelector('.read-trace')).toBeTruthy();
     expect(document.querySelector('.read-trace .actual')).toBeTruthy();
