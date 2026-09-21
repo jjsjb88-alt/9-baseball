@@ -1,5 +1,80 @@
 # 9ZONE SHOWDOWN — Codex 인수인계
 
+## 최우선 인수인계 — BATTER MOTION LOOP V2 · 2026-09-21
+
+**사용자 최신 판정: "그냥 서있는 모습만 반복되는 것 같다."**
+
+이 판정을 최우선으로 적용한다.
+
+새 세션은 어떤 기능 추가보다 먼저 아래 문서를 읽고 즉시 이어서 작업한다.
+
+1. `docs/visual/BATTER-MOTION-LOOP-V2.md`
+2. `docs/visual/BATTER-ASSET-LOOP-V1.md`
+3. `VISUAL-REBOOT-LOOP-ENGINEERING.md`
+4. `AGENTS.md`
+
+### 현재 작업 브랜치
+
+- 작업 브랜치: `codex/batter-motion-loop-v2`
+- 부모: `codex/batter-asset-loop-v1`
+- V1 확인용 프리뷰: `https://jjsjb88-alt.github.io/9-baseball/batter-v1/`
+
+### 현재 판정
+
+V1은 새 authored batter art를 실제 게임에 넣는 데는 성공했지만,
+실제 플레이에서는 `idle / trigger / contact / finish` 포즈 전환만 보여
+**스윙이 아니라 정지 이미지 반복처럼 읽힌다.**
+
+따라서:
+- V1 visual PASS 아님.
+- main 병합 금지.
+- 60Hz 완성 선언 금지.
+- procedural/block batter로 회귀 금지.
+
+### 다음 작업의 단일 목표
+
+**타자가 실제로 스윙하는 것처럼 보여야 한다.**
+
+최소 8단계:
+`ready → load → trigger → swing-start → contact → follow-through-early → finish → settle`
+
+현재 4개 앵커:
+- `assets/batter-reboot-v1/batter-ready.png`
+- `assets/batter-reboot-v1/batter-trigger.png`
+- `assets/batter-reboot-v1/batter-contact.png`
+- `assets/batter-reboot-v1/batter-finish.png`
+
+추가 authored pose:
+- load
+- swing-start
+- follow-through-early
+- settle
+
+정적/키포즈 흐름이 실제 모바일 화면에서 통과한 뒤에만 60Hz 보간/재생으로 확장한다.
+
+### 필수 QA
+
+- 390×844
+- 844×390
+- 1440×900
+
+각 뷰에서 ready / swing-start / contact / finish를 직접 확인한다.
+
+다음이 모두 충족되어야 통과:
+- 더 이상 서있는 그림 반복처럼 보이지 않음.
+- trigger→contact 가속이 읽힘.
+- contact 순간이 분명함.
+- 하체→몸통→손→배트 흐름이 연결됨.
+- finish가 contact의 결과처럼 보임.
+- 배트 순간이동 없음.
+- 발/기준선 흔들림 없음.
+- 투수와 같은 게임 세계에 속해 보임.
+- 모바일 가독성 유지.
+
+**테스트/빌드 성공은 visual PASS의 증거가 아니다. 사용자 확인 전 merge 금지.**
+
+---
+
 ## 최우선 인수인계 — VISUAL RESET · 2026-09-20
 
 **새 세션은 어떤 기능 추가보다 먼저 아래 4개를 이 순서로 읽는다.**
