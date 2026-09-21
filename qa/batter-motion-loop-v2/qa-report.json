@@ -1,0 +1,1243 @@
+{
+  "base": "http://127.0.0.1:4173/",
+  "generatedAt": "2026-09-21T21:54:31.020Z",
+  "required": [
+    "ready",
+    "load",
+    "trigger",
+    "swing-start",
+    "contact",
+    "follow-through-early",
+    "finish",
+    "settle"
+  ],
+  "cases": [
+    {
+      "name": "390x844",
+      "width": 390,
+      "height": 844,
+      "trace": [
+        "ready",
+        "load",
+        "trigger",
+        "swing-start",
+        "contact",
+        "follow-through-early",
+        "finish",
+        "settle"
+      ],
+      "traceEvents": [
+        {
+          "pose": "ready",
+          "at": 1450
+        },
+        {
+          "pose": "load",
+          "at": 1814.8999999999942
+        },
+        {
+          "pose": "trigger",
+          "at": 1988.8999999999942
+        },
+        {
+          "pose": "swing-start",
+          "at": 2158.5
+        },
+        {
+          "pose": "contact",
+          "at": 2341.5999999999767
+        },
+        {
+          "pose": "follow-through-early",
+          "at": 2655.1999999999825
+        },
+        {
+          "pose": "finish",
+          "at": 2874.6999999999825
+        },
+        {
+          "pose": "settle",
+          "at": 3089.2999999999884
+        }
+      ],
+      "dwell": [
+        {
+          "pose": "ready",
+          "ms": 365
+        },
+        {
+          "pose": "load",
+          "ms": 174
+        },
+        {
+          "pose": "trigger",
+          "ms": 170
+        },
+        {
+          "pose": "swing-start",
+          "ms": 183
+        },
+        {
+          "pose": "contact",
+          "ms": 314
+        },
+        {
+          "pose": "follow-through-early",
+          "ms": 220
+        },
+        {
+          "pose": "finish",
+          "ms": 215
+        }
+      ],
+      "dynamicMetrics": {
+        "pose": "settle",
+        "naturalWidth": 192,
+        "naturalHeight": 192,
+        "standinCount": 0,
+        "rendererStatus": "WEBGL2 ACTIVE"
+      },
+      "captures": {
+        "ready": {
+          "metrics": {
+            "stage": {
+              "left": 0,
+              "top": 227.53125,
+              "right": 390,
+              "bottom": 527.53125,
+              "width": 390,
+              "height": 300
+            },
+            "batter": {
+              "left": -15.59375,
+              "top": 345.203125,
+              "right": 167.703125,
+              "bottom": 528.5,
+              "width": 183.296875,
+              "height": 183.296875
+            },
+            "pitcher": {
+              "left": 237.890625,
+              "top": 363.578125,
+              "right": 393.890625,
+              "bottom": 519.578125,
+              "width": 156,
+              "height": 156
+            },
+            "art": {
+              "left": -33.921875,
+              "top": 327.21875,
+              "right": 186.03125,
+              "bottom": 547.171875,
+              "width": 219.953125,
+              "height": 219.953125
+            },
+            "pose": "ready",
+            "naturalWidth": 192,
+            "naturalHeight": 192
+          },
+          "pageErrors": []
+        },
+        "load": {
+          "metrics": {
+            "stage": {
+              "left": 0,
+              "top": 227.53125,
+              "right": 390,
+              "bottom": 527.53125,
+              "width": 390,
+              "height": 300
+            },
+            "batter": {
+              "left": -15.59375,
+              "top": 345.203125,
+              "right": 167.703125,
+              "bottom": 528.5,
+              "width": 183.296875,
+              "height": 183.296875
+            },
+            "pitcher": {
+              "left": 237.890625,
+              "top": 363.578125,
+              "right": 393.890625,
+              "bottom": 519.578125,
+              "width": 156,
+              "height": 156
+            },
+            "art": {
+              "left": -33.921875,
+              "top": 327.71875,
+              "right": 186.03125,
+              "bottom": 547.671875,
+              "width": 219.953125,
+              "height": 219.953125
+            },
+            "pose": "load",
+            "naturalWidth": 192,
+            "naturalHeight": 192
+          },
+          "pageErrors": []
+        },
+        "trigger": {
+          "metrics": {
+            "stage": {
+              "left": 0,
+              "top": 227.53125,
+              "right": 390,
+              "bottom": 527.53125,
+              "width": 390,
+              "height": 300
+            },
+            "batter": {
+              "left": -15.59375,
+              "top": 345.203125,
+              "right": 167.703125,
+              "bottom": 528.5,
+              "width": 183.296875,
+              "height": 183.296875
+            },
+            "pitcher": {
+              "left": 237.890625,
+              "top": 363.578125,
+              "right": 393.890625,
+              "bottom": 519.578125,
+              "width": 156,
+              "height": 156
+            },
+            "art": {
+              "left": -33.921875,
+              "top": 327.71875,
+              "right": 186.03125,
+              "bottom": 547.671875,
+              "width": 219.953125,
+              "height": 219.953125
+            },
+            "pose": "trigger",
+            "naturalWidth": 192,
+            "naturalHeight": 192
+          },
+          "pageErrors": []
+        },
+        "swing-start": {
+          "metrics": {
+            "stage": {
+              "left": 0,
+              "top": 227.53125,
+              "right": 390,
+              "bottom": 527.53125,
+              "width": 390,
+              "height": 300
+            },
+            "batter": {
+              "left": -15.59375,
+              "top": 345.203125,
+              "right": 167.703125,
+              "bottom": 528.5,
+              "width": 183.296875,
+              "height": 183.296875
+            },
+            "pitcher": {
+              "left": 237.890625,
+              "top": 363.578125,
+              "right": 393.890625,
+              "bottom": 519.578125,
+              "width": 156,
+              "height": 156
+            },
+            "art": {
+              "left": -33.921875,
+              "top": 327.46875,
+              "right": 186.03125,
+              "bottom": 547.421875,
+              "width": 219.953125,
+              "height": 219.953125
+            },
+            "pose": "swing-start",
+            "naturalWidth": 192,
+            "naturalHeight": 192
+          },
+          "pageErrors": []
+        },
+        "contact": {
+          "metrics": {
+            "stage": {
+              "left": 0,
+              "top": 227.53125,
+              "right": 390,
+              "bottom": 527.53125,
+              "width": 390,
+              "height": 300
+            },
+            "batter": {
+              "left": -15.59375,
+              "top": 345.203125,
+              "right": 167.703125,
+              "bottom": 528.5,
+              "width": 183.296875,
+              "height": 183.296875
+            },
+            "pitcher": {
+              "left": 237.890625,
+              "top": 363.578125,
+              "right": 393.890625,
+              "bottom": 519.578125,
+              "width": 156,
+              "height": 156
+            },
+            "art": {
+              "left": -33.921875,
+              "top": 327.21875,
+              "right": 186.03125,
+              "bottom": 547.171875,
+              "width": 219.953125,
+              "height": 219.953125
+            },
+            "pose": "contact",
+            "naturalWidth": 192,
+            "naturalHeight": 192
+          },
+          "pageErrors": []
+        },
+        "follow-through-early": {
+          "metrics": {
+            "stage": {
+              "left": 0,
+              "top": 227.53125,
+              "right": 390,
+              "bottom": 527.53125,
+              "width": 390,
+              "height": 300
+            },
+            "batter": {
+              "left": -15.59375,
+              "top": 345.203125,
+              "right": 167.703125,
+              "bottom": 528.5,
+              "width": 183.296875,
+              "height": 183.296875
+            },
+            "pitcher": {
+              "left": 237.890625,
+              "top": 363.578125,
+              "right": 393.890625,
+              "bottom": 519.578125,
+              "width": 156,
+              "height": 156
+            },
+            "art": {
+              "left": -33.921875,
+              "top": 327.46875,
+              "right": 186.03125,
+              "bottom": 547.421875,
+              "width": 219.953125,
+              "height": 219.953125
+            },
+            "pose": "follow-through-early",
+            "naturalWidth": 192,
+            "naturalHeight": 192
+          },
+          "pageErrors": []
+        },
+        "finish": {
+          "metrics": {
+            "stage": {
+              "left": 0,
+              "top": 227.53125,
+              "right": 390,
+              "bottom": 527.53125,
+              "width": 390,
+              "height": 300
+            },
+            "batter": {
+              "left": -15.59375,
+              "top": 345.203125,
+              "right": 167.703125,
+              "bottom": 528.5,
+              "width": 183.296875,
+              "height": 183.296875
+            },
+            "pitcher": {
+              "left": 237.890625,
+              "top": 363.578125,
+              "right": 393.890625,
+              "bottom": 519.578125,
+              "width": 156,
+              "height": 156
+            },
+            "art": {
+              "left": -33.921875,
+              "top": 327.21875,
+              "right": 186.03125,
+              "bottom": 547.171875,
+              "width": 219.953125,
+              "height": 219.953125
+            },
+            "pose": "finish",
+            "naturalWidth": 192,
+            "naturalHeight": 192
+          },
+          "pageErrors": []
+        },
+        "settle": {
+          "metrics": {
+            "stage": {
+              "left": 0,
+              "top": 227.53125,
+              "right": 390,
+              "bottom": 527.53125,
+              "width": 390,
+              "height": 300
+            },
+            "batter": {
+              "left": -15.59375,
+              "top": 345.203125,
+              "right": 167.703125,
+              "bottom": 528.5,
+              "width": 183.296875,
+              "height": 183.296875
+            },
+            "pitcher": {
+              "left": 237.890625,
+              "top": 363.578125,
+              "right": 393.890625,
+              "bottom": 519.578125,
+              "width": 156,
+              "height": 156
+            },
+            "art": {
+              "left": -33.921875,
+              "top": 327.46875,
+              "right": 186.03125,
+              "bottom": 547.421875,
+              "width": 219.953125,
+              "height": 219.953125
+            },
+            "pose": "settle",
+            "naturalWidth": 192,
+            "naturalHeight": 192
+          },
+          "pageErrors": []
+        }
+      },
+      "failures": []
+    },
+    {
+      "name": "844x390",
+      "width": 844,
+      "height": 390,
+      "trace": [
+        "ready",
+        "load",
+        "trigger",
+        "swing-start",
+        "contact",
+        "follow-through-early",
+        "finish",
+        "settle"
+      ],
+      "traceEvents": [
+        {
+          "pose": "ready",
+          "at": 1763.5
+        },
+        {
+          "pose": "load",
+          "at": 2400.2999999999884
+        },
+        {
+          "pose": "trigger",
+          "at": 2804.100000000006
+        },
+        {
+          "pose": "swing-start",
+          "at": 3021.2999999999884
+        },
+        {
+          "pose": "contact",
+          "at": 3023
+        },
+        {
+          "pose": "follow-through-early",
+          "at": 3285.7999999999884
+        },
+        {
+          "pose": "finish",
+          "at": 3504.399999999994
+        },
+        {
+          "pose": "settle",
+          "at": 3702.600000000006
+        }
+      ],
+      "dwell": [
+        {
+          "pose": "ready",
+          "ms": 637
+        },
+        {
+          "pose": "load",
+          "ms": 404
+        },
+        {
+          "pose": "trigger",
+          "ms": 217
+        },
+        {
+          "pose": "swing-start",
+          "ms": 2
+        },
+        {
+          "pose": "contact",
+          "ms": 263
+        },
+        {
+          "pose": "follow-through-early",
+          "ms": 219
+        },
+        {
+          "pose": "finish",
+          "ms": 198
+        }
+      ],
+      "dynamicMetrics": {
+        "pose": "settle",
+        "naturalWidth": 192,
+        "naturalHeight": 192,
+        "standinCount": 0,
+        "rendererStatus": "WEBGL2 ACTIVE"
+      },
+      "captures": {
+        "ready": {
+          "metrics": {
+            "stage": {
+              "left": 0,
+              "top": 0,
+              "right": 844,
+              "bottom": 455.75,
+              "width": 844,
+              "height": 455.75
+            },
+            "batter": {
+              "left": 50.625,
+              "top": 222.3125,
+              "right": 270.0625,
+              "bottom": 441.75,
+              "width": 219.4375,
+              "height": 219.4375
+            },
+            "pitcher": {
+              "left": 582.375,
+              "top": 222.3125,
+              "right": 801.8125,
+              "bottom": 441.75,
+              "width": 219.4375,
+              "height": 219.4375
+            },
+            "art": {
+              "left": 37.46875,
+              "top": 207.40625,
+              "right": 283.234375,
+              "bottom": 453.171875,
+              "width": 245.765625,
+              "height": 245.765625
+            },
+            "pose": "ready",
+            "naturalWidth": 192,
+            "naturalHeight": 192
+          },
+          "pageErrors": []
+        },
+        "load": {
+          "metrics": {
+            "stage": {
+              "left": 0,
+              "top": 0,
+              "right": 844,
+              "bottom": 455.75,
+              "width": 844,
+              "height": 455.75
+            },
+            "batter": {
+              "left": 50.625,
+              "top": 222.3125,
+              "right": 270.0625,
+              "bottom": 441.75,
+              "width": 219.4375,
+              "height": 219.4375
+            },
+            "pitcher": {
+              "left": 582.375,
+              "top": 222.3125,
+              "right": 801.8125,
+              "bottom": 441.75,
+              "width": 219.4375,
+              "height": 219.4375
+            },
+            "art": {
+              "left": 37.46875,
+              "top": 207.40625,
+              "right": 283.234375,
+              "bottom": 453.171875,
+              "width": 245.765625,
+              "height": 245.765625
+            },
+            "pose": "load",
+            "naturalWidth": 192,
+            "naturalHeight": 192
+          },
+          "pageErrors": []
+        },
+        "trigger": {
+          "metrics": {
+            "stage": {
+              "left": 0,
+              "top": 0,
+              "right": 844,
+              "bottom": 455.75,
+              "width": 844,
+              "height": 455.75
+            },
+            "batter": {
+              "left": 50.625,
+              "top": 222.3125,
+              "right": 270.0625,
+              "bottom": 441.75,
+              "width": 219.4375,
+              "height": 219.4375
+            },
+            "pitcher": {
+              "left": 582.375,
+              "top": 222.3125,
+              "right": 801.8125,
+              "bottom": 441.75,
+              "width": 219.4375,
+              "height": 219.4375
+            },
+            "art": {
+              "left": 37.46875,
+              "top": 207.40625,
+              "right": 283.234375,
+              "bottom": 453.171875,
+              "width": 245.765625,
+              "height": 245.765625
+            },
+            "pose": "trigger",
+            "naturalWidth": 192,
+            "naturalHeight": 192
+          },
+          "pageErrors": []
+        },
+        "swing-start": {
+          "metrics": {
+            "stage": {
+              "left": 0,
+              "top": 0,
+              "right": 844,
+              "bottom": 455.75,
+              "width": 844,
+              "height": 455.75
+            },
+            "batter": {
+              "left": 50.625,
+              "top": 222.3125,
+              "right": 270.0625,
+              "bottom": 441.75,
+              "width": 219.4375,
+              "height": 219.4375
+            },
+            "pitcher": {
+              "left": 582.375,
+              "top": 222.3125,
+              "right": 801.8125,
+              "bottom": 441.75,
+              "width": 219.4375,
+              "height": 219.4375
+            },
+            "art": {
+              "left": 37.46875,
+              "top": 207.90625,
+              "right": 283.234375,
+              "bottom": 453.671875,
+              "width": 245.765625,
+              "height": 245.765625
+            },
+            "pose": "swing-start",
+            "naturalWidth": 192,
+            "naturalHeight": 192
+          },
+          "pageErrors": []
+        },
+        "contact": {
+          "metrics": {
+            "stage": {
+              "left": 0,
+              "top": 0,
+              "right": 844,
+              "bottom": 455.75,
+              "width": 844,
+              "height": 455.75
+            },
+            "batter": {
+              "left": 50.625,
+              "top": 222.3125,
+              "right": 270.0625,
+              "bottom": 441.75,
+              "width": 219.4375,
+              "height": 219.4375
+            },
+            "pitcher": {
+              "left": 582.375,
+              "top": 222.3125,
+              "right": 801.8125,
+              "bottom": 441.75,
+              "width": 219.4375,
+              "height": 219.4375
+            },
+            "art": {
+              "left": 37.46875,
+              "top": 207.40625,
+              "right": 283.234375,
+              "bottom": 453.171875,
+              "width": 245.765625,
+              "height": 245.765625
+            },
+            "pose": "contact",
+            "naturalWidth": 192,
+            "naturalHeight": 192
+          },
+          "pageErrors": []
+        },
+        "follow-through-early": {
+          "metrics": {
+            "stage": {
+              "left": 0,
+              "top": 0,
+              "right": 844,
+              "bottom": 455.75,
+              "width": 844,
+              "height": 455.75
+            },
+            "batter": {
+              "left": 50.625,
+              "top": 222.3125,
+              "right": 270.0625,
+              "bottom": 441.75,
+              "width": 219.4375,
+              "height": 219.4375
+            },
+            "pitcher": {
+              "left": 582.375,
+              "top": 222.3125,
+              "right": 801.8125,
+              "bottom": 441.75,
+              "width": 219.4375,
+              "height": 219.4375
+            },
+            "art": {
+              "left": 37.46875,
+              "top": 207.15625,
+              "right": 283.234375,
+              "bottom": 452.921875,
+              "width": 245.765625,
+              "height": 245.765625
+            },
+            "pose": "follow-through-early",
+            "naturalWidth": 192,
+            "naturalHeight": 192
+          },
+          "pageErrors": []
+        },
+        "finish": {
+          "metrics": {
+            "stage": {
+              "left": 0,
+              "top": 0,
+              "right": 844,
+              "bottom": 455.75,
+              "width": 844,
+              "height": 455.75
+            },
+            "batter": {
+              "left": 50.625,
+              "top": 222.3125,
+              "right": 270.0625,
+              "bottom": 441.75,
+              "width": 219.4375,
+              "height": 219.4375
+            },
+            "pitcher": {
+              "left": 582.375,
+              "top": 222.3125,
+              "right": 801.8125,
+              "bottom": 441.75,
+              "width": 219.4375,
+              "height": 219.4375
+            },
+            "art": {
+              "left": 37.46875,
+              "top": 207.15625,
+              "right": 283.234375,
+              "bottom": 452.921875,
+              "width": 245.765625,
+              "height": 245.765625
+            },
+            "pose": "finish",
+            "naturalWidth": 192,
+            "naturalHeight": 192
+          },
+          "pageErrors": []
+        },
+        "settle": {
+          "metrics": {
+            "stage": {
+              "left": 0,
+              "top": 0,
+              "right": 844,
+              "bottom": 455.75,
+              "width": 844,
+              "height": 455.75
+            },
+            "batter": {
+              "left": 50.625,
+              "top": 222.3125,
+              "right": 270.0625,
+              "bottom": 441.75,
+              "width": 219.4375,
+              "height": 219.4375
+            },
+            "pitcher": {
+              "left": 582.375,
+              "top": 222.3125,
+              "right": 801.8125,
+              "bottom": 441.75,
+              "width": 219.4375,
+              "height": 219.4375
+            },
+            "art": {
+              "left": 37.46875,
+              "top": 207.40625,
+              "right": 283.234375,
+              "bottom": 453.171875,
+              "width": 245.765625,
+              "height": 245.765625
+            },
+            "pose": "settle",
+            "naturalWidth": 192,
+            "naturalHeight": 192
+          },
+          "pageErrors": []
+        }
+      },
+      "failures": []
+    },
+    {
+      "name": "1440x900",
+      "width": 1440,
+      "height": 900,
+      "trace": [
+        "ready",
+        "load",
+        "trigger",
+        "swing-start",
+        "contact",
+        "follow-through-early",
+        "finish",
+        "settle"
+      ],
+      "traceEvents": [
+        {
+          "pose": "ready",
+          "at": 1342.899999999965
+        },
+        {
+          "pose": "load",
+          "at": 2372.7999999999884
+        },
+        {
+          "pose": "trigger",
+          "at": 2742.2999999999884
+        },
+        {
+          "pose": "swing-start",
+          "at": 3105.2999999999884
+        },
+        {
+          "pose": "contact",
+          "at": 3158.6999999999534
+        },
+        {
+          "pose": "follow-through-early",
+          "at": 3545.0999999999767
+        },
+        {
+          "pose": "finish",
+          "at": 3772.399999999965
+        },
+        {
+          "pose": "settle",
+          "at": 4082.5999999999767
+        }
+      ],
+      "dwell": [
+        {
+          "pose": "ready",
+          "ms": 1030
+        },
+        {
+          "pose": "load",
+          "ms": 370
+        },
+        {
+          "pose": "trigger",
+          "ms": 363
+        },
+        {
+          "pose": "swing-start",
+          "ms": 53
+        },
+        {
+          "pose": "contact",
+          "ms": 386
+        },
+        {
+          "pose": "follow-through-early",
+          "ms": 227
+        },
+        {
+          "pose": "finish",
+          "ms": 310
+        }
+      ],
+      "dynamicMetrics": {
+        "pose": "settle",
+        "naturalWidth": 192,
+        "naturalHeight": 192,
+        "standinCount": 0,
+        "rendererStatus": "WEBGL2 ACTIVE"
+      },
+      "captures": {
+        "ready": {
+          "metrics": {
+            "stage": {
+              "left": 0,
+              "top": 169.5,
+              "right": 1440,
+              "bottom": 649.5,
+              "width": 1440,
+              "height": 480
+            },
+            "batter": {
+              "left": 86.390625,
+              "top": 375.5,
+              "right": 346.390625,
+              "bottom": 635.5,
+              "width": 260,
+              "height": 260
+            },
+            "pitcher": {
+              "left": 1108,
+              "top": 375.5,
+              "right": 1368,
+              "bottom": 635.5,
+              "width": 260,
+              "height": 260
+            },
+            "art": {
+              "left": 68.203125,
+              "top": 356.3125,
+              "right": 364.59375,
+              "bottom": 652.703125,
+              "width": 296.390625,
+              "height": 296.390625
+            },
+            "pose": "ready",
+            "naturalWidth": 192,
+            "naturalHeight": 192
+          },
+          "pageErrors": []
+        },
+        "load": {
+          "metrics": {
+            "stage": {
+              "left": 0,
+              "top": 169.5,
+              "right": 1440,
+              "bottom": 649.5,
+              "width": 1440,
+              "height": 480
+            },
+            "batter": {
+              "left": 86.390625,
+              "top": 375.5,
+              "right": 346.390625,
+              "bottom": 635.5,
+              "width": 260,
+              "height": 260
+            },
+            "pitcher": {
+              "left": 1108,
+              "top": 375.5,
+              "right": 1368,
+              "bottom": 635.5,
+              "width": 260,
+              "height": 260
+            },
+            "art": {
+              "left": 68.203125,
+              "top": 355.5625,
+              "right": 364.59375,
+              "bottom": 651.953125,
+              "width": 296.390625,
+              "height": 296.390625
+            },
+            "pose": "load",
+            "naturalWidth": 192,
+            "naturalHeight": 192
+          },
+          "pageErrors": []
+        },
+        "trigger": {
+          "metrics": {
+            "stage": {
+              "left": 0,
+              "top": 169.5,
+              "right": 1440,
+              "bottom": 649.5,
+              "width": 1440,
+              "height": 480
+            },
+            "batter": {
+              "left": 86.390625,
+              "top": 375.5,
+              "right": 346.390625,
+              "bottom": 635.5,
+              "width": 260,
+              "height": 260
+            },
+            "pitcher": {
+              "left": 1108,
+              "top": 375.5,
+              "right": 1368,
+              "bottom": 635.5,
+              "width": 260,
+              "height": 260
+            },
+            "art": {
+              "left": 68.203125,
+              "top": 355.3125,
+              "right": 364.59375,
+              "bottom": 651.703125,
+              "width": 296.390625,
+              "height": 296.390625
+            },
+            "pose": "trigger",
+            "naturalWidth": 192,
+            "naturalHeight": 192
+          },
+          "pageErrors": []
+        },
+        "swing-start": {
+          "metrics": {
+            "stage": {
+              "left": 0,
+              "top": 169.5,
+              "right": 1440,
+              "bottom": 649.5,
+              "width": 1440,
+              "height": 480
+            },
+            "batter": {
+              "left": 86.390625,
+              "top": 375.5,
+              "right": 346.390625,
+              "bottom": 635.5,
+              "width": 260,
+              "height": 260
+            },
+            "pitcher": {
+              "left": 1108,
+              "top": 375.5,
+              "right": 1368,
+              "bottom": 635.5,
+              "width": 260,
+              "height": 260
+            },
+            "art": {
+              "left": 68.203125,
+              "top": 355.5625,
+              "right": 364.59375,
+              "bottom": 651.953125,
+              "width": 296.390625,
+              "height": 296.390625
+            },
+            "pose": "swing-start",
+            "naturalWidth": 192,
+            "naturalHeight": 192
+          },
+          "pageErrors": []
+        },
+        "contact": {
+          "metrics": {
+            "stage": {
+              "left": 0,
+              "top": 169.5,
+              "right": 1440,
+              "bottom": 649.5,
+              "width": 1440,
+              "height": 480
+            },
+            "batter": {
+              "left": 86.390625,
+              "top": 375.5,
+              "right": 346.390625,
+              "bottom": 635.5,
+              "width": 260,
+              "height": 260
+            },
+            "pitcher": {
+              "left": 1108,
+              "top": 375.5,
+              "right": 1368,
+              "bottom": 635.5,
+              "width": 260,
+              "height": 260
+            },
+            "art": {
+              "left": 68.203125,
+              "top": 355.8125,
+              "right": 364.59375,
+              "bottom": 652.203125,
+              "width": 296.390625,
+              "height": 296.390625
+            },
+            "pose": "contact",
+            "naturalWidth": 192,
+            "naturalHeight": 192
+          },
+          "pageErrors": []
+        },
+        "follow-through-early": {
+          "metrics": {
+            "stage": {
+              "left": 0,
+              "top": 169.5,
+              "right": 1440,
+              "bottom": 649.5,
+              "width": 1440,
+              "height": 480
+            },
+            "batter": {
+              "left": 86.390625,
+              "top": 375.5,
+              "right": 346.390625,
+              "bottom": 635.5,
+              "width": 260,
+              "height": 260
+            },
+            "pitcher": {
+              "left": 1108,
+              "top": 375.5,
+              "right": 1368,
+              "bottom": 635.5,
+              "width": 260,
+              "height": 260
+            },
+            "art": {
+              "left": 68.203125,
+              "top": 356.3125,
+              "right": 364.59375,
+              "bottom": 652.703125,
+              "width": 296.390625,
+              "height": 296.390625
+            },
+            "pose": "follow-through-early",
+            "naturalWidth": 192,
+            "naturalHeight": 192
+          },
+          "pageErrors": []
+        },
+        "finish": {
+          "metrics": {
+            "stage": {
+              "left": 0,
+              "top": 169.5,
+              "right": 1440,
+              "bottom": 649.5,
+              "width": 1440,
+              "height": 480
+            },
+            "batter": {
+              "left": 86.390625,
+              "top": 375.5,
+              "right": 346.390625,
+              "bottom": 635.5,
+              "width": 260,
+              "height": 260
+            },
+            "pitcher": {
+              "left": 1108,
+              "top": 375.5,
+              "right": 1368,
+              "bottom": 635.5,
+              "width": 260,
+              "height": 260
+            },
+            "art": {
+              "left": 68.203125,
+              "top": 355.3125,
+              "right": 364.59375,
+              "bottom": 651.703125,
+              "width": 296.390625,
+              "height": 296.390625
+            },
+            "pose": "finish",
+            "naturalWidth": 192,
+            "naturalHeight": 192
+          },
+          "pageErrors": []
+        },
+        "settle": {
+          "metrics": {
+            "stage": {
+              "left": 0,
+              "top": 169.5,
+              "right": 1440,
+              "bottom": 649.5,
+              "width": 1440,
+              "height": 480
+            },
+            "batter": {
+              "left": 86.390625,
+              "top": 375.5,
+              "right": 346.390625,
+              "bottom": 635.5,
+              "width": 260,
+              "height": 260
+            },
+            "pitcher": {
+              "left": 1108,
+              "top": 375.5,
+              "right": 1368,
+              "bottom": 635.5,
+              "width": 260,
+              "height": 260
+            },
+            "art": {
+              "left": 68.203125,
+              "top": 355.3125,
+              "right": 364.59375,
+              "bottom": 651.703125,
+              "width": 296.390625,
+              "height": 296.390625
+            },
+            "pose": "settle",
+            "naturalWidth": 192,
+            "naturalHeight": 192
+          },
+          "pageErrors": []
+        }
+      },
+      "failures": []
+    }
+  ]
+}
