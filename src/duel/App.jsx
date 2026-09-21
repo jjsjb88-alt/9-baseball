@@ -249,7 +249,9 @@ function useBatterMotionV2Pose(stage,shot,playToken,enabled){
   const clear=()=>{if(timer.current!=null)clearTimeout(timer.current);timer.current=null;};
   useEffect(()=>{
     clear();
-    if(!enabled||!shot){setPose('ready');return clear;}
+    // CinemaLab always has a selected shot even while idle. Only a live stage
+    // starts the chain; playToken restarts it on every replay.
+    if(!enabled||!shot||!stage){setPose('ready');return clear;}
     const timeline=batterMotionV2Timeline(shot);
     setPose(timeline[0]?.pose||'ready');
     // Schedule one authored pose at a time. Absolute timers can all become due
@@ -270,11 +272,6 @@ function useBatterMotionV2Pose(stage,shot,playToken,enabled){
     schedule(1);
     return clear;
   },[enabled,playToken,shot?.grade,shot?.motion?.impactAt,shot?.motion?.settleAt,shot?.motion?.duration,shot?.motion?.freeze,shot?.motion?.slowmo]);
-  useEffect(()=>{
-    if(!enabled||stage)return;
-    clear();
-    setPose('ready');
-  },[enabled,stage,playToken]);
   return pose;
 }
 function Sprite({who,stage=null,shot=null,golden=false,variant=null,playToken=0}){
