@@ -265,9 +265,12 @@ function useBatterMotionV2Pose(stage,shot,playToken,enabled){
 function Sprite({who,stage=null,shot=null,golden=false,variant=null,playToken=0}){
   const rebootEnabled=golden&&who==='batter';
   const rebootPose=useBatterMotionV2Pose(stage,shot,playToken,rebootEnabled);
+  const qaPose=rebootEnabled&&typeof window!=='undefined'&&new URLSearchParams(window.location.search).get('cinema')==='1'
+    ?new URLSearchParams(window.location.search).get('batterPose'):null;
+  const displayedRebootPose=qaPose&&BATTER_REBOOT_V2[qaPose]?qaPose:rebootPose;
   if(rebootEnabled){
-    const rebootSrc=BATTER_REBOOT_V2[rebootPose]||BATTER_REBOOT_V2.ready;
-    return <span data-batter-pose={rebootPose} className={'sprite-stage sprite-batter golden-actor batter-reboot-v2 reboot-pose-'+rebootPose}>
+    const rebootSrc=BATTER_REBOOT_V2[displayedRebootPose]||BATTER_REBOOT_V2.ready;
+    return <span data-batter-pose={displayedRebootPose} className={'sprite-stage sprite-batter golden-actor batter-reboot-v2 reboot-pose-'+displayedRebootPose}>
       <i className="actor-contact-shadow" aria-hidden="true"/>
       <img aria-hidden="true" className="duel-sprite batter-reboot-art" src={rebootSrc}/>
     </span>;
