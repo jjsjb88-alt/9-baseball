@@ -245,14 +245,29 @@ function v4SheetFor(who,shot){
 }
 function useBatterMotionV2Pose(stage,shot,playToken,enabled){
   const [pose,setPose]=useState('ready');
-  const timers=useRef([]);
-  const clear=()=>{timers.current.forEach(clearTimeout);timers.current=[];};
+  const timer=useRef(null);
+  const clear=()=>{if(timer.current!=null)clearTimeout(timer.current);timer.current=null;};
   useEffect(()=>{
     clear();
     if(!enabled||!shot){setPose('ready');return clear;}
     const timeline=batterMotionV2Timeline(shot);
     setPose(timeline[0]?.pose||'ready');
-    timers.current=timeline.slice(1).map(keyframe=>setTimeout(()=>setPose(keyframe.pose),keyframe.at));
+    // Schedule one authored pose at a time. Absolute timers can all become due
+    // during a busy WebGL frame and React will collapse them to the last state.
+    // Chaining preserves every authored silhouette; lag stretches the motion
+    // rather than silently deleting load/swing-start/follow-through frames.
+    const schedule=index=>{
+      if(index>=timeline.length)return;
+      const previous=timeline[index-1]||timeline[0];
+      const keyframe=timeline[index];
+      const delay=Math.max(24,keyframe.at-previous.at);
+      timer.current=setTimeout(()=>{
+        setPose(keyframe.pose);
+        timer.current=null;
+        schedule(index+1);
+      },delay);
+    };
+    schedule(1);
     return clear;
   },[enabled,playToken,shot?.grade,shot?.motion?.impactAt,shot?.motion?.settleAt,shot?.motion?.duration,shot?.motion?.freeze,shot?.motion?.slowmo]);
   useEffect(()=>{
