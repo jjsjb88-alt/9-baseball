@@ -1,0 +1,78 @@
+name: Batter Asset Loop QA
+
+on:
+  push:
+    branches:
+      - codex/batter-asset-loop-v1
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-and-capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out batter asset loop
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests
+        run: pnpm test
+
+      - name: Run smoke reports
+        run: |
+          node scripts/zone-report.js 10
+          node scripts/v9-report.js 30
+          node scripts/growth-report.js 2
+          node scripts/deck-report.js 1
+
+      - name: Build production bundle
+        env:
+          VITE_BASE: /
+        run: pnpm run build
+
+      - name: Install Playwright for visual QA
+        run: |
+          pnpm add -D playwright@1.55.0 --ignore-workspace-root-check --lockfile=false
+          pnpm exec playwright install --with-deps chromium
+
+      - name: Start preview server
+        env:
+          VITE_BASE: /
+        run: |
+          nohup pnpm run preview -- --host 127.0.0.1 --port 4173 > /tmp/batter-preview.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/batter-preview.log
+          exit 1
+
+      - name: Capture required viewports
+        env:
+          BASE_URL: http://127.0.0.1:4173/
+          QA_OUT: qa/batter-asset-loop-v1
+        run: node scripts/capture-batter-asset-loop.mjs
+
+      - name: Upload batter QA captures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: batter-asset-loop-v1-captures
+          path: qa/batter-asset-loop-v1
+          if-no-files-found: warn
