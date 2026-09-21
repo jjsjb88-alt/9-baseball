@@ -7,6 +7,9 @@ on:
     paths:
       - src/duel/App.jsx
       - src/duel/batterMotionV2.js
+      - src/duel/golden-master.css
+      - tests/main-batter-standin.test.js
+      - tests/duel-ui.test.jsx
       - scripts/generate-batter-motion-v2.py
       - scripts/capture-batter-motion-v2.mjs
       - tests/batter-motion-v2.test.js
