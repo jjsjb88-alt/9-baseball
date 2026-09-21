@@ -44,6 +44,12 @@ jobs:
           ref: codex/gm12-batter-golden-master-redraw
           path: gm12-src
 
+      - name: Check out batter V1 preview
+        uses: actions/checkout@v6
+        with:
+          ref: codex/batter-asset-loop-v1
+          path: batter-v1-src
+
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -76,15 +82,25 @@ jobs:
           pnpm install --frozen-lockfile
           pnpm run build
 
+      - name: Build batter V1 preview subpath
+        working-directory: batter-v1-src
+        env:
+          VITE_BASE: /9-baseball/batter-v1/
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run build
+
       - name: Compose stable root plus previews
         run: |
-          mkdir -p site/preview site/gm12
+          mkdir -p site/preview site/gm12 site/batter-v1
           cp -a stable/dist/. site/
           cp -a preview-src/dist/. site/preview/
           cp -a gm12-src/dist/. site/gm12/
+          cp -a batter-v1-src/dist/. site/batter-v1/
           test -f site/index.html
           test -f site/preview/index.html
           test -f site/gm12/index.html
+          test -f site/batter-v1/index.html
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
