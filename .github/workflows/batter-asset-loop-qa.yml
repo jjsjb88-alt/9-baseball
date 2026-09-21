@@ -55,7 +55,7 @@ jobs:
         env:
           VITE_BASE: /
         run: |
-          nohup pnpm run preview -- --host 127.0.0.1 --port 4173 > /tmp/batter-preview.log 2>&1 &
+          nohup pnpm exec vite preview --host 127.0.0.1 --port 4173 > /tmp/batter-preview.log 2>&1 &
           for i in {1..40}; do
             if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
             sleep 1
