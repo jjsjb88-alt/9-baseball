@@ -53,16 +53,16 @@ for(const v of cases){
   await stage.screenshot({path:`${out}/${v.name}-arena-idle.png`});
 
   await page.locator('.cinema-selected button.primary').click();
-  await page.locator('.batter-reboot-v1.reboot-pose-trigger').waitFor({state:'visible',timeout:5000});
+  await page.waitForFunction(()=>document.querySelector('.batter-reboot-v1.reboot-pose-trigger'),null,{timeout:5000,polling:'raf'});
   await stage.scrollIntoViewIfNeeded();
   const trigger=await readMetrics();
 
-  await page.locator('.batter-reboot-v1.reboot-pose-contact').waitFor({state:'visible',timeout:5000});
+  await page.waitForFunction(()=>document.querySelector('.batter-reboot-v1.reboot-pose-contact'),null,{timeout:5000,polling:'raf'});
   const contact=await readMetrics();
   await page.screenshot({path:`${out}/${v.name}-contact.png`,fullPage:false});
   await stage.screenshot({path:`${out}/${v.name}-arena-contact.png`});
 
-  await page.locator('.batter-reboot-v1.reboot-pose-finish').waitFor({state:'visible',timeout:5000});
+  await page.waitForFunction(()=>document.querySelector('.batter-reboot-v1.reboot-pose-finish'),null,{timeout:5000,polling:'raf'});
   const finish=await readMetrics();
   await page.screenshot({path:`${out}/${v.name}-finish.png`,fullPage:false});
 
