@@ -1,0 +1,111 @@
+name: Batter V1 Preview Pages
+
+on:
+  push:
+    branches:
+      - codex/batter-asset-loop-v1
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Check out stable main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: stable
+
+      - name: Check out V9 preview
+        uses: actions/checkout@v4
+        with:
+          ref: codex/v9-deckbuilder
+          path: preview-src
+
+      - name: Check out GM12 preview
+        uses: actions/checkout@v4
+        with:
+          ref: codex/gm12-batter-golden-master-redraw
+          path: gm12-src
+
+      - name: Check out batter V1 preview
+        uses: actions/checkout@v4
+        with:
+          ref: codex/batter-asset-loop-v1
+          path: batter-src
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Build stable root
+        working-directory: stable
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run build
+
+      - name: Build V9 preview
+        working-directory: preview-src
+        env:
+          VITE_BASE: /9-baseball/preview/
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run build
+
+      - name: Build GM12 preview
+        working-directory: gm12-src
+        env:
+          VITE_BASE: /9-baseball/gm12/
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run build
+
+      - name: Build batter V1 preview
+        working-directory: batter-src
+        env:
+          VITE_BASE: /9-baseball/batter-v1/
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run build
+
+      - name: Compose Pages site
+        run: |
+          mkdir -p site/preview site/gm12 site/batter-v1
+          cp -a stable/dist/. site/
+          cp -a preview-src/dist/. site/preview/
+          cp -a gm12-src/dist/. site/gm12/
+          cp -a batter-src/dist/. site/batter-v1/
+          test -f site/index.html
+          test -f site/preview/index.html
+          test -f site/gm12/index.html
+          test -f site/batter-v1/index.html
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+
+      - name: Deploy Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
