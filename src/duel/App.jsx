@@ -52,6 +52,10 @@ import batterMissV4 from '../../assets/sprites-v4/batter-miss-60.png';
 import batterHomerV4 from '../../assets/sprites-v4/batter-homer-60.png';
 import pitcherPitchV4 from '../../assets/sprites-v4/pitcher-pitch-60.png';
 import pitcherStrikeoutV4 from '../../assets/sprites-v4/pitcher-strikeout-60.png';
+import batterRebootReady from '../../assets/batter-reboot-v1/batter-ready.png';
+import batterRebootTrigger from '../../assets/batter-reboot-v1/batter-trigger.png';
+import batterRebootContact from '../../assets/batter-reboot-v1/batter-contact.png';
+import batterRebootFinish from '../../assets/batter-reboot-v1/batter-finish.png';
 
 /* 엔진은 lastCombat.choice를 카드 kind로, actualPitch를 존 번호로 준다. 화면 문구로 옮기는 건 연결부 일이다. */
 const v10ZoneName=zone=>zone===9?'존 밖':ZONES[zone]||'코스 미확인';
@@ -118,7 +122,10 @@ const BATTER_POSES={idle:batterIdle,load:batterLoad,contact:batterContact,follow
 const PITCHER_POSES={idle:pitcherIdle,set:pitcherSet,legkick:pitcherLegkick,release:pitcherRelease,follow:pitcherFollow,strikeout:pitcherStrikeout};
 const PITCHER_RELEASE_V3={sinker:pitcherSinkerReleaseV3,high:pitcherHighReleaseV3,closer:pitcherCloserReleaseV3};
 const BATTER_HERO_V5={idle:batterIdleHeroV5,contact:batterContactHeroV5,homer:batterHomerHeroV5,miss:batterMissHeroV5};
-const ACTOR_ASSETS=[...new Set([...BATTER_SWING_V2,...BATTER_MISS_V2,...PITCHER_PITCH_V2,...PITCHER_K_V2,batterSwingV4,pitcherPitchV4,batterHomerHeroV3,...Object.values(BATTER_HERO_V5),...Object.values(PITCHER_RELEASE_V3)])];
+const BATTER_REBOOT_V1={idle:batterRebootReady,trigger:batterRebootTrigger,contact:batterRebootContact,finish:batterRebootFinish};
+const BATTER_REBOOT_HIT_GRADES=new Set(['dead-center','solid','jammed','lucky','extra','homer','grand-slam']);
+const BATTER_REBOOT_MISS_GRADES=new Set(['near-miss','near-miss-k','chase','chase-k','fooled','strikeout']);
+const ACTOR_ASSETS=[...new Set([...BATTER_SWING_V2,...BATTER_MISS_V2,...PITCHER_PITCH_V2,...PITCHER_K_V2,batterSwingV4,pitcherPitchV4,batterHomerHeroV3,...Object.values(BATTER_HERO_V5),...Object.values(BATTER_REBOOT_V1),...Object.values(PITCHER_RELEASE_V3)])];
 function useActorAssetPreload(){
   useEffect(()=>{
     if(typeof Image==='undefined')return;
@@ -224,18 +231,22 @@ function v4SheetFor(who,shot){
   const homer=['homer','grand-slam'].includes(shot.grade);
   return homer?batterHomerV4:miss?batterMissV4:batterSwingV4;
 }
+export const batterRebootPoseFor=(stage,shot)=>{
+  if(!shot)return 'idle';
+  const grade=shot.grade||'';
+  if(stage==='windup')return 'trigger';
+  if(BATTER_REBOOT_HIT_GRADES.has(grade)&&['impact','slowmo'].includes(stage))return 'contact';
+  if(BATTER_REBOOT_HIT_GRADES.has(grade)&&['release','settle'].includes(stage))return 'finish';
+  if(BATTER_REBOOT_MISS_GRADES.has(grade)&&['impact','slowmo','release','settle'].includes(stage))return 'trigger';
+  return 'idle';
+};
 function Sprite({who,stage=null,shot=null,golden=false,variant=null,playToken=0}){
   if(golden&&who==='batter'){
-    const standinStage=stage||'idle',standinGrade=shot?.grade||'idle';
-    return <span className={'sprite-stage sprite-batter golden-actor batter-standin standin-stage-'+standinStage+' standin-grade-'+standinGrade}>
+    const rebootPose=batterRebootPoseFor(stage,shot);
+    const rebootSrc=BATTER_REBOOT_V1[rebootPose]||BATTER_REBOOT_V1.idle;
+    return <span className={'sprite-stage sprite-batter golden-actor batter-reboot-v1 reboot-pose-'+rebootPose}>
       <i className="actor-contact-shadow" aria-hidden="true"/>
-      <span className="batter-presence" aria-hidden="true">
-        <i className="presence-box"/>
-        <i className="presence-plate"/>
-        <i className="presence-bat"/>
-        <i className="presence-contact"/>
-        <b>AT BAT</b>
-      </span>
+      <img aria-hidden="true" className="duel-sprite batter-reboot-art" src={rebootSrc}/>
     </span>;
   }
   const pose=actorPose(who,stage,shot),v4Sheet=golden&&stage? v4SheetFor(who,shot):null;
