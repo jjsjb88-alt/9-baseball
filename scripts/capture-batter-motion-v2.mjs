@@ -9,7 +9,8 @@ const viewports=[
   {name:'1440x900',width:1440,height:900},
 ];
 const required=['ready','load','trigger','swing-start','contact','follow-through-early','finish','settle'];
-const capturePoses=['ready','swing-start','contact','finish'];
+const capturePoses=[...required];
+const fullPagePoses=new Set(['ready','swing-start','contact','finish']);
 
 await fs.mkdir(out,{recursive:true});
 const browser=await chromium.launch({headless:true});
@@ -28,19 +29,24 @@ for(const viewport of viewports){
   await dynamic.locator('.batter-reboot-v2.reboot-pose-ready .batter-reboot-art').waitFor({state:'visible',timeout:10000});
   await dynamic.evaluate(()=>{
     const root=document.querySelector('.batter-reboot-v2');
-    window.__batterPoseTrace=[root?.dataset?.batterPose||'ready'];
+    window.__batterPoseTrace=[{pose:root?.dataset?.batterPose||'ready',at:performance.now()}];
     const observer=new MutationObserver(()=>{
       const pose=root?.dataset?.batterPose;
-      if(pose&&window.__batterPoseTrace.at(-1)!==pose)window.__batterPoseTrace.push(pose);
+      if(pose&&window.__batterPoseTrace.at(-1)?.pose!==pose)window.__batterPoseTrace.push({pose,at:performance.now()});
     });
     if(root)observer.observe(root,{attributes:true,attributeFilter:['class','data-batter-pose']});
     window.__batterPoseObserver=observer;
   });
   await dynamic.locator('.cinema-selected button.primary').click();
-  await dynamic.waitForFunction(()=>window.__batterPoseTrace?.includes('settle'),null,{timeout:8000,polling:'raf'});
+  await dynamic.waitForFunction(()=>window.__batterPoseTrace?.some(x=>x.pose==='settle'),null,{timeout:8000,polling:'raf'});
   await dynamic.waitForTimeout(80);
-  const trace=uniqueInOrder(await dynamic.evaluate(()=>window.__batterPoseTrace||[]));
-  const traceCore=trace.filter(p=>p!=='ready'||trace.indexOf(p)===0).slice(0,8);
+  const traceEvents=await dynamic.evaluate(()=>window.__batterPoseTrace||[]);
+  const trace=uniqueInOrder(traceEvents.map(x=>x.pose));
+  const traceCore=trace.slice(0,8);
+  const dwell=traceEvents.slice(0,-1).map((event,index)=>({
+    pose:event.pose,
+    ms:Math.round(traceEvents[index+1].at-event.at),
+  }));
   const dynamicMetrics=await dynamic.evaluate(()=>{
     const root=document.querySelector('.batter-reboot-v2');
     const img=document.querySelector('.batter-reboot-art');
@@ -79,7 +85,7 @@ for(const viewport of viewports){
         naturalHeight:img?.naturalHeight||0,
       };
     });
-    await page.screenshot({path:`${out}/${viewport.name}-${pose}.png`,fullPage:false});
+    if(fullPagePoses.has(pose))await page.screenshot({path:`${out}/${viewport.name}-${pose}.png`,fullPage:false});
     await qaStage.screenshot({path:`${out}/${viewport.name}-arena-${pose}.png`});
     captures[pose]={metrics,pageErrors};
     await page.close();
@@ -97,7 +103,7 @@ for(const viewport of viewports){
   }
   if(errors.length)failures.push('dynamic page errors: '+errors.join(' | '));
 
-  report.cases.push({...viewport,trace,dynamicMetrics,captures,failures});
+  report.cases.push({...viewport,trace,traceEvents,dwell,dynamicMetrics,captures,failures});
 }
 
 await browser.close();
