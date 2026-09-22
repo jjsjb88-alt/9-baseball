@@ -104,6 +104,12 @@ jobs:
           pnpm install --frozen-lockfile
           pnpm run build
 
+      - name: Generate batter V3 authored assets
+        working-directory: batter-v3-src
+        run: |
+          python3 -m pip install --disable-pip-version-check pillow opencv-python-headless scipy
+          python3 scripts/generate-batter-motion-v3.py
+
       - name: Build batter V3 preview
         working-directory: batter-v3-src
         env:
