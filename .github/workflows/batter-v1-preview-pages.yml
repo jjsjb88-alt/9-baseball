@@ -1,9 +1,10 @@
-name: Batter V1 Preview Pages
+name: Batter Motion V2 Preview Pages
 
 on:
   push:
     branches:
-      - codex/batter-asset-loop-v1
+      - codex/batter-motion-loop-v2
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -46,6 +47,12 @@ jobs:
           ref: codex/batter-asset-loop-v1
           path: batter-src
 
+      - name: Check out batter V2 preview
+        uses: actions/checkout@v4
+        with:
+          ref: codex/batter-motion-loop-v2
+          path: batter-v2-src
+
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -86,17 +93,27 @@ jobs:
           pnpm install --frozen-lockfile
           pnpm run build
 
+      - name: Build batter V2 preview
+        working-directory: batter-v2-src
+        env:
+          VITE_BASE: /9-baseball/batter-v2/
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run build
+
       - name: Compose Pages site
         run: |
-          mkdir -p site/preview site/gm12 site/batter-v1
+          mkdir -p site/preview site/gm12 site/batter-v1 site/batter-v2
           cp -a stable/dist/. site/
           cp -a preview-src/dist/. site/preview/
           cp -a gm12-src/dist/. site/gm12/
           cp -a batter-src/dist/. site/batter-v1/
+          cp -a batter-v2-src/dist/. site/batter-v2/
           test -f site/index.html
           test -f site/preview/index.html
           test -f site/gm12/index.html
           test -f site/batter-v1/index.html
+          test -f site/batter-v2/index.html
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
