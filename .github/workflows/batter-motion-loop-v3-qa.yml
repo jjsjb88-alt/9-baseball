@@ -128,6 +128,9 @@ jobs:
       - name: Persist visual QA evidence on branch
         if: success()
         run: |
+          # Playwright is installed only for this runner; do not let that
+          # temporary package.json edit block the evidence rebase/push.
+          git restore package.json pnpm-lock.yaml 2>/dev/null || true
           git add qa/batter-motion-loop-v3
           if ! git diff --cached --quiet; then
             git commit -m "qa: capture batter motion v3 key poses"
