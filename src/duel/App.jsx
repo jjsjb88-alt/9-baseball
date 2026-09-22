@@ -1,4 +1,5 @@
 import React,{useEffect,useRef,useState} from 'react';
+import {flushSync} from 'react-dom';
 import {CARDS,TYPE_NAMES,STAGES,GLOSSARY,LINEUP,BUILDS,ZONES,GROWTHS,growthCost,rewardChoices,AXES,AXIS_NAMES,ROLES,REWARD_ACTIONS,AFFINITY_CARDS,upgradeText,canUpgrade,DECK_MIN,DECK_MAX,
   READ_LEVELS,RELICS,RELIC_OFFERS,bandFor,rangeFor,shadeFor,shadeNameFor,observeScore,cardText,ZONE_ORDER,DECKBUILDER_BUILD,FACILITIES,FACILITY_ROUTES,ROUTE_CHOICES,routeChoice} from './cards.js';
 import {createDuel,startBattle,chooseRoute,battleTarget,playCard,endTurn,chooseReward,chooseFacility,facilityProblem,previewCard,readDuel,saveDuel,advanceBatter,currentBatter,advancePitch,setAimZone,coverage,publicProbabilities,pitchClue,matchup,setGrowthMode,growthProblem,readLevel,knownPitchZones} from './engine.js';
@@ -270,7 +271,10 @@ function useBatterMotionV3Pose(stage,shot,playToken,enabled){
       const keyframe=timeline[index];
       const delay=Math.max(30,keyframe.at-previous.at);
       timer.current=setTimeout(()=>{
-        setPose(keyframe.pose);
+        // React may defer DOM commits under the landscape WebGL load. Commit
+        // this sparse authored frame synchronously, then wait for a browser
+        // paint before arming the next key pose.
+        flushSync(()=>setPose(keyframe.pose));
         timer.current=null;
         raf.current=requestAnimationFrame(()=>{
           raf.current=null;
