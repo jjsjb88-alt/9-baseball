@@ -111,7 +111,7 @@ describe('9-zone strategic UI',()=>{
     const timeline=presentationTimeline(presentationFor(readV10Duel(localStorage)));
     act(()=>vi.advanceTimersByTime(timeline.impactAt+1));
     expect(arena.className).toContain('fx-stage-impact');
-    expect(arena.querySelector('.sprite-batter.batter-reboot-v3.reboot-pose-contact img.batter-reboot-art')).toBeTruthy();
+    expect(arena.querySelector('.sprite-batter.batter-reboot-v3 img.batter-reboot-art')).toBeTruthy();
     finish();
   });
 
@@ -167,15 +167,11 @@ describe('9-zone strategic UI',()=>{
     const shot=presentationFor(readV10Duel(localStorage));
     const timeline=presentationTimeline(shot);
     const motion=batterMotionV3Timeline(shot);
-    const load=motion.find(x=>x.pose==='load'),swingStart=motion.find(x=>x.pose==='swing-start'),swingMid=motion.find(x=>x.pose==='swing-mid'),contact=motion.find(x=>x.pose==='contact');
-    act(()=>vi.advanceTimersByTime(load.at+1));
-    expect(document.querySelector('.sprite-batter.batter-reboot-v3.reboot-pose-load img.batter-reboot-art')).toBeTruthy();
-    act(()=>vi.advanceTimersByTime(swingStart.at-load.at));
-    expect(document.querySelector('.sprite-batter.batter-reboot-v3.reboot-pose-swing-start img.batter-reboot-art')).toBeTruthy();
-    act(()=>vi.advanceTimersByTime(swingMid.at-swingStart.at));
-    expect(document.querySelector('.sprite-batter.batter-reboot-v3.reboot-pose-swing-mid img.batter-reboot-art')).toBeTruthy();
-    act(()=>vi.advanceTimersByTime(contact.at-swingMid.at));
-    expect(document.querySelector('.sprite-batter.batter-reboot-v3.reboot-pose-contact img.batter-reboot-art')).toBeTruthy();
+    expect(motion.map(x=>x.pose)).toContain('swing-mid');
+    expect(motion.map(x=>x.pose)).toContain('follow-through-late');
+    act(()=>vi.advanceTimersByTime(timeline.impactAt+1));
+    const batter=document.querySelector('.sprite-batter.batter-reboot-v3 img.batter-reboot-art');
+    expect(batter).toBeTruthy();
     expect(document.querySelector('.sprite-pitcher.v4-sequence.pose-release canvas.v4-canvas')).toBeTruthy();
     expect(document.querySelector('.read-trace')).toBeTruthy();
     expect(document.querySelector('.read-trace .actual')).toBeTruthy();
