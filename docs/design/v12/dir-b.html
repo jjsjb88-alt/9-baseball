@@ -1,0 +1,132 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="tokens.css"><style>
+html,body{overflow:hidden}
+body{background:#050c0b;position:relative}
+.stadium{position:absolute;inset:0;background:
+ radial-gradient(80% 40% at 50% 92%,#16382c 0%,#0b2019 46%,#050c0b 100%);filter:blur(1px)}
+.stadium:after{content:"";position:absolute;left:0;right:0;bottom:0;height:210px;
+ background:repeating-linear-gradient(90deg,rgba(255,255,255,.03) 0 22px,transparent 22px 44px)}
+/* metal board */
+.board{position:absolute;left:10px;right:10px;top:10px;bottom:172px;border-radius:8px;
+ background:linear-gradient(180deg,#1b2520,#121a17 12%,#0c1210 88%,#151d19);
+ border:2px solid #2d3a33;box-shadow:0 18px 40px rgba(0,0,0,.7),inset 0 0 0 1px #0a0f0d,
+ inset 0 2px 0 rgba(255,255,255,.05);padding:12px}
+.rivet{position:absolute;width:5px;height:5px;border-radius:50%;
+ background:radial-gradient(circle at 30% 30%,#5b6a60,#232b26)}
+/* dot-matrix header */
+.dm{height:40px;border-radius:4px;background:#070b0a;border:1px solid #1e2a25;
+ display:flex;align-items:center;padding:0 12px;gap:10px;
+ box-shadow:inset 0 0 18px rgba(255,170,60,.06)}
+.dm b.nm{font-size:var(--t-label);font-weight:800;color:#ffb347;letter-spacing:.02em;
+ text-shadow:0 0 10px rgba(255,150,40,.55)}
+.dm .count{margin-left:auto}
+.dm .cg b{color:#6b7a70}
+.dm .cg i{border-color:#26342d}
+.dm .cg i.on{background:#ffb347;border-color:#ffb347;box-shadow:0 0 8px rgba(255,150,40,.8)}
+.dm .cg.o i.on{background:#e2543e;border-color:#e2543e;box-shadow:0 0 8px rgba(226,84,62,.8)}
+/* lamp meter = HP */
+.meter{margin-top:10px;height:34px;border-radius:4px;background:#070b0a;border:1px solid #1e2a25;
+ display:flex;align-items:center;gap:3px;padding:0 8px}
+.meter i{flex:1;height:16px;border-radius:2px;background:#10201c;box-shadow:inset 0 0 6px #000}
+.meter i.on{background:linear-gradient(180deg,#7de0b4,#2f9a76);box-shadow:0 0 9px rgba(90,220,170,.6)}
+.meter i.gh{background:repeating-linear-gradient(45deg,#ffb46a 0 3px,#6b4324 3px 6px);
+ box-shadow:0 0 9px rgba(255,170,90,.55)}
+.meter i.cr{background:#3a2b1a;box-shadow:inset 0 0 0 1px #ffb46a}
+/* bulb zone */
+.zone{margin-top:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.cell{position:relative;height:104px;border-radius:5px;background:#080d0c;
+ border:1px solid #1c2823;box-shadow:inset 0 0 20px rgba(0,0,0,.7);overflow:hidden;
+ display:flex;align-items:center;justify-content:center}
+.bulbs{position:absolute;inset:8px;display:grid;grid-template-columns:repeat(4,1fr);
+ grid-template-rows:repeat(4,1fr);gap:5px}
+.bulbs i{border-radius:50%;background:#10201c;display:block}
+.cell.h1 .bulbs i{background:#1d2f22;box-shadow:0 0 4px rgba(255,170,60,.18)}
+.cell.h2 .bulbs i{background:#4a3a18;box-shadow:0 0 6px rgba(255,170,60,.4)}
+.cell.h3 .bulbs i{background:#8a6320;box-shadow:0 0 9px rgba(255,170,60,.7)}
+.cell.dead{background:#060a09;border-color:#141d19}
+.cell.dead .bulbs i{background:#0b1210;box-shadow:none}
+.cell.main{border:2px solid #ffb347;box-shadow:inset 0 0 26px rgba(255,170,60,.28),0 0 16px rgba(255,170,60,.25)}
+.cell.sup{border:1px dashed #5bd8c0;box-shadow:inset 0 0 22px rgba(90,215,190,.2)}
+.tk{position:relative;z-index:3;width:34px;height:34px;border-radius:50%;display:flex;
+ align-items:center;justify-content:center;font-size:var(--t-label);font-weight:800;
+ border:2px solid #0a100e}
+.tk.m{background:#ffb347;color:#241402;box-shadow:0 0 14px rgba(255,170,60,.7)}
+.tk.s{background:#5bd8c0;color:#04302a;box-shadow:0 0 14px rgba(90,215,190,.6)}
+.arc{position:absolute;left:12px;right:12px;top:108px;height:352px;pointer-events:none;z-index:4}
+.screen{margin-top:12px;height:158px;border-radius:5px;position:relative;overflow:hidden;
+ background:radial-gradient(70% 90% at 50% 88%,#123026 0%,#08150f 62%,#050b09 100%);
+ border:1px solid #1e2a25;box-shadow:inset 0 0 30px rgba(0,0,0,.8)}
+.screen img{position:absolute;left:50%;bottom:4px;transform:translateX(-50%);width:132px;
+ filter:drop-shadow(0 4px 8px rgba(0,0,0,.8))}
+.screen:after{content:"";position:absolute;inset:0;pointer-events:none;
+ background:repeating-linear-gradient(180deg,rgba(255,180,80,.05) 0 1px,transparent 1px 3px)}
+.screen .tagline{position:absolute;left:10px;top:9px;font-size:var(--t-micro);font-weight:800;
+ color:#ffb347;text-shadow:0 0 8px rgba(255,150,40,.6)}
+/* controls on the rail */
+.rail{position:absolute;left:10px;right:10px;bottom:150px;display:flex;gap:8px;z-index:6}
+.act{flex:1;height:40px;border-radius:5px;border:1px solid #2d3a33;
+ background:linear-gradient(180deg,#1a231e,#101713);display:flex;align-items:center;
+ justify-content:center;gap:6px;box-shadow:0 3px 0 #090d0b}
+.act.on{border-color:#ffb347;background:linear-gradient(180deg,#3a2d14,#221a0b);
+ box-shadow:0 0 16px rgba(255,170,60,.25),0 3px 0 #090d0b}
+.act span{font-size:var(--t-micro);font-weight:700;color:#9fb0a6}.act.on span{color:#ffb347}
+.act svg{width:16px;height:16px}
+/* dugout rail cards */
+.hand{position:absolute;left:0;right:0;bottom:0;height:146px;display:flex;gap:8px;
+ padding:10px 10px 12px;overflow:hidden;
+ background:linear-gradient(180deg,rgba(6,12,11,0),rgba(6,12,11,.9) 30%)}
+.c{flex:0 0 104px;border-radius:6px;padding:8px;background:linear-gradient(175deg,#e7dfc4,#c8bf9f);
+ border:1px solid #8a8165;box-shadow:0 6px 14px rgba(0,0,0,.55)}
+.c.used{filter:grayscale(.6) brightness(.7)}
+.c strong{font-size:var(--t-label);color:#1a2a2d;font-weight:800;display:block}
+.mini{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:8px}
+.mini i{aspect-ratio:1;background:#b2aa8f;border-radius:1px;display:block}
+.mini i.f{background:#1f6f60}
+</style></head><body>
+<div class="stadium"></div>
+<div class="board">
+ <i class="rivet" style="left:6px;top:6px"></i><i class="rivet" style="right:6px;top:6px"></i>
+ <i class="rivet" style="left:6px;bottom:6px"></i><i class="rivet" style="right:6px;bottom:6px"></i>
+ <div class="dm"><b class="nm">#7 강한결</b>
+  <div class="count">
+   <div class="cg"><b>B</b><i class="on"></i><i></i><i></i><i></i></div>
+   <div class="cg"><b>S</b><i class="on"></i><i></i><i></i></div>
+   <div class="cg o"><b>O</b><i class="on"></i><i></i><i></i></div>
+  </div></div>
+ <div class="meter">
+  <i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i>
+  <i class="on"></i><i class="on"></i><i class="on"></i><i class="gh"></i><i class="gh"></i>
+  <i class="cr"></i><i></i>
+ </div>
+ <div class="zone">
+  <div class="cell dead"><div class="bulbs"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+  <div class="cell h1"><div class="bulbs"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+  <div class="cell h2"><div class="bulbs"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+  <div class="cell dead"><div class="bulbs"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+  <div class="cell h2 main"><div class="bulbs"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><i class="tk m">1</i></div>
+  <div class="cell h3 sup"><div class="bulbs"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><i class="tk s">2</i></div>
+  <div class="cell h1 sup"><div class="bulbs"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><i class="tk s">3</i></div>
+  <div class="cell dead"><div class="bulbs"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+  <div class="cell h3"><div class="bulbs"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+ </div>
+ <div class="screen"><span class="tagline">유상혁 · 바깥쪽</span><img src="file:///home/user/9-baseball/assets/sprites-v2/frames/pitcher-pitch-06.png"></div>
+ <svg class="arc" viewBox="0 0 346 352">
+  <defs><filter id="gb"><feGaussianBlur stdDeviation="3.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+  <path d="M173 174 C206 162 242 164 289 174" stroke="#5bd8c0" stroke-width="7" fill="none" stroke-linecap="round" filter="url(#gb)" opacity=".95"/>
+  <path d="M173 174 C206 162 242 164 289 174" stroke="#ddfff8" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M289 174 C246 208 206 232 182 244" stroke="#a8614f" stroke-width="5" fill="none" stroke-linecap="round" opacity=".75"/>
+  <path d="M122 268 C108 272 90 274 60 276" stroke="#a8614f" stroke-width="5" fill="none" stroke-linecap="round" opacity=".75"/>
+  <circle cx="170" cy="250" r="2.5" fill="#c98a75"/><circle cx="154" cy="256" r="1.8" fill="#c98a75" opacity=".75"/><circle cx="137" cy="262" r="2" fill="#c98a75" opacity=".55"/>
+ </svg>
+</div>
+<div class="rail">
+ <div class="act"><svg viewBox="0 0 24 24" fill="none" stroke="#9fb0a6" stroke-width="1.8"><path d="M5 13c0-4 3-7 7-7s7 3 7 7v5H5z"/></svg><span>준비</span></div>
+ <div class="act on"><svg viewBox="0 0 24 24" fill="none" stroke="#ffb347" stroke-width="1.8"><path d="M4 20L17 7"/><path d="M15 5l4 4-2 2-4-4z"/></svg><span>스윙</span></div>
+ <div class="act"><svg viewBox="0 0 24 24" fill="none" stroke="#9fb0a6" stroke-width="1.8"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="2.5"/></svg><span>지켜보기</span></div>
+</div>
+<div class="hand">
+ <div class="c used"><strong>정타 노림</strong><div class="mini"><i></i><i></i><i></i><i></i><i class="f"></i><i></i><i></i><i></i><i></i></div></div>
+ <div class="c used"><strong>정타 노림</strong><div class="mini"><i></i><i></i><i></i><i></i><i></i><i class="f"></i><i></i><i></i><i></i></div></div>
+ <div class="c"><strong>밀어치기</strong><div class="mini"><i></i><i></i><i class="f"></i><i></i><i></i><i class="f"></i><i></i><i></i><i class="f"></i></div></div>
+ <div class="c"><strong>끈질긴 컨택</strong><div class="mini"><i></i><i class="f"></i><i></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i class="f"></i><i></i></div></div>
+</div>
+</body></html>
