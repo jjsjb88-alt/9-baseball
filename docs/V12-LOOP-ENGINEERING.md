@@ -4,6 +4,8 @@
 > [`V12-MASTERPIECE.md`](./V12-MASTERPIECE.md)(기획) · [`V12-UI-MASTER-SPEC.md`](./V12-UI-MASTER-SPEC.md)(규격)에 있다.
 > 지금 어디까지 왔는가는 [`V12-PROGRESS.md`](./V12-PROGRESS.md)에 있다.
 >
+> 추적 이슈 [#84](https://github.com/jjsjb88-alt/9-baseball/issues/84) · 새 세션 프롬프트 [`V12-NEW-SESSION-PROMPT.md`](./V12-NEW-SESSION-PROMPT.md)
+>
 > `loop/PROMPT.md`의 일반 규칙을 상속하되, **아래 예외와 추가 규칙이 우선한다.**
 
 ---

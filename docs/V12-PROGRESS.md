@@ -11,6 +11,8 @@
 | 현재 단계 | **P0 시작 전** |
 | 브랜치 | `claude/feedback-review-plan-vw24at` |
 | PR | [#83](https://github.com/jjsjb88-alt/9-baseball/pull/83) — 문서·시안만. 제품 코드 변경 0 |
+| 추적 이슈 | [#84](https://github.com/jjsjb88-alt/9-baseball/issues/84) |
+| 새 세션 프롬프트 | [`V12-NEW-SESSION-PROMPT.md`](./V12-NEW-SESSION-PROMPT.md) |
 | 막힌 곳 | **D1~D8 미결정.** P0은 결정 없이 진행 가능, P1부터는 D1 필요 |
 
 ## 다음 한 바퀴
