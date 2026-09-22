@@ -40,8 +40,7 @@ for(const viewport of viewports){
   await dynamic.locator('.cinema-selected button.primary').click();
   await dynamic.waitForFunction(()=>document.querySelector('.batter-reboot-v3')?.dataset?.batterPose==='swing-mid',null,{timeout:8000,polling:'raf'});
   await stage.screenshot({path:`${out}/${viewport.name}-live-swing-mid.png`});
-  await dynamic.waitForFunction(()=>document.querySelector('.batter-reboot-v3')?.dataset?.batterPose==='contact',null,{timeout:8000,polling:'raf'});
-  await stage.screenshot({path:`${out}/${viewport.name}-live-contact.png`});
+  await dynamic.waitForFunction(()=>window.__batterPoseTrace?.some(x=>x.pose==='contact'),null,{timeout:8000,polling:'raf'});
   await dynamic.waitForFunction(()=>window.__batterPoseTrace?.some(x=>x.pose==='settle'),null,{timeout:8000,polling:'raf'});
   await dynamic.waitForTimeout(80);
   const traceEvents=await dynamic.evaluate(()=>window.__batterPoseTrace||[]);
