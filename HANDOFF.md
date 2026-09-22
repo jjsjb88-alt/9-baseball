@@ -5,7 +5,13 @@
 이번 작업은 PR #83의 **문서 검수·개선**이다. 제품 코드·게임 규칙·아트·배포는 변경하지 않았다.
 검수자 권고와 사용자의 구현/배포 확정은 구별한다.
 
-읽는 순서: [검수 근거](./docs/V12-REVIEW.md) → [결정 시트](./docs/V12-DECISIONS.md) →
+**새 세션은 [`docs/V12-PROGRESS.md`](./docs/V12-PROGRESS.md)를 가장 먼저 읽는다.**
+한 바퀴를 도는 방법은 [`docs/V12-LOOP-ENGINEERING.md`](./docs/V12-LOOP-ENGINEERING.md)에 있다.
+한 바퀴 = 단계(P*) 전체가 아니라 PROGRESS의 **체크박스 한 줄**이다.
+P0은 결정 없이 지금 시작할 수 있고, P1부터는 D1이 필요하다.
+
+읽는 순서: [진행 상황](./docs/V12-PROGRESS.md) → [도는 법](./docs/V12-LOOP-ENGINEERING.md) →
+[검수 근거](./docs/V12-REVIEW.md) → [결정 시트](./docs/V12-DECISIONS.md) →
 [최상위 기획](./docs/V12-MASTERPIECE.md) → [하위 규격](./docs/V12-UI-MASTER-SPEC.md) →
 [기존 시안과 한계](./docs/design/v12/README.md).
 
