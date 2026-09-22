@@ -87,6 +87,14 @@ jobs:
       - name: Zone report 30
         run: node scripts/zone-report.js 30 | tee v12-zone-report.txt
 
+      - name: Prove zone report is unchanged from frozen pre-P0 baseline
+        shell: bash
+        run: |
+          git worktree add --detach /tmp/v12-p0-baseline a1cbf625fa558bb463999fee47998868d155fcb4
+          (cd /tmp/v12-p0-baseline && node scripts/zone-report.js 30) > v12-zone-report-baseline.txt
+          diff -u v12-zone-report-baseline.txt v12-zone-report.txt
+          git worktree remove /tmp/v12-p0-baseline
+
       - name: V12 static and engine audit
         run: node docs/design/v12/audit-static-and-engine.mjs | tee v12-audit.txt
 
@@ -122,5 +130,6 @@ jobs:
           path: |
             v12-p0-1-captures
             v12-zone-report.txt
+            v12-zone-report-baseline.txt
             v12-audit.txt
             /tmp/v12-dev.log
