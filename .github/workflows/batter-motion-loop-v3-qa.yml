@@ -16,6 +16,10 @@ on:
       - .github/workflows/batter-motion-loop-v3-qa.yml
   workflow_dispatch:
 
+concurrency:
+  group: batter-motion-loop-v3-qa
+  cancel-in-progress: true
+
 permissions:
   contents: write
 
@@ -65,6 +69,7 @@ jobs:
           git add assets/batter-reboot-v3
           if ! git diff --cached --quiet; then
             git commit -m "art: export batter motion v3 intermediate poses"
+            git pull --rebase origin codex/batter-motion-loop-v3
             git push origin HEAD:codex/batter-motion-loop-v3
           fi
 
@@ -126,6 +131,7 @@ jobs:
           git add qa/batter-motion-loop-v3
           if ! git diff --cached --quiet; then
             git commit -m "qa: capture batter motion v3 key poses"
+            git pull --rebase origin codex/batter-motion-loop-v3
             git push origin HEAD:codex/batter-motion-loop-v3
           fi
 
