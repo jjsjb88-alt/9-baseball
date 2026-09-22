@@ -28,9 +28,10 @@ describe('production batter motion loop v3',()=>{
   });
 
   it('prevents the v2 face/bat corruption mechanism in offline authoring',()=>{
-    expect(authoring).toContain('palette_bat_mask');
+    expect(authoring).toContain('protected_bat_mask');
     expect(authoring).toContain('head_layer');
     expect(authoring).toContain('pristine face/helmet wins');
+    expect(authoring).toContain('ghost-barrel residue');
     expect(authoring).not.toContain('erase_bat(');
   });
 
