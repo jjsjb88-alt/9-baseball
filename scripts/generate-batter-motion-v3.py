@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Export Batter Motion Loop V3 authored intermediates.
 
-V3 fixes the V2 failure where a broad bat erase mask could eat helmet/face pixels.
+V3 fixes both V2 face damage and the first V3 ghost-barrel residue.
 The body may still use nearest-neighbour landmark warps, but:
-- bat pixels are isolated from their own source palette and moved as a rigid layer;
+- the complete exposed bat tube is isolated as a rigid layer while face/grip regions are protected;
 - head/helmet pixels are re-overlaid from the clean source after the body warp;
 - two extra bridge poses are authored around contact to reduce the largest jumps.
 
@@ -105,30 +105,23 @@ def alpha_over(base,overlay):
     out[:,:,3]=np.clip(out_a[:,:,0]*255,0,255).astype(np.uint8)
     return out
 
-def palette_bat_mask(src,tip,knob,width=11):
-    """Select only bat-colored pixels inside the bat tube.
+def protected_bat_mask(src,tip,knob,width=11,protect=()):
+    """Extract the complete exposed bat tube while protecting body features.
 
-    V2 erased a wide geometric line. That line crossed helmet/face pixels in the
-    trigger pose. V3 samples the barrel half of the bat itself, then erases only
-    pixels matching that sampled pixel-art palette.
+    V2's broad erase damaged the face. The first V3 palette-only mask protected
+    the face but could leave dark/orange barrel pixels behind, creating a ghost
+    bat during follow-through. This mask takes the whole narrow bat tube, then
+    removes explicit protected ellipses (helmet/face and grip) from that tube.
+    The clean head is overlaid again after the body warp.
     """
-    tip=np.array(tip,float); knob=np.array(knob,float)
-    mid=tip+(knob-tip)*0.58
-    sample=line_mask(tip,mid,max(6,width-2))>0
-    opaque=(src[:,:,3]>20)
-    sample_pixels=src[:,:,:3][sample&opaque]
-    if sample_pixels.size==0:
-        return (line_mask(tip,knob,max(5,width-3))>0)&opaque
-    colors,counts=np.unique(sample_pixels.reshape(-1,3),axis=0,return_counts=True)
-    order=np.argsort(counts)[::-1][:14]
-    palette=colors[order].astype(np.int16)
-    tube=(line_mask(tip,knob,width)>0)&opaque
-    rgb=src[:,:,:3].astype(np.int16)
-    distances=np.min(np.sum((rgb[:,:,None,:]-palette[None,None,:,:])**2,axis=3),axis=2)
-    return tube&(distances<=64)
+    opaque=src[:,:,3]>20
+    mask=(line_mask(tip,knob,width)>0)&opaque
+    for center,axes in protect:
+        mask &= ~(ellipse_mask(center,axes)>0)
+    return mask
 
-def split_bat(src,tip,knob,width=11):
-    mask=palette_bat_mask(src,tip,knob,width)
+def split_bat(src,tip,knob,width=11,protect=()):
+    mask=protected_bat_mask(src,tip,knob,width,protect)
     body=src.copy(); body[mask]=0
     bat=np.zeros_like(src); bat[mask]=src[mask]
     return body,bat
@@ -186,7 +179,7 @@ swing_mid_pts=[
     (72,121),(114,118),(56,147),(130,145),
 ]+BOUNDARY
 
-trigger_clean,trigger_bat=split_bat(trigger,(90,5),(62,61),11)
+trigger_clean,trigger_bat=split_bat(trigger,(90,5),(62,61),12,protect=[((83,48),(27,31)),((62,61),(12,12))])
 trigger_head=head_layer(trigger_clean,(83,48),(23,27))
 
 swing_start_body=warp_piecewise(trigger_clean,trigger_body_pts,swing_start_pts)
@@ -214,7 +207,7 @@ follow_late_pts=[
     (77,122),(118,118),(63,147),(131,145),
 ]+BOUNDARY
 
-contact_clean,contact_bat=split_bat(contact,(176,88),(110,77),12)
+contact_clean,contact_bat=split_bat(contact,(176,88),(110,77),13,protect=[((110,77),(11,10))])
 contact_head=head_layer(contact_clean,(84,64),(23,25))
 
 follow_early_body=warp_piecewise(contact_clean,contact_body_pts,follow_early_pts)
