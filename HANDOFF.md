@@ -1,5 +1,77 @@
 # 9ZONE SHOWDOWN — Codex 인수인계
 
+## 최우선 인수인계 — BATTER MOTION LOOP V3 · 2026-09-22
+
+**사용자 최신 판정: "스윙할때 약간 배트랑얼굴 그래픽 깨지는것같고, 부드럽다는 느낌보다는 끊어지는 느낌이 강해"**
+
+이 피드백을 V2보다 우선한다.
+
+새 세션은 먼저 아래를 읽는다.
+
+1. `docs/visual/BATTER-MOTION-LOOP-V3.md`
+2. `docs/visual/BATTER-MOTION-LOOP-V2.md`
+3. `docs/visual/BATTER-ASSET-LOOP-V1.md`
+4. `VISUAL-REBOOT-LOOP-ENGINEERING.md`
+5. `AGENTS.md`
+
+### 현재 브랜치 / 확인 링크
+
+- 작업 브랜치: `codex/batter-motion-loop-v3`
+- 부모: `codex/batter-motion-loop-v2`
+- 실제 플레이: `https://jjsjb88-alt.github.io/9-baseball/batter-v3/`
+- Cinema Lab: `https://jjsjb88-alt.github.io/9-baseball/batter-v3/?cinema=1`
+- **main은 건드리지 않는다. 사용자 확인 전 merge 금지.**
+
+### V3 핵심
+
+V2 8포즈를 다음 10포즈로 확장했다.
+
+`ready → load → trigger → swing-start → swing-mid → contact → follow-through-early → follow-through-late → finish → settle`
+
+핵심 변경:
+- 승인된 V1 ready / trigger / contact / finish 앵커는 유지.
+- V3 intermediate는 `assets/batter-reboot-v3/`.
+- 얼굴/헬멧은 clean source layer를 다시 덮어써 warp 파손 방지.
+- 배트는 body warp에 섞지 않고 protected rigid layer로 분리/회전.
+- follow-through의 ghost barrel 잔상도 full-tube extraction으로 제거.
+- runtime은 한 pose씩 `flushSync` commit → `requestAnimationFrame` paint → 다음 pose 예약.
+- 투수 V4 60-frame playback은 보호.
+
+### 실제 QA
+
+필수 뷰포트:
+- 390×844
+- 844×390
+- 1440×900
+
+현재 real-browser QA에서 세 뷰 모두:
+- 10포즈 순서 관찰
+- intermediate pose 최소 노출시간 기준 통과
+- 192×192 runtime art 확인
+- stand-in 0
+- WebGL2 active
+- page error 0
+- `failures: []`
+
+전체 Vitest / smoke / production build도 통과했다.
+
+### 현재 판정
+
+**V3는 사용자 재검수용 candidate다.**
+
+자동 QA 성공만으로 최종 visual PASS라고 선언하지 않는다.
+사용자가 `/batter-v3/` 실제 플레이에서 얼굴·배트 무결성과 모션 흐름을 확인해야 한다.
+
+통과 전:
+- 60Hz 보간/재생 확장 금지.
+- main merge 금지.
+- procedural/block batter 회귀 금지.
+
+사용자에게 추가 피드백이 오면 V3 키포즈/타이밍을 먼저 수정한다.
+
+---
+
+
 ## 최우선 인수인계 — BATTER MOTION LOOP V2 · 2026-09-21
 
 **사용자 최신 판정: "그냥 서있는 모습만 반복되는 것 같다."**
