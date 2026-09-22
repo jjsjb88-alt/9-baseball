@@ -6,7 +6,7 @@ on:
       - claude/feedback-review-plan-vw24at
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   baseline-reference:
@@ -73,9 +73,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Materialize deterministic V12 fixture
-        run: |
-          node scripts/v12-baseline.mjs --write
-          git add --intent-to-add docs/design/v12/fixtures/p0-1-combat.json
+        run: node scripts/v12-baseline.mjs --write
 
       - name: Check baseline fixture against engine
         run: node scripts/v12-baseline.mjs --check
@@ -92,18 +90,10 @@ jobs:
       - name: V12 static and engine audit
         run: node docs/design/v12/audit-static-and-engine.mjs | tee v12-audit.txt
 
-      - name: Commit deterministic fixture only after mandatory checks pass
-        shell: bash
+      - name: Prove committed fixture is reproducible
         run: |
-          git add docs/design/v12/fixtures/p0-1-combat.json
-          if git diff --cached --quiet; then
-            echo "Fixture already committed; no fixture commit needed."
-          else
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git commit -m "test(v12-P0): commit deterministic combat baseline fixture"
-            git push origin HEAD:claude/feedback-review-plan-vw24at
-          fi
+          git diff --exit-code -- docs/design/v12/fixtures/p0-1-combat.json
+          git ls-files --error-unmatch docs/design/v12/fixtures/p0-1-combat.json
 
       - name: Install Playwright for review capture only
         run: |
@@ -122,7 +112,7 @@ jobs:
           exit 1
 
       - name: Capture three P0-1 review viewports
-        run: node scripts/v12-baseline.mjs --capture .qa-v12-p0-1
+        run: node scripts/v12-baseline.mjs --capture v12-p0-1-captures
 
       - name: Upload P0-1 verification evidence
         if: always()
@@ -130,7 +120,7 @@ jobs:
         with:
           name: v12-p0-1-verification
           path: |
-            .qa-v12-p0-1
+            v12-p0-1-captures
             v12-zone-report.txt
             v12-audit.txt
             /tmp/v12-dev.log
