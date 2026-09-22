@@ -11,6 +11,7 @@ import {BUILDS,CARDS,ZONES,DECKBUILDER_BUILD,ROUTE_CHOICES} from '../src/duel/ca
 beforeEach(()=>{localStorage.clear();vi.useFakeTimers()});
 afterEach(()=>{cleanup();vi.useRealTimers();vi.unstubAllGlobals()});
 const finish=()=>act(()=>vi.runAllTimers());
+const fakeAnimationFrame=()=>{vi.stubGlobal('requestAnimationFrame',cb=>setTimeout(()=>cb(performance.now()),0));vi.stubGlobal('cancelAnimationFrame',id=>clearTimeout(id));};
 function dismiss(){const skip=screen.queryByRole('button',{name:'건너뛰기',exact:true});if(skip)fireEvent.click(skip);}
 function begin(zone=5,roll=.5){
   const s=startBattle(createDuel(1,'away'));s.battle.pending={zone,roll,powerRoll:.95};
@@ -91,6 +92,7 @@ describe('9-zone strategic UI',()=>{
     fireEvent.click(screen.getByRole('button',{name:'다음 타자 입장 · 2번 이민준'}));expect(readDuel(localStorage).battle.batterIndex).toBe(1);
   });
   it('runs the full cinema presentation inside the MAIN RUN pitcher-HP battle, not only in the lab',()=>{
+    fakeAnimationFrame();
     let s=createV10Duel(19);
     s=enterV10Node(s,'a1-entry');
     s.battle.pending={zone:s.battle.aimZone,roll:.1,powerRoll:.99};
@@ -155,6 +157,7 @@ describe('9-zone strategic UI',()=>{
   });
 
   it('keeps pitcher 60-frame playback while the batter uses authored reboot key poses and overlays the tactical read trace',()=>{
+    fakeAnimationFrame();
     beginV10();
     fireEvent.click(screen.getByRole('button',{name:'스윙하기',exact:true}));
     fireEvent.click(screen.getByRole('button',{name:'밀어치기',exact:true}));
