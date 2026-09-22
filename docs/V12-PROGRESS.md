@@ -8,9 +8,9 @@
 
 | | |
 | --- | --- |
-| 현재 단계 | **P0 시작 전** |
+| 현재 단계 | **P0 진행 중 · P0-1 완료** |
 | 브랜치 | `claude/feedback-review-plan-vw24at` |
-| PR | [#83](https://github.com/jjsjb88-alt/9-baseball/pull/83) — 문서·시안만. 제품 코드 변경 0 |
+| PR | [#83](https://github.com/jjsjb88-alt/9-baseball/pull/83) — P0-1 기준선 fixture·검증 도구 추가. 런타임 UI 변경 0 |
 | 추적 이슈 | [#84](https://github.com/jjsjb88-alt/9-baseball/issues/84) |
 | 새 세션 프롬프트 | [`V12-NEW-SESSION-PROMPT.md`](./V12-NEW-SESSION-PROMPT.md) |
 | 막힌 곳 | **D1~D8은 검수자 권고까지만 있고 사용자 확정이 없다.** P0은 진행 가능, P1부터는 D1 확정 필요 |
@@ -30,18 +30,26 @@
 
 ## 다음 한 바퀴
 
-> **P0-1.** 기준 SHA를 고정하고 상태 fixture와 3뷰포트 캡처를 만든다.
-> 화면을 바꾸지 않는다. 이후 모든 단계의 Before가 된다.
+> **P0-2.** P0-1의 고정 fixture로 3뷰포트 Before 캡처 세트를 `docs/design/v12/shots/`에 커밋한다.
+> 화면을 바꾸지 않는다.
 
 ---
 
 ## P0 · 기준선 (결정 불필요 — 지금 가능)
 
-- [ ] **P0-1** 기준 SHA 고정 + 전투 대표 상태 fixture(seed·저장 JSON) + 수집 스크립트 — `_`
+- [x] **P0-1** 기준 SHA 고정 + 전투 대표 상태 fixture(seed·저장 JSON) + 수집 스크립트 — `fa42bd8f`
 - [ ] **P0-2** 3뷰포트 Before 캡처 세트를 `docs/design/v12/shots/`에 커밋 — `_`
 - [ ] **P0-3** `src/duel/tokens.css` 신설 (정의만, 적용 0) — `_`
 - [ ] **P0-4** `tests/design-system.test.js` 골격 — 지금은 **현재값을 기록만** 하고 실패시키지 않는다 — `_`
 - [ ] **P0-5** 화면 변화 0 증명: 캡처 비교 + `pnpm test` + `pnpm build` + `zone-report` 불변 — `_`
+
+> **P0-1 검증 증거:** 기준 SHA `a1cbf625fa558bb463999fee47998868d155fcb4`, seed `12012026`,
+> fixture `docs/design/v12/fixtures/p0-1-combat.json`, collector `scripts/v12-baseline.mjs`.
+> Actions run `35798638543`: 53파일 / 414테스트 통과, production build 통과,
+> frozen baseline 대비 `zone-report.js 30` exact diff 0, V12 static/engine audit 통과, fixture 재생성 diff 0.
+> 390×844 / 844×390 / 1440×900 캡처는 오류 0으로 생성했고 직접 읽었다.
+> 세로는 `scrollHeight 894`로 50px 스크롤, 가로·PC는 문서 오버플로가 없었다.
+> 이 캡처는 P0-1 검증 증거이며 **저장소에 Before PNG를 커밋하는 일은 P0-2**다.
 
 > P0에서 `!important` 총량 감축·일괄 `@layer` 래핑을 **하지 않는다**(C7).
 
