@@ -1,0 +1,156 @@
+<!doctype html><meta charset="utf-8"><style>
+:root{--s0:#07120f;--s1:#07141b;--s2:#132b33;--ink1:#f4ecd8;--ink2:#ccd8d0;--ink3:#7d9388;
+--gold:#ffe4a2;--bone:#ded6b9;--link:#6fd7c6;--ghost:#ffb46a}
+*{box-sizing:border-box;margin:0}
+body{width:1080px;background:#05100d;font-family:"Pretendard","Noto Sans KR",system-ui,sans-serif;
+ color:var(--ink2);padding:32px}
+h1{font-size:22px;color:var(--ink1);letter-spacing:-.01em}
+h1 small{display:block;font-size:13px;color:var(--ink3);font-weight:400;margin-top:7px;line-height:1.65}
+h2{font-size:14px;color:var(--gold);margin:30px 0 4px;letter-spacing:.02em}
+h2+p{font-size:12px;color:var(--ink3);margin-bottom:14px;line-height:1.6}
+.row{display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap}
+/* card = shape */
+.card{background:linear-gradient(168deg,#f2ecd6,#cdc4a3 72%,#bdb392);border-radius:7px;
+ position:relative;display:flex;align-items:flex-end;justify-content:center;
+ box-shadow:0 8px 16px rgba(0,0,0,.55)}
+.card i.nm{position:absolute;bottom:5px;left:0;right:0;text-align:center;font-size:12px;
+ color:#1a2a2d;font-weight:800;font-style:normal;letter-spacing:-.02em}
+.card.t1{border:1px solid #8d8468}
+.card.t2{border:2px solid #7d7458;box-shadow:0 9px 18px rgba(0,0,0,.6),inset 0 -3px 0 rgba(0,0,0,.14)}
+.card.t3{border:3px solid #6d6448;box-shadow:0 11px 22px rgba(0,0,0,.65),inset 0 -6px 0 rgba(0,0,0,.18)}
+.card.t4{border:4px solid #5d5438;box-shadow:0 14px 26px rgba(0,0,0,.7),inset 0 -9px 0 rgba(0,0,0,.22)}
+.card.t0{border:1px dashed #9a9175;box-shadow:0 4px 9px rgba(0,0,0,.4)}
+.card.sig{border-color:#c9a34e;box-shadow:0 10px 20px rgba(0,0,0,.6),0 0 0 1px rgba(201,163,78,.5)}
+.pt{width:76px;height:76px}.col{width:76px;height:210px}.rw{width:210px;height:76px}
+.all{width:210px;height:210px;opacity:.86}
+.crs{width:210px;height:210px;background:none;border:none;box-shadow:none;position:relative}
+.crs .arm{position:absolute;background:linear-gradient(168deg,#f2ecd6,#cdc4a3);border:1px solid #8d8468}
+.ring{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);width:30px;height:30px;
+ border:2px solid #9a7a2e;border-radius:50%;box-shadow:0 0 0 4px rgba(154,122,46,.18)}
+.base{position:absolute;left:50%;bottom:22px;transform:translateX(-50%) rotate(45deg);width:14px;height:14px;
+ border:2px solid #4c6b5e}
+.notch{position:absolute;left:50%;bottom:-1px;transform:translateX(-50%);width:36px;height:14px;
+ background:#05100d;border-radius:18px 18px 0 0}
+.cushion{position:absolute;inset:4px;border:1px dashed #8fa596;border-radius:5px}
+.lbl{width:76px;font-size:11px;color:var(--ink3);text-align:center;margin-top:8px;line-height:1.45}
+.lbl.w{width:210px}
+.unit{display:flex;flex-direction:column;align-items:center}
+/* chips */
+.chip{width:82px;height:82px;border-radius:50%;background:radial-gradient(60% 60% at 40% 32%,#22434a,#0e2429);
+ border:2px solid #2f5b60;display:flex;align-items:center;justify-content:center;
+ box-shadow:0 8px 16px rgba(0,0,0,.55),inset 0 2px 0 rgba(255,255,255,.08)}
+.chip svg{width:38px;height:38px}
+.chip.thin{border-style:dashed;opacity:.8;box-shadow:0 4px 9px rgba(0,0,0,.4)}
+.chip.flat{filter:grayscale(1) brightness(.6)}
+/* board demo */
+.demo{display:flex;gap:26px;margin-top:16px;align-items:flex-start}
+.plate{position:relative;width:340px;padding:12px;border-radius:12px;
+ background:linear-gradient(180deg,#22323a,#111f26);border:1px solid #2c4650;
+ box-shadow:0 18px 34px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.07)}
+.pg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.pc{height:96px;border-radius:5px;background:#0c1c20;box-shadow:inset 0 3px 8px rgba(0,0,0,.7)}
+.pc.warm{background:#1d2a22;box-shadow:inset 0 3px 8px rgba(0,0,0,.6),inset 0 0 24px rgba(255,180,100,.18)}
+.pc.hot{background:#2b2b1c;box-shadow:inset 0 3px 8px rgba(0,0,0,.6),inset 0 0 28px rgba(255,170,80,.3)}
+.pc.cold{background:#081214;box-shadow:inset 0 4px 9px rgba(0,0,0,.85)}
+.lay{position:absolute;border-radius:6px;background:linear-gradient(168deg,rgba(242,236,214,.97),rgba(205,196,163,.97));
+ border:1px solid #8d8468;box-shadow:0 10px 20px rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center}
+.lay b{font-size:11px;color:#1a2a2d;margin-bottom:5px;font-weight:800}
+.weld{position:absolute;width:3px;border-radius:2px;background:var(--link);
+ box-shadow:0 0 12px rgba(111,215,198,.95),0 0 26px rgba(111,215,198,.5)}
+.cap{font-size:12px;color:var(--ink3);line-height:1.8;width:300px}
+.cap b{color:var(--ink1)}
+.cap .k{color:var(--link)}
+table{width:100%;margin-top:14px;border-collapse:collapse;font-size:12px}
+th,td{padding:6px 9px;border-bottom:1px solid #14313a;text-align:left}
+th{color:var(--ink3);font-weight:600;font-size:11px}
+td.x{color:#d08b7a}td.o{color:var(--link)}
+</style>
+<h1>9ZONE 카드 형태 언어 — 규칙을 글자가 아니라 물건으로
+<small>카드의 <b>형태 = 커버 범위</b>, <b>두께 = 위력</b>, <b>모양 = 역할</b>. 전부 <code>cards.js</code>에 이미 있는 <code>shape</code>·<code>power</code> 값에서 나온다. 새 규칙이 아니라 있는 규칙을 보이게 하는 것.</small></h1>
+
+<h2>스윙 카드 10종 — 네모난 것은 존에 놓인다</h2>
+<p>작고 두꺼우면 좁고 세다. 크고 얇으면 넓고 약하다. 이 게임의 핵심 트레이드오프가 글자 0개로 전달된다.</p>
+<div class="row">
+ <div class="unit"><div class="card pt t1"><div class="ring"></div><i class="nm">정타 노림</i></div><div class="lbl">1칸 · 두께1<br>조준 링 = 정확 적중</div></div>
+ <div class="unit"><div class="card pt t3"><i class="nm">당겨 넘기기</i></div><div class="lbl">1칸 · 두께3<br>무겁다</div></div>
+ <div class="unit"><div class="card pt t4 sig"><i class="nm">끝장 승부</i></div><div class="lbl">1칸 · 두께4<br>가장 무겁다</div></div>
+ <div class="unit"><div class="card col t1"><i class="nm">밀어치기</i></div><div class="lbl">세로3 · 두께1</div></div>
+ <div class="unit"><div class="card col t2 sig"><i class="nm">라인드라이브</i></div><div class="lbl">세로3 · 두께2</div></div>
+ <div class="unit"><div class="card rw t1"><div class="base"></div><i class="nm">주자 연결</i></div><div class="lbl w">가로3 · 베이스 각인 = 주자 진루</div></div>
+ <div class="unit"><div class="card rw t2"><i class="nm">갭 공략</i></div><div class="lbl w">가로3 · 두께2</div></div>
+</div>
+<div class="row" style="margin-top:22px">
+ <div class="unit"><div class="crs">
+   <div class="arm" style="left:67px;top:0;width:76px;height:210px;border-radius:7px"></div>
+   <div class="arm" style="left:0;top:67px;width:210px;height:76px;border-radius:7px"></div>
+   <div class="cushion" style="left:60px;top:-6px;width:90px;height:222px;border-radius:9px"></div>
+   <i class="nm" style="position:absolute;bottom:74px;left:0;right:0;text-align:center;font-size:12px;color:#1a2a2d;font-weight:800;font-style:normal">커트 스윙</i>
+ </div><div class="lbl w">십자5 · 얇다(두께0) · 완충 테 = 파울 생존</div></div>
+ <div class="unit"><div class="crs">
+   <div class="arm sig" style="left:67px;top:0;width:76px;height:210px;border-radius:7px;border-color:#c9a34e"></div>
+   <div class="arm sig" style="left:0;top:67px;width:210px;height:76px;border-radius:7px;border-color:#c9a34e"></div>
+   <i class="nm" style="position:absolute;bottom:74px;left:0;right:0;text-align:center;font-size:12px;color:#1a2a2d;font-weight:800;font-style:normal">존 봉쇄</i>
+ </div><div class="lbl w">십자5 · 금테 = 시그니처</div></div>
+ <div class="unit"><div class="card all t0"><div class="notch"></div><i class="nm" style="bottom:22px">희생 번트</i></div><div class="lbl w">9칸 전면 · 반투명 · 아래 결손부 = 아웃을 지불한다</div></div>
+</div>
+
+<h2>준비 칩 6종 — 둥근 것은 존에 놓을 수 없다</h2>
+<p>"준비 카드는 스윙 카드와 다릅니다"라고 쓰지 않는다. 존으로 끌면 튕겨 나온다. 형태가 규칙이다.</p>
+<div class="row">
+ <div class="unit"><div class="chip"><svg viewBox="0 0 40 40" fill="none" stroke="#9fd8c9" stroke-width="2"><circle cx="20" cy="20" r="14"/><circle cx="20" cy="20" r="7"/><circle cx="20" cy="20" r="1.6" fill="#9fd8c9"/></svg></div><div class="lbl">타이밍 맞추기<br>집중 +1</div></div>
+ <div class="unit"><div class="chip"><svg viewBox="0 0 40 40" fill="none" stroke="#9fd8c9" stroke-width="2"><rect x="8" y="14" width="16" height="20" rx="2"/><rect x="16" y="8" width="16" height="20" rx="2"/></svg></div><div class="lbl">작전 확인<br>카드 +2</div></div>
+ <div class="unit"><div class="chip"><svg viewBox="0 0 40 40" fill="none" stroke="#9fd8c9" stroke-width="2"><circle cx="20" cy="20" r="9"/><path d="M4 20h7M29 20h7"/></svg></div><div class="lbl">릴리스 간파<br>행 정보(강화=십자)</div></div>
+ <div class="unit"><div class="chip thin"><svg viewBox="0 0 40 40" fill="none" stroke="#9fd8c9" stroke-width="2"><path d="M20 6v28M6 20h28M20 6l-4 4M20 6l4 4M20 34l-4-4M20 34l4-4"/></svg></div><div class="lbl">코스 조정<br>얇다 = 1회용</div></div>
+ <div class="unit"><div class="chip flat"><svg viewBox="0 0 40 40" fill="none" stroke="#9fd8c9" stroke-width="2"><path d="M10 28l20-16" stroke-dasharray="4 4"/><rect x="5" y="25" width="8" height="8" transform="rotate(45 9 29)"/><rect x="27" y="7" width="8" height="8" transform="rotate(45 31 11)"/></svg></div><div class="lbl">히트앤드런<br>납작 = 주자 없어 못 씀</div></div>
+ <div class="unit"><div class="chip"><svg viewBox="0 0 40 40" fill="none" stroke="#9fd8c9" stroke-width="2"><path d="M26 8a14 14 0 1 0 6 18A11 11 0 0 1 26 8z"/></svg></div><div class="lbl">호흡 고르기<br>파울 생존</div></div>
+</div>
+
+<h2>보드 — 덮고 · 쌓고 · 맞닿는다</h2>
+<p>카드를 존에 올리면 실제로 그 칸들을 가린다. 붙으면 접합선이 빛나고, 떨어지면 그냥 떨어져 있다.</p>
+<div class="demo">
+ <div class="plate">
+  <div class="pg">
+   <div class="pc cold"></div><div class="pc warm"></div><div class="pc hot"></div>
+   <div class="pc cold"></div><div class="pc warm"></div><div class="pc hot"></div>
+   <div class="pc warm"></div><div class="pc cold"></div><div class="pc hot"></div>
+  </div>
+  <!-- column card covering middle column -->
+  <div class="lay" style="left:118px;top:12px;width:104px;height:300px"><b>밀어치기</b></div>
+  <!-- point card adjacent right-middle, touching -->
+  <div class="lay" style="left:228px;top:114px;width:100px;height:96px;border-width:3px"><b>당겨 넘기기</b></div>
+  <div class="weld" style="left:224px;top:118px;height:88px"></div>
+  <!-- cross card separate, bottom-left, not touching -->
+  <div class="lay" style="left:12px;top:216px;width:100px;height:96px;border-style:dashed;opacity:.95"><b>정타 노림</b></div>
+ </div>
+ <div class="cap">
+  <p><b>덮기</b> — 세로3 카드가 가운데 열 세 칸을 <b>가린다</b>. 가려진 칸은 보이지 않는다. <br>
+  그래서 <code>COVER 5/9</code>라는 표기는 사라지는 게 아니라 <b>존재할 이유가 없어진다.</b></p>
+  <p style="margin-top:14px"><b class="k">맞닿음</b> — 밀어치기와 당겨 넘기기가 인접해 <b class="k">모서리가 붙고 접합선이 빛난다.</b>
+  <code>CONNECT</code>라고 쓰지 않는다.</p>
+  <p style="margin-top:14px"><b>떨어짐</b> — 왼쪽 아래 카드는 인접하지 않아 <b>그냥 떨어져 있다.</b>
+  <code>BREAK</code>를 그릴 필요조차 없다.</p>
+  <p style="margin-top:14px"><b>두께</b> — 당겨 넘기기의 두꺼운 테두리가 무게다. 놓을 때 소리와 진동도 무겁다.</p>
+  <p style="margin-top:14px"><b>판의 온도</b> — 칸 배경이 읽기 등급이다. 차갑고 눌린 칸은 투수가 <b>던지지 않는 존</b>.
+  <code>확률 0</code>이라고 쓰지 않는다.</p>
+ </div>
+</div>
+
+<h2>그래서 카드 1장의 텍스트가 9행 → 1행</h2>
+<table>
+<tr><th>현재 텍스트 행</th><th>어디로</th><th>물리 표현</th></tr>
+<tr><td>준비 / 스윙 배지</td><td class="o">형태</td><td>원형 칩 / 사각 카드</td></tr>
+<tr><td>역할 · 축 (정타 · 1존)</td><td class="o">형태</td><td>카드 외곽선이 곧 커버 축</td></tr>
+<tr><td><b>이름</b></td><td class="o">유지</td><td>전투 2차(12px) · 덱/보상/도감 1차</td></tr>
+<tr><td>gives 칩 (1존 커버, 파워 +36 …)</td><td class="o">형태+두께</td><td>외곽선 · 테두리 두께 · 각인</td></tr>
+<tr><td>needs 칩 (아웃 지불, 주자)</td><td class="o">결손부</td><td>이가 빠진 모서리 = 지불한다</td></tr>
+<tr><td>규칙 본문 1~3줄</td><td class="x">상세 시트</td><td>길게 누르면 원문 그대로</td></tr>
+<tr><td>강화 + 설명</td><td class="o">재질</td><td>가장자리 금박 한 줄</td></tr>
+<tr><td>연계 / 상충 사유</td><td class="o">접합</td><td>접합선 발광 / 모서리 어긋남</td></tr>
+<tr><td>플레이버</td><td class="x">도감</td><td>전투에서 삭제</td></tr>
+</table>
+<p style="margin-top:16px;font-size:12px;color:#7d9388;line-height:1.75">
+"정타 노림"이 문제가 아니라, <b style="color:#f4ecd8">"정타 노림"이 9줄 중 하나라서</b> 문제다.
+나머지 8줄을 형태로 옮기면 이름은 유일한 한 줄이 되고, 그때는 비용이 없다.
+이름을 지우는 것이 아니라 <b style="color:#f4ecd8">이름만 남기는 것</b>이 답이다.<br>
+미검증: 사람이 16종 형태를 실제로 구분해 배우는지, 390px 화면에서 십자 카드가 판의 절반을 가려도 읽히는지. 실물 프로토타입이 필요하다.
+</p>
