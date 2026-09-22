@@ -1,0 +1,91 @@
+name: V12 P0 Verify
+
+on:
+  push:
+    branches:
+      - claude/feedback-review-plan-vw24at
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out V12 branch
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Materialize deterministic V12 fixture
+        run: node scripts/v12-baseline.mjs --write
+
+      - name: Upload generated fixture evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: v12-p0-1-generated-fixture
+          path: docs/design/v12/fixtures/p0-1-combat.json
+
+      - name: Check baseline fixture against engine
+        run: node scripts/v12-baseline.mjs --check
+
+      - name: Run full tests
+        run: pnpm test
+
+      - name: Build production site
+        run: pnpm build
+
+      - name: Zone report 30
+        run: node scripts/zone-report.js 30 | tee v12-zone-report.txt
+
+      - name: V12 static and engine audit
+        run: node docs/design/v12/audit-static-and-engine.mjs | tee v12-audit.txt
+
+      - name: Ensure generator is reproducible
+        run: |
+          git diff --exit-code -- docs/design/v12/fixtures/p0-1-combat.json
+          git ls-files --error-unmatch docs/design/v12/fixtures/p0-1-combat.json
+
+      - name: Install Playwright for review capture only
+        run: |
+          pnpm add --save-dev --ignore-workspace-root-check playwright
+          pnpm exec playwright install --with-deps chromium
+
+      - name: Start Vite on 5177
+        run: |
+          pnpm dev --host 127.0.0.1 --port 5177 --strictPort > /tmp/v12-dev.log 2>&1 &
+          echo $! > /tmp/v12-dev.pid
+          for i in {1..60}; do
+            if curl -fsS http://127.0.0.1:5177/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/v12-dev.log
+          exit 1
+
+      - name: Capture three P0-1 review viewports
+        run: node scripts/v12-baseline.mjs --capture .qa-v12-p0-1
+
+      - name: Upload P0-1 verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v12-p0-1-verification
+          path: |
+            .qa-v12-p0-1
+            v12-zone-report.txt
+            v12-audit.txt
+            /tmp/v12-dev.log
