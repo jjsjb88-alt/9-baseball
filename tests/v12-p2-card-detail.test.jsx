@@ -159,3 +159,16 @@ describe('V12 P2-1 sheet styles',()=>{
     for(const sel of sels)for(const p of sel.split(','))expect(p.trim()).toMatch(/^(\.card-detail-|\.duel-combat \.card-detail-open)/);
   });
 });
+
+describe('V12 P2-4 role rules in the detail',()=>{
+  it('says bunt never stacks, in the engine words',()=>{
+    expect(cardDetailOf('bunt',false).stack).toBe('겹치기 불가 · 희생 번트에는 다른 카드를 겹칠 수 없고, 겹치기 카드로도 쓸 수 없습니다.');
+    expect(cardDetailOf('strike',false).stack).toBe('겹치기 가능 · 메인 또는 지원 카드로 놓을 수 있습니다.');
+    expect(cardDetailOf('scout',false).stack).toBeNull();
+    expect(cardDetailOf('basic',false).stack).toBe('메인 전용 · 다른 카드를 놓으면 BASIC SWING이 교체됩니다.');
+  });
+  it('shows the stack rule in the sheet',()=>{
+    render(<CardDetailSheet detail={cardDetailOf('bunt',false)} onClose={()=>{}}/>);
+    expect(document.querySelector('.card-detail-stack').textContent).toContain('겹치기 불가');
+  });
+});

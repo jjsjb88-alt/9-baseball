@@ -82,3 +82,17 @@ describe('V12 P2-3 round silhouette styles',()=>{
     for(const m of css.matchAll(/font-size:\s*(\d+(?:\.\d+)?)px/g))expect(Number(m[1])).toBeGreaterThanOrEqual(12);
   });
 });
+
+describe('V12 P2-4 upgraded card keeps its + on the trigger',()=>{
+  it('names the + card on the execute button',()=>{
+    let s=createV10Duel(1);
+    s.build='away';s.deck=BUILDS.away.cards.map((kind,i)=>({id:'c'+i,kind,plus:CARDS[kind].type==='attack'}));s.nextId=s.deck.length;
+    s=enterV10Node(s,'a1-entry');
+    saveV10Duel(localStorage,s);
+    render(<Duel/>);fireEvent.click(screen.getByRole('button',{name:'MAIN RUN 이어하기',exact:true}));
+    fireEvent.click(screen.getByRole('button',{name:'스윙하기',exact:true}));
+    const card=[...document.querySelectorAll('.duel-hand .duel-card.attack[data-card-plus="1"]')][0];
+    fireEvent.click(card);
+    expect(screen.getByTestId('execute-action').textContent).toBe(CARDS[card.dataset.cardKind].name+'+ · 단독 스윙 100%');
+  });
+});

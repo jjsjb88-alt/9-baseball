@@ -15,6 +15,7 @@
 .card-detail-tags{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px;padding:0;list-style:none}
 .card-detail-tags li{padding:4px 8px;border:1px solid #6FD7C6;border-radius:2px;font-size:12px;line-height:16px;font-weight:800;color:#6FD7C6}
 .card-detail-tags li.need{border-color:#AA7E67;color:#F4ECD8}
+.card-detail-stack{margin:0 0 12px;padding-left:8px;border-left:3px solid #6FD7C6;font-size:13px;line-height:18px;font-weight:800;color:#CCD8D0}
 .card-detail-upgrade{margin:0 0 12px;font-size:13px;line-height:18px;font-weight:800;color:#FFE4A2}
 .card-detail-flavor{margin:0;font-size:13px;line-height:18px;font-style:italic;color:#CCD8D0}
 @media (orientation:landscape),(min-width:700px){

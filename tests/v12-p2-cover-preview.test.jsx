@@ -117,3 +117,24 @@ describe('V12 P2-2 preview styles',()=>{
     for(const m of css.matchAll(/font-size:\s*(\d+(?:\.\d+)?)px/g))expect(Number(m[1])).toBeGreaterThanOrEqual(12);
   });
 });
+
+describe('V12 P2-4 a card that replaces the main previews as main',()=>{
+  const setup=(extra='')=>{const r=board(true);document.querySelector('.duel-hand').insertAdjacentHTML('beforeend',extra);return r;};
+  it('BASIC and bunt replace the main instead of stacking',()=>{
+    for(const kind of ['basic','bunt']){
+      const {cells,card}=setup();card.dataset.cardKind=kind;const off=installCoverPreview(document);
+      card.classList.add('board-card-armed');cells[4].dispatchEvent(new Event('pointerover',{bubbles:true}));
+      expect(cells[4].classList.contains('cover-preview-main')).toBe(true);
+      expect(document.querySelector('.zone-panel').dataset.coverPreview).toMatch(/^main/);
+      off();
+    }
+  });
+  it('anything placed on a bunt main replaces it',()=>{
+    const {cells,card}=setup();document.querySelector('.card-drawer').dataset.mainExclusive='1';
+    const off=installCoverPreview(document);
+    card.classList.add('board-card-armed');cells[4].dispatchEvent(new Event('pointerover',{bubbles:true}));
+    expect(cells[4].classList.contains('cover-preview-support')).toBe(false);
+    expect(cells[4].classList.contains('cover-preview-main')).toBe(true);
+    off();
+  });
+});

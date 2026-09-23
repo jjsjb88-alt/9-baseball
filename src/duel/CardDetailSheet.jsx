@@ -16,10 +16,16 @@ export const LONG_PRESS_MS=480;
 const LONG_PRESS_SLOP=8;
 const HAND_CARD='.duel-hand .duel-card[data-card-kind]';
 
+const STACK={
+  none:null,
+  bunt:'겹치기 불가 · 희생 번트에는 다른 카드를 겹칠 수 없고, 겹치기 카드로도 쓸 수 없습니다.',
+  basic:'메인 전용 · 다른 카드를 놓으면 BASIC SWING이 교체됩니다.',
+  attack:'겹치기 가능 · 메인 또는 지원 카드로 놓을 수 있습니다.',
+};
 const BASIC={name:'BASIC SWING',kindLabel:'스윙 카드',role:'기본',axis:'1존',rule:'선택한 1존을 칩니다. 카드 소비 없음 — 카드가 없어도 승부할 수 있습니다.',gives:['항상 사용'],needs:[],flavor:null};
 
 export function cardDetailOf(kind,plus=false,problem=null){
-  if(kind==='basic')return {...BASIC,kind,plus:false,upgrade:null,problem:problem||null};
+  if(kind==='basic')return {...BASIC,kind,plus:false,upgrade:null,problem:problem||null,stack:STACK.basic};
   const c=CARDS[kind];if(!c)return null;
   const up=upgradeText(kind);
   return {
@@ -27,6 +33,7 @@ export function cardDetailOf(kind,plus=false,problem=null){
     role:c.role,axis:c.axis?AXIS_NAMES[c.axis]:'타석 준비',rule:cardText(kind,plus),
     upgrade:up?(plus?'강화됨 · ':'강화하면 · ')+up:null,
     gives:c.gives,needs:c.needs,flavor:c.flavor||null,problem:problem||null,
+    stack:c.type==='skill'?STACK.none:kind==='bunt'?STACK.bunt:STACK.attack,
   };
 }
 
@@ -94,6 +101,7 @@ export default function CardDetailSheet({detail,onClose}){
         {detail.gives.map(g=><li key={'g'+g}>{g}</li>)}
         {detail.needs.map(n=><li key={'n'+n} className="need">조건 · {n}</li>)}
       </ul>}
+      {detail.stack&&<p className="card-detail-stack">{detail.stack}</p>}
       {detail.upgrade&&<p className="card-detail-upgrade">{detail.upgrade}</p>}
       {detail.flavor&&<p className="card-detail-flavor">{detail.flavor}</p>}
     </section>
