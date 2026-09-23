@@ -103,12 +103,20 @@ K.glyphs3=(str,x,y,c)=>{let cx=x;for(const ch of str){const g=F3[ch];if(g)for(le
 
 // Hangul on a device-resolution layer (2 device px per CSS px): readable at 9–12px, with a hard
 // ink outline so it sits on the pixel world like engraved UI rather than floating web text.
+// Galmuri (OFL, gm/fonts) is a Korean bitmap face: it is only crisp at its design sizes, so every
+// requested size snaps to 9 / 11 / 14 or 22 (= 11×2), and the ink ring is stamped one font pixel
+// out in eight directions instead of a round stroke.
+K.face=(size,weight)=>size<=10?(weight>=900?['Galmuri11B',11,1]:['Galmuri9',9,1]):size<=13?[weight>=800?'Galmuri11B':'Galmuri11',11,1]:size<=16?['Galmuri14',14,1]:['Galmuri11B',22,2];
+K.fontsReady=()=>Promise.all(['Galmuri9','Galmuri11','Galmuri11B','Galmuri14'].map(f=>document.fonts.load('11px "'+f+'"','가A1'))).catch(()=>{});
 K.text=(str,x,y,{size=12,weight=800,color=[246,238,219],ink=[20,12,14],align='left',ring=true}={})=>{
-  const g=K.T,s=K.TS*K.u;g.save();g.scale(s,s);
-  g.font=weight+' '+size+'px "Pretendard","Noto Sans KR","Malgun Gothic",sans-serif';g.textBaseline='top';
-  g.textAlign=align;g.lineJoin='round';
-  if(ring){g.strokeStyle=rgba(ink,.92);g.lineWidth=2.5;g.strokeText(str,x,y)}
-  g.fillStyle=rgba(color);g.fillText(str,x,y);const w=g.measureText(str).width;g.restore();return w;
+  const g=K.T,s=K.TS*K.u,[fam,px,dot]=K.face(size,weight);g.save();g.scale(s,s);
+  g.font=px+'px "'+fam+'","Malgun Gothic",sans-serif';g.textBaseline='top';g.textAlign=align;
+  const X=Math.round(x),Y=Math.round(y)+Math.round((size-px)/2);
+  if(ring){g.fillStyle=rgba(ink,.95);for(const [a,b] of [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,-1],[-1,1],[1,1]])g.fillText(str,X+a*dot,Y+b*dot)}
+  // faces without a bold cut get a one-font-pixel double strike when weight ≥ 900
+  const fake=weight>=900&&fam==='Galmuri14';
+  if(ring&&fake){g.fillStyle=rgba(ink,.95);for(const b of [-1,0,1])g.fillText(str,X+2*dot,Y+b*dot)}
+  g.fillStyle=rgba(color);g.fillText(str,X,Y);if(fake)g.fillText(str,X+dot,Y);const w=g.measureText(str).width;g.restore();return w;
 };
 
 // Stepped-light disc: highlight / body / shade bands and a 1px ink ring.

@@ -11,7 +11,7 @@ const P={C};
 const shapeCells={point:[4],column:[1,4,7],row:[3,4,5],cross:[1,3,4,5,7],all:[0,1,2,3,4,5,6,7,8]};
 
 P.setup=async()=>{
-  K.init(document.getElementById('art'),document.getElementById('txt'));
+  K.init(document.getElementById('art'),document.getElementById('txt'));await K.fontsReady();
   const S=await (await fetch('gm/gm-state.json')).json();
   const [stadium,batter,pitcher]=await Promise.all([K.load('../../../assets/duel/stadium.png'),K.load('gm/batter-ready.png'),K.load('gm/pitcher-windup.png')]);
   P.S=S;P.img={stadium,batter,pitcher};P.rnd=K.rng(12012026);P.stackOf=Object.fromEntries(S.steps.map(s=>[s.id,s]));
@@ -133,7 +133,7 @@ P.card=(h,x,y,{w=34,hh=52}={})=>{const st=P.stackOf[h.id];y-=st?6:0;
   if(st)disc(cx,cy,5,st.main?C.goldHi:C.tealHi,st.main?C.gold:C.teal,st.main?C.goldLo:C.tealLo,st.main?C.goldInk:C.tealInk);
   text(h.name,x*2+w+3,y*2+9,{size:12,weight:900,color:[28,22,15],align:'center',ring:false});
   text(st?(st.main?'MAIN':'SUPPORT'):'대기',x*2+w+3,y*2+70,{size:9,weight:900,color:st?(st.main?[138,90,28]:[31,110,100]):[109,90,64],align:'center',ring:false});
-  if(st)text(String(st.order),cx*2+1,cy*2-7,{size:14,weight:900,color:st.main?C.goldInk:C.tealInk,align:'center',ring:false});
+  if(st)text(String(st.order),cx*2+1,cy*2-6,{size:12,weight:900,color:st.main?C.goldInk:C.tealInk,align:'center',ring:false});
 };
 // the hand reads in swing order: stacked cards 1→2→3 from the left, waiting cards after (display only)
 P.handOrdered=()=>[...P.S.hand].sort((a,b)=>(P.stackOf[a.id]?.order||9)-(P.stackOf[b.id]?.order||9));
