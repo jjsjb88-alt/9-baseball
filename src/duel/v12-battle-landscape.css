@@ -5,16 +5,18 @@
    this layer only moves them. Scoped to short landscape screens and .duel-combat.v12-design. */
 @media (orientation:landscape) and (max-height:500px){
   .duel-combat.v12-design>.duel-arena{left:0!important;right:auto!important;top:0!important;bottom:0!important;width:470px!important;height:auto!important}
-  .duel-combat.v12-design>.scoreboard{left:7px!important;right:auto!important;width:200px!important}
-  .duel-combat.v12-design>.v10-combat-hp{left:212px!important;right:auto!important;width:250px!important}
-  .duel-combat.v12-design>.pitch-read{left:8px!important;right:auto!important;top:auto!important;bottom:8px!important}
+  .duel-combat.v12-design>.scoreboard{left:7px!important;right:auto!important;width:200px!important;height:auto!important;min-height:0!important;max-height:none!important;padding-block:4px!important}
+  .duel-combat.v12-design>.scoreboard>*{height:auto!important;max-height:none!important}
+  .duel-combat.v12-design>.v10-combat-hp{left:212px!important;right:auto!important;width:250px!important;height:auto!important;max-height:none!important}
+  .duel-combat.v12-design>.v10-combat-hp .v10-hp{height:auto!important;max-height:none!important;overflow:visible!important}
+  .duel-combat.v12-design>.pitch-read{left:8px!important;right:auto!important;top:auto!important;bottom:8px!important;transform:none!important;width:auto!important;max-width:440px!important}
 
   /* actors keep their phone size inside the taller stadium: pitcher far on the mound, batter near */
   .duel-combat.v12-design>.duel-arena .actor-right{left:auto!important;right:22px!important;top:auto!important;bottom:118px!important;width:132px!important;height:132px!important}
   .duel-combat.v12-design>.duel-arena .actor-left{left:-8px!important;right:auto!important;top:auto!important;bottom:0!important;width:230px!important;height:230px!important}
   .duel-combat.v12-design>.duel-arena .actor-right :is(img,canvas),
   .duel-combat.v12-design>.duel-arena .actor-left :is(img,canvas){width:100%!important;height:100%!important}  /* 9ZONE: top-right, cells kept at touch size */
-  .duel-combat.v12-design>.zone-panel{left:478px!important;right:auto!important;top:12px!important;bottom:auto!important;width:204px!important;height:auto!important;transform:none!important;margin:0!important}
+  .duel-combat.v12-design>.zone-panel{left:478px!important;right:auto!important;top:12px!important;bottom:auto!important;width:204px!important;height:auto!important;max-height:none!important;transform:none!important;margin:0!important}
   .duel-combat.v12-design>.zone-panel .zone-grid{height:auto!important;min-height:0!important}
   .duel-combat.v12-design>.zone-panel .zone-cell{min-height:48px!important;height:50px!important}
 

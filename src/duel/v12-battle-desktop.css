@@ -10,7 +10,7 @@
   .duel-combat.v12-design>.duel-arena .intent{left:400px!important;right:auto!important;top:210px!important;transform:none!important}
 
   /* 9ZONE right of the duel line, cells well above touch size */
-  .duel-combat.v12-design>.zone-panel{left:930px!important;right:auto!important;top:120px!important;bottom:auto!important;width:380px!important;height:auto!important;transform:none!important;margin:0!important}
+  .duel-combat.v12-design>.zone-panel{left:930px!important;right:auto!important;top:120px!important;bottom:auto!important;width:380px!important;height:auto!important;max-height:none!important;transform:none!important;margin:0!important}
   .duel-combat.v12-design>.zone-panel .zone-grid{height:auto!important;min-height:0!important}
 
   /* hand centred along the bottom, actions bottom-right */
