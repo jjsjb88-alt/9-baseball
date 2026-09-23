@@ -18,6 +18,7 @@ import "./duel/golden-master.css";
 import "./duel/v12-battle-portrait.css";
 import "./duel/v12-battle-landscape.css";
 import "./duel/v12-battle-desktop.css";
+import "./duel/v12-battle-type-hud.css";
 import "./duel/v12-battle-type.css";
 
 createRoot(document.getElementById("root")).render(

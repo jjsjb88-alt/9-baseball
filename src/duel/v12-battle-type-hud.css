@@ -1,0 +1,49 @@
+/* V12 P1-2b — the 12px micro floor for the HUD that stays on screen in every battle state (hub, watch,
+   pitch result, next batter), not only the design state. A render audit of hub/watch/result found the
+   same HUD at 6–11px there (scoreboard AT BAT/NEXT/PITCHER HP at 6px, intent caption 7px, base markers
+   6–7px, READ 7–9px, the hub's YOUR CALL copy 7–9px, pile buttons 8px …).
+   Out of scope here: the pitch-result and debrief panels (.pa-result, .decision-debrief) are P4's
+   causal-result work, and the hub's 9ZONE cells keep their own layout (the design-state layer owns them).
+   Scoped to the battle screen root (.duel-combat.release-combat). */
+.duel-combat.release-combat>.battle-ribbon :is(span,b){font-size:12px!important;line-height:16px!important}
+.duel-combat.release-combat>.scoreboard{height:auto!important;max-height:none!important}
+.duel-combat.release-combat>.scoreboard>*{height:auto!important;max-height:none!important}
+.duel-combat.release-combat>.scoreboard :is(.scoreboard-player,.scoreboard-score) :is(span,small){font-size:12px!important;line-height:15px!important;letter-spacing:0!important}
+.duel-combat.release-combat>.scoreboard .scoreboard-count>div{height:auto!important;min-height:14px!important;max-height:none!important;align-items:center!important}
+.duel-combat.release-combat>.scoreboard .scoreboard-count b{font-size:12px!important;line-height:14px!important}
+.duel-combat.release-combat>.scoreboard :is(i,button){font-size:12px!important}
+.duel-combat.release-combat>.v10-combat-hp :is(.v10-hp-name,.v10-hp-phase,.v10-hp-note){font-size:12px!important;line-height:16px!important}
+.duel-combat.release-combat>.v10-combat-hp .v10-hp-phase{white-space:nowrap!important;flex:none!important}
+.duel-combat.release-combat>.v10-combat-hp .v10-hp-count span{font-size:12px!important}
+.duel-combat.release-combat>.v10-combat-hp .hp-last-hit :is(span,strong){font-size:12px!important;line-height:15px!important}
+.duel-combat.release-combat>.duel-arena .intent :is(span,small,em,b,strong){font-size:12px!important;line-height:15px!important}
+.duel-combat.release-combat>.duel-arena :is(.batter-presence,.base-slot,.home-plate) :is(b,span){font-size:12px!important;line-height:14px!important}
+.duel-combat.release-combat>.duel-arena :is(.batter-nameplate,.pitcher-nameplate){font-size:12px!important;line-height:16px!important}
+.duel-combat.release-combat>.duel-arena .landscape-duel-axis :is(span,b,strong){font-size:12px!important;line-height:14px!important}
+.duel-combat.release-combat>.zone-panel .ball-read{font-size:12px!important;line-height:16px!important}
+.duel-combat.release-combat>.zone-panel .zone-heading .eyebrow{font-size:12px!important;letter-spacing:.04em!important}
+.duel-combat.release-combat>.zone-panel .landscape-zone-bar :is(strong,span,b,button),
+.duel-combat.release-combat>.zone-panel .landscape-zone-info-toggle{font-size:12px!important;line-height:16px!important}
+.duel-combat.release-combat>.zone-panel .zone-power-head :is(span,strong){font-size:12px!important;line-height:16px!important}
+.duel-combat.release-combat>.zone-panel .zone-board-power>small{font-size:12px!important;line-height:16px!important}
+.duel-combat.release-combat>.pitch-read :is(span,b,small){font-size:12px!important;line-height:16px!important}
+.duel-combat.release-combat .landscape-read-toggle{font-size:12px!important;line-height:16px!important;white-space:nowrap!important;max-width:none!important}
+.duel-combat.release-combat>.duel-table>.diamond-events :is(b,span){font-size:12px!important;line-height:16px!important}
+.duel-combat.release-combat>.duel-table .decision-copy :is(span,p){font-size:12px!important;line-height:16px!important}
+.duel-combat.release-combat>.duel-table .action-dock .action :is(strong,small,span){font-size:12px!important;line-height:15px!important}
+.duel-combat.release-combat>.duel-table .action-dock .action strong{font-size:14px!important;line-height:18px!important}
+.duel-combat.release-combat>.duel-table .pile-buttons button{font-size:12px!important}
+.duel-combat.release-combat>.duel-table .deck-rule{font-size:12px!important}
+/* the HP card's last-pitch summary is HUD too (the result panels themselves stay for P4) */
+.duel-combat.release-combat>.v10-combat-hp :is(.v10-result,.v10-result-impact,.v10-result-row) :is(span,b,small,strong),
+.duel-combat.release-combat>.v10-combat-hp .v10-result-label{font-size:12px!important;line-height:15px!important}
+/* hub/watch/result 9ZONE cells: at 12px three lines no longer fit a cell, so — as in the design state —
+   the position words move to a legend on the frame and stay in each cell's aria-label */
+.duel-combat.release-combat:not(.v12-design)>.zone-panel .zone-grid>button>[data-zone-copy]{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap!important}
+.duel-combat.release-combat:not(.v12-design)>.zone-panel .zone-grid>button>small{font-size:12px!important;line-height:14px!important;letter-spacing:0!important;white-space:nowrap!important}
+.duel-combat.release-combat:not(.v12-design)>.zone-panel .zone-grid>button>strong{font-size:14px!important;line-height:17px!important}
+.duel-combat.release-combat:not(.v12-design)>.zone-panel .zone-grid{position:relative!important;margin-bottom:12px!important}
+.duel-combat.release-combat:not(.v12-design)>.zone-panel .zone-grid::before,
+.duel-combat.release-combat:not(.v12-design)>.zone-panel .zone-grid::after{position:absolute!important;bottom:-15px!important;z-index:3!important;padding:0 6px!important;border-radius:2px!important;background:#101826!important;color:#e7dcc4!important;font-weight:800!important;font-size:12px!important;line-height:16px!important;pointer-events:none!important;grid-area:auto!important}
+.duel-combat.release-combat:not(.v12-design)>.zone-panel .zone-grid::before{content:"◀ 몸쪽"!important;left:6px!important}
+.duel-combat.release-combat:not(.v12-design)>.zone-panel .zone-grid::after{content:"바깥쪽 ▶"!important;right:6px!important}
