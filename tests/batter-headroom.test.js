@@ -8,7 +8,7 @@ const read=name=>fs.readFileSync(new URL('../src/duel/'+name,import.meta.url),'u
 const declutter=read('landscape-declutter.css');
 const golden=read('golden-master.css');
 
-// Flat list of {media, selector, body}; one level of @media nesting is enough here.
+// Flat list of {media, selector, body}; media joins every enclosing at-rule prelude.
 function rules(css){
   const out=[];const src=css.replace(/\/\*[\s\S]*?\*\//g,'');
   let i=0;
@@ -16,9 +16,9 @@ function rules(css){
     while(i<end){
       const open=src.indexOf('{',i);if(open<0||open>=end)return;
       const head=src.slice(i,open).trim();
-      if(head.startsWith('@media')){
+      if(head.startsWith('@')){
         let depth=1,j=open+1;while(depth&&j<src.length){if(src[j]==='{')depth++;else if(src[j]==='}')depth--;j++;}
-        i=open+1;block(head.slice(6).trim(),j-1);i=j;continue;
+        i=open+1;block((media+' '+head).trim(),j-1);i=j;continue;
       }
       const close=src.indexOf('}',open);
       out.push({media,selector:head,body:src.slice(open+1,close)});
@@ -91,10 +91,11 @@ describe('batter headroom on landscape screens',()=>{
 
   it('the authored batter replaces the scale with a headroom-limited size',()=>{
     const arena=gRules.find(r=>r.selector==='.duel-combat.landscape-declutter>.duel-arena.golden-master-stage');
-    expect(arena?.media).toBe('(orientation:landscape)');
+    const scoped='@supports (height:1cqh) @media (orientation:landscape)';
+    expect(arena?.media).toBe(scoped);
     expect(decl(arena.body,'container-type')).toBe('size');
     const r=gRules.find(x=>x.selector===HEADROOM_SEL&&decl(x.body,'--gm-batter-fit'));
-    expect(r?.media).toBe('(orientation:landscape)');
+    expect(r?.media).toBe(scoped);
     expect(decl(r.body,'scale')).toBe('none!important');
     expect(decl(r.body,'width')).toBe('var(--gm-batter-size)!important');
     expect(decl(r.body,'height')).toBe('var(--gm-batter-size)!important');

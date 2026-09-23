@@ -1139,7 +1139,10 @@
    position wherever it already fits, and shrinks around the same foot centre
    only when the helmet would pass the scoreboard bottom.
    .906 = helmet height above the box bottom for the 116%/-8% art framing:
-   1.08 - 1.16 * .15 (highest helmet row across all ten poses: finish). */
+   1.08 - 1.16 * .15 (highest helmet row across all ten poses: finish).
+   Behind @supports: without container units the var() sizes would compute to
+   auto while scale:none still applied, so old engines keep the scaled box. */
+@supports (height:1cqh){
 @media (orientation:landscape){
   .duel-combat.landscape-declutter>.duel-arena.golden-master-stage{container-type:size}
   .duel-combat.landscape-declutter>.duel-arena.golden-master-stage .actor-left{
@@ -1150,6 +1153,7 @@
     height:var(--gm-batter-size)!important;
     left:calc(var(--declutter-batter-left,3.5%) + (var(--gm-batter-box) - var(--gm-batter-size)) / 2)!important;
   }
+}
 }
 @media (prefers-reduced-motion:reduce){
   .golden-master-stage .batter-reboot-v3,
