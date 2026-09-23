@@ -1,0 +1,71 @@
+/* V12 P1-1a — D1 Golden Master skeleton for portrait phones, design state only (swing / prepare).
+   Goal: HP, 9ZONE, hand and the execute button share one 390×844 screen instead of a 1460px page.
+   Like the Golden Master, the 9ZONE stands inside the stadium (same grid row as the arena) with the
+   batter left of it; decorative headers shrink first, rule text and decision controls stay (spec §2.4).
+   Loaded after every legacy layer; every selector is scoped to .duel-combat.v12-design so hub, watch,
+   pitch results and all other screens keep their current layout. No landscape/desktop rules here. */
+@media (max-width:900px) and (orientation:portrait){
+  .duel-combat.v12-design{grid-template-rows:auto auto minmax(300px,1fr) auto auto!important;row-gap:4px!important;padding:4px 6px 6px!important;min-height:calc(100dvh - 46px)!important;box-sizing:border-box!important}
+  .duel-combat.v12-design>.battle-ribbon{grid-row:1!important;min-height:0!important;height:22px!important;padding-block:0!important}
+  .duel-combat.v12-design{grid-template-columns:minmax(0,.82fr) minmax(0,1fr)!important}
+  .duel-combat.v12-design>*{grid-column:1/-1!important}
+  /* the scoreboard line: batter and count on the left, the pitcher's HP on the right (its number was shown twice) */
+  .duel-combat.v12-design>.scoreboard{grid-row:2!important;grid-column:1!important;min-height:0!important;grid-template-columns:1fr auto!important;padding:4px 8px!important}
+  .duel-combat.v12-design>.scoreboard>.scoreboard-score{display:none!important}
+
+  .duel-combat.v12-design>.duel-arena{grid-row:3!important;height:auto!important;min-height:300px!important;max-height:none!important;align-self:stretch!important}
+  .duel-combat.v12-design>.v10-combat-hp{grid-row:2!important;grid-column:2!important;min-height:0!important;height:auto!important;max-height:none!important;overflow:visible!important;margin:0!important}
+  .duel-combat.v12-design>.v10-combat-hp .v10-hp.v10-hp{display:grid!important;grid-template-columns:1fr auto!important;grid-template-rows:auto 8px auto!important;column-gap:6px!important;row-gap:3px!important;padding:4px 8px!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important}
+  .duel-combat.v12-design>.v10-combat-hp .v10-hp .v10-hp-head{grid-column:1/-1!important}
+  .duel-combat.v12-design>.v10-combat-hp .v10-hp .v10-hp-bar{grid-column:1/-1!important;grid-row:2!important;height:8px!important;min-height:0!important;margin:0!important;top:auto!important}
+  .duel-combat.v12-design>.v10-combat-hp .v10-hp .v10-hp-count{grid-column:1!important;grid-row:3!important}
+  .duel-combat.v12-design>.v10-combat-hp .v10-hp .v10-hp-note{grid-column:2!important;grid-row:3!important;align-self:center!important;margin:0!important}
+  .duel-combat.v12-design>.v10-combat-hp .v10-hp-phase{font-size:12px!important;line-height:16px!important;min-height:0!important;padding:0 6px!important}
+  .duel-combat.v12-design>.v10-combat-hp .v10-hp .v10-hp-head{min-height:0!important}
+  .duel-combat.v12-design>.v10-combat-hp .v10-hp-name{font-size:12px!important;line-height:16px!important}
+  .duel-combat.v12-design>.v10-combat-hp .v10-hp-count{margin:0!important;line-height:20px!important}
+  .duel-combat.v12-design>.v10-combat-hp .v10-hp-count b{font-size:20px!important}
+  .duel-combat.v12-design>.v10-combat-hp .v10-hp-note{font-size:12px!important;line-height:14px!important}
+
+  /* the 9ZONE stands on the plate, right of the batter */
+  .duel-combat.v12-design>.zone-panel{grid-row:3!important;align-self:end!important;justify-self:end!important;width:64%!important;z-index:31!important;margin:0 4px 4px 0!important;padding:6px!important;
+    background:rgba(8,14,24,.62)!important;border:2px solid rgba(255,228,162,.88)!important;border-radius:2px!important;box-shadow:0 0 0 1px #140c0e,0 0 18px rgba(255,210,122,.3)!important}
+  /* the read tag rides the frame's top edge like the Golden Master's 9ZONE tab */
+  .duel-combat.v12-design>.zone-panel .zone-heading{position:absolute!important;top:-12px!important;right:8px!important;min-height:0!important;margin:0!important;padding:0!important;z-index:2!important}
+  .duel-combat.v12-design>.zone-panel{position:relative!important}
+  /* the duel above the board: pitcher far on the mound, intent beside him, batter near on the left */
+  .duel-combat.v12-design>.duel-arena .actor-right{left:auto!important;right:34px!important;top:2px!important;bottom:auto!important;width:104px!important;height:104px!important;z-index:12!important}
+  .duel-combat.v12-design>.duel-arena .actor-right :is(img,canvas){width:100%!important;height:100%!important}
+  .duel-combat.v12-design>.duel-arena .intent{left:6px!important;right:auto!important;top:6px!important;transform:none!important;width:44%!important;min-height:0!important;padding:4px 8px!important;z-index:14!important}
+  .duel-combat.v12-design>.zone-panel .zone-heading>:not(:last-child){display:none!important}
+  .duel-combat.v12-design>.zone-panel .zone-card-board-guide{display:grid!important;grid-template-columns:1fr!important;gap:4px!important;margin:0 0 4px!important;padding:0!important;min-height:0!important;background:none!important;border:0!important}
+  .duel-combat.v12-design>.zone-panel .zone-board-copy>span,
+  .duel-combat.v12-design>.zone-panel .zone-board-copy>strong{display:none!important}
+  .duel-combat.v12-design>.zone-panel .zone-board-copy strong{font-size:12px!important;line-height:16px!important}
+  .duel-combat.v12-design>.zone-panel .zone-board-copy small{font-size:12px!important;line-height:16px!important}
+  .duel-combat.v12-design>.zone-panel .zone-board-power{padding:0!important;min-height:0!important}
+  .duel-combat.v12-design>.zone-panel .zone-board-power>small{display:none!important}
+  .duel-combat.v12-design>.zone-panel .zone-board-rate{gap:2px!important;min-height:0!important}
+  .duel-combat.v12-design>.zone-panel .zone-board-rate>i{padding:1px 2px!important;min-height:0!important}
+  .duel-combat.v12-design>.zone-panel .zone-grid{gap:3px!important;min-height:0!important;height:auto!important}
+  .duel-combat.v12-design>.zone-panel .zone-cell{min-height:48px!important;height:48px!important;padding:2px!important;gap:0!important}
+
+  .duel-combat.v12-design>.pitch-read{grid-row:4!important;min-height:0!important;padding:4px 8px!important}
+  .duel-combat.v12-design>.duel-table{grid-row:5!important;padding:0!important;min-height:0!important}
+  .duel-combat.v12-design>.duel-table>.diamond-events{min-height:0!important;margin:0!important;padding:0 6px 2px!important;font-size:12px!important;line-height:16px!important}
+  /* back button and 'watch this one' share one row; the hand and the execute strip follow */
+  .duel-combat.v12-design>.duel-table .card-drawer{display:grid!important;grid-template-columns:auto minmax(0,1fr)!important;column-gap:6px!important;row-gap:4px!important;padding:6px!important}
+  .duel-combat.v12-design>.duel-table .card-drawer>*{grid-column:1/-1!important}
+  .duel-combat.v12-design>.duel-table .card-drawer>.drawer-head{grid-column:1!important;grid-row:1!important;min-height:0!important;padding:0!important;margin:0!important}
+  .duel-combat.v12-design>.duel-table .card-drawer>.drawer-escape{grid-column:2!important;grid-row:1!important;min-height:0!important;padding:0 0 0 6px!important;margin:0!important}
+  .duel-combat.v12-design>.duel-table .drawer-head>div{display:none!important}
+  .duel-combat.v12-design>.duel-table .card-drawer .duel-hand{min-height:0!important;height:140px!important;padding-block:2px!important}
+  .duel-combat.v12-design>.duel-table .card-drawer .duel-card{height:130px!important;min-height:130px!important;max-height:130px!important;flex-basis:108px!important;width:108px!important;min-width:108px!important}
+  .duel-combat.v12-design>.duel-table .decision-preview{min-height:0!important;padding:6px 10px!important}
+  /* once a swing is armed the execute strip is pinned to the bottom edge: it can never scroll away.
+     (.duel-app scrolls itself, so position:sticky binds to a box that never moves — fixed is the reliable pin) */
+  .duel-combat.v12-design>.duel-table .decision-preview.active{position:fixed!important;left:6px!important;right:6px!important;bottom:6px!important;z-index:45!important;margin:0!important;
+    box-shadow:0 -10px 24px rgba(4,6,10,.7)!important}
+  .duel-combat.v12-design:has(.decision-preview.active){padding-bottom:100px!important}
+  .duel-combat.v12-design>.duel-table>.table-footer{min-height:0!important;padding:2px 6px!important}
+}
