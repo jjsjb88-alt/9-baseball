@@ -15,7 +15,7 @@ GM.flashes([[28,76],[196,70],[60,82]]);
 // 2–3. opponent and duel
 GM.board({x:106,y:22,w:90,h:29});
 GM.pitcher({fx:151,fy:133,h:62,path:[112,158]});
-GM.batter({x:-34,y:36,h:200});
+GM.batter({x:-26,y:58,h:176});
 for(let k=0;k<6;k++)K.wash(0,165+k*5,422,5,[12,7,6],(k+1)/6*.85);
 GM.edges(14,181,1000);
 GM.intent({x:176,y:92,w:55,h:24});

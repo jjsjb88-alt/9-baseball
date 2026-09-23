@@ -16,7 +16,7 @@ K.line(0,275,80,262,[236,226,202]);K.line(0,276,80,263,[120,80,60]);K.line(176,2
 // 2–3. opponent and duel
 GM.board({x:52,y:34,w:90,h:29});
 GM.pitcher({fx:102,fy:131,h:62,path:[129,134]});
-GM.batter({x:-39,y:131,h:200});
+GM.batter({x:-30,y:152,h:176});   // exactly 2 art px per authored pixel: even chunks
 for(let k=0;k<8;k++)K.wash(0,268+k*3,95,3,[12,7,6],(k+1)/8*.9);
 GM.edges(14,274,195);
 for(let k=0;k<4;k++)K.wash(0,284+k*2,195,2,[12,7,6],.25+k*.2);

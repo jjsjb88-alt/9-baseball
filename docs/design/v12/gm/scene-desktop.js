@@ -21,7 +21,7 @@ K.line(4,272,150,262,[236,226,202]);K.line(4,273,150,263,[120,80,60]);
 GM.board({x:195,y:76,w:90,h:29},{posts:14});
 GM.pitcher({fx:240,fy:177,h:56,path:[276,226]});
 for(let r=0;r<4;r++)K.wash(14+r*8,279+r,122-r*16,7-r*2,[10,4,2],.3);K.dither(20,277,110,4,[10,4,2],.35);                        // contact shadow
-GM.batter({x:22,y:118,h:168});
+GM.batter({x:18,y:110,h:176});
 GM.edges(14,236,480);
 GM.intent({x:150,y:120,w:55,h:24},{pointer:'right'});
 
