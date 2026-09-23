@@ -36,6 +36,12 @@
 > 상세 인수인계: [V12-D1-GOLDEN-MASTER-HANDOFF.md](./V12-D1-GOLDEN-MASTER-HANDOFF.md)
 > 저품질 배우 placeholder는 금지한다. 파일 포맷이 아니라 실루엣·인체·키포즈·명암·축소 판독성·환경 통합감이 품질 게이트다.
 > Golden Master를 실제 390×844 PNG로 보여주고 사용자가 명시적으로 승인하기 전까지 D1은 미확정, P1-1은 미착수 상태를 유지한다.
+>
+> **2026-09-24 Golden Master 1안 제작 완료 — 사용자 확정 대기.** [d1-golden-master.html](./design/v12/d1-golden-master.html) (?v=landscape, ?v=desktop)
+> 캡처: [세로](./design/v12/shots/d1-gm-390x844.png) · [가로](./design/v12/shots/d1-gm-844x390.png) · [PC](./design/v12/shots/d1-gm-1440x900.png). 기록: [gm/README.md](./design/v12/gm/README.md) (루프 12회, 독립 리뷰 3회).
+> 한 픽셀 격자 + DUGOUT 원화 재샘플링 + Galmuri(OFL) 픽셀 글꼴. 칸·연결·효율은 gm-state.mjs가 엔진으로 계산(C1~C6). 런타임 변경 0.
+> CI V12 P0 Verify run `35921648101` 성공. **남은 한계는 원화**(배우-경기장 밀도, 정면 투수)이며 코드만으로는 판정이 크게 바뀌지 않는다.
+> **D1 사용자 확정은 비워 둔다.** 사용자가 이 캡처를 보고 승인하면 체크하고 P1-1을 연다.
 
 ---
 

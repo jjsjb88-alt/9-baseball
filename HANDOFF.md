@@ -1,5 +1,13 @@
 # 9ZONE SHOWDOWN — Codex 인수인계
 
+## 최우선 · 2026-09-24 — V12 D1 GOLDEN MASTER 1안 완료, 사용자 확정 대기
+
+- 시안: docs/design/v12/d1-golden-master.html (세로 기본, ?v=landscape, ?v=desktop). 기록: docs/design/v12/gm/README.md.
+- 캡처: docs/design/v12/shots/d1-gm-{390x844,844x390,1440x900}.png. CI V12 P0 Verify run 35921648101 성공, 런타임 변경 0.
+- D1은 **미확정**. 사용자가 캡처를 보고 승인해야 P1-1을 연다. 남은 한계는 원화(배우-경기장 밀도, 정면 투수).
+
+---
+
 ## 최우선 · 2026-09-23 — V12 D1 GOLDEN MASTER
 
 **현재 최우선 문서: [`docs/V12-D1-GOLDEN-MASTER-HANDOFF.md`](./docs/V12-D1-GOLDEN-MASTER-HANDOFF.md)**
