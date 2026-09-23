@@ -13,8 +13,11 @@ for(const v of ['d','e','f']){
   const context=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1,reducedMotion:'reduce'});
   const page=await context.newPage();
   const errors=[];
-  page.on('console',msg=>{if(msg.type()==='error')errors.push(msg.text())});
-  page.on('pageerror',err=>errors.push(String(err)));
+  page.on('pageerror',err=>errors.push('pageerror '+String(err)));
+  page.on('requestfailed',req=>errors.push('requestfailed '+req.url()+' '+(req.failure()?.errorText||'')));
+  page.on('response',res=>{
+    if(res.status()>=400)errors.push('http '+res.status()+' '+res.url());
+  });
   await page.goto(base+'?v='+v,{waitUntil:'networkidle'});
   await page.waitForTimeout(450);
   const file=path.join(out,`d1-${v}-390x844.png`);
