@@ -14,6 +14,7 @@
 
   .duel-combat.landscape-declutter{
     --sts-hand-h:clamp(124px,32dvh,158px);
+    --scoreboard-bottom:49px;
     height:calc(100dvh - 38px)!important;
     background:#061419!important
   }
@@ -156,7 +157,7 @@
   /* Batter and pitcher become the visual anchors. */
   .duel-combat.landscape-declutter>.duel-arena .actor-left,
   .duel-combat.landscape-declutter>.duel-arena .actor-right{
-    z-index:38!important;scale:1.42!important;transform-origin:50% 100%!important;
+    z-index:38!important;scale:1.42!important;--declutter-actor-scale:1.42;--declutter-batter-left:5%;transform-origin:50% 100%!important;
     filter:brightness(1.16) contrast(1.11) saturate(1.10) drop-shadow(0 13px 7px rgba(0,0,0,.88)) drop-shadow(0 0 15px rgba(239,216,138,.28))!important
   }
   .duel-combat.landscape-declutter>.duel-arena .actor-left{left:5%!important}
@@ -263,7 +264,7 @@
 
 @media (orientation:landscape) and (min-width:1080px) and (min-height:650px){
   .duel-header{height:44px!important;min-height:44px!important}
-  .duel-combat.landscape-declutter{--sts-hand-h:clamp(188px,27dvh,230px);height:calc(100dvh - 44px)!important}
+  .duel-combat.landscape-declutter{--sts-hand-h:clamp(188px,27dvh,230px);--scoreboard-bottom:58px;height:calc(100dvh - 44px)!important}
   .duel-combat.v10-landscape-declutter>.scoreboard{top:10px!important;width:260px!important;height:48px!important;min-height:48px!important}
   .duel-combat.v10-landscape-declutter>.v10-combat-hp{top:10px!important;width:330px!important;height:48px!important;min-height:48px!important}
   .duel-combat.landscape-declutter>.zone-panel{top:58px!important;width:450px!important}
@@ -271,7 +272,7 @@
   .duel-combat.landscape-declutter>.zone-panel.board-targeting .zone-cell,
   .duel-combat.landscape-declutter>.zone-panel.board-dragging .zone-cell{height:64px!important;min-height:64px!important}
   .duel-combat.landscape-declutter>.zone-panel .zone-cell span{font-size:7.5px!important}.duel-combat.landscape-declutter>.zone-panel .zone-cell strong{font-size:12px!important}
-  .duel-combat.landscape-declutter>.duel-arena .actor-left,.duel-combat.landscape-declutter>.duel-arena .actor-right{scale:1.52!important}
+  .duel-combat.landscape-declutter>.duel-arena .actor-left,.duel-combat.landscape-declutter>.duel-arena .actor-right{scale:1.52!important;--declutter-actor-scale:1.52;--declutter-batter-left:6%}
   .duel-combat.landscape-declutter>.duel-arena .actor-left{left:6%!important}.duel-combat.landscape-declutter>.duel-arena .actor-right{right:6%!important}
   .duel-combat.landscape-declutter .card-drawer .duel-card{flex-basis:132px!important;width:132px!important;min-width:132px!important;min-height:154px!important}
   .duel-combat.landscape-declutter .card-drawer .duel-hand{right:186px!important}
@@ -280,7 +281,7 @@
 
 @media (orientation:landscape) and (max-height:430px){
   .duel-header{height:34px!important;min-height:34px!important}
-  .duel-combat.landscape-declutter{--sts-hand-h:112px;height:calc(100dvh - 34px)!important}
+  .duel-combat.landscape-declutter{--sts-hand-h:112px;--scoreboard-bottom:38px;height:calc(100dvh - 34px)!important}
   .duel-combat.v10-landscape-declutter>.scoreboard{top:4px!important;width:184px!important;height:34px!important;min-height:34px!important}
   .duel-combat.v10-landscape-declutter>.v10-combat-hp{top:4px!important;width:220px!important;height:34px!important;min-height:34px!important}
   .duel-combat.landscape-declutter>.zone-panel{top:38px!important;width:300px!important;padding:4px!important;max-height:calc(100% - var(--sts-hand-h) - 40px)!important}
@@ -293,7 +294,7 @@
   .duel-combat.landscape-declutter>.zone-panel.board-targeting .zone-cell,
   .duel-combat.landscape-declutter>.zone-panel.board-dragging .zone-cell{height:48px!important;min-height:48px!important}
   .duel-combat.landscape-declutter>.zone-panel .zone-cell span{font-size:5px!important}.duel-combat.landscape-declutter>.zone-panel .zone-cell strong{font-size:8px!important}.duel-combat.landscape-declutter>.zone-panel .zone-cell small{display:none!important}
-  .duel-combat.landscape-declutter>.duel-arena .actor-left,.duel-combat.landscape-declutter>.duel-arena .actor-right{scale:1.28!important}
+  .duel-combat.landscape-declutter>.duel-arena .actor-left,.duel-combat.landscape-declutter>.duel-arena .actor-right{scale:1.28!important;--declutter-actor-scale:1.28;--declutter-batter-left:3.5%}
   .duel-combat.landscape-declutter>.duel-arena .actor-left{left:3.5%!important}.duel-combat.landscape-declutter>.duel-arena .actor-right{right:3.5%!important}
   .duel-combat.landscape-declutter>.duel-arena .intent{top:4px!important;max-width:28vw!important;padding:2px 6px!important}.duel-combat.landscape-declutter>.duel-arena .intent>strong{font-size:6px!important}
   .duel-combat.landscape-declutter .v10-relic-rack{top:40px!important;max-width:120px!important}
@@ -321,7 +322,7 @@
   .duel-combat.landscape-declutter>.zone-panel.board-targeting .zone-cell,
   .duel-combat.landscape-declutter>.zone-panel.board-dragging .zone-cell{height:46px!important;min-height:46px!important}
   .duel-combat.landscape-declutter>.zone-panel .zone-cell span{display:none!important}
-  .duel-combat.landscape-declutter>.duel-arena .actor-left,.duel-combat.landscape-declutter>.duel-arena .actor-right{scale:1.2!important}
+  .duel-combat.landscape-declutter>.duel-arena .actor-left,.duel-combat.landscape-declutter>.duel-arena .actor-right{scale:1.2!important;--declutter-actor-scale:1.2}
   .duel-combat.landscape-declutter .card-drawer .drawer-escape{display:none!important}
 }
 
