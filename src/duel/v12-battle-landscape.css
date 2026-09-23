@@ -29,6 +29,10 @@
   .duel-combat.v12-design>.zone-panel{left:56.6%!important;right:auto!important;top:12px!important;bottom:auto!important;width:24.2%!important;min-width:170px!important;height:auto!important;max-height:none!important;transform:none!important;margin:0!important}
   .duel-combat.v12-design>.zone-panel .zone-grid{height:auto!important;min-height:0!important}
   .duel-combat.v12-design>.zone-panel .zone-cell{min-height:48px!important;height:50px!important}
+  /* the legacy layer shifts and grows the board while a card is armed or dragged (translateX(-50%) for
+     its old centred board): the drop target would slide out from under the finger. It stays put. */
+  .duel-combat.v12-design.v12-design>.zone-panel.zone-panel{transform:none!important}
+  .duel-combat.v12-design.v12-design>.zone-panel.zone-panel .zone-cell{min-height:48px!important;height:50px!important}
 
   /* the right side is one dock: the action column at its top, the hand along its bottom. The dock
      itself lets clicks through to the 9ZONE beneath it; only its controls take the pointer. */

@@ -12,6 +12,10 @@
   /* 9ZONE right of the duel line, cells well above touch size */
   .duel-combat.v12-design>.zone-panel{left:930px!important;right:auto!important;top:120px!important;bottom:auto!important;width:380px!important;height:auto!important;max-height:none!important;transform:none!important;margin:0!important}
   .duel-combat.v12-design>.zone-panel .zone-grid{height:auto!important;min-height:0!important}
+  /* armed/dragging: the legacy layer shifts the board (translateX(-50%)) and grows the cells 60→64px;
+     the drop target must not move under the pointer */
+  .duel-combat.v12-design.v12-design>.zone-panel.zone-panel{transform:none!important}
+  .duel-combat.v12-design.v12-design>.zone-panel.zone-panel .zone-cell{height:60px!important;min-height:60px!important}
 
   /* hand centred along the bottom, actions bottom-right */
   .duel-combat.v12-design>.duel-table .card-drawer>.duel-hand{left:430px!important;right:auto!important;width:590px!important}
