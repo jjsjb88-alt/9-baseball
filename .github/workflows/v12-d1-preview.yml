@@ -29,11 +29,11 @@ jobs:
         run: |
           pnpm add --save-dev --ignore-workspace-root-check playwright
           pnpm exec playwright install --with-deps chromium
-      - name: Start Vite
+      - name: Start static preview server
         run: |
-          pnpm dev --host 127.0.0.1 --port 5177 --strictPort > /tmp/v12-d1-preview.log 2>&1 &
+          python3 -m http.server 5177 --bind 127.0.0.1 > /tmp/v12-d1-preview.log 2>&1 &
           for i in {1..60}; do
-            if curl -fsS http://127.0.0.1:5177/ >/dev/null; then exit 0; fi
+            if curl -fsS http://127.0.0.1:5177/docs/design/v12/d1-preview.html >/dev/null; then exit 0; fi
             sleep 1
           done
           cat /tmp/v12-d1-preview.log
