@@ -8,9 +8,9 @@
 
 | | |
 | --- | --- |
-| 현재 단계 | **P0 진행 중 · P0-4 완료** |
+| 현재 단계 | **P0 완료 · P1은 D1 사용자 확정 대기** |
 | 브랜치 | `claude/feedback-review-plan-vw24at` |
-| PR | [#83](https://github.com/jjsjb88-alt/9-baseball/pull/83) — P0-1 fixture + P0-2 Before 기준샷 + P0-3 토큰 + P0-4 비차단 검사 골격. 런타임 UI 변경 0 |
+| PR | [#83](https://github.com/jjsjb88-alt/9-baseball/pull/83) — **P0 완료**: fixture + Before 3뷰포트 + 정의 전용 토큰 + 비차단 검사 골격 + 화면 변화 0 증명. 런타임 UI 변경 0 |
 | 추적 이슈 | [#84](https://github.com/jjsjb88-alt/9-baseball/issues/84) |
 | 새 세션 프롬프트 | [`V12-NEW-SESSION-PROMPT.md`](./V12-NEW-SESSION-PROMPT.md) |
 | 막힌 곳 | **D1~D8은 검수자 권고까지만 있고 사용자 확정이 없다.** P0은 진행 가능, P1부터는 D1 확정 필요 |
@@ -30,8 +30,8 @@
 
 ## 다음 한 바퀴
 
-> **P0-5.** P0 전체의 화면 변화 0을 증명한다.
-> 고정 Before 캡처 비교 + 전체 테스트 + production build + `zone-report` 불변을 한 묶음으로 닫는다.
+> **P1-1은 아직 시작하지 않는다.** D1 시각 방향의 **사용자 확정**이 필요하다.
+> 검수자 권고는 “C의 정면 9존·큰 손패 + B의 정보 위계, 판정에서는 기존 경기장/배우 연출 보존”이다.
 
 ---
 
@@ -41,7 +41,7 @@
 - [x] **P0-2** 3뷰포트 Before 캡처 세트를 `docs/design/v12/shots/`에 커밋 — `ef86dccc`
 - [x] **P0-3** `src/duel/tokens.css` 신설 (정의만, 적용 0) — `e26ce769`
 - [x] **P0-4** `tests/design-system.test.js` 골격 — 현재값 기록만, 감축 임계값 없음 — `4470fd42`
-- [ ] **P0-5** 화면 변화 0 증명: 캡처 비교 + `pnpm test` + `pnpm build` + `zone-report` 불변 — `_`
+- [x] **P0-5** 화면 변화 0 증명: 캡처 비교 + `pnpm test` + `pnpm build` + `zone-report` 불변 — `6c44a073`
 
 > **P0-1 검증 증거:** 기준 SHA `a1cbf625fa558bb463999fee47998868d155fcb4`, seed `12012026`,
 > fixture `docs/design/v12/fixtures/p0-1-combat.json`, collector `scripts/v12-baseline.mjs`.
@@ -72,6 +72,16 @@
 > **현재값과 기록값의 equality·최대/최소·감축 목표 비교는 하지 않는다.** run `35820148038`에서
 > **55파일 / 419테스트**, production build, frozen-baseline `zone-report 30` exact diff 0,
 > V12 audit, fixture 재현성, 3뷰포트 재캡처가 모두 통과했다. 이미지를 직접 읽어 화면 변화 0을 확인했다.
+
+> **P0-5 검증 증거:** 첫 red `f75ff43f`에서 `node ... | tee`가 Node 실패를 숨기는 CI 파이프 버그를 발견했고,
+> `408582d1`에서 `pipefail`을 켜 비교 스크립트 부재가 마지막 게이트에서 실제로 실패함을 확인했다.
+> `73aa8f49`의 첫 고정 Before 비교는 PC의 sparse Canvas/VFX 차이 연속 덩어리 166px만 예비 128px 한도를 넘었고
+> 다른 픽셀 지표는 모두 통과했다. 이를 근거로 bbox 보고를 추가하고 캡처 잡음 한도를 192px로 보정한 `6c44a073`에서
+> Actions run `35822610676`이 **55파일 / 419테스트**, production build, frozen-baseline `zone-report 30` exact diff 0,
+> V12 audit, fixture 재현성, 3뷰포트 재캡처·픽셀 비교를 모두 통과했다.
+> 고정 Before 대비 변경 픽셀 비율은 390×844 **0.0453%**, 844×390 **0.1516%**, 1440×900 **0.1478%**였고,
+> 최대 연속 덩어리는 각각 10 / 60 / 79px였다. 세 이미지를 직접 읽어 레이아웃·스타일 변화가 없고
+> 기존 타자 stand-in 문제도 그대로임을 확인했다. 이는 PNG 바이트 동일이 아니라 **측정된 Canvas/VFX 캡처 잡음 안의 화면 변화 0** 증거다.
 
 > P0에서 `!important` 총량 감축·일괄 `@layer` 래핑을 **하지 않는다**(C7).
 

@@ -3,7 +3,7 @@
 ## 현재 V12 UI/UX 루프 엔지니어링 · 2026-09-23
 
 - 브랜치 `claude/feedback-review-plan-vw24at` · [PR #83](https://github.com/jjsjb88-alt/9-baseball/pull/83) · 추적 이슈 #84.
-  **P0-4까지 완료했다.** 런타임 UI·게임 규칙·확률·피해·카드 수치·런 구조는 변경하지 않았고 main/Pages도 건드리지 않았다.
+  **P0-5까지 완료해 P0를 닫았다.** 런타임 UI·게임 규칙·확률·피해·카드 수치·런 구조는 변경하지 않았고 main/Pages도 건드리지 않았다.
 - P0-1 기준 SHA는 `a1cbf625fa558bb463999fee47998868d155fcb4`, seed는 `12012026`.
   실제 `createV10Duel → enterV10Node('a1-entry')` 결과를
   `docs/design/v12/fixtures/p0-1-combat.json`에 고정했고 `scripts/v12-baseline.mjs`가 재현한다.
@@ -33,6 +33,14 @@
 - P0-4 검증 run `35820148038`: **55파일·419테스트 통과**, production build 통과,
   frozen baseline 대비 `zone-report.js 30` exact diff 0, V12 audit·fixture 재현성 통과,
   390×844 / 844×390 / 1440×900 재캡처 오류 0. 세 이미지를 직접 읽어 화면 변화가 없음을 확인했다.
+- **P0-5 화면 변화 0 증명:** `scripts/v12-p0-screen-diff.mjs`가 저장소의 고정 Before 3장과 현재 재캡처를
+  PNG 바이트가 아니라 디코딩된 RGB 픽셀로 비교한다. P0-3↔P0-4 동일 코드 재캡처의 Canvas/VFX 잡음을 먼저 계측했고,
+  첫 fixed-Before 진단에서 PC sparse component 166px만 예비 한도를 넘은 사실을 기록한 뒤 bbox 보고와 192px 캡처 잡음 한도를 확정했다.
+- P0-5 최종 검증 run `35822610676`: **55파일·419테스트 통과**, production build 통과,
+  frozen baseline 대비 `zone-report 30` exact diff 0, V12 audit·fixture 재현성·브라우저 오류 0.
+  fixed Before 대비 변경 픽셀은 세로 0.0453%, 가로 0.1516%, PC 0.1478%, 최대 연속 덩어리 10/60/79px로 모두 통과했다.
+  세 이미지를 직접 읽었으며 P0 시작 전 화면 구성과 타자 stand-in 상태가 그대로다.
+- **P0는 완료했지만 P1은 미착수다.** D1~D8의 사용자 확정은 여전히 비어 있고, P1-1에는 D1 사용자 확정이 필요하다.
 - 검수 계약은 그대로다: 커버=`coverageAt`, 연결=순서상 앞뒤 aimZone 동일/8방향 인접,
   `damageRate`=배율, 읽기 등급=0/1/2, 공개 정보 경계 준수, 엔진 공식 복제 금지,
   `!important` 일괄 `@layer` 래핑 금지.
@@ -40,9 +48,9 @@
 
 ### 다음 작업
 
-1. **P0-5 한 줄만:** P0의 화면 변화 0을 고정 Before 캡처 비교와 전체 검증 묶음으로 증명한다.
-2. `pnpm test` / production build / frozen-baseline `zone-report 30` exact diff / V12 audit를 모두 보존한다.
-3. P0-5가 닫혀도 P1은 D1 사용자 확정 전에는 시작하지 않는다.
+1. **P1-1은 아직 시작하지 않는다.** D1 사용자 확정을 먼저 받는다.
+2. D1 검수자 권고: C의 정면 9존·큰 손패 + B의 정보 위계. 판정 상태에서는 기존 경기장·배우 연출을 보존한다.
+3. 사용자가 D1을 확정하면 그 다음 루프에서 P1-1 전투 화면 골격 배치 한 줄만 진행한다.
 
 ---
 
