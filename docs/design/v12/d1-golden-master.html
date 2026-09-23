@@ -6,7 +6,7 @@
 <title>V12 D1 Golden Master</title>
 <!--
   V12 D1 GOLDEN MASTER — decision-only static key screen. Not runtime code.
-    ?v=portrait (default) 390×844 · ?v=landscape 844×390 · ?v=desktop 1440×900
+    ?v=portrait (default) 390×844 · ?v=landscape 844×390 · ?v=desktop 1440×900 (3× pixels: the desktop is not an enlarged phone)
 
   ONE PIXEL GRID. Each layout paints on an art canvas at half its CSS size, shown at exactly 2×.
   The DUGOUT authored originals (stadium / batter / pitcher, assets/duel) are re-sampled onto
@@ -35,12 +35,12 @@ canvas{position:absolute;left:0;top:0}
 </main>
 <script>
 (()=>{
-  const L={portrait:[390,844,'gm/scene.js'],landscape:[844,390,'gm/scene-landscape.js'],desktop:[1440,900,'gm/scene-desktop.js']};
-  const v=new URLSearchParams(location.search).get('v'),[w,h,src]=L[v]||L.portrait;
+  const L={portrait:[390,844,'gm/scene.js',2],landscape:[844,390,'gm/scene-landscape.js',2],desktop:[1440,900,'gm/scene-desktop.js',3]};
+  const v=new URLSearchParams(location.search).get('v'),[w,h,src,q]=L[v]||L.portrait;
   const stage=document.querySelector('.stage'),art=document.getElementById('art'),txt=document.getElementById('txt');
   document.documentElement.style.cssText=document.body.style.cssText='width:'+w+'px;height:'+h+'px';
   stage.style.cssText='width:'+w+'px;height:'+h+'px';
-  art.width=w/2;art.height=h/2;txt.width=w*2;txt.height=h*2;
+  art.width=w/q;art.height=h/q;txt.width=w*2;txt.height=h*2;
   for(const c of [art,txt]){c.style.width=w+'px';c.style.height=h+'px'}
   for(const s of ['gm/pixel-kit.js','gm/parts.js',src])document.write('<script src="'+s+'"><\/script>');
 })();

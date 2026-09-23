@@ -4,7 +4,11 @@
 > 사용자가 실제 캡처를 보고 명시적으로 승인하기 전까지 이 안을 확정으로 쓰지 않는다.
 
 - 시안: [`../d1-golden-master.html`](../d1-golden-master.html)
-- 캡처: [`../shots/d1-gm-390x844.png`](../shots/d1-gm-390x844.png) (390×844, 2배 해상도 780×1688)
+- 캡처 (모두 2배 해상도):
+  - 세로 [`../shots/d1-gm-390x844.png`](../shots/d1-gm-390x844.png)
+  - 가로 [`../shots/d1-gm-844x390.png`](../shots/d1-gm-844x390.png)
+  - PC [`../shots/d1-gm-1440x900.png`](../shots/d1-gm-1440x900.png)
+- 보기: `d1-golden-master.html` (세로) · `?v=landscape` · `?v=desktop`
 - 상태: [`gm-state.mjs`](./gm-state.mjs) → [`gm-state.json`](./gm-state.json)
 
 ## 방향
@@ -59,6 +63,7 @@
 
 ## 알려진 한계
 
-- 정적 캡처 1장이다. 입력·스크롤·키보드·가로/PC는 검증하지 않았다. 844×390, 1440×900은 만들지 않았다.
+- 정적 캡처 3장(세로·가로·PC)이다. 입력·스크롤·키보드는 검증하지 않았다.
+- 가로판은 사양대로 9ZONE을 오른쪽 위 조작 장치로 옮겨서, 플레이트 위에 선 표현이 빠진다. PC판은 픽셀을 화면 3px로 키우고 경기장 전체를 펼친다. 모바일 확대판이 아니다.
 - 폰트는 이 PC(Windows)의 Malgun Gothic으로 렌더했다. CI(Linux) 캡처는 글꼴이 다를 수 있다.
 - 타자는 아래쪽이 손패 영역의 어둠 속으로 잘린다. 어깨 너머 구도를 의도한 것이다.

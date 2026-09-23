@@ -4,7 +4,9 @@
 (function(){
 const K={};
 K.init=(art,txt)=>{K.A=art.getContext('2d',{willReadFrequently:true});K.T=txt.getContext('2d');K.A.imageSmoothingEnabled=false;
-  K.W=art.width;K.H=art.height;K.TS=txt.width/parseFloat(getComputedStyle(txt).width)};
+  K.W=art.width;K.H=art.height;K.TS=txt.width/parseFloat(getComputedStyle(txt).width);
+  // text is authored in 'design px' = art px × 2; a 3× layout scales the whole text layer by 1.5
+  K.u=parseFloat(getComputedStyle(art).width)/art.width/2};
 // flat translucent fill — broad light and shade are stepped alpha, not dither noise
 K.wash=(x,y,w,h,c,a)=>K.rect(x,y,w,h,c,a);
 const rgba=(c,a=1)=>'rgba('+c[0]+','+c[1]+','+c[2]+','+a+')';
@@ -97,7 +99,7 @@ K.glyphW=(s,scale=1)=>s.length*6*scale-scale;
 // Hangul on a device-resolution layer (2 device px per CSS px): readable at 9–12px, with a hard
 // ink outline so it sits on the pixel world like engraved UI rather than floating web text.
 K.text=(str,x,y,{size=12,weight=800,color=[246,238,219],ink=[20,12,14],align='left',ring=true}={})=>{
-  const g=K.T,s=K.TS;g.save();g.scale(s,s);
+  const g=K.T,s=K.TS*K.u;g.save();g.scale(s,s);
   g.font=weight+' '+size+'px "Pretendard","Noto Sans KR","Malgun Gothic",sans-serif';g.textBaseline='top';
   g.textAlign=align;g.lineJoin='round';
   if(ring){g.strokeStyle=rgba(ink,.92);g.lineWidth=2.5;g.strokeText(str,x,y)}

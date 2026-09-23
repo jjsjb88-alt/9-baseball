@@ -66,6 +66,7 @@ P.intent=(I,{pointer='left'}={})=>{
   rect(I.x,I.y,I.w,I.h,[20,12,8],.88);rect(I.x,I.y,I.w,1,[255,196,120]);rect(I.x,I.y+I.h-1,I.w,1,[120,80,40]);
   rect(I.x,I.y,1,I.h,[255,196,120]);rect(I.x+I.w-1,I.y,1,I.h,[120,80,40]);
   if(pointer==='left')for(let j=0;j<4;j++)rect(I.x-1-j,I.y+8+j,1,7-2*j,[255,196,120]);
+  if(pointer==='right')for(let j=0;j<4;j++)rect(I.x+I.w+j,I.y+8+j,1,7-2*j,[120,80,40]);
   text(P.S.intent,I.x*2+9,I.y*2+6,{size:12,weight:900,color:C.gold});
   text('투수 의도 · 예고 아님',I.x*2+9,I.y*2+27,{size:9,weight:700,color:[214,184,147]});
 };
