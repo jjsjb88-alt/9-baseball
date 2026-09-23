@@ -26,7 +26,7 @@ for(let k=0;k<30;k++)K.wash(190+k*8,0,8,195,[10,8,14],k*.022);
 
 
 // 4. 9ZONE — top-right, the plate falls away because the zone is now the command device
-GM.zone({x:246,y:26,cell:27,plate:false,glass:2.2});
+GM.zone({x:246,y:23,cell:27,plate:false,glass:3});
 
 // actions stacked beside the zone
 const bx=346,dark=[[44,33,26],[32,24,19],[22,16,13]];

@@ -61,7 +61,7 @@ P.pitcher=({fx,fy,h,path})=>{const w=Math.round(443*h/680),s=h/62;
   return {x,y,w,h,ball:[bx,by]};
 };
 P.batter=({x,y,h})=>{const w=Math.round(509*h/730);
-  K.blit(K.actorPass(K.kmeans(K.resample(K.pixels(P.img.batter),w,h,'mode'),28),{ink:[22,14,20],rim:[255,204,140],rimDirs:[[1,0],[0,-1],[1,-1]],fill:{from:[.6,.64,.86],to:[1.02,.96,.9],axis:'x'},rimK:.7,rim2:[170,210,255],rim2Dirs:[[-1,0],[-1,-1]],rim2K:.55}),x,y);
+  K.blit(K.actorPass(K.kmeans(K.resample(K.pixels(P.img.batter),w,h,'mode'),28),{ink:[22,14,20],rim:[255,168,92],rimDirs:[[1,0],[0,-1],[1,-1]],fill:{from:[.6,.64,.86],to:[1.02,.96,.9],axis:'x'},rimK:.7,rim2:[170,210,255],rim2Dirs:[[-1,0],[-1,-1]],rim2K:.55}),x,y);
   return {x,y,w,h}};
 P.intent=(I,{pointer='left'}={})=>{
   rect(I.x,I.y,I.w,I.h,[20,12,8],.88);rect(I.x,I.y,I.w,1,[255,196,120]);rect(I.x,I.y+I.h-1,I.w,1,[120,80,40]);
