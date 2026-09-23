@@ -9,6 +9,7 @@
   "fixture": "docs/design/v12/fixtures/p0-1-combat.json",
   "collector": "scripts/v12-baseline.mjs",
   "intentionalChanges": {
+    "p0-1-390x844.png": {"slice": "P1-2b", "reason": "The collector lands in the portrait hub; P1-2b lifts its HUD text (scoreboard, intent, base markers, READ, YOUR CALL) to the 12px floor. With this, all three P0 captures are intentionally changed by P1: the P0 zero-change proof has done its job, and battle-screen evidence now comes from the P1 contract tests, the real-input layout check and the render type audit recorded in V12-PROGRESS."},
     "p0-1-844x390.png": {"slice": "P1-1b", "reason": "The collector lands in the landscape swing state (sts-battleboard auto-opens it); P1-1b re-lays that design state to the D1 Golden Master (stadium left, 9ZONE top-right, actions beside it, hand bottom-right)."},
     "p0-1-1440x900.png": {"slice": "P1-1c", "reason": "The collector lands in the desktop swing state; P1-1c re-lays it to the D1 Golden Master (pitcher on the centre mound, 9ZONE right of the duel, hand bottom-centre, actions bottom-right). Local recaptures of the pre-P1 commit against itself already exceeded the 192px component cap at this viewport (1291px), so it was never a stable zero-change witness."}
   },
