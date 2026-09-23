@@ -37,7 +37,7 @@ const out = {
   count: {balls: s.battle.balls, strikes: s.battle.strikes, outs: s.battle.outs},
   pitcher: {hp: s.pitcher?.hp ?? null, maxHp: s.pitcher?.maxHp ?? null, name: s.pitcher?.name ?? null},
   read,
-  steps: preview.stackPlan.steps.map(x => ({order: x.order, main: x.main, aimZone: x.aimZone, name: CARDS[x.kind]?.name, shape: CARDS[x.kind]?.shape})),
+  steps: preview.stackPlan.steps.map(x => ({id: x.id, order: x.order, main: x.main, aimZone: x.aimZone, name: CARDS[x.kind]?.name, shape: CARDS[x.kind]?.shape})),
   coverage: {main: preview.primaryCoverage, supports: preview.supportCoverages.map(x => ({aimZone: x.aimZone, cells: x.coverage}))},
   links: preview.stackPlan.links,
   connectCount: preview.stackPlan.connectCount,
