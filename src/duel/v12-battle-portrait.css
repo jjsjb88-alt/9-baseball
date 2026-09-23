@@ -72,6 +72,11 @@
   .duel-combat.v12-design>.duel-table .decision-preview.active{position:fixed!important;left:6px!important;right:6px!important;bottom:6px!important;z-index:45!important;margin:0!important;
     box-shadow:0 -10px 24px rgba(4,6,10,.7)!important}
   .duel-combat.v12-design:has(.decision-preview.active){padding-bottom:100px!important}
+  /* P2-1: the card-detail button sits beside execute at its own width; execute keeps the rest */
+  .duel-combat.v12-design>.duel-table .decision-preview.active:has(.card-detail-open){grid-template-columns:auto minmax(0,1fr)!important;column-gap:8px!important}
+  .duel-combat.v12-design>.duel-table .decision-preview.active:has(.card-detail-open)>div{grid-column:1/-1!important}
+  .duel-combat.v12-design>.duel-table .decision-preview.active>.card-detail-open{grid-column:1!important;width:auto!important;align-self:stretch!important}
+  .duel-combat.v12-design>.duel-table .decision-preview.active:has(.card-detail-open)>[data-testid=execute-action]{grid-column:2!important;width:100%!important;max-width:none!important;min-width:0!important}
   .duel-combat.v12-design>.duel-table>.table-footer{min-height:0!important;padding:2px 6px!important}
   .duel-combat.v12-design>.duel-table>.table-footer .deck-rule{display:none!important}
 }

@@ -43,6 +43,11 @@
   .duel-combat.v12-design.v12-design>.duel-table .card-drawer>.decision-preview.active{grid-template-columns:1fr!important;grid-auto-rows:auto!important;gap:4px!important;padding:6px!important;min-height:0!important}
   .duel-combat.v12-design.v12-design>.duel-table .card-drawer>.decision-preview.active>*{grid-column:1!important;width:100%!important;min-width:0!important}
   .duel-combat.v12-design.v12-design>.duel-table .card-drawer>.decision-preview.active [data-testid=execute-action]{order:-1!important;width:100%!important;max-width:none!important;min-width:0!important;flex:none!important;justify-self:stretch!important;min-height:56px!important;writing-mode:horizontal-tb!important;white-space:normal!important;font-size:13px!important;line-height:17px!important}
+  /* P2-1: the card-detail button and the legacy DETAIL toggle share one row under execute */
+  .duel-combat.v12-design.v12-design>.duel-table .card-drawer>.decision-preview.active:has(.card-detail-open){grid-template-columns:1fr 1fr!important;max-height:none!important;overflow:visible!important}
+  .duel-combat.v12-design.v12-design>.duel-table .card-drawer>.decision-preview.active:has(.card-detail-open)>:is(div,[data-testid=execute-action]){grid-column:1/-1!important}
+  .duel-combat.v12-design.v12-design>.duel-table .card-drawer>.decision-preview.active:has(.card-detail-open)>:is(.card-detail-open,.landscape-choice-toggle){grid-column:auto!important;min-height:44px!important;height:44px!important;padding:0 6px!important}
+  .duel-combat.v12-design.v12-design>.duel-table .card-drawer>.decision-preview.active>.card-detail-open{order:0!important}
   /* the armed-swing readout lives in the action column between the execute strip and the hand */
-  .duel-combat.v12-design.v12-design>.duel-table .card-drawer>.battle-readout{position:absolute!important;left:59.4%!important;right:auto!important;top:176px!important;bottom:114px!important;width:39%!important;height:auto!important;max-height:none!important;overflow:auto!important;margin:0!important;transform:none!important}
+  .duel-combat.v12-design.v12-design>.duel-table .card-drawer>.battle-readout{position:absolute!important;left:59.4%!important;right:auto!important;top:180px!important;bottom:114px!important;width:39%!important;height:auto!important;max-height:none!important;overflow:auto!important;margin:0!important;transform:none!important}
 }
