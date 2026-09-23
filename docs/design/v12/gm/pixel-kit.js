@@ -53,17 +53,26 @@ K.kmeans=(img,k)=>{
 };
 const alphaAt=(w,h,d,x,y)=>x<0||y<0||x>=w||y>=h?0:d[(y*w+x)*4+3];
 // Actor finish: drop specks, rebuild 1px ink, backlight rim toward the light, cool shadow fill.
+// fill may be [r,g,b] or {from:[r,g,b],to:[r,g,b],axis:'x'|'y'} for light falling across the body
 K.actorPass=(img,{ink,rim,rimDirs,fill,rimK=.6})=>{
+  const fillAt=(x,y)=>{if(Array.isArray(fill))return fill;const t=fill.axis==='y'?y/img.h:x/img.w;return fill.from.map((v,i)=>v+(fill.to[i]-v)*t)};
   const w=img.w,h=img.h,d=img.d,copy=new Uint8ClampedArray(d);
   for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=(y*w+x)*4;if(!copy[i+3])continue;let n=0;
     for(let j=-1;j<=1;j++)for(let k=-1;k<=1;k++)if((j||k)&&alphaAt(w,h,copy,x+k,y+j))n++;if(n<=1)d[i+3]=0}
   const base=new Uint8ClampedArray(d);
   for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=(y*w+x)*4;if(!base[i+3])continue;
-    d[i]*=fill[0];d[i+1]*=fill[1];d[i+2]*=fill[2];
+    const f=fillAt(x,y);d[i]*=f[0];d[i+1]*=f[1];d[i+2]*=f[2];
     if([[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>!alphaAt(w,h,base,x+a,y+b))){d[i]=ink[0];d[i+1]=ink[1];d[i+2]=ink[2];continue}
     if(rimDirs.some(([a,b])=>!alphaAt(w,h,base,x+2*a,y+2*b))){d[i]+=(rim[0]-d[i])*rimK;d[i+1]+=(rim[1]-d[i+1])*rimK;d[i+2]+=(rim[2]-d[i+2])*rimK}}
   return img;
 };
+// deterministic noise so every capture is identical
+K.rng=(seed=9)=>()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+// scanline polygon fill (convex), crisp at the art grid — used for light shafts
+K.poly=(pts,c,a)=>{const ys=pts.map(p=>p[1]),y0=Math.ceil(Math.min(...ys)),y1=Math.floor(Math.max(...ys));
+  for(let y=y0;y<=y1;y++){const xs=[];for(let i=0;i<pts.length;i++){const [ax,ay]=pts[i],[bx,by]=pts[(i+1)%pts.length];
+      if((ay<=y&&by>y)||(by<=y&&ay>y))xs.push(ax+(y-ay)*(bx-ax)/(by-ay))}
+    if(xs.length>=2){xs.sort((p,q)=>p-q);K.rect(Math.round(xs[0]),y,Math.round(xs[xs.length-1])-Math.round(xs[0]),1,c,a)}}};
 K.blit=(img,x,y)=>{const c=document.createElement('canvas');c.width=img.w;c.height=img.h;c.getContext('2d').putImageData(new ImageData(img.d,img.w,img.h),0,0);K.A.drawImage(c,Math.round(x),Math.round(y))};
 
 // 5×7 pixel font — numerals and the Latin labels the screen uses.

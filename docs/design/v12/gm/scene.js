@@ -14,7 +14,14 @@ const [stadium,batterImg,pitcherImg]=await Promise.all([K.load('../../../assets/
 K.blit(K.kmeans(K.resample(K.pixels(stadium,531,206,609,734),195,235,'mode'),48),0,0);
 for(let k=0;k<4;k++)K.wash(0,112+k*4,195,32-k*8,[255,196,140],.035);                             // infield haze, stepped
 for(let k=0;k<12;k++)K.wash(0,150+k*12,195,12,[24,11,9],Math.min(.97,(k+1)/11.5));             // clay falls into shade in bands
-rect(0,300,195,122,[16,9,8]);
+// light shafts from the floods just off frame: two stepped bands each, crisp edges
+const rnd=K.rng(12012026);
+K.poly([[-14,-6],[22,-6],[132,150],[70,156]],[255,232,186],.075);K.poly([[-4,-6],[12,-6],[112,150],[84,152]],[255,236,196],.08);
+K.poly([[176,-6],[209,-6],[172,152],[118,146]],[255,232,186],.065);K.poly([[186,-6],[200,-6],[160,150],[136,148]],[255,236,196],.07);
+for(let i=0;i<26;i++){const t=rnd(),left=i%2===0,x=left?Math.round(4+t*100+rnd()*16):Math.round(186-t*52-rnd()*14),y=Math.round(t*140+6);
+  px(x,y,[255,244,214],.35+rnd()*.4)}                                                            // dust in the beams
+for(const [x,y] of [[23,79],[161,73],[178,84],[40,86]]){px(x,y,[255,255,255]);px(x-1,y,[255,255,255],.5);px(x+1,y,[255,255,255],.5);px(x,y-1,[255,255,255],.5);px(x,y+1,[255,255,255],.5)} // camera flashes
+
 line(0,275,80,262,[236,226,202]);line(0,276,80,263,[120,80,60]);                               // batter's box chalk
 line(176,281,194,285,[236,226,202]);
 
@@ -29,7 +36,7 @@ let bx=B.x+42;for(const [l,n,on] of [['B',3,S.count.balls],['S',2,S.count.strike
   for(let i=0;i<n;i++)rect(bx+5+i*3,B.y+21,2,2,i<on?C.gold:[52,70,63]);bx+=5+n*3+3}
 
 // 3. DUEL — pitcher far, batter near, one sunset backlight
-const pitcher=K.actorPass(K.kmeans(K.resample(K.pixels(pitcherImg),33,51,'mean'),18),{ink:[26,14,16],rim:[255,214,160],rimDirs:[[0,-1],[1,0],[-1,0]],fill:[.94,.92,.99],rimK:.4});
+const pitcher=K.actorPass(K.kmeans(K.resample(K.pixels(pitcherImg),33,51,'mean'),18),{ink:[26,14,16],rim:[255,214,160],rimDirs:[[0,-1],[1,0],[-1,0]],fill:{from:[.9,.88,.98],to:[.78,.76,.9],axis:'y'},rimK:.5});
 for(let i=-15;i<=15;i++){const w=Math.round(Math.sqrt(1-(i/15)**2)*3);for(let j=-w;j<=w;j++)px(102+i,131+j,j>0?[124,62,36]:[176,104,64])}
 K.wash(91,129,24,3,[20,8,4],.5);K.wash(94,128,18,1,[20,8,4],.3);
 K.blit(pitcher,86,80);
@@ -37,9 +44,16 @@ const ball=[117,84];rect(ball[0],ball[1],2,2,[255,250,232]);
 for(const [dx,dy,a] of [[-1,0,.8],[2,0,.8],[0,-1,.8],[0,2,.8],[-2,0,.45],[3,0,.45],[0,-2,.45],[0,3,.45]])px(ball[0]+dx,ball[1]+dy,[255,236,190],a);
 for(let i=0;i<24;i+=2){const t=i/23;px(Math.round(118+t*10+t*t*6),Math.round(88+t*52),[255,230,170],1-t*.9)} // path fades before the zone (C5)
 
-const batter=K.actorPass(K.kmeans(K.resample(K.pixels(batterImg),139,200,'mode'),28),{ink:[22,14,20],rim:[255,196,128],rimDirs:[[1,0],[0,-1]],fill:[.86,.86,.97],rimK:.55});
+const batter=K.actorPass(K.kmeans(K.resample(K.pixels(batterImg),139,200,'mode'),28),{ink:[22,14,20],rim:[255,204,140],rimDirs:[[1,0],[0,-1],[1,-1]],fill:{from:[.6,.64,.86],to:[1.02,.96,.9],axis:'x'},rimK:.7});
 K.blit(batter,-39,131);
-for(let k=0;k<8;k++)K.wash(0,272+k*4,95,4,[12,7,6],(k+1)/8*.95);                               // legs sink into the tray
+for(let k=0;k<8;k++)K.wash(0,268+k*3,95,3,[12,7,6],(k+1)/8*.9);                               // legs sink into the tray
+for(let k=0;k<3;k++){K.wash(k*4,14,4,274,[6,4,10],.28-k*.09);K.wash(191-k*4,14,4,274,[6,4,10],.28-k*.09)} // edge falloff
+// dugout-plank tray under the hand: wood, seams and grain, then pushed back into shade
+for(let k=0;k<4;k++)K.wash(0,284+k*2,195,2,[12,7,6],.25+k*.2);
+for(let y=292;y<422;y++){const row=Math.floor((y-292)/7),seam=(y-292)%7===0,base=row%2?[38,25,18]:[33,22,16];rect(0,y,195,1,seam?[13,8,6]:base)}
+for(let i=0;i<150;i++){const x=Math.floor(rnd()*190),y=293+Math.floor(rnd()*128);if((y-292)%7===0)continue;rect(x,y,2+Math.floor(rnd()*5),1,rnd()<.5?[48,33,24]:[24,15,11])}
+for(let x=0;x<195;x+=41)for(let y=293;y<422;y+=7)px(x+((y*7)%13),y+3,[70,52,38]);                // nail heads
+K.wash(0,292,195,130,[10,6,5],.35);
 
 const I={x:128,y:87,w:55,h:24};
 rect(I.x,I.y,I.w,I.h,[20,12,8],.88);rect(I.x,I.y,I.w,1,[255,196,120]);rect(I.x,I.y+I.h-1,I.w,1,[120,80,40]);
