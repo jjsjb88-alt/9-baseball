@@ -105,12 +105,12 @@
 
 /* Character scale is tied to viewport and arena, not an arbitrary fixed icon size. */
 @media (orientation:landscape){
-  .duel-combat .golden-master-stage .actor-left{left:3.5%!important;right:auto!important;width:clamp(210px,min(31vw,76vh),330px)!important;height:clamp(210px,min(31vw,76vh),330px)!important;bottom:-2%!important}
+  .duel-combat .golden-master-stage .actor-left{--gm-batter-box:clamp(210px,min(31vw,76vh),330px);left:3.5%!important;right:auto!important;width:var(--gm-batter-box)!important;height:var(--gm-batter-box)!important;bottom:-2%!important}
   .duel-combat .golden-master-stage .actor-right{right:4%!important;left:auto!important;width:clamp(190px,min(28vw,70vh),300px)!important;height:clamp(190px,min(28vw,70vh),300px)!important;bottom:1%!important}
   .duel-combat .golden-master-stage .living-diamond{opacity:.48;filter:saturate(.7)}
 }
 @media (orientation:landscape) and (max-height:430px){
-  .duel-combat .golden-master-stage .actor-left{width:clamp(176px,min(29vw,62vh),245px)!important;height:clamp(176px,min(29vw,62vh),245px)!important;left:2%!important}
+  .duel-combat .golden-master-stage .actor-left{--gm-batter-box:clamp(176px,min(29vw,62vh),245px);width:var(--gm-batter-box)!important;height:var(--gm-batter-box)!important;left:2%!important}
   .duel-combat .golden-master-stage .actor-right{width:clamp(160px,min(26vw,58vh),220px)!important;height:clamp(160px,min(26vw,58vh),220px)!important;right:2.5%!important}
   .gm-scoreboard-shell{transform:scale(.82);transform-origin:100% 0}.gm-light-tower{transform:scale(.84)}.gm-haze-band{opacity:.45}
 }
@@ -120,7 +120,7 @@
   .gm-scoreboard-shell{right:5%;top:10%;transform:scale(.78);transform-origin:100% 0}.gm-light-tower{opacity:.62}.gm-upper-deck{top:23%}.gm-camera-fence{width:8%}
 }
 @media (min-width:1280px) and (orientation:landscape){
-  .duel-combat .golden-master-stage .actor-left{width:330px!important;height:330px!important;left:5%!important}
+  .duel-combat .golden-master-stage .actor-left{--gm-batter-box:330px;width:var(--gm-batter-box)!important;height:var(--gm-batter-box)!important;left:5%!important}
   .duel-combat .golden-master-stage .actor-right{width:292px!important;height:292px!important;right:6%!important}
   .gm-scoreboard-shell{width:102px;height:54px}.gm-upper-deck{top:23%;height:44px}
 }
@@ -1129,6 +1129,26 @@
     top:-7%;
     width:114%;
     height:114%;
+  }
+}
+/* Batter headroom · landscape
+   landscape-declutter enlarges both actors with `scale`, sized for the old
+   stand-in sprite. The authored batter keeps its helmet near the top of the
+   frame, so on short landscape screens that scale pushed the head under the
+   header and AT BAT panel. Here the batter keeps its current size and foot
+   position wherever it already fits, and shrinks around the same foot centre
+   only when the helmet would pass the scoreboard bottom.
+   .906 = helmet height above the box bottom for the 116%/-8% art framing:
+   1.08 - 1.16 * .15 (highest helmet row across all ten poses: finish). */
+@media (orientation:landscape){
+  .duel-combat.landscape-declutter>.duel-arena.golden-master-stage{container-type:size}
+  .duel-combat.landscape-declutter>.duel-arena.golden-master-stage .actor-left{
+    --gm-batter-fit:calc((102cqh - var(--scoreboard-bottom,49px) - 4px) / .906);
+    --gm-batter-size:min(calc(var(--gm-batter-box) * var(--declutter-actor-scale,1)),var(--gm-batter-fit));
+    scale:none!important;
+    width:var(--gm-batter-size)!important;
+    height:var(--gm-batter-size)!important;
+    left:calc(var(--declutter-batter-left,3.5%) + (var(--gm-batter-box) - var(--gm-batter-size)) / 2)!important;
   }
 }
 @media (prefers-reduced-motion:reduce){
