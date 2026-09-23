@@ -41,4 +41,21 @@ describe('V12 P0-1 baseline contract',()=>{
     expect(collector).toContain('enterV10Node');
     expect(collector).toContain('MAIN RUN 이어하기');
   });
+  it('commits the canonical three-viewport Before shot set at exact viewport dimensions',()=>{
+    const shots=[
+      ['p0-1-390x844.png',390,844],
+      ['p0-1-844x390.png',844,390],
+      ['p0-1-1440x900.png',1440,900],
+    ];
+    for(const [name,width,height] of shots){
+      const relative=path.join('docs/design/v12/shots',name);
+      expect(()=>execFileSync('git',['ls-files','--error-unmatch',relative],{cwd:ROOT,stdio:'pipe'})).not.toThrow();
+      const png=readFileSync(path.join(ROOT,relative));
+      expect(png.subarray(0,8).toString('hex')).toBe('89504e470d0a1a0a');
+      expect(png.readUInt32BE(16)).toBe(width);
+      expect(png.readUInt32BE(20)).toBe(height);
+      expect(png.length).toBeGreaterThan(10000);
+    }
+  });
+
 });
