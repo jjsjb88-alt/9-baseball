@@ -17,6 +17,7 @@ import "./duel/landscape-declutter.css";
 import "./duel/golden-master.css";
 import "./duel/v12-battle-portrait.css";
 import "./duel/v12-battle-landscape.css";
+import "./duel/v12-battle-desktop.css";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>

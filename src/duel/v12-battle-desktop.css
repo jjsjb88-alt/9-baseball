@@ -1,0 +1,24 @@
+/* V12 P1-1c — D1 Golden Master skeleton for desktop (1440×900 class), design state only.
+   Not an enlarged phone: the batter holds the left foreground, the pitcher stands on the centre
+   mound, the 9ZONE stands right of the duel line, the hand runs along the bottom centre and the
+   actions sit bottom-right. The legacy desktop battleboard already places every element absolutely
+   inside .duel-combat; this layer only moves them. Scoped to .duel-combat.v12-design. */
+@media (min-width:1080px) and (min-height:650px){
+  /* the duel: pitcher on the centre mound, intent beside him */
+  .duel-combat.v12-design>.duel-arena .actor-right{left:620px!important;right:auto!important;top:300px!important;bottom:auto!important;width:170px!important;height:170px!important;transform:none!important}
+  .duel-combat.v12-design>.duel-arena .actor-right :is(img,canvas){width:100%!important;height:100%!important}
+  .duel-combat.v12-design>.duel-arena .intent{left:400px!important;right:auto!important;top:210px!important;transform:none!important}
+
+  /* 9ZONE right of the duel line, cells well above touch size */
+  .duel-combat.v12-design>.zone-panel{left:930px!important;right:auto!important;top:120px!important;bottom:auto!important;width:380px!important;height:auto!important;transform:none!important;margin:0!important}
+  .duel-combat.v12-design>.zone-panel .zone-grid{height:auto!important;min-height:0!important}
+
+  /* hand centred along the bottom, actions bottom-right */
+  .duel-combat.v12-design>.duel-table .card-drawer>.duel-hand{left:430px!important;right:auto!important;width:590px!important}
+  .duel-combat.v12-design>.duel-table .card-drawer>.drawer-escape{left:1040px!important;right:auto!important;top:62px!important;bottom:auto!important;width:176px!important;height:56px!important;display:grid!important;place-items:center!important}
+  .duel-combat.v12-design>.duel-table .card-drawer .drawer-watch{width:100%!important;height:56px!important;min-height:56px!important}
+  .duel-combat.v12-design>.duel-table .card-drawer>.decision-preview{left:1226px!important;right:auto!important;top:24px!important;bottom:auto!important;width:200px!important;height:auto!important;min-height:132px!important;align-content:center!important}
+  .duel-combat.v12-design>.duel-table .card-drawer>.decision-preview.active{grid-template-columns:1fr!important;gap:6px!important;padding:8px!important}
+  .duel-combat.v12-design>.duel-table .card-drawer>.decision-preview.active>*{grid-column:1!important;width:100%!important;min-width:0!important}
+  .duel-combat.v12-design>.duel-table .card-drawer>.decision-preview.active [data-testid=execute-action]{order:-1!important;width:100%!important;max-width:none!important;min-width:0!important;flex:none!important;min-height:64px!important;white-space:normal!important}
+}
