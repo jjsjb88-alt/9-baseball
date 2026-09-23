@@ -8,9 +8,9 @@
 
 | | |
 | --- | --- |
-| 현재 단계 | **P0 진행 중 · P0-3 완료** |
+| 현재 단계 | **P0 진행 중 · P0-4 완료** |
 | 브랜치 | `claude/feedback-review-plan-vw24at` |
-| PR | [#83](https://github.com/jjsjb88-alt/9-baseball/pull/83) — P0-1 fixture + P0-2 Before 기준샷 + P0-3 정의 전용 토큰. 런타임 UI 변경 0 |
+| PR | [#83](https://github.com/jjsjb88-alt/9-baseball/pull/83) — P0-1 fixture + P0-2 Before 기준샷 + P0-3 토큰 + P0-4 비차단 검사 골격. 런타임 UI 변경 0 |
 | 추적 이슈 | [#84](https://github.com/jjsjb88-alt/9-baseball/issues/84) |
 | 새 세션 프롬프트 | [`V12-NEW-SESSION-PROMPT.md`](./V12-NEW-SESSION-PROMPT.md) |
 | 막힌 곳 | **D1~D8은 검수자 권고까지만 있고 사용자 확정이 없다.** P0은 진행 가능, P1부터는 D1 확정 필요 |
@@ -30,8 +30,8 @@
 
 ## 다음 한 바퀴
 
-> **P0-4.** `tests/design-system.test.js` 골격을 만든다.
-> 지금은 현재 수치를 **기록만** 하고 기준을 낮추거나 새 실패 임계값을 만들지 않는다.
+> **P0-5.** P0 전체의 화면 변화 0을 증명한다.
+> 고정 Before 캡처 비교 + 전체 테스트 + production build + `zone-report` 불변을 한 묶음으로 닫는다.
 
 ---
 
@@ -40,7 +40,7 @@
 - [x] **P0-1** 기준 SHA 고정 + 전투 대표 상태 fixture(seed·저장 JSON) + 수집 스크립트 — `fa42bd8f`
 - [x] **P0-2** 3뷰포트 Before 캡처 세트를 `docs/design/v12/shots/`에 커밋 — `ef86dccc`
 - [x] **P0-3** `src/duel/tokens.css` 신설 (정의만, 적용 0) — `e26ce769`
-- [ ] **P0-4** `tests/design-system.test.js` 골격 — 지금은 **현재값을 기록만** 하고 실패시키지 않는다 — `_`
+- [x] **P0-4** `tests/design-system.test.js` 골격 — 현재값 기록만, 감축 임계값 없음 — `4470fd42`
 - [ ] **P0-5** 화면 변화 0 증명: 캡처 비교 + `pnpm test` + `pnpm build` + `zone-report` 불변 — `_`
 
 > **P0-1 검증 증거:** 기준 SHA `a1cbf625fa558bb463999fee47998868d155fcb4`, seed `12012026`,
@@ -65,6 +65,13 @@
 > frozen baseline 대비 `zone-report.js 30` exact diff 0, V12 audit, fixture 재현성, 3뷰포트 재캡처 모두 통과.
 > audit 수치도 `!important 2266`, <11px 433, <12px 493으로 불변이다.
 > 390×844 / 844×390 / 1440×900 이미지를 직접 읽었고 기존 타자 stand-in을 포함해 화면 변화가 없음을 확인했다.
+
+> **P0-4 검증 증거:** red-first `c1ab5489`는 기존 **418/418**을 유지한 채 새 scaffold marker 1건만 의도적으로 실패했다.
+> 구현 `4470fd42`는 `tests/design-system.test.js`에서 공용 audit를 호출해 P0 현재값
+> (CSS 22파일 / 5332개행 / !important 2266·1024줄 / 색 2513·distinct 2107 / <11px 433 / <12px 493)을 역사 기록으로 남긴다.
+> **현재값과 기록값의 equality·최대/최소·감축 목표 비교는 하지 않는다.** run `35820148038`에서
+> **55파일 / 419테스트**, production build, frozen-baseline `zone-report 30` exact diff 0,
+> V12 audit, fixture 재현성, 3뷰포트 재캡처가 모두 통과했다. 이미지를 직접 읽어 화면 변화 0을 확인했다.
 
 > P0에서 `!important` 총량 감축·일괄 `@layer` 래핑을 **하지 않는다**(C7).
 

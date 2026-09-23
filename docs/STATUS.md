@@ -3,7 +3,7 @@
 ## 현재 V12 UI/UX 루프 엔지니어링 · 2026-09-23
 
 - 브랜치 `claude/feedback-review-plan-vw24at` · [PR #83](https://github.com/jjsjb88-alt/9-baseball/pull/83) · 추적 이슈 #84.
-  **P0-3까지 완료했다.** 런타임 UI·게임 규칙·확률·피해·카드 수치·런 구조는 변경하지 않았고 main/Pages도 건드리지 않았다.
+  **P0-4까지 완료했다.** 런타임 UI·게임 규칙·확률·피해·카드 수치·런 구조는 변경하지 않았고 main/Pages도 건드리지 않았다.
 - P0-1 기준 SHA는 `a1cbf625fa558bb463999fee47998868d155fcb4`, seed는 `12012026`.
   실제 `createV10Duel → enterV10Node('a1-entry')` 결과를
   `docs/design/v12/fixtures/p0-1-combat.json`에 고정했고 `scripts/v12-baseline.mjs`가 재현한다.
@@ -27,6 +27,12 @@
   frozen baseline 대비 `zone-report.js 30` exact diff 0, V12 audit 통과, fixture 재현성 통과.
   audit 수치는 `!important 2266`, <11px 433, <12px 493으로 그대로다.
   세 뷰포트 재캡처 오류 0이며 이미지를 직접 읽어 기존 Before 화면과 타자 stand-in이 그대로임을 확인했다.
+- **P0-4 design-system 검사 골격:** red-first `c1ab5489`, 구현 `4470fd42`.
+  `tests/design-system.test.js`는 공용 V12 audit의 현재 CSS 계측값을 역사 기준으로 출력한다.
+  현재값과 기록값을 비교하는 실패 조건, 감축 budget, 임의 임계값은 없다.
+- P0-4 검증 run `35820148038`: **55파일·419테스트 통과**, production build 통과,
+  frozen baseline 대비 `zone-report.js 30` exact diff 0, V12 audit·fixture 재현성 통과,
+  390×844 / 844×390 / 1440×900 재캡처 오류 0. 세 이미지를 직접 읽어 화면 변화가 없음을 확인했다.
 - 검수 계약은 그대로다: 커버=`coverageAt`, 연결=순서상 앞뒤 aimZone 동일/8방향 인접,
   `damageRate`=배율, 읽기 등급=0/1/2, 공개 정보 경계 준수, 엔진 공식 복제 금지,
   `!important` 일괄 `@layer` 래핑 금지.
@@ -34,9 +40,9 @@
 
 ### 다음 작업
 
-1. **P0-4 한 줄만:** `tests/design-system.test.js` 골격을 만들고 현재 수치를 기록한다.
-2. 기존 `!important`·고정 px·색 리터럴 수치를 실패 임계값으로 낮추거나 대량 정리하지 않는다.
-3. P0-4 완료 전 P0-5나 P1을 한꺼번에 시작하지 않는다.
+1. **P0-5 한 줄만:** P0의 화면 변화 0을 고정 Before 캡처 비교와 전체 검증 묶음으로 증명한다.
+2. `pnpm test` / production build / frozen-baseline `zone-report 30` exact diff / V12 audit를 모두 보존한다.
+3. P0-5가 닫혀도 P1은 D1 사용자 확정 전에는 시작하지 않는다.
 
 ---
 
