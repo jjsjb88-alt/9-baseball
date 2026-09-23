@@ -26,7 +26,9 @@ line(0,275,80,262,[236,226,202]);line(0,276,80,263,[120,80,60]);                
 line(176,281,194,285,[236,226,202]);
 
 // 2. OPPONENT — on the outfield scoreboard
-const B={x:58,y:48,w:78,h:29};
+const B={x:58,y:34,w:78,h:29};
+for(const x of [B.x+6,B.x+B.w-9]){rect(x,B.y+B.h,3,26,[18,24,24]);rect(x,B.y+B.h,1,26,[46,60,58]);rect(x+2,B.y+B.h,1,26,[8,10,12])} // scoreboard posts into the stands
+rect(B.x+4,B.y+B.h,B.w-8,2,[14,18,18]);
 rect(B.x-1,B.y-1,B.w+2,B.h+2,C.ink);rect(B.x,B.y,B.w,B.h,C.board);rect(B.x,B.y,B.w,1,C.boardEdge);
 for(let j=2;j<B.h-2;j+=2)K.wash(B.x+2,B.y+j,B.w-4,1,[255,255,255],.03);
 const hpSeg=34,hpOn=Math.round(hpSeg*S.pitcher.hp/S.pitcher.maxHp);
@@ -36,13 +38,13 @@ let bx=B.x+42;for(const [l,n,on] of [['B',3,S.count.balls],['S',2,S.count.strike
   for(let i=0;i<n;i++)rect(bx+5+i*3,B.y+21,2,2,i<on?C.gold:[52,70,63]);bx+=5+n*3+3}
 
 // 3. DUEL — pitcher far, batter near, one sunset backlight
-const pitcher=K.actorPass(K.kmeans(K.resample(K.pixels(pitcherImg),33,51,'mean'),18),{ink:[26,14,16],rim:[255,214,160],rimDirs:[[0,-1],[1,0],[-1,0]],fill:{from:[.9,.88,.98],to:[.78,.76,.9],axis:'y'},rimK:.5});
+const pitcher=K.actorPass(K.kmeans(K.resample(K.pixels(pitcherImg),40,62,'mean'),18),{ink:[26,14,16],rim:[255,214,160],rimDirs:[[0,-1],[1,0],[-1,0]],fill:{from:[.9,.88,.98],to:[.78,.76,.9],axis:'y'},rimK:.5});
 for(let i=-15;i<=15;i++){const w=Math.round(Math.sqrt(1-(i/15)**2)*3);for(let j=-w;j<=w;j++)px(102+i,131+j,j>0?[124,62,36]:[176,104,64])}
 K.wash(91,129,24,3,[20,8,4],.5);K.wash(94,128,18,1,[20,8,4],.3);
-K.blit(pitcher,86,80);
-const ball=[117,84];rect(ball[0],ball[1],2,2,[255,250,232]);
+K.blit(pitcher,82,69);
+const ball=[120,74];rect(ball[0],ball[1],2,2,[255,250,232]);
 for(const [dx,dy,a] of [[-1,0,.8],[2,0,.8],[0,-1,.8],[0,2,.8],[-2,0,.45],[3,0,.45],[0,-2,.45],[0,3,.45]])px(ball[0]+dx,ball[1]+dy,[255,236,190],a);
-for(let i=0;i<24;i+=2){const t=i/23;px(Math.round(118+t*10+t*t*6),Math.round(88+t*52),[255,230,170],1-t*.9)} // path fades before the zone (C5)
+for(let i=0;i<24;i+=2){const t=i/23;px(Math.round(121+t*9+t*t*6),Math.round(78+t*60),[255,230,170],1-t*.9)} // path fades before the zone (C5)
 
 const batter=K.actorPass(K.kmeans(K.resample(K.pixels(batterImg),139,200,'mode'),28),{ink:[22,14,20],rim:[255,204,140],rimDirs:[[1,0],[0,-1],[1,-1]],fill:{from:[.6,.64,.86],to:[1.02,.96,.9],axis:'x'},rimK:.7});
 K.blit(batter,-39,131);
@@ -55,7 +57,7 @@ for(let i=0;i<150;i++){const x=Math.floor(rnd()*190),y=293+Math.floor(rnd()*128)
 for(let x=0;x<195;x+=41)for(let y=293;y<422;y+=7)px(x+((y*7)%13),y+3,[70,52,38]);                // nail heads
 K.wash(0,292,195,130,[10,6,5],.35);
 
-const I={x:128,y:87,w:55,h:24};
+const I={x:130,y:82,w:55,h:24};
 rect(I.x,I.y,I.w,I.h,[20,12,8],.88);rect(I.x,I.y,I.w,1,[255,196,120]);rect(I.x,I.y+I.h-1,I.w,1,[120,80,40]);
 rect(I.x,I.y,1,I.h,[255,196,120]);rect(I.x+I.w-1,I.y,1,I.h,[120,80,40]);
 for(let j=0;j<4;j++)rect(I.x-1-j,I.y+8+j,1,7-2*j,[255,196,120]);
@@ -65,7 +67,7 @@ const Z={x:82,y:145,w:106,h:124},G={x:Z.x+3,y:Z.y+3,cell:32,gap:2};
 for(let j=0;j<20;j+=4)K.wash(Z.x+6+j,Z.y+Z.h+j-6,Z.w-12-2*j,4,[255,214,150],.14*(1-j/20));    // light onto the plate, stepped
 {const x0=108,y0=271;rect(x0,y0-1,54,1,C.ink);
  for(let j=0;j<11;j++){const k=j<5?0:Math.round((j-5)*4.4);rect(x0+k,y0+j,54-2*k,1,j===0?[255,250,236]:[232,222,200]);px(x0+k-1,y0+j,C.ink);px(x0+54-k,y0+j,C.ink)}}
-rect(Z.x,Z.y,Z.w,Z.h,[12,20,34],.42);
+rect(Z.x,Z.y,Z.w,Z.h,[12,20,34],.16);
 for(let r=2;r<=4;r++){const a=[0,0,.34,.16,.07][r];K.wash(Z.x-r,Z.y-r,Z.w+2*r,1,C.gold,a);K.wash(Z.x-r,Z.y+Z.h+r-1,Z.w+2*r,1,C.gold,a);
   K.wash(Z.x-r,Z.y-r+1,1,Z.h+2*r-2,C.gold,a);K.wash(Z.x+Z.w+r-1,Z.y-r+1,1,Z.h+2*r-2,C.gold,a)}
 rect(Z.x-1,Z.y-1,Z.w+2,1,C.ink);rect(Z.x-1,Z.y+Z.h,Z.w+2,1,C.ink);rect(Z.x-1,Z.y,1,Z.h,C.ink);rect(Z.x+Z.w,Z.y,1,Z.h,C.ink);
@@ -80,7 +82,7 @@ for(const t of [1,2]){const ty=G.y+t*(G.cell+G.gap)-1;rect(Z.x-7,ty,3,1,C.gold);
 const main=new Set(S.coverage.main),sup=new Set(S.coverage.supports.flatMap(x=>x.cells));
 const cellXY=z=>[G.x+(z%3)*(G.cell+G.gap),G.y+Math.floor(z/3)*(G.cell+G.gap)];
 for(let z=0;z<9;z++){const [x,y]=cellXY(z),c=G.cell,sh=S.read[z].shade;
-  rect(x,y,c,c,[10,16,28],.35);
+  rect(x,y,c,c,[10,16,28],.2);
   if(sh)K.wash(x,y,c,c,C.ember,[0,.07,.17,.29][sh]);                                            // layer 1: read shade (level 0: 3 shades)
   rect(x,y,c,1,[246,238,219],.14);rect(x,y+c-1,c,1,[0,0,0],.3);rect(x,y,1,c,[246,238,219],.12);rect(x+c-1,y,1,c,[0,0,0],.25);
   if(main.has(z)){K.wash(x,y,c,c,C.gold,.2);K.wash(x+1,y+1,c-2,3,C.goldHi,.28);rect(x,y,c,1,C.gold);rect(x,y+c-1,c,1,C.goldLo);rect(x,y,1,c,C.gold);rect(x+c-1,y,1,c,C.goldLo)}
