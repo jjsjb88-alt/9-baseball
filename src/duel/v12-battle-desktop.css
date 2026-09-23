@@ -19,6 +19,8 @@
 
   /* hand centred along the bottom, actions bottom-right */
   .duel-combat.v12-design>.duel-table .card-drawer>.duel-hand{left:430px!important;right:auto!important;width:590px!important}
+  /* centred content that overflows the hand is unreachable on its left side: centre only while it fits */
+  .duel-combat.v12-design>.duel-table .card-drawer>.duel-hand{justify-content:safe center!important}
   .duel-combat.v12-design>.duel-table .card-drawer>.drawer-escape{left:1040px!important;right:auto!important;top:62px!important;bottom:auto!important;width:176px!important;height:56px!important;display:grid!important;place-items:center!important}
   .duel-combat.v12-design>.duel-table .card-drawer .drawer-watch{width:100%!important;height:56px!important;min-height:56px!important}
   .duel-combat.v12-design>.duel-table .card-drawer>.decision-preview{left:1226px!important;right:auto!important;top:24px!important;bottom:auto!important;width:200px!important;height:auto!important;min-height:132px!important;align-content:center!important}
