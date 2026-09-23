@@ -5,7 +5,9 @@
 .golden-master-stage>.arena-renderer2{z-index:0!important}
 .golden-master-stage .pixel-cinema{z-index:4!important}
 .golden-master-stage .living-diamond{z-index:12!important}
-.golden-master-stage .actor-left,.golden-master-stage .actor-right{z-index:30!important;contain:layout paint style;will-change:transform}
+/* 배우는 전경 소품(gm-depth-front, z31)보다 위다. 30이면 더그아웃 난간·카메라 펜스가
+   화면 왼쪽 끝의 타자를 덮어 세로 모드에서 타자가 배트와 어깨만 남았다. */
+.golden-master-stage .actor-left,.golden-master-stage .actor-right{z-index:32!important;contain:layout paint style;will-change:transform}
 .golden-master-stage .intent{z-index:42!important}
 .golden-master-stage .judgement-layer,.golden-master-stage .duel-fx{z-index:45!important}
 
@@ -115,7 +117,8 @@
   .gm-scoreboard-shell{transform:scale(.82);transform-origin:100% 0}.gm-light-tower{transform:scale(.84)}.gm-haze-band{opacity:.45}
 }
 @media (orientation:portrait){
-  .golden-master-stage .actor-left{width:clamp(156px,47vw,222px)!important;height:clamp(156px,47vw,222px)!important;left:-4%!important;bottom:-1%!important}
+  /* left:-4%면 타자 실루엣의 왼쪽이 뷰포트 밖으로 나간다. 세로 화면에서 가장 크게 손해다. */
+  .golden-master-stage .actor-left{width:clamp(156px,47vw,222px)!important;height:clamp(156px,47vw,222px)!important;left:0!important;bottom:-1%!important}
   .golden-master-stage .actor-right{width:clamp(142px,40vw,196px)!important;height:clamp(142px,40vw,196px)!important;right:-1%!important;bottom:2%!important}
   .gm-scoreboard-shell{right:5%;top:10%;transform:scale(.78);transform-origin:100% 0}.gm-light-tower{opacity:.62}.gm-upper-deck{top:23%}.gm-camera-fence{width:8%}
 }
