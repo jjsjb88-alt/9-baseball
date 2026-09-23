@@ -1,0 +1,74 @@
+/*
+ * V12 P0-3 · definition-only design tokens.
+ * Keep this file unimported during P0 so it cannot alter the shipped cascade.
+ * Values come from docs/V12-UI-MASTER-SPEC.md §3; no legacy literals are migrated here.
+ */
+:root {
+  /* Type: size + line-height pairs. */
+  --t-display: 40px;
+  --t-display-line: 44px;
+  --t-h1: 28px;
+  --t-h1-line: 34px;
+  --t-h2: 22px;
+  --t-h2-line: 28px;
+  --t-h3: 18px;
+  --t-h3-line: 24px;
+  --t-body: 15px;
+  --t-body-line: 22px;
+  --t-label: 13px;
+  --t-label-line: 18px;
+  --t-micro: 12px;
+  --t-micro-line: 16px;
+  --t-num: 20px;
+  --t-num-line: 24px;
+  --tracking-body: 0;
+  --num-variant: tabular-nums;
+
+  /* UI surfaces and semantic accents. */
+  --surface-0: #07120F;
+  --surface-1: #07141B;
+  --surface-2: #132B33;
+  --edge: #235060;
+  --ink-1: #F4ECD8;
+  --ink-2: #CCD8D0;
+  --ink-3: #7D9388;
+  --aim: #FFE4A2;
+  --cover-main: #FFE4A2;
+  --cover-support: #6FD7C6;
+  --link-on: #6FD7C6;
+  --link-off: #AA7E67;
+  --bone: #DED6B9;
+
+  /* Spacing, radii and minimum interaction geometry. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --radius-1: 2px;
+  --radius-2: 8px;
+  --radius-pill: 999px;
+  --target-min: 44px;
+  --zone-min: 48px;
+
+  /* Named stacking intent; actual stacking contexts still require browser verification. */
+  --z-field: 0;
+  --z-actors: 10;
+  --z-vfx: 20;
+  --z-board: 30;
+  --z-hud: 40;
+  --z-drawer: 50;
+  --z-overlay: 60;
+  --z-modal: 70;
+
+  /* UI motion only. Result presentation/V4/reduced-motion timing remains engine-owned. */
+  --motion-tap: 120ms;
+  --motion-state: 180ms;
+  --motion-move: 260ms;
+  --motion-reveal: 420ms;
+  --motion-response-max: 100ms;
+  --ease-standard: cubic-bezier(.2,.8,.2,1);
+  --ease-accel: cubic-bezier(.4,0,1,1);
+  --ease-decel: cubic-bezier(0,0,.2,1);
+}
