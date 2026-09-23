@@ -56,7 +56,7 @@ K.kmeans=(img,k)=>{
 const alphaAt=(w,h,d,x,y)=>x<0||y<0||x>=w||y>=h?0:d[(y*w+x)*4+3];
 // Actor finish: drop specks, rebuild 1px ink, backlight rim toward the light, cool shadow fill.
 // fill may be [r,g,b] or {from:[r,g,b],to:[r,g,b],axis:'x'|'y'} for light falling across the body
-K.actorPass=(img,{ink,rim,rimDirs,fill,rimK=.6})=>{
+K.actorPass=(img,{ink,rim,rimDirs,fill,rimK=.6,rim2=null,rim2Dirs=[],rim2K=.5})=>{
   const fillAt=(x,y)=>{if(Array.isArray(fill))return fill;const t=fill.axis==='y'?y/img.h:x/img.w;return fill.from.map((v,i)=>v+(fill.to[i]-v)*t)};
   const w=img.w,h=img.h,d=img.d,copy=new Uint8ClampedArray(d);
   for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=(y*w+x)*4;if(!copy[i+3])continue;let n=0;
@@ -65,7 +65,8 @@ K.actorPass=(img,{ink,rim,rimDirs,fill,rimK=.6})=>{
   for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=(y*w+x)*4;if(!base[i+3])continue;
     const f=fillAt(x,y);d[i]*=f[0];d[i+1]*=f[1];d[i+2]*=f[2];
     if([[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>!alphaAt(w,h,base,x+a,y+b))){d[i]=ink[0];d[i+1]=ink[1];d[i+2]=ink[2];continue}
-    if(rimDirs.some(([a,b])=>!alphaAt(w,h,base,x+2*a,y+2*b))){d[i]+=(rim[0]-d[i])*rimK;d[i+1]+=(rim[1]-d[i+1])*rimK;d[i+2]+=(rim[2]-d[i+2])*rimK}}
+    if(rimDirs.some(([a,b])=>!alphaAt(w,h,base,x+2*a,y+2*b))){d[i]+=(rim[0]-d[i])*rimK;d[i+1]+=(rim[1]-d[i+1])*rimK;d[i+2]+=(rim[2]-d[i+2])*rimK}
+    else if(rim2&&rim2Dirs.some(([a,b])=>!alphaAt(w,h,base,x+2*a,y+2*b))){d[i]+=(rim2[0]-d[i])*rim2K;d[i+1]+=(rim2[1]-d[i+1])*rim2K;d[i+2]+=(rim2[2]-d[i+2])*rim2K}}
   return img;
 };
 // deterministic noise so every capture is identical

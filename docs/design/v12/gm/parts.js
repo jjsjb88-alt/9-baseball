@@ -39,17 +39,17 @@ P.board=(B,{posts=26}={})=>{const S=P.S;
   const seg=Math.floor((B.w-10)/2),on=Math.round(seg*S.pitcher.hp/S.pitcher.maxHp);
   for(let i=0;i<seg;i++)rect(B.x+5+i*2,B.y+11,1,3,i<on?(i%5===4?C.ledHi:C.led):[45,22,16]);
   K.wash(B.x+4,B.y+10,seg*2+1,5,C.led,.12);
-  let bx=B.x+B.w-36;const cnt=[['B',3,S.count.balls],['S',2,S.count.strikes],['O',2,S.count.outs]];
-  for(const [,n,o] of cnt){for(let i=0;i<n;i++)rect(bx+5+i*3,B.y+21,2,2,i<o?C.gold:[52,70,63]);bx+=5+n*3+3}
+  let bx=B.x+B.w-49;const cnt=[['B',3,S.count.balls],['S',2,S.count.strikes],['O',2,S.count.outs]];
+  for(const [,n,o] of cnt){for(let i=0;i<n;i++){rect(bx+5+i*4,B.y+20,3,3,i<o?C.gold:[52,70,63]);if(i>=o)rect(bx+5+i*4,B.y+20,3,1,[70,92,84])}bx+=5+n*4+2}
   text(S.pitcher.name,B.x*2+8,B.y*2+5,{size:12,weight:900,color:[255,233,184]});
   text('바깥쪽 제구형',(B.x+B.w)*2-6,B.y*2+6,{size:10,weight:700,color:[143,217,198],align:'right'});
-  let lx=(B.x+B.w-36)*2;for(const [l,n] of cnt){text(l,lx,B.y*2+39,{size:9,weight:900,color:[143,165,157]});lx+=(5+n*3+3)*2}
+  let lx=(B.x+B.w-49)*2;for(const [l,n] of cnt){text(l,lx,B.y*2+38,{size:10,weight:900,color:[143,165,157]});lx+=(5+n*4+2)*2}
   text(S.pitcher.hp+' / '+S.pitcher.maxHp+' HP',B.x*2+8,B.y*2+37,{size:11,weight:900,color:[255,207,143]});
 };
 
 // 3. DUEL: pitcher (feet at fx,fy) with ball and a path that fades before the zone (C5)
 P.pitcher=({fx,fy,h,path})=>{const w=Math.round(443*h/680),s=h/62;
-  const img=K.actorPass(K.kmeans(K.resample(K.pixels(P.img.pitcher),w,h,'mean'),18),{ink:[26,14,16],rim:[255,214,160],rimDirs:[[0,-1],[1,0],[-1,0]],fill:{from:[.9,.88,.98],to:[.78,.76,.9],axis:'y'},rimK:.5});
+  const img=K.actorPass(K.kmeans(K.resample(K.pixels(P.img.pitcher),w,h,'mean'),18),{ink:[26,14,16],rim:[255,196,128],rimDirs:[[0,-1],[1,0],[-1,0],[1,-1],[-1,-1]],fill:{from:[.78,.74,.88],to:[.6,.58,.74],axis:'y'},rimK:.62});
   const mr=Math.round(15*s),mx=fx,my=fy;
   for(let i=-mr;i<=mr;i++){const ww=Math.round(Math.sqrt(1-(i/mr)**2)*3*s);for(let j=-ww;j<=ww;j++)px(mx+i,my+j,j>0?[124,62,36]:[176,104,64])}
   K.wash(mx-Math.round(11*s),my-2,Math.round(24*s),3,[20,8,4],.5);
@@ -60,7 +60,7 @@ P.pitcher=({fx,fy,h,path})=>{const w=Math.round(443*h/680),s=h/62;
   return {x,y,w,h,ball:[bx,by]};
 };
 P.batter=({x,y,h})=>{const w=Math.round(509*h/730);
-  K.blit(K.actorPass(K.kmeans(K.resample(K.pixels(P.img.batter),w,h,'mode'),28),{ink:[22,14,20],rim:[255,204,140],rimDirs:[[1,0],[0,-1],[1,-1]],fill:{from:[.6,.64,.86],to:[1.02,.96,.9],axis:'x'},rimK:.7}),x,y);
+  K.blit(K.actorPass(K.kmeans(K.resample(K.pixels(P.img.batter),w,h,'mode'),28),{ink:[22,14,20],rim:[255,204,140],rimDirs:[[1,0],[0,-1],[1,-1]],fill:{from:[.6,.64,.86],to:[1.02,.96,.9],axis:'x'},rimK:.7,rim2:[170,210,255],rim2Dirs:[[-1,0],[-1,-1]],rim2K:.55}),x,y);
   return {x,y,w,h}};
 P.intent=(I,{pointer='left'}={})=>{
   rect(I.x,I.y,I.w,I.h,[20,12,8],.88);rect(I.x,I.y,I.w,1,[255,196,120]);rect(I.x,I.y+I.h-1,I.w,1,[120,80,40]);
@@ -120,12 +120,14 @@ P.card=(h,x,y,{w=34,hh=52}={})=>{const st=P.stackOf[h.id];y-=st?6:0;
   K.plateShape(x+1,y+2,w,hh,(X,Y)=>px(X,Y,[0,0,0],.45));
   K.plateShape(x,y,w,hh,(X,Y,ci,cj,edge)=>{if(edge){px(X,Y,st?(st.main?C.goldLo:C.tealLo):C.parchInk);return}const t=cj/hh;px(X,Y,t<.28?C.parch:t<.62?C.parch2:C.parch3)});
   if(st)K.plateShape(x+1,y+1,w-2,hh-2,(X,Y,ci,cj,edge)=>{if(edge)px(X,Y,st.main?C.gold:C.teal,.85)});
+  P._dim=!st;
   for(let j=5;j<34;j+=4){px(x+3,y+j,C.seam);px(x+4,y+j+1,C.seam);px(x+6,y+j+1,C.seam);px(x+7,y+j,C.seam)}
   rect(x+9,y+2,w-11,11,[214,196,158],.55);rect(x+9,y+12,w-11,1,[180,156,112],.7);
   const mx=x+Math.round(w/2)-6,my=y+16,on=st?(st.main?C.gold:C.teal):[60,110,100],onLo=st?(st.main?C.goldLo:C.tealLo):[40,80,72];
   rect(mx-2,my-2,18,18,[40,28,18]);rect(mx-1,my-1,16,16,[70,52,34]);
   for(let k=0;k<9;k++){const gx=mx+(k%3)*5,gy=my+Math.floor(k/3)*5,lit=shapeCells[h.shape].includes(k);rect(gx,gy,4,4,lit?on:[92,72,50]);if(lit){rect(gx,gy,4,1,[255,248,230],.55);rect(gx,gy+3,4,1,onLo)}}
   for(const [cx,cy,sx,sy] of [[mx-3,my-3,1,1],[mx+16,my-3,-1,1],[mx-3,my+16,1,-1],[mx+16,my+16,-1,-1]]){px(cx,cy,C.goldLo);px(cx+sx,cy,C.goldLo);px(cx,cy+sy,C.goldLo)}
+  if(P._dim)K.plateShape(x,y,w,hh,(X,Y)=>px(X,Y,[20,12,8],.2));                               // waiting cards sit back
   const cx=x+Math.round(w/2),cy=y+hh-4;
   if(st)disc(cx,cy,5,st.main?C.goldHi:C.tealHi,st.main?C.gold:C.teal,st.main?C.goldLo:C.tealLo,st.main?C.goldInk:C.tealInk);
   text(h.name,x*2+w+3,y*2+9,{size:12,weight:900,color:[28,22,15],align:'center',ring:false});
@@ -139,6 +141,7 @@ P.handLabel=(x,y)=>{const S=P.S;text('SWING ORDER',x*2,y*2,{size:10,weight:800,c
 P.buttons=({x,y,h=27,small=38,gapX=3,goW})=>{const S=P.S,dark=[[44,33,26],[32,24,19],[22,16,13]];
   K.hexButton(x,y,small,h,dark,[8,6,5],[70,58,46]);K.hexButton(x+small+gapX,y,small,h,dark,[8,6,5],[70,58,46]);
   const gx=x+2*(small+gapX);K.wash(gx-2,y-1,goW+4,h+2,C.gold,.10);K.wash(gx-1,y-2,goW+2,h+4,C.gold,.06);
+  K.hexButton(gx,y+2,goW,h,[[120,70,20],[120,70,20],[90,50,14]],C.goldInk);                     // the plate's thickness
   K.hexButton(gx,y,goW,h,[[255,226,155],[240,178,76],[201,131,42]],C.goldInk,[255,246,214]);
   const mid=(bx,bw)=>(bx+bw/2)*2,ty=y*2;
   text('준비',mid(x,small),ty+12,{size:14,weight:900,align:'center'});text('집중·드로우',mid(x,small),ty+32,{size:9,weight:700,color:[127,138,140],align:'center'});

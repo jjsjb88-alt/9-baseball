@@ -13,16 +13,17 @@ GM.dust(18,(t,r)=>[Math.round(6+t*120+r*16),Math.round(t*140+6)]);
 GM.flashes([[28,76],[196,70],[60,82]]);
 
 // 2–3. opponent and duel
-GM.board({x:112,y:22,w:78,h:29});
+GM.board({x:106,y:22,w:90,h:29});
 GM.pitcher({fx:151,fy:133,h:62,path:[112,158]});
 GM.batter({x:-34,y:36,h:200});
 for(let k=0;k<6;k++)K.wash(0,165+k*5,236,5,[12,7,6],(k+1)/6*.85);
 GM.edges(14,181,236);
 GM.intent({x:176,y:92,w:55,h:24});
 
-// right command panel: dark glass over the same stadium, gold lip on its seam
-K.wash(236,0,186,195,[10,8,14],.8);K.wash(236,0,186,195,[40,24,16],.18);
-rect(236,14,1,181,[255,210,122],.45);K.wash(237,14,2,181,[255,210,122],.1);
+// full bleed: no panel. The stadium runs edge to edge; a stepped scrim deepens toward the right
+// so the command side stays legible, and the hand docks on dirt that falls into shade.
+for(let k=0;k<26;k++)K.wash(214+k*8,0,8,195,[10,8,14],.05+k*.024);
+GM.shade(236,138,186,57,6,[16,9,8],.72);
 
 // 4. 9ZONE — top-right, the plate falls away because the zone is now the command device
 GM.zone({x:246,y:26,cell:27,plate:false});
