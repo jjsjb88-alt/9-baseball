@@ -6,7 +6,7 @@ on:
       - claude/feedback-review-plan-vw24at
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   baseline-reference:
@@ -78,27 +78,6 @@ jobs:
       - name: Check baseline fixture against engine
         run: node scripts/v12-baseline.mjs --check
 
-      - name: Install Playwright for P0-2 Before capture
-        run: |
-          pnpm add --save-dev --ignore-workspace-root-check playwright
-          pnpm exec playwright install --with-deps chromium
-
-      - name: Start Vite on 5177 for P0-2
-        run: |
-          pnpm dev --host 127.0.0.1 --port 5177 --strictPort > /tmp/v12-dev.log 2>&1 &
-          echo $! > /tmp/v12-dev.pid
-          for i in {1..60}; do
-            if curl -fsS http://127.0.0.1:5177/ >/dev/null; then exit 0; fi
-            sleep 1
-          done
-          cat /tmp/v12-dev.log
-          exit 1
-
-      - name: Materialize canonical P0 Before shots
-        run: |
-          node scripts/v12-baseline.mjs --capture-before docs/design/v12/shots
-          git add --intent-to-add             docs/design/v12/shots/p0-1-390x844.png             docs/design/v12/shots/p0-1-844x390.png             docs/design/v12/shots/p0-1-1440x900.png
-
       - name: Run full tests
         run: pnpm test
 
@@ -124,14 +103,24 @@ jobs:
           git diff --exit-code -- docs/design/v12/fixtures/p0-1-combat.json
           git ls-files --error-unmatch docs/design/v12/fixtures/p0-1-combat.json
 
-      - name: Commit P0-2 Before shots only after mandatory checks pass
-        shell: bash
+      - name: Install Playwright for P0-2 review capture
         run: |
-          git add             docs/design/v12/shots/p0-1-390x844.png             docs/design/v12/shots/p0-1-844x390.png             docs/design/v12/shots/p0-1-1440x900.png
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "docs(v12-P0): commit canonical three-viewport Before shots"
-          git push origin HEAD:claude/feedback-review-plan-vw24at
+          pnpm add --save-dev --ignore-workspace-root-check playwright
+          pnpm exec playwright install --with-deps chromium
+
+      - name: Start Vite on 5177 for P0-2 review
+        run: |
+          pnpm dev --host 127.0.0.1 --port 5177 --strictPort > /tmp/v12-dev.log 2>&1 &
+          echo $! > /tmp/v12-dev.pid
+          for i in {1..60}; do
+            if curl -fsS http://127.0.0.1:5177/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/v12-dev.log
+          exit 1
+
+      - name: Re-capture three P0-2 review viewports
+        run: node scripts/v12-baseline.mjs --capture-before v12-p0-2-captures
 
       - name: Upload P0-2 verification evidence
         if: always()
@@ -139,10 +128,7 @@ jobs:
         with:
           name: v12-p0-2-verification
           path: |
-            docs/design/v12/shots/p0-1-390x844.png
-            docs/design/v12/shots/p0-1-844x390.png
-            docs/design/v12/shots/p0-1-1440x900.png
-            docs/design/v12/shots/manifest.json
+            v12-p0-2-captures
             v12-zone-report.txt
             v12-zone-report-baseline.txt
             v12-audit.txt
