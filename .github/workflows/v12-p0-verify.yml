@@ -123,7 +123,10 @@ jobs:
         run: node scripts/v12-baseline.mjs --capture-before v12-p0-2-captures
 
       - name: Prove P0 screen stayed within the measured capture-noise envelope
-        run: node scripts/v12-p0-screen-diff.mjs docs/design/v12/shots v12-p0-2-captures | tee v12-p0-screen-diff.json
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/v12-p0-screen-diff.mjs docs/design/v12/shots v12-p0-2-captures | tee v12-p0-screen-diff.json
 
       - name: Upload P0-2 verification evidence
         if: always()
