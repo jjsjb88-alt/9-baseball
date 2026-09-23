@@ -93,6 +93,6 @@ describe('V12 P2-4 upgraded card keeps its + on the trigger',()=>{
     fireEvent.click(screen.getByRole('button',{name:'스윙하기',exact:true}));
     const card=[...document.querySelectorAll('.duel-hand .duel-card.attack[data-card-plus="1"]')][0];
     fireEvent.click(card);
-    expect(screen.getByTestId('execute-action').textContent).toBe(CARDS[card.dataset.cardKind].name+'+ · 단독 스윙 100%');
+    expect(screen.getByTestId('execute-action').textContent).toBe(CARDS[card.dataset.cardKind].name+'+ · 단독 스윙 · 피해 효율 100%');
   });
 });

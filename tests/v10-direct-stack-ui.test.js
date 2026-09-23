@@ -58,7 +58,7 @@ describe('V10 9-zone card placement interaction',()=>{
     expect(ui.third.dataset.boardAction).toBe('＋ 존에 놓기');
     const guide=document.querySelector('.zone-card-board-guide');
     expect(guide.textContent).toContain('1장 배치');
-    expect(guide.textContent).toContain('HP ×1.00');
+    expect(guide.textContent).toContain('×1.00');
     expect(guide.textContent).toContain('FULL POWER');
     cleanup();
   });
@@ -79,7 +79,7 @@ describe('V10 9-zone card placement interaction',()=>{
     expect(ui.candidates[0].classList.contains('picked')).toBe(true);
     expect(ui.slots[0].querySelector('small').textContent).toContain('존5');
     const guide=document.querySelector('.zone-card-board-guide');
-    expect(guide.textContent).toContain('HP ×0.80');
+    expect(guide.textContent).toContain('×0.80');
     expect(guide.textContent).toContain('위력 -20%');
     expect(ui.zones[4].classList.contains('board-impact-cover')).toBe(true);
     cleanup();
@@ -90,13 +90,13 @@ describe('V10 9-zone card placement interaction',()=>{
     ui.second.click();ui.zones[3].click();await settle();
     let guide=document.querySelector('.zone-card-board-guide');
     expect(guide.textContent).toContain('2장 배치');
-    expect(guide.textContent).toContain('HP ×0.80');
+    expect(guide.textContent).toContain('×0.80');
     expect(guide.querySelector('.zone-power-track').style.getPropertyValue('--power')).toBe('80%');
 
     ui.third.click();ui.zones[7].click();await settle();
     guide=document.querySelector('.zone-card-board-guide');
     expect(guide.textContent).toContain('3장 배치');
-    expect(guide.textContent).toContain('HP ×0.65');
+    expect(guide.textContent).toContain('×0.65');
     expect(guide.textContent).toContain('위력 -35%');
     expect(guide.querySelector('.zone-power-track').style.getPropertyValue('--power')).toBe('65%');
     cleanup();
@@ -107,7 +107,7 @@ describe('V10 9-zone card placement interaction',()=>{
     const efficiency=document.createElement('div');efficiency.className='stack-efficiency';efficiency.innerHTML='<b>HP DAMAGE 92%</b>';ui.drawer.appendChild(efficiency);
     ui.second.click();ui.zones[5].click();await settle();
     const guide=document.querySelector('.zone-card-board-guide');
-    expect(guide.textContent).toContain('HP ×0.92');
+    expect(guide.textContent).toContain('×0.92');
     expect(guide.textContent).toContain('위력 -8%');
     expect(guide.querySelector('.zone-power-track').style.getPropertyValue('--power')).toBe('92%');
     cleanup();

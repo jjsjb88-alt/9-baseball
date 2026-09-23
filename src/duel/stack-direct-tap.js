@@ -83,7 +83,7 @@ function boardGuide(panel){
   let el=panel?.querySelector('.zone-card-board-guide');if(el)return el;
   if(!panel)return null;
   el=document.createElement('div');el.className='zone-card-board-guide';el.setAttribute('role','status');
-  el.innerHTML='<div class="zone-board-copy"><span>PLACE CARDS</span><strong></strong><small></small></div><div class="zone-board-power"><div class="zone-power-head"><span>HP POWER</span><strong>HP ×1.00</strong></div><div class="zone-power-track"><i></i></div><small>FULL POWER</small></div><div class="zone-board-rate" aria-label="카드 수별 HP 피해 배율"></div>';
+  el.innerHTML='<div class="zone-board-copy"><span>PLACE CARDS</span><strong></strong><small></small></div><div class="zone-board-power"><div class="zone-power-head"><span>피해 효율</span><strong>×1.00</strong></div><div class="zone-power-track"><i></i></div><small>FULL POWER</small></div><div class="zone-board-rate" aria-label="카드 수별 HP 피해 배율"></div>';
   const grid=panel.querySelector('.zone-grid');grid?.parentNode?.insertBefore(el,grid);return el;
 }
 function setGuide(drawer,panel,armed=null){
@@ -99,10 +99,13 @@ function setGuide(drawer,panel,armed=null){
     guide.classList.add('armed');
   }else{
     guide.classList.remove('armed');
-    strong.textContent=count?`${count}장 배치 · 커버 ${count}칸 전략`:'카드를 9존에 직접 놓으세요';
-    small.textContent=count?'카드를 더 놓으면 커버는 넓어지고 HP 위력은 내려갑니다.':'탭 → 존 탭, 또는 카드를 존까지 드래그 · 최대 4장';
+    // V12 P3-3: the cover count is the engine's covered cells (C1), not the number of cards
+    const covered=zoneCells(panel?.ownerDocument||document).filter(c=>c.classList.contains('covered')).length;
+    strong.textContent=count?`${count}장 배치`+(covered?` · 커버 ${covered}칸`:''):'카드를 9존에 직접 놓으세요';
+    small.textContent=count?'카드를 더 놓으면 커버는 넓어지고 피해 효율은 내려갑니다.':'탭 → 존 탭, 또는 카드를 존까지 드래그 · 최대 4장';
   }
-  powerStrong.textContent=`HP ×${(rate/100).toFixed(2)}`;
+  // a multiplier on HP damage, never an HP value (C3)
+  powerStrong.textContent=`×${(rate/100).toFixed(2)}`;
   powerTrack?.style.setProperty('--power',power+'%');
   powerSmall.textContent=count<=1?'FULL POWER':`COVER +${count-1} · 위력 -${loss}%`;
   const hadCount=guide.dataset.count!==undefined,prevCount=Number(guide.dataset.count||count),prevRate=Number(guide.dataset.rate||rate);
