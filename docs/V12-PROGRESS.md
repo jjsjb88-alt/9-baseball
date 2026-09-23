@@ -168,7 +168,7 @@
     구현: ZoneBoard가 엔진 미리보기 `primaryCoverage`·`supportCoverages`(모두 coverageAt)로 칸에 `cover-main`/`cover-support`를 붙임, 단독 카드는 전부 메인. `v12-board-cover.css`: 메인 = 금색 실선 테두리 + 옅은 금색, 지원 = 칸 안쪽 청록 점선 고리 + 옅은 청록, 겹치면 둘 다(D2 반투명, 불투명 카드 없음). 배치 미리보기(P2-2)·충돌 섬광은 그 위.
     검증: `tests/v12-p3-board-cover.test.jsx` 5개. 브라우저 3뷰포트: 밀어치기+ 3번 칸 + 커트 스윙 9번 칸 → 메인 [2,5,8], 지원 [5,7,8], 겹침 [5,8].
     캡처: `docs/design/v12/shots/p3-1-{390x844,844x390,1440x900}-stack.png`.
-- [x] **P3-2** 순번 · 순서 링크 (C2) — `SHA_P32`
+- [x] **P3-2** 순번 · 순서 링크 (C2) — `2e00e25`
     영향도: UI(9존 위 SVG 한 장, pointer-events:none) 있음 · 입력 영향 없음(포인터를 받지 않음, 칸 조작 그대로) · 게임 로직/저장 영향 없음(zone-report 해시 동일) · 접근성: SVG는 aria-hidden, 같은 내용을 숨은 status 문장으로("순서 연결 · ①→② 끊김") · 결과 공개 후 숨김(P4).
     구현: `ZoneLinks.jsx` — `stackPlan.links` 한 항목당 표시 하나. 연결 = 청록 실선, 끊김 = 갈색 점선 + 가운데 틈(색만이 아니라 선 모양으로 구분), 같은 존 = 고리. 연결 여부는 엔진(`v11StackZonesConnect`) 값 그대로, 모서리 접촉·커버 겹침으로 계산하지 않음. 끝점은 칸 위 순번 토큰(①②) — 없으면 칸 중심. 실제 렌더된 칸·토큰을 재서 세로·가로·PC 모두 맞춤(ResizeObserver + 토큰 추가 감지).
     검증: `tests/v12-p3-board-links.test.jsx` 7개(요약 문장, 선/틈/고리 좌표, 엔진 대각 연결·먼 존 끊김, SVG 표시 수·aria-hidden, 링크 없음, 전투 통합, CSS). 브라우저: 3번+9번 칸 → 끊김 점선(3뷰포트), 3번+5번 칸 → 실선, HP 87%·CONNECT 1/1.
