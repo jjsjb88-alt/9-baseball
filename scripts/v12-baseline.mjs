@@ -39,12 +39,12 @@ export async function checkFixture(){
   return {meta,state:actual};
 }
 
-async function capture(outDir){
+async function capture(outDir,{viewportOnly=false}={}){
   const {meta,state}=await checkFixture();
   const {chromium}=await import('playwright');
   const baseUrl=process.env.V12_BASELINE_URL||'http://127.0.0.1:5177/';
   const browser=await chromium.launch({headless:true});
-  const manifest={baselineSha:meta.baselineSha,seed:meta.seed,url:baseUrl,captures:[]};
+  const manifest={baselineSha:meta.baselineSha,seed:meta.seed,url:baseUrl,mode:viewportOnly?'viewport':'full-page',captures:[]};
   let failed=0;
   await mkdir(outDir,{recursive:true});
 
@@ -74,8 +74,8 @@ async function capture(outDir){
       phase:document.querySelector('.duel-combat')?.className||'',
       hp:document.querySelector('.v10-combat-hp')?.textContent?.trim()||'',
     }));
-    const filename=`p0-1-${viewport.name}.png`;
-    await page.screenshot({path:path.join(outDir,filename),fullPage:true});
+    const filename=viewportOnly?`p0-1-${viewport.width}x${viewport.height}.png`:`p0-1-${viewport.name}.png`;
+    await page.screenshot({path:path.join(outDir,filename),fullPage:!viewportOnly});
     manifest.captures.push({...viewport,filename,errors,metrics});
     failed+=errors.length;
     await context.close();
@@ -98,6 +98,13 @@ async function main(){
     console.log(`V12 baseline fixture matches engine · seed ${meta.seed} · ${meta.baselineSha}`);
     return;
   }
+  const beforeAt=args.indexOf('--capture-before');
+  if(beforeAt>=0){
+    const out=path.resolve(ROOT,args[beforeAt+1]||'docs/design/v12/shots');
+    const result=await capture(out,{viewportOnly:true});
+    console.log(JSON.stringify(result,null,2));
+    return;
+  }
   const at=args.indexOf('--capture');
   if(at>=0){
     const out=path.resolve(ROOT,args[at+1]||'.qa-v12-p0-1');
@@ -105,7 +112,7 @@ async function main(){
     console.log(JSON.stringify(result,null,2));
     return;
   }
-  console.error('usage: node scripts/v12-baseline.mjs --write | --check | --capture <out>');
+  console.error('usage: node scripts/v12-baseline.mjs --write | --check | --capture <out> | --capture-before <out>');
   process.exitCode=2;
 }
 
