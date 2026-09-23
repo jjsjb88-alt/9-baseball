@@ -163,7 +163,7 @@
 
 ## P3 · 보드 — D1·D2·D4 필요
 
-- [x] **P3-1** 커버 셀 표시 (C1) — `SHA_P31`
+- [x] **P3-1** 커버 셀 표시 (C1) — `e753918`
     영향도: UI(설계 상태 9존 칸 외형) 있음 · 입력 영향 없음(클래스·숨은 설명만) · 게임 로직/저장 영향 없음(zone-report 해시 동일, 엔진 값 표시만) · 접근성: 칸 이름(aria-label) 유지, 덮인 칸은 `aria-describedby`에 "메인 커버/지원 커버" 추가 · 결과 공개(revealed) 후에는 적용 안 함(P4).
     구현: ZoneBoard가 엔진 미리보기 `primaryCoverage`·`supportCoverages`(모두 coverageAt)로 칸에 `cover-main`/`cover-support`를 붙임, 단독 카드는 전부 메인. `v12-board-cover.css`: 메인 = 금색 실선 테두리 + 옅은 금색, 지원 = 칸 안쪽 청록 점선 고리 + 옅은 청록, 겹치면 둘 다(D2 반투명, 불투명 카드 없음). 배치 미리보기(P2-2)·충돌 섬광은 그 위.
     검증: `tests/v12-p3-board-cover.test.jsx` 5개. 브라우저 3뷰포트: 밀어치기+ 3번 칸 + 커트 스윙 9번 칸 → 메인 [2,5,8], 지원 [5,7,8], 겹침 [5,8].
