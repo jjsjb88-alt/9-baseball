@@ -111,7 +111,14 @@ S.hand.forEach((h,i)=>{const st=stackOf[h.id],x=cardX(i),y=cardY-(st?6:0);
     const t=cj/cardH;px(X,Y,t<.28?C.parch:t<.62?C.parch2:C.parch3)});
   if(st)K.plateShape(x+1,y+1,cardW-2,cardH-2,(X,Y,ci,cj,edge)=>{if(edge)px(X,Y,st.main?C.gold:C.teal,.85)});
   for(let j=5;j<34;j+=4){px(x+3,y+j,C.seam);px(x+4,y+j+1,C.seam);px(x+6,y+j+1,C.seam);px(x+7,y+j,C.seam)}   // seam stitches
-  for(let k=0;k<9;k++)rect(x+11+(k%3)*5,y+15+Math.floor(k/3)*5,4,4,shapeCells[h.shape].includes(k)?[44,95,88]:[203,187,151]); // shape hint only
+  // header band behind the name
+  rect(x+9,y+2,cardW-11,11,[214,196,158],.55);rect(x+9,y+12,cardW-11,1,[180,156,112],.7);
+  // a miniature 9ZONE: same frame language as the board, lit in the card's role colour (shape hint only)
+  {const mx=x+11,my=y+16,on=st?(st.main?C.gold:C.teal):[60,110,100],onLo=st?(st.main?C.goldLo:C.tealLo):[40,80,72];
+   rect(mx-2,my-2,18,18,[40,28,18]);rect(mx-1,my-1,16,16,[70,52,34]);
+   for(let k=0;k<9;k++){const gx=mx+(k%3)*5,gy=my+Math.floor(k/3)*5,lit=shapeCells[h.shape].includes(k);
+     rect(gx,gy,4,4,lit?on:[92,72,50]);if(lit){rect(gx,gy,4,1,[255,248,230],.55);rect(gx,gy+3,4,1,onLo)}}
+   for(const [cx,cy,sx,sy] of [[mx-3,my-3,1,1],[mx+16,my-3,-1,1],[mx-3,my+16,1,-1],[mx+16,my+16,-1,-1]]){px(cx,cy,C.goldLo);px(cx+sx,cy,C.goldLo);px(cx,cy+sy,C.goldLo)}}
   if(st){const cx=x+17,cy=y+cardH-4;disc(cx,cy,5,st.main?C.goldHi:C.tealHi,st.main?C.gold:C.teal,st.main?C.goldLo:C.tealLo,st.main?C.goldInk:C.tealInk);
 }
 });
@@ -144,7 +151,7 @@ text('SWING ORDER',14,584,{size:10,weight:800,color:C.dim});
 text(S.cardCount+'장 · 메인 1 + 지원 '+(S.cardCount-1),100,583,{size:12,weight:900,color:C.gold});
 S.hand.forEach((h,i)=>{const st=stackOf[h.id],x=cardX(i)*2,y=(cardY-(st?6:0))*2;
   text(h.name,x+cardW+3,y+9,{size:12,weight:900,color:[28,22,15],align:'center',ring:false});
-  text(st?(st.main?'MAIN':'SUPPORT'):'대기',x+cardW+3,y+64,{size:9,weight:900,color:st?(st.main?[138,90,28]:[31,110,100]):[109,90,64],align:'center',ring:false})});
+  text(st?(st.main?'MAIN':'SUPPORT'):'대기',x+cardW+3,y+70,{size:9,weight:900,color:st?(st.main?[138,90,28]:[31,110,100]):[109,90,64],align:'center',ring:false})});
 text('준비',50,788,{size:14,weight:900,align:'center'});text('집중·드로우',50,808,{size:9,weight:700,color:[127,138,140],align:'center'});
 text('지켜보기',132,788,{size:14,weight:900,align:'center'});text('볼/스트라이크',132,808,{size:9,weight:700,color:[127,138,140],align:'center'});
 text('스윙 확정',278,785,{size:18,weight:900,color:C.goldInk,align:'center',ring:false});
