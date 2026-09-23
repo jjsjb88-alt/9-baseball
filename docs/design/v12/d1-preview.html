@@ -33,7 +33,7 @@ body{font-family:Inter,Pretendard,"Noto Sans KR",system-ui,sans-serif;background
 .topbar{position:absolute;z-index:20;left:14px;right:14px;top:12px;height:40px;display:flex;align-items:center;gap:9px}
 .brand{font-weight:900;font-size:11px;letter-spacing:.16em;color:var(--gold);opacity:.92}
 .atbat{font-weight:800;font-size:13px}
-.count{margin-left:auto;display:flex;align-items:center;gap:7px;font-size:10px;color:var(--muted)}
+.count{margin-left:auto;display:flex;align-items:center;gap:7px;font-size:11px;color:var(--muted)}
 .dots{display:flex;gap:3px}.dots i{display:block;width:6px;height:6px;border-radius:50%;border:1px solid rgba(180,220,208,.34)}
 .dots i.on{background:var(--gold);border-color:var(--gold)}
 .pitcher-info{position:absolute;z-index:20;top:64px;left:50%;transform:translateX(-50%);width:210px;text-align:center}
@@ -41,8 +41,20 @@ body{font-family:Inter,Pretendard,"Noto Sans KR",system-ui,sans-serif;background
 .pitcher-type{font-size:10px;color:var(--muted);margin-top:2px}
 .hp{height:8px;margin-top:7px;border-radius:999px;background:rgba(2,9,8,.72);overflow:hidden;border:1px solid rgba(160,220,200,.22)}
 .hp:before{content:"";display:block;width:78%;height:100%;background:linear-gradient(90deg,#42a77f,#79ddb0);box-shadow:0 0 12px rgba(111,215,198,.4)}
-.hpnum{font-size:10px;color:#dbe7df;margin-top:3px}
-.pitcher{position:absolute;z-index:6;width:116px;left:50%;top:112px;transform:translateX(-50%);filter:drop-shadow(0 9px 14px rgba(0,0,0,.58))}
+.hpnum{font-size:11px;color:#dbe7df;margin-top:3px}
+.moundmark{position:absolute;z-index:5;left:50%;top:166px;width:132px;height:38px;transform:translateX(-50%);border-radius:50%;
+ background:radial-gradient(ellipse at center,rgba(201,174,122,.36) 0 28%,rgba(88,75,56,.30) 29% 48%,rgba(0,0,0,0) 70%);
+ box-shadow:0 18px 34px rgba(0,0,0,.28)}
+.release{position:absolute;z-index:16;left:50%;top:164px;width:10px;height:10px;transform:translate(-50%,-50%);border-radius:50%;
+ background:#fff1bb;box-shadow:0 0 0 5px rgba(255,224,161,.10),0 0 22px rgba(255,224,161,.62)}
+.release:before{content:"";position:absolute;left:50%;top:50%;width:54px;height:1px;transform:translate(-50%,-50%);
+ background:linear-gradient(90deg,transparent,rgba(255,235,188,.72),transparent)}
+.release:after{content:"";position:absolute;left:50%;top:50%;width:1px;height:40px;transform:translate(-50%,-50%);
+ background:linear-gradient(180deg,transparent,rgba(255,235,188,.58),transparent)}
+.opponent-glyph{position:absolute;z-index:12;left:50%;top:134px;transform:translateX(-50%);width:52px;height:26px;border-radius:50%;
+ border:1px solid rgba(255,224,161,.24);box-shadow:inset 0 0 16px rgba(255,224,161,.08),0 0 22px rgba(0,0,0,.24)}
+.opponent-glyph:before,.opponent-glyph:after{content:"";position:absolute;top:50%;width:20px;height:1px;background:rgba(255,224,161,.32)}
+.opponent-glyph:before{right:100%;margin-right:8px}.opponent-glyph:after{left:100%;margin-left:8px}
 .batter{position:absolute;z-index:7;width:188px;left:-10px;top:215px;filter:drop-shadow(0 12px 18px rgba(0,0,0,.62))}
 .intent{position:absolute;z-index:19;font-size:11px;font-weight:800;color:var(--gold);padding:5px 9px;border-radius:999px;background:rgba(5,15,15,.64);border:1px solid rgba(255,224,161,.26);backdrop-filter:blur(6px)}
 .zone{position:absolute;z-index:15;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:4px}
@@ -54,14 +66,14 @@ body{font-family:Inter,Pretendard,"Noto Sans KR",system-ui,sans-serif;background
 .token.main{background:var(--gold);color:#1d1607}.token.sup{background:var(--teal);color:#04241f}
 .pitchline{position:absolute;z-index:14;pointer-events:none}
 .readout{position:absolute;z-index:20;display:flex;gap:6px;align-items:center}
-.pill{font-size:10px;font-weight:800;padding:5px 8px;border-radius:999px;border:1px solid var(--edge);background:rgba(6,18,18,.68);color:#d7e2dc;backdrop-filter:blur(6px)}
+.pill{font-size:11px;font-weight:800;padding:6px 9px;border-radius:999px;border:1px solid var(--edge);background:rgba(6,18,18,.68);color:#d7e2dc;backdrop-filter:blur(6px)}
 .pill strong{color:var(--gold)}
 .cards{position:absolute;z-index:30;display:flex;gap:8px}
 .card{width:102px;height:126px;border-radius:10px;padding:9px;background:linear-gradient(165deg,#f0e8cf,#c9bea0);border:1px solid rgba(105,92,68,.8);box-shadow:0 12px 18px rgba(0,0,0,.34);color:#152328}
 .card.selected{transform:translateY(-10px);box-shadow:0 0 0 2px var(--gold),0 18px 22px rgba(0,0,0,.42)}
-.card b{display:block;font-size:13px;line-height:1.15}.card small{font-size:9px;color:#59635e}
+.card b{display:block;font-size:13px;line-height:1.15}.card small{font-size:10px;color:#59635e}
 .mini{margin-top:9px;display:grid;grid-template-columns:repeat(3,1fr);gap:2px}.mini i{display:block;aspect-ratio:1;background:#a9a287}.mini i.on{background:#327565}
-.card .tag{margin-top:7px;font-size:9px;font-weight:800;color:#24594e}
+.card .tag{margin-top:7px;font-size:10px;font-weight:800;color:#24594e}
 .actions{position:absolute;z-index:35;display:flex;gap:8px}
 .action{height:46px;border-radius:12px;border:1px solid rgba(142,194,182,.24);background:rgba(5,16,16,.82);color:#d6e0db;font-size:12px;font-weight:800;display:grid;place-items:center;backdrop-filter:blur(8px)}
 .action.primary{background:linear-gradient(180deg,#f2d38d,#bd8a35);border-color:#ffe1a2;color:#1c1608;box-shadow:0 0 24px rgba(255,224,161,.22)}
@@ -69,12 +81,13 @@ body{font-family:Inter,Pretendard,"Noto Sans KR",system-ui,sans-serif;background
 
 /* D · broadcast field-first */
 body[data-v="d"] .pitcher-info{top:62px}
-body[data-v="d"] .pitcher{top:118px;width:112px}
-body[data-v="d"] .batter{top:220px;left:-8px;width:196px}
-body[data-v="d"] .zone{left:132px;top:294px;width:230px;height:230px;gap:5px;transform:perspective(500px) rotateX(3deg)}
-body[data-v="d"] .intent{left:256px;top:250px}
-body[data-v="d"] .pitchline{left:170px;top:186px;width:160px;height:190px}
-body[data-v="d"] .readout{left:132px;top:535px}
+body[data-v="d"] .moundmark{top:166px;width:150px;height:42px}
+body[data-v="d"] .release{top:164px}
+body[data-v="d"] .batter{top:208px;left:-6px;width:204px}
+body[data-v="d"] .zone{left:136px;top:288px;width:226px;height:226px;gap:5px;transform:perspective(500px) rotateX(3deg)}
+body[data-v="d"] .intent{left:252px;top:242px}
+body[data-v="d"] .pitchline{left:164px;top:172px;width:168px;height:196px}
+body[data-v="d"] .readout{left:132px;top:526px}
 body[data-v="d"] .cards{left:14px;bottom:62px;width:450px}
 body[data-v="d"] .actions{left:14px;right:14px;bottom:10px}
 body[data-v="d"] .action{flex:1}body[data-v="d"] .label:after{content:"D · FIELD FIRST"}
@@ -82,40 +95,42 @@ body[data-v="d"] .action{flex:1}body[data-v="d"] .label:after{content:"D · FIEL
 /* E · batter-eye immersive */
 body[data-v="e"] .stage{background:radial-gradient(115% 65% at 50% 26%,#285140,#112f27 45%,#071613 78%,#040c0b)}
 body[data-v="e"] .pitcher-info{top:60px;width:180px}
-body[data-v="e"] .pitcher{top:126px;width:92px}
-body[data-v="e"] .batter{top:360px;left:212px;width:238px;transform:scaleX(-1);opacity:.96}
-body[data-v="e"] .zone{left:105px;top:270px;width:180px;height:180px;gap:3px}
+body[data-v="e"] .moundmark{top:172px;width:116px;height:34px;opacity:.72}
+body[data-v="e"] .release{top:168px}
+body[data-v="e"] .batter{top:342px;left:210px;width:248px;transform:scaleX(-1);opacity:.98}
+body[data-v="e"] .zone{left:104px;top:258px;width:182px;height:182px;gap:3px}
 body[data-v="e"] .zone .z{border-color:rgba(224,245,236,.32);background:rgba(8,32,30,.20)}
-body[data-v="e"] .intent{left:147px;top:238px}
-body[data-v="e"] .pitchline{left:128px;top:164px;width:152px;height:160px}
-body[data-v="e"] .readout{left:22px;top:470px}
+body[data-v="e"] .intent{left:145px;top:226px}
+body[data-v="e"] .pitchline{left:122px;top:160px;width:164px;height:168px}
+body[data-v="e"] .readout{left:20px;top:458px}
 body[data-v="e"] .cards{left:18px;bottom:68px;gap:9px}
 body[data-v="e"] .card{width:110px;height:132px}
 body[data-v="e"] .actions{left:18px;right:18px;bottom:12px}
 body[data-v="e"] .action{flex:1}body[data-v="e"] .label:after{content:"E · BATTER EYE"}
 
 /* F · tactical half-sheet */
-body[data-v="f"] .pitcher{top:115px;width:104px}
-body[data-v="f"] .batter{top:182px;left:-16px;width:176px}
+body[data-v="f"] .batter{top:172px;left:-14px;width:184px}
 body[data-v="f"] .pitcher-info{top:58px}
+body[data-v="f"] .moundmark{top:164px;width:138px;height:38px}
+body[data-v="f"] .release{top:162px}
 body[data-v="f"] .sheet{display:block}
 body[data-v="f"] .zone{left:20px;top:398px;width:202px;height:202px;gap:4px}
-body[data-v="f"] .intent{left:18px;top:354px}
-body[data-v="f"] .pitchline{left:126px;top:180px;width:165px;height:170px}
+body[data-v="f"] .intent{left:20px;top:344px}
+body[data-v="f"] .pitchline{left:122px;top:166px;width:172px;height:176px}
 body[data-v="f"] .readout{left:236px;top:415px;display:flex;flex-direction:column;align-items:stretch}
 body[data-v="f"] .readout .pill{font-size:10px;padding:8px 9px;border-radius:8px}
 body[data-v="f"] .cards{left:14px;bottom:62px}
 body[data-v="f"] .card{width:100px;height:118px}
 body[data-v="f"] .actions{left:14px;right:14px;bottom:10px}
 body[data-v="f"] .action{flex:1}body[data-v="f"] .label:after{content:"F · TACTICAL SHEET"}
-.sheet{display:none;position:absolute;z-index:11;left:0;right:0;top:370px;bottom:0;background:
+.sheet{display:none;position:absolute;z-index:11;left:0;right:0;top:360px;bottom:0;background:
  linear-gradient(180deg,rgba(6,18,17,.18),rgba(5,15,15,.94) 10%,rgba(5,15,15,.99));border-top:1px solid rgba(151,205,190,.22);
  backdrop-filter:blur(6px);box-shadow:0 -16px 35px rgba(0,0,0,.32)}
 </style>
 </head>
 <body>
 <div class="stage">
-  <div class="crowd"></div><div class="field"></div><div class="sheet"></div>
+  <div class="crowd"></div><div class="field"></div><div class="moundmark"></div><div class="opponent-glyph"></div><div class="release"></div><div class="sheet"></div>
   <div class="topbar">
     <span class="brand">9ZONE</span><span class="atbat">#7 강한결</span>
     <div class="count">B <span class="dots"><i class="on"></i><i></i><i></i><i></i></span>
