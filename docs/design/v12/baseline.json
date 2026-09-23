@@ -8,6 +8,9 @@
   "saveKey": "9zone-v10-run",
   "fixture": "docs/design/v12/fixtures/p0-1-combat.json",
   "collector": "scripts/v12-baseline.mjs",
+  "intentionalChanges": {
+    "p0-1-844x390.png": {"slice": "P1-1b", "reason": "The collector lands in the landscape swing state (sts-battleboard auto-opens it); P1-1b re-lays that design state to the D1 Golden Master (stadium left, 9ZONE top-right, actions beside it, hand bottom-right)."}
+  },
   "viewports": [
     {"name": "mobile-390x844", "width": 390, "height": 844},
     {"name": "mobile-landscape-844x390", "width": 844, "height": 390},

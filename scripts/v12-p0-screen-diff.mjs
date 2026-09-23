@@ -12,6 +12,7 @@ import {readFileSync} from 'node:fs';
 import path from 'node:path';
 import {inflateSync} from 'node:zlib';
 
+const INTENTIONAL=JSON.parse(readFileSync(new URL('../docs/design/v12/baseline.json',import.meta.url),'utf8')).intentionalChanges||{};
 const PNG_SIGNATURE=Buffer.from([137,80,78,71,13,10,26,10]);
 const FILES=[
   'p0-1-390x844.png',
@@ -255,8 +256,12 @@ function main(){
       meanAbsChannelDelta:metrics.meanAbsChannelDelta<=LIMITS.meanAbsChannelDelta,
     };
 
-    if(Object.values(checks).some(value=>!value))failed=true;
-    comparisons.push({file,...metrics,checks});
+    // A later V12 slice may change a captured state on purpose (P1 re-lays the landscape design
+    // state the collector lands in). Such a file is listed in baseline.json with the slice and a
+    // reason; it is still measured and reported, but it cannot fail the P0 zero-change proof.
+    const intentional=INTENTIONAL[file]||null;
+    if(!intentional&&Object.values(checks).some(value=>!value))failed=true;
+    comparisons.push({file,...metrics,checks,...(intentional?{intentional}:{})});
   }
 
   console.log(JSON.stringify({
