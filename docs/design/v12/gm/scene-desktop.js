@@ -29,9 +29,9 @@ GM.intent({x:150,y:120,w:55,h:24},{pointer:'right'});
 GM.zone({x:318,y:90,cell:34,glass:3});
 
 // 5. hand + actions on the dugout rail along the bottom
-for(let k=0;k<4;k++)K.wash(150,236+k*1,330,1,[12,7,6],.25+k*.2);
-GM.planks(150,240,330,60);
-K.rect(150,239,330,1,[255,210,122],.3);
+// no tray: the hand lies on the clay in the zone's light, each card casting its own shadow
+for(let k=0;k<6;k++)K.wash(150,244+k*9,330,9,[16,8,5],.06+k*.05);
+for(let r=0;r<3;r++)K.wash(154+r*6,300-5+r,188-r*12,5-r,[8,4,2],.25);
 GM.handLabel(158,231);
 GM.handOrdered().forEach((h,i)=>GM.card(h,158+i*37,247,{w:34}));
 GM.buttons({x:348,y:258,small:34,gapX:3,goW:56});
