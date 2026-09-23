@@ -29,7 +29,7 @@ GM.zone({x:82,y:145,cell:32});
 // 5. hand
 K.rect(0,288,195,1,[255,210,122],.3);K.wash(0,289,195,2,[255,210,122],.08);
 GM.handLabel(7,292);
-S.hand.forEach((h,i)=>GM.card(h,5+i*37,318,{hh:56}));
+GM.handOrdered().forEach((h,i)=>GM.card(h,5+i*37,318,{hh:56}));
 
 // 6. execute + top strip
 GM.buttons({x:6,y:386,goW:101});

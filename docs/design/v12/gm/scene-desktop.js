@@ -20,20 +20,20 @@ K.line(4,272,150,262,[236,226,202]);K.line(4,273,150,263,[120,80,60]);
 // 2–3. opponent and duel
 GM.board({x:195,y:76,w:90,h:29},{posts:14});
 GM.pitcher({fx:240,fy:177,h:56,path:[276,226]});
-for(let r=0;r<3;r++)K.wash(18+r*6,280+r,110-r*12,6-r*2,[10,4,2],.28);                        // contact shadow
+for(let r=0;r<4;r++)K.wash(14+r*8,279+r,122-r*16,7-r*2,[10,4,2],.3);K.dither(20,277,110,4,[10,4,2],.35);                        // contact shadow
 GM.batter({x:22,y:118,h:168});
 GM.edges(14,236,480);
 GM.intent({x:150,y:120,w:55,h:24},{pointer:'right'});
 
 // 4. 9ZONE on the plate, right of the duel line
-GM.zone({x:318,y:96,cell:34});
+GM.zone({x:318,y:96,cell:34,glass:2});
 
 // 5. hand + actions on the dugout rail along the bottom
 for(let k=0;k<4;k++)K.wash(150,228+k*2,330,2,[12,7,6],.25+k*.2);
 GM.planks(150,236,330,64);
 K.rect(150,235,330,1,[255,210,122],.3);
 GM.handLabel(158,229);
-S.hand.forEach((h,i)=>GM.card(h,158+i*37,247,{w:34}));
+GM.handOrdered().forEach((h,i)=>GM.card(h,158+i*37,247,{w:34}));
 GM.buttons({x:348,y:258,small:34,gapX:3,goW:56});
 
 GM.topbar(480);

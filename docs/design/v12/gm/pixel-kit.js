@@ -96,6 +96,10 @@ const F={
 K.glyphs=(str,x,y,c,scale=1)=>{let cx=x;for(const ch of str){const g=F[ch]||F[' '];
   for(let j=0;j<7;j++)for(let i=0;i<5;i++)if(g[j*5+i]==='#')K.rect(cx+i*scale,y+j*scale,scale,scale,c);cx+=6*scale}return cx-x-scale};
 K.glyphW=(s,scale=1)=>s.length*6*scale-scale;
+// 3×5 numerals for small corner badges
+const F3={'1':'.#.##..#..#.###','2':'###..#####..###','3':'###..#.##..####','4':'#.##.####..#..#','5':'####..###..####',
+  '6':'####..####.####','7':'###..#..#..#..#','8':'####.#####.####','9':'####.####..####'};
+K.glyphs3=(str,x,y,c)=>{let cx=x;for(const ch of str){const g=F3[ch];if(g)for(let j=0;j<5;j++)for(let i=0;i<3;i++)if(g[j*3+i]==='#')K.rect(cx+i,y+j,1,1,c);cx+=4}};
 
 // Hangul on a device-resolution layer (2 device px per CSS px): readable at 9–12px, with a hard
 // ink outline so it sits on the pixel world like engraved UI rather than floating web text.

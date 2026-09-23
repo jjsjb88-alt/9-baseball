@@ -56,7 +56,8 @@ P.pitcher=({fx,fy,h,path})=>{const w=Math.round(443*h/680),s=h/62;
   const x=fx-Math.round(w/2),y=fy-h;K.blit(img,x,y);
   const bx=x+Math.round(38*s),by=y+Math.round(5*s);rect(bx,by,2,2,[255,250,232]);
   for(const [dx,dy,a] of [[-1,0,.8],[2,0,.8],[0,-1,.8],[0,2,.8],[-2,0,.45],[3,0,.45],[0,-2,.45],[0,3,.45]])px(bx+dx,by+dy,[255,236,190],a);
-  if(path){const [tx,ty]=path;for(let i=0;i<24;i+=2){const t=i/23;px(Math.round(bx+1+(tx-bx)*t+t*t*6),Math.round(by+4+(ty-by)*t),[255,230,170],1-t*.9)}}
+  if(path){const [tx,ty]=path;for(let i=0;i<24;i+=2){const t=i/23,qx=Math.round(bx+1+(tx-bx)*t+t*t*6),qy=Math.round(by+4+(ty-by)*t),a=1-t*.95;
+    K.rect(qx-1,qy-1,4,4,[255,214,150],a*.18);K.rect(qx,qy,2,2,[255,240,200],a)}}                      // seams of light, gone before the zone (C5)
   return {x,y,w,h,ball:[bx,by]};
 };
 P.batter=({x,y,h})=>{const w=Math.round(509*h/730);
@@ -72,11 +73,11 @@ P.intent=(I,{pointer='left'}={})=>{
 };
 
 // 4. 9ZONE — the signature object. cell size sets the whole device.
-P.zone=({x,y,cell=32,gap=2,plate=true})=>{const S=P.S,g=3*cell+2*gap,Z={x,y,w:g+6,h:g+6+18},G={x:x+3,y:y+3};
+P.zone=({x,y,cell=32,gap=2,plate=true,glass=1})=>{const S=P.S,g=3*cell+2*gap,Z={x,y,w:g+6,h:g+6+18},G={x:x+3,y:y+3};
   if(plate){for(let j=0;j<20;j+=4)K.wash(Z.x+6+j,Z.y+Z.h+j-6,Z.w-12-2*j,4,[255,214,150],.14*(1-j/20));
     const pw=Math.round(Z.w*.51),x0=Z.x+Math.round((Z.w-pw)/2),y0=Z.y+Z.h+2;rect(x0,y0-1,pw,1,C.ink);
     for(let j=0;j<11;j++){const k=j<5?0:Math.round((j-5)*pw/12.3);rect(x0+k,y0+j,pw-2*k,1,j===0?[255,250,236]:[232,222,200]);px(x0+k-1,y0+j,C.ink);px(x0+pw-k,y0+j,C.ink)}}
-  rect(Z.x,Z.y,Z.w,Z.h,[12,20,34],.16);
+  rect(Z.x,Z.y,Z.w,Z.h,[12,20,34],.16*glass);
   for(let r=2;r<=4;r++){const a=[0,0,.34,.16,.07][r];K.wash(Z.x-r,Z.y-r,Z.w+2*r,1,C.gold,a);K.wash(Z.x-r,Z.y+Z.h+r-1,Z.w+2*r,1,C.gold,a);
     K.wash(Z.x-r,Z.y-r+1,1,Z.h+2*r-2,C.gold,a);K.wash(Z.x+Z.w+r-1,Z.y-r+1,1,Z.h+2*r-2,C.gold,a)}
   rect(Z.x-1,Z.y-1,Z.w+2,1,C.ink);rect(Z.x-1,Z.y+Z.h,Z.w+2,1,C.ink);rect(Z.x-1,Z.y,1,Z.h,C.ink);rect(Z.x+Z.w,Z.y,1,Z.h,C.ink);
@@ -91,14 +92,14 @@ P.zone=({x,y,cell=32,gap=2,plate=true})=>{const S=P.S,g=3*cell+2*gap,Z={x,y,w:g+
   const main=new Set(S.coverage.main),sup=new Set(S.coverage.supports.flatMap(v=>v.cells));
   const cellXY=z=>[G.x+(z%3)*(cell+gap),G.y+Math.floor(z/3)*(cell+gap)],c=cell;
   for(let z=0;z<9;z++){const [cx,cy]=cellXY(z),sh=S.read[z].shade;
-    rect(cx,cy,c,c,[10,16,28],.2);
+    rect(cx,cy,c,c,[10,16,28],Math.min(.8,.2*glass));
     if(sh)K.wash(cx,cy,c,c,C.ember,[0,.07,.17,.29][sh]);                                  // read shade: level 0 = 3 shades
     rect(cx,cy,c,1,[246,238,219],.14);rect(cx,cy+c-1,c,1,[0,0,0],.3);rect(cx,cy,1,c,[246,238,219],.12);rect(cx+c-1,cy,1,c,[0,0,0],.25);
     if(main.has(z)){K.wash(cx,cy,c,c,C.gold,.2);K.wash(cx+1,cy+1,c-2,3,C.goldHi,.28);rect(cx,cy,c,1,C.gold);rect(cx,cy+c-1,c,1,C.goldLo);rect(cx,cy,1,c,C.gold);rect(cx+c-1,cy,1,c,C.goldLo)}
     if(sup.has(z)){const o=main.has(z)?1:0;for(const k of [o,o+1]){rect(cx+k,cy+k,c-2*k,1,C.teal);rect(cx+k,cy+c-1-k,c-2*k,1,C.tealLo);rect(cx+k,cy+k,1,c-2*k,C.teal);rect(cx+c-1-k,cy+k,1,c-2*k,C.tealLo)}}
-    rect(cx+2,cy+2,9,11,[8,8,14],.7);rect(cx+2,cy+2,9,1,[246,238,219],.35);glyphs(String(z+1),cx+4,cy+4,[246,238,219]);
+    rect(cx+1,cy+1,5,7,[8,8,14],.62);K.glyphs3(String(z+1),cx+2,cy+2,[236,228,208]);          // small coordinate glyph: coverage leads
   }
-  const nudge=c<30?2:0,cc=z=>{const [cx,cy]=cellXY(z);return [cx+Math.floor(c/2)+nudge,cy+Math.floor(c/2)+1+nudge]}; // clear the coordinate badge in small cells
+  const nudge=0,cc=z=>{const [cx,cy]=cellXY(z);return [cx+Math.floor(c/2)+nudge,cy+Math.floor(c/2)+1+nudge]}; // clear the coordinate badge in small cells
   for(const l of S.links){const [a,b]=cc(l.fromZone),[e,f]=cc(l.toZone);line(a,b,e,f,C.tealInk,4);line(a,b,e,f,l.connected?C.teal:[140,140,140],2)}
   for(const st of S.steps){const [tx,ty]=cc(st.aimZone);disc(tx,ty,8,[255,248,230],[255,248,230],[255,248,230],C.ink);
     if(st.main)disc(tx,ty,7,C.goldHi,C.gold,C.goldLo,C.goldInk);else disc(tx,ty,7,C.tealHi,C.teal,C.tealLo,C.tealInk)}
@@ -134,6 +135,8 @@ P.card=(h,x,y,{w=34,hh=52}={})=>{const st=P.stackOf[h.id];y-=st?6:0;
   text(st?(st.main?'MAIN':'SUPPORT'):'대기',x*2+w+3,y*2+70,{size:9,weight:900,color:st?(st.main?[138,90,28]:[31,110,100]):[109,90,64],align:'center',ring:false});
   if(st)text(String(st.order),cx*2+1,cy*2-7,{size:14,weight:900,color:st.main?C.goldInk:C.tealInk,align:'center',ring:false});
 };
+// the hand reads in swing order: stacked cards 1→2→3 from the left, waiting cards after (display only)
+P.handOrdered=()=>[...P.S.hand].sort((a,b)=>(P.stackOf[a.id]?.order||9)-(P.stackOf[b.id]?.order||9));
 P.handLabel=(x,y)=>{const S=P.S;text('SWING ORDER',x*2,y*2,{size:10,weight:800,color:C.dim});
   text(S.cardCount+'장 · 메인 1 + 지원 '+(S.cardCount-1),x*2+86,y*2-1,{size:12,weight:900,color:C.gold})};
 
