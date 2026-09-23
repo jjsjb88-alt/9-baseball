@@ -40,6 +40,11 @@ canvas{position:absolute;left:0;top:0}
 </main>
 <script>
 (()=>{
+  // The page re-samples real assets on a canvas, which browsers forbid from file:// — say so instead of a blank screen.
+  if(location.protocol==='file:'){document.body.innerHTML='<p style="color:#f6eedb;font:16px/1.6 sans-serif;padding:24px;max-width:520px">'+
+    '이 시안은 로컬 서버로 열어야 합니다. 저장소 루트에서 <code>pnpm exec vite --port 5177</code> 실행 후<br>'+
+    '<b>http://localhost:5177/docs/design/v12/d1-golden-master.html</b> (?v=landscape · ?v=desktop)<br>'+
+    '캡처만 보려면 <code>docs/design/v12/shots/d1-gm-*.png</code>를 여세요.</p>';return}
   const L={portrait:[390,844,'gm/scene.js',2],landscape:[844,390,'gm/scene-landscape.js',2],desktop:[1440,900,'gm/scene-desktop.js',3]};
   const v=new URLSearchParams(location.search).get('v'),[w,h,src,q]=L[v]||L.portrait;
   const stage=document.querySelector('.stage'),art=document.getElementById('art'),txt=document.getElementById('txt');
