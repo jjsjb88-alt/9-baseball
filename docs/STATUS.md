@@ -3,34 +3,33 @@
 ## 현재 V12 UI/UX 루프 엔지니어링 · 2026-09-23
 
 - 브랜치 `claude/feedback-review-plan-vw24at` · [PR #83](https://github.com/jjsjb88-alt/9-baseball/pull/83) · 추적 이슈 #84.
-  **P0-1만 완료했다.** 런타임 UI·게임 규칙·확률·피해·카드 수치·런 구조는 변경하지 않았고 main/Pages도 건드리지 않았다.
-- P0-1 기준 SHA는 `a1cbf625fa558bb463999fee47998868d155fcb4`. seed `12012026`을 실제
-  `createV10Duel → enterV10Node('a1-entry')`에 넣어 만든 version 10 battle save를
-  `docs/design/v12/fixtures/p0-1-combat.json`으로 고정했다.
-- 수집기는 `scripts/v12-baseline.mjs`. 엔진에서 fixture를 다시 생성해 저장 JSON과 exact 비교하고,
-  같은 저장을 localStorage에 주입해 390×844 / 844×390 / 1440×900을 수집한다.
-- 실패 검사부터 고정한 red 커밋은 `784fb334`. 기준 SHA 자체에서 과거 `duel-ui` 두 assertion이
-  현재의 의도된 타자 neutral stand-in과 충돌해 409/411이었음을 별도 frozen-baseline run으로 재현했다.
-  `06c91021`에서 타자를 V4로 되돌리지 않고 stand-in 단계를 엄격히 검사하도록 맞췄으며,
-  투수의 V4 60Hz canvas/pose 검사는 그대로 유지했다.
-- fixture 구현 커밋은 `fa42bd8f`. 검증 artifact의 숨김 폴더 누락을 발견해 검증 완료라고 쓰지 않고
-  `e1679a49`에서 일반 경로로 다시 수집했다. 세 PNG를 직접 읽었고 콘솔·page error는 모두 0이었다.
-  세로 390×844는 `scrollHeight 894`, 가로 844×390과 PC 1440×900은 문서 오버플로가 없었다.
-  넓은 뷰포트가 현재 기준 UI에서 `decision-swing`으로 열리는 것도 Before 사실로 기록하며 P0-1에서는 고치지 않았다.
-- 최종 P0-1 검증 run `35798638543` / `81db186d`: **53파일·414테스트 통과**, production build 통과,
-  `node scripts/zone-report.js 30`을 frozen baseline에서 다시 실행해 **exact diff 0**,
-  `node docs/design/v12/audit-static-and-engine.mjs` 통과, fixture 재생성 diff 0.
-  audit 수치는 기존 기준과 동일하게 `!important 2266`, <11px 433, <12px 493이다.
-- 검수 계약은 그대로다: 커버=`coverageAt`, 연결=순서상 aimZone 동일/8방향 인접,
+  **P0-2까지 완료했다.** 런타임 UI·게임 규칙·확률·피해·카드 수치·런 구조는 변경하지 않았고 main/Pages도 건드리지 않았다.
+- P0-1 기준 SHA는 `a1cbf625fa558bb463999fee47998868d155fcb4`, seed는 `12012026`.
+  실제 `createV10Duel → enterV10Node('a1-entry')` 결과를
+  `docs/design/v12/fixtures/p0-1-combat.json`에 고정했고 `scripts/v12-baseline.mjs`가 재현한다.
+- **P0-2 공식 Before 세트 커밋 `ef86dccc`:**
+  `docs/design/v12/shots/p0-1-390x844.png`,
+  `p0-1-844x390.png`, `p0-1-1440x900.png`.
+  세 파일은 각각 정확히 390×844 / 844×390 / 1440×900 PNG다.
+- 세 이미지를 직접 읽었다. 공통적으로 **실제 타자 아트는 없고 왼쪽에 임시 stand-in(배트/플레이트 표식)만 남아 있다.**
+  세로는 행동 선택 허브가 중심이고, 가로/PC는 중앙 9존과 하단 카드 영역이 전면에 드러난다.
+  이 차이는 고친 결과가 아니라 이후 V12 After와 비교할 현재 Before 사실이다.
+- P0-2 실패 검사 `eb92727a`는 PNG 부재 한 건만 실패(414 pass / 1 fail)했다.
+  exact viewport 수집 모드는 `55fa922a`, 직접 읽기/CI read-only 복귀는 `12aaa297`.
+- P0-2 read-only 검증 run `35812887851`: **53파일·415테스트 통과**, production build 통과,
+  frozen baseline 대비 `node scripts/zone-report.js 30` **exact diff 0**,
+  `node docs/design/v12/audit-static-and-engine.mjs` 통과, fixture 재생성 diff 0,
+  390×844 / 844×390 / 1440×900 브라우저 재캡처 통과.
+- 검수 계약은 그대로다: 커버=`coverageAt`, 연결=순서상 앞뒤 aimZone 동일/8방향 인접,
   `damageRate`=배율, 읽기 등급=0/1/2, 공개 정보 경계 준수, 엔진 공식 복제 금지,
   `!important` 일괄 `@layer` 래핑 금지.
 - D1~D8의 **사용자 확정은 아직 전부 비어 있다.** P0은 계속 진행할 수 있지만 P1 이후는 열리지 않았다.
 
 ### 다음 작업
 
-1. **P0-2 한 줄만:** P0-1 fixture/collector로 만든 3뷰포트 Before PNG를 `docs/design/v12/shots/`에 커밋한다.
-2. 화면을 바꾸지 않는다. P0-2가 끝나기 전 P0-3이나 P1을 한꺼번에 시작하지 않는다.
-3. D1 사용자 확정 전 P1은 시작하지 않는다.
+1. **P0-3 한 줄만:** `src/duel/tokens.css`를 신설하되 정의만 추가하고 적용은 0으로 유지한다.
+2. 새 토큰 파일 때문에 현재 Before 화면 픽셀이 바뀌면 P0-3 실패다.
+3. P0-3 완료 전 P0-4나 P1을 한꺼번에 시작하지 않는다.
 
 ---
 
