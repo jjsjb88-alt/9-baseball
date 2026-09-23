@@ -11,8 +11,14 @@
   .duel-combat.v12-design>.scoreboard>*{height:auto!important;max-height:none!important}
   .duel-combat.v12-design>.v10-combat-hp{left:max(25%,182px)!important;right:auto!important;width:calc(31% - 6px)!important;height:auto!important;max-height:none!important}
   .duel-combat.v12-design>.v10-combat-hp .v10-hp{height:auto!important;max-height:none!important;overflow:visible!important}
+  /* the legacy layer floats the HP number over the bar; it reads under the bar instead */
+  .duel-combat.v12-design>.v10-combat-hp .v10-hp .v10-hp-count{position:static!important;margin:3px 0 0!important;transform:none!important}
   .duel-combat.v12-design>.pitch-read{left:8px!important;right:auto!important;top:auto!important;bottom:8px!important;transform:none!important;width:auto!important;max-width:calc(56% - 16px)!important}
 
+  /* the pitcher intent sat hidden behind the scoreboard/HP cards; it reads right under the scoreboard */
+  .duel-combat.v12-design>.duel-arena .intent{left:8px!important;right:auto!important;top:96px!important;bottom:auto!important;transform:none!important;z-index:14!important;max-width:calc(56% - 170px)!important}
+  /* the painted-in "AT BAT" marker repeats the scoreboard line and sat under the intent */
+  .duel-combat.v12-design>.duel-arena .batter-presence{visibility:hidden!important}
   /* actors keep their phone size inside the taller stadium: pitcher far on the mound, batter near */
   .duel-combat.v12-design>.duel-arena .actor-right{left:auto!important;right:22px!important;top:auto!important;bottom:118px!important;width:132px!important;height:132px!important}
   .duel-combat.v12-design>.duel-arena .actor-left{left:-8px!important;right:auto!important;top:auto!important;bottom:0!important;width:230px!important;height:230px!important}
