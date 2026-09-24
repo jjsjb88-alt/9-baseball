@@ -1,5 +1,62 @@
 # STATUS
 
+## 현재 V12 UI/UX 루프 엔지니어링 · 2026-09-23
+
+- 브랜치 `claude/feedback-review-plan-vw24at` · [PR #83](https://github.com/jjsjb88-alt/9-baseball/pull/83) · 추적 이슈 #84.
+  **P0-5까지 완료해 P0를 닫았다.** 런타임 UI·게임 규칙·확률·피해·카드 수치·런 구조는 변경하지 않았고 main/Pages도 건드리지 않았다.
+- P0-1 기준 SHA는 `a1cbf625fa558bb463999fee47998868d155fcb4`, seed는 `12012026`.
+  실제 `createV10Duel → enterV10Node('a1-entry')` 결과를
+  `docs/design/v12/fixtures/p0-1-combat.json`에 고정했고 `scripts/v12-baseline.mjs`가 재현한다.
+- **P0-2 공식 Before 세트 커밋 `ef86dccc`:**
+  `docs/design/v12/shots/p0-1-390x844.png`,
+  `p0-1-844x390.png`, `p0-1-1440x900.png`.
+  세 파일은 각각 정확히 390×844 / 844×390 / 1440×900 PNG다.
+- 세 이미지를 직접 읽었다. 공통적으로 **실제 타자 아트는 없고 왼쪽에 임시 stand-in(배트/플레이트 표식)만 남아 있다.**
+  세로는 행동 선택 허브가 중심이고, 가로/PC는 중앙 9존과 하단 카드 영역이 전면에 드러난다.
+  이 차이는 고친 결과가 아니라 이후 V12 After와 비교할 현재 Before 사실이다.
+- P0-2 실패 검사 `eb92727a`는 PNG 부재 한 건만 실패(414 pass / 1 fail)했다.
+  exact viewport 수집 모드는 `55fa922a`, 직접 읽기/CI read-only 복귀는 `12aaa297`.
+- P0-2 read-only 검증 run `35812887851`: **53파일·415테스트 통과**, production build 통과,
+  frozen baseline 대비 `node scripts/zone-report.js 30` **exact diff 0**,
+  `node docs/design/v12/audit-static-and-engine.mjs` 통과, fixture 재생성 diff 0,
+  390×844 / 844×390 / 1440×900 브라우저 재캡처 통과.
+- **P0-3 정의 전용 토큰:** 실패 검사 `be536a47`, 구현 `e26ce769`.
+  `src/duel/tokens.css`에 V12 규격의 타입·색·간격·반경·최소 조작영역·z-index·UI 모션 토큰만 정의했다.
+  runtime source의 `tokens.css` import는 0이며 `@layer`와 `!important`도 추가하지 않았다.
+- P0-3 검증 run `35814217956`: **54파일·418테스트 통과**, production build 통과,
+  frozen baseline 대비 `zone-report.js 30` exact diff 0, V12 audit 통과, fixture 재현성 통과.
+  audit 수치는 `!important 2266`, <11px 433, <12px 493으로 그대로다.
+  세 뷰포트 재캡처 오류 0이며 이미지를 직접 읽어 기존 Before 화면과 타자 stand-in이 그대로임을 확인했다.
+- **P0-4 design-system 검사 골격:** red-first `c1ab5489`, 구현 `4470fd42`.
+  `tests/design-system.test.js`는 공용 V12 audit의 현재 CSS 계측값을 역사 기준으로 출력한다.
+  현재값과 기록값을 비교하는 실패 조건, 감축 budget, 임의 임계값은 없다.
+- P0-4 검증 run `35820148038`: **55파일·419테스트 통과**, production build 통과,
+  frozen baseline 대비 `zone-report.js 30` exact diff 0, V12 audit·fixture 재현성 통과,
+  390×844 / 844×390 / 1440×900 재캡처 오류 0. 세 이미지를 직접 읽어 화면 변화가 없음을 확인했다.
+- **P0-5 화면 변화 0 증명:** `scripts/v12-p0-screen-diff.mjs`가 저장소의 고정 Before 3장과 현재 재캡처를
+  PNG 바이트가 아니라 디코딩된 RGB 픽셀로 비교한다. P0-3↔P0-4 동일 코드 재캡처의 Canvas/VFX 잡음을 먼저 계측했고,
+  첫 fixed-Before 진단에서 PC sparse component 166px만 예비 한도를 넘은 사실을 기록한 뒤 bbox 보고와 192px 캡처 잡음 한도를 확정했다.
+- P0-5 최종 검증 run `35822610676`: **55파일·419테스트 통과**, production build 통과,
+  frozen baseline 대비 `zone-report 30` exact diff 0, V12 audit·fixture 재현성·브라우저 오류 0.
+  fixed Before 대비 변경 픽셀은 세로 0.0453%, 가로 0.1516%, PC 0.1478%, 최대 연속 덩어리 10/60/79px로 모두 통과했다.
+  세 이미지를 직접 읽었으며 P0 시작 전 화면 구성과 타자 stand-in 상태가 그대로다.
+- **D1 재시안 최신 상태:** 기존 A/B/C는 사용자에게 전부 거절됐다. D/E/F 정적 방향 비교를 다시 만들었고, 저품질 투수 placeholder는 제거했다. 파일 형식이 아니라 실루엣·인체·키포즈·명암·축소 판독성·장면 통합감으로 배우 자산을 통과시킨다.
+- 최신 D/E/F 정적 프리뷰는 `cfe41b36`. 실제 390×844 캡처 run `35859296271` 성공. D=Field First, E=Batter Eye, F=Tactical Sheet이며, 투수 배우 대신 마운드·릴리스 포인트·공 궤적으로 상대 공간을 표현한다. 세 이미지는 직접 읽었고 저품질 투수 자산은 남아 있지 않다.
+- 같은 HEAD의 P0 무변경 검증 run `35859296273`도 성공했다. **D1 사용자 확정은 여전히 비어 있으므로 P1-1은 시작하지 않는다.**
+- **P0는 완료했지만 P1은 미착수다.** D1~D8의 사용자 확정은 여전히 비어 있고, P1-1에는 D1 사용자 확정이 필요하다.
+- 검수 계약은 그대로다: 커버=`coverageAt`, 연결=순서상 앞뒤 aimZone 동일/8방향 인접,
+  `damageRate`=배율, 읽기 등급=0/1/2, 공개 정보 경계 준수, 엔진 공식 복제 금지,
+  `!important` 일괄 `@layer` 래핑 금지.
+- D1~D8의 **사용자 확정은 아직 전부 비어 있다.** P0은 계속 진행할 수 있지만 P1 이후는 열리지 않았다.
+
+### 다음 작업
+
+1. **P1-1은 아직 시작하지 않는다.** D1 사용자 확정을 먼저 받는다.
+2. D1 검수자 권고: C의 정면 9존·큰 손패 + B의 정보 위계. 판정 상태에서는 기존 경기장·배우 연출을 보존한다.
+3. 사용자가 D1을 확정하면 그 다음 루프에서 P1-1 전투 화면 골격 배치 한 줄만 진행한다.
+
+---
+
 ## 현재 V9.2 덱빌딩·판정 연출 브랜치 · 2026-09-15
 
 - 브랜치: `codex/v9-deckbuilder`. **main / 공개 Pages는 V8.10 그대로이며 V9.2는 아직 배포하지 않았다.**

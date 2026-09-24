@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>V12 D1 Golden Master</title>
+<!--
+  V12 D1 GOLDEN MASTER — decision-only static key screen. Not runtime code.
+    ?v=portrait (default) 390×844 · ?v=landscape 844×390 · ?v=desktop 1440×900 (3× pixels: the desktop is not an enlarged phone)
+
+  ONE PIXEL GRID. Each layout paints on an art canvas at half its CSS size, shown at exactly 2×.
+  The DUGOUT authored originals (stadium / batter / pitcher, assets/duel) are re-sampled onto
+  that grid at load time — majority vote per cell, shared palette, rebuilt 1px ink, sunset
+  backlight rim — so actors, field and UI share one pixel size and one light.
+  Hangul sits on a device-resolution text layer with an ink outline.
+
+  Every lit cell, link and % comes from gm/gm-state.json (gm-state.mjs → real engine, C1~C6).
+  Kit: gm/pixel-kit.js · parts: gm/parts.js · layouts: gm/scene*.js.
+  v1 (CSS collage) is kept at gm/d1-golden-master-v1.html for comparison.
+-->
+<style>
+/* Galmuri by Lee Minseo — SIL OFL 1.1, gm/fonts/LICENSE.txt */
+@font-face{font-family:Galmuri9;src:url(gm/fonts/Galmuri9.woff2) format('woff2')}
+@font-face{font-family:Galmuri11;src:url(gm/fonts/Galmuri11.woff2) format('woff2')}
+@font-face{font-family:Galmuri11B;src:url(gm/fonts/Galmuri11-Bold.woff2) format('woff2')}
+@font-face{font-family:Galmuri14;src:url(gm/fonts/Galmuri14.woff2) format('woff2')}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{overflow:hidden;background:#07060c}
+.stage{position:relative;overflow:hidden}
+canvas{position:absolute;left:0;top:0}
+#art{image-rendering:pixelated;image-rendering:crisp-edges}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+<main class="stage" aria-label="9ZONE 대표 전투 화면 · 결정용 정적 시안">
+  <canvas id="art" aria-hidden="true"></canvas>
+  <canvas id="txt" aria-hidden="true"></canvas>
+  <div class="sr" id="sr"></div>
+</main>
+<script>
+(()=>{
+  // The page re-samples real assets on a canvas, which browsers forbid from file:// — say so instead of a blank screen.
+  if(location.protocol==='file:'){document.body.innerHTML='<p style="color:#f6eedb;font:16px/1.6 sans-serif;padding:24px;max-width:520px">'+
+    '이 시안은 로컬 서버로 열어야 합니다. 저장소 루트에서 <code>pnpm exec vite --port 5177</code> 실행 후<br>'+
+    '<b>http://localhost:5177/docs/design/v12/d1-golden-master.html</b> (?v=landscape · ?v=desktop)<br>'+
+    '캡처만 보려면 <code>docs/design/v12/shots/d1-gm-*.png</code>를 여세요.</p>';return}
+  const L={portrait:[390,844,'gm/scene.js',2],landscape:[844,390,'gm/scene-landscape.js',2],desktop:[1440,900,'gm/scene-desktop.js',3]};
+  const v=new URLSearchParams(location.search).get('v'),[w,h,src,q]=L[v]||L.portrait;
+  const stage=document.querySelector('.stage'),art=document.getElementById('art'),txt=document.getElementById('txt');
+  document.documentElement.style.cssText=document.body.style.cssText='width:'+w+'px;height:'+h+'px';
+  stage.style.cssText='width:'+w+'px;height:'+h+'px';
+  art.width=w/q;art.height=h/q;txt.width=w*2;txt.height=h*2;
+  for(const c of [art,txt]){c.style.width=w+'px';c.style.height=h+'px'}
+  for(const s of ['gm/pixel-kit.js','gm/parts.js',src])document.write('<script src="'+s+'"><\/script>');
+})();
+</script>
+</body>
+</html>

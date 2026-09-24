@@ -1,0 +1,114 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="tokens.css"><style>
+html,body{overflow:hidden}
+body{position:relative}
+.sky{position:absolute;inset:0;background:
+ radial-gradient(70% 46% at 50% 26%,#2a5f4c 0%,#143a30 38%,#0a1f1b 68%,#06100e 100%)}
+.sky:after{content:"";position:absolute;inset:0;background:
+ repeating-linear-gradient(180deg,rgba(255,255,255,.03) 0 1px,transparent 1px 3px)}
+.lights{position:absolute;top:0;left:0;right:0;height:250px;background:
+ conic-gradient(from 210deg at 22% -12%,rgba(255,240,200,.14),transparent 26%),
+ conic-gradient(from 300deg at 78% -12%,rgba(255,240,200,.12),transparent 26%);filter:blur(2px)}
+.turf{position:absolute;left:-10%;right:-10%;top:320px;height:560px;
+ background:radial-gradient(60% 70% at 50% 0%,#1d4a38 0%,#12332a 44%,#0a1c18 100%);
+ transform:perspective(520px) rotateX(46deg);transform-origin:50% 0;opacity:.95}
+.turf:after{content:"";position:absolute;inset:0;background:
+ repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 26px,transparent 26px 52px)}
+.mound{position:absolute;left:50%;top:308px;width:206px;height:62px;transform:translateX(-50%);
+ border-radius:50%;background:radial-gradient(50% 60% at 50% 40%,#4a4034,#2a2620 70%,transparent)}
+/* pitcher */
+.p{position:absolute;left:50%;top:120px;transform:translateX(-50%);width:186px;
+ filter:drop-shadow(0 6px 10px rgba(0,0,0,.7))}
+.pshadow{position:absolute;left:50%;top:330px;width:126px;height:22px;transform:translateX(-50%);
+ border-radius:50%;background:radial-gradient(50% 50%,rgba(0,0,0,.6),transparent 72%)}
+/* HP = light ring on the mound */
+.ring{position:absolute;left:50%;top:300px;transform:translateX(-50%)}
+.hint{position:absolute;top:96px;left:50%;transform:translateX(-50%);font-size:var(--t-label);
+ color:var(--gold);font-weight:700;padding:5px 15px;border-radius:999px;
+ background:rgba(6,16,14,.72);border:1px solid rgba(255,228,162,.3);backdrop-filter:blur(2px)}
+/* status */
+.top{position:absolute;top:0;left:0;right:0;height:42px;display:flex;align-items:center;
+ padding:0 16px;gap:10px;background:linear-gradient(180deg,rgba(4,11,10,.92),transparent)}
+.top b.nm{font-size:var(--t-label);color:var(--ink1);font-weight:800}
+.top .count{margin-left:auto}
+/* zone in perspective */
+.zonewrap{position:absolute;left:0;right:0;top:376px;height:248px;
+ perspective:900px;perspective-origin:50% 40%}
+.zone{width:290px;height:238px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);
+ grid-template-rows:repeat(3,1fr);gap:6px;transform:rotateX(7deg) scale(1.04);transform-style:preserve-3d}
+.pane{position:relative;border-radius:3px;border:1px solid rgba(160,220,205,.18);
+ background:linear-gradient(180deg,rgba(18,52,52,.34),rgba(9,26,28,.44));
+ box-shadow:inset 0 0 22px rgba(0,0,0,.35)}
+.pane.dead{border-color:rgba(90,120,120,.12);background:rgba(6,16,17,.5);box-shadow:none}
+.pane.h1{background:linear-gradient(180deg,rgba(255,200,130,.07),rgba(12,30,30,.4))}
+.pane.h2{background:linear-gradient(180deg,rgba(255,190,110,.15),rgba(14,34,32,.42));
+ border-color:rgba(255,210,150,.26)}
+.pane.h3{background:linear-gradient(180deg,rgba(255,172,86,.26),rgba(18,38,34,.45));
+ border-color:rgba(255,200,130,.4);box-shadow:inset 0 0 30px rgba(255,160,80,.2)}
+.pane.main{border:2px solid var(--gold);box-shadow:inset 0 0 34px rgba(255,214,140,.3),0 0 22px rgba(255,214,140,.22)}
+.pane.sup{border:1px dashed var(--link);box-shadow:inset 0 0 26px rgba(111,215,198,.2)}
+.tk{position:absolute;left:50%;top:50%;z-index:6;transform:translate(-50%,-50%);width:32px;height:32px;
+ border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:var(--t-label);font-weight:800}
+.tk.m{background:var(--gold);color:#221605;box-shadow:0 3px 10px rgba(0,0,0,.55)}
+.tk.s{background:var(--link);color:#052721;box-shadow:0 3px 10px rgba(0,0,0,.55)}
+.swingpath{position:absolute;left:0;right:0;top:376px;height:248px;pointer-events:none;z-index:4}
+/* hand: held fan */
+.hand{position:absolute;left:0;right:0;bottom:0;height:164px}
+.hand .c{position:absolute;bottom:-34px;width:104px;height:150px;border-radius:9px;
+ background:linear-gradient(170deg,#efe8ce,#cfc6a6);border:1px solid #8b8266;padding:9px;
+ box-shadow:0 -6px 18px rgba(0,0,0,.5);transform-origin:50% 100%}
+.hand .c strong{font-size:var(--t-label);color:#1a2a2d;font-weight:800;display:block}
+.hand .c.used{filter:grayscale(.65) brightness(.72)}
+.mini{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:10px}
+.mini i{aspect-ratio:1;background:#b5ad92;border-radius:1px;display:block}
+.mini i.f{background:#1f6f60}
+.c1{left:4px;transform:rotate(-10deg) translateY(12px)}
+.c2{left:98px;transform:rotate(-3.5deg) translateY(2px)}
+.c3{left:192px;transform:rotate(3.5deg) translateY(2px)}
+.c4{left:284px;transform:rotate(10deg) translateY(12px)}
+.acts{position:absolute;bottom:168px;left:16px;right:16px;display:flex;gap:8px;z-index:5}
+.act{flex:1;height:42px;border-radius:7px;border:1px solid rgba(160,200,195,.2);
+ background:rgba(8,22,24,.78);display:flex;align-items:center;justify-content:center;gap:6px;backdrop-filter:blur(3px)}
+.act.on{border-color:var(--gold);background:rgba(34,44,32,.85);box-shadow:0 0 18px rgba(255,228,162,.18)}
+.act span{font-size:var(--t-micro);font-weight:700;color:var(--ink2)}.act.on span{color:var(--gold)}
+.act svg{width:17px;height:17px}
+</style></head><body>
+<div class="sky"></div><div class="lights"></div><div class="turf"></div><div class="mound"></div>
+<div class="pshadow"></div><img class="p" src="file:///home/user/9-baseball/assets/sprites-v2/frames/pitcher-pitch-06.png">
+<svg class="ring" width="230" height="74" viewBox="0 0 230 74">
+  <ellipse cx="115" cy="37" rx="104" ry="28" fill="none" stroke="#123029" stroke-width="7"/>
+  <path d="M11 37 A104 28 0 0 1 176 16" fill="none" stroke="#63c9a7" stroke-width="7" stroke-linecap="round"/>
+  <path d="M176 16 A104 28 0 0 1 207 30" fill="none" stroke="#ffb46a" stroke-width="7" stroke-linecap="round" stroke-dasharray="5 4"/>
+</svg>
+<div class="top"><b class="nm">#7 강한결</b>
+ <div class="count">
+  <div class="cg"><b>B</b><i class="on"></i><i></i><i></i><i></i></div>
+  <div class="cg"><b>S</b><i class="on"></i><i></i><i></i></div>
+  <div class="cg o"><b>O</b><i class="on"></i><i></i><i></i></div>
+ </div></div>
+<div class="hint">바깥쪽</div>
+<div class="zonewrap"><div class="zone">
+ <div class="pane dead"></div><div class="pane h1"></div><div class="pane h2"></div>
+ <div class="pane dead"></div><div class="pane h2 main"><i class="tk m">1</i></div><div class="pane h3 sup"><i class="tk s">2</i></div>
+ <div class="pane h1 sup"><i class="tk s">3</i></div><div class="pane dead"></div><div class="pane h3"></div>
+</div></div>
+<svg class="swingpath" viewBox="0 0 390 248">
+ <defs><filter id="bg1"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+ <linearGradient id="bt" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#6fd7c6" stop-opacity=".25"/><stop offset=".55" stop-color="#9ff0e2"/><stop offset="1" stop-color="#6fd7c6" stop-opacity=".9"/></linearGradient></defs>
+ <path d="M195 122 C228 110 262 112 293 122" stroke="url(#bt)" stroke-width="10" fill="none" stroke-linecap="round" filter="url(#bg1)"/>
+ <path d="M195 122 C228 110 262 112 293 122" stroke="#e8fffb" stroke-width="2.2" fill="none" stroke-linecap="round" opacity=".9"/>
+ <path d="M293 122 C260 148 228 166 208 176" stroke="#a8614f" stroke-width="6" fill="none" stroke-linecap="round" opacity=".72"/>
+ <path d="M148 198 C134 202 118 204 100 205" stroke="#a8614f" stroke-width="6" fill="none" stroke-linecap="round" opacity=".72"/>
+ <circle cx="198" cy="182" r="2.6" fill="#c98a75" opacity=".9"/><circle cx="182" cy="188" r="1.8" fill="#c98a75" opacity=".7"/><circle cx="166" cy="193" r="2" fill="#c98a75" opacity=".5"/>
+</svg>
+<div class="acts">
+ <div class="act"><svg viewBox="0 0 24 24" fill="none" stroke="#ccd8d0" stroke-width="1.8"><path d="M5 13c0-4 3-7 7-7s7 3 7 7v5H5z"/></svg><span>준비</span></div>
+ <div class="act on"><svg viewBox="0 0 24 24" fill="none" stroke="#ffe4a2" stroke-width="1.8"><path d="M4 20L17 7"/><path d="M15 5l4 4-2 2-4-4z"/></svg><span>스윙</span></div>
+ <div class="act"><svg viewBox="0 0 24 24" fill="none" stroke="#ccd8d0" stroke-width="1.8"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="2.5"/></svg><span>지켜보기</span></div>
+</div>
+<div class="hand">
+ <div class="c c1 used"><strong>정타 노림</strong><div class="mini"><i></i><i></i><i></i><i></i><i class="f"></i><i></i><i></i><i></i><i></i></div></div>
+ <div class="c c2 used"><strong>정타 노림</strong><div class="mini"><i></i><i></i><i></i><i></i><i></i><i class="f"></i><i></i><i></i><i></i></div></div>
+ <div class="c c3"><strong>밀어치기</strong><div class="mini"><i></i><i></i><i class="f"></i><i></i><i></i><i class="f"></i><i></i><i></i><i class="f"></i></div></div>
+ <div class="c c4"><strong>끈질긴 컨택</strong><div class="mini"><i></i><i class="f"></i><i></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i class="f"></i><i></i></div></div>
+</div>
+</body></html>

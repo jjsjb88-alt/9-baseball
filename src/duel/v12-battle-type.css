@@ -1,0 +1,55 @@
+/* V12 P1-2a — the 12px micro floor (spec §3.1 --t-micro) for battle HUD text in the design state.
+   A 390×844 render audit found HUD labels at 6–11px (AT BAT, NEXT, the card count at 6–6.5px, the
+   intent caption at 7px, nameplates at 8px …). Every one of them is raised here, for all viewports.
+   Card internals (rule text, reach %, cost/type tags) stay for P2: at 12px they no longer fit the hand
+   and need the name/detail split decided there (D3/D4). The stadium art's painted scoreboard text is
+   scenery, not UI, and is left alone. */
+.duel-combat.v12-design>.battle-ribbon :is(span,b){font-size:12px!important;line-height:16px!important}
+.duel-combat.v12-design>.scoreboard .scoreboard-player :is(span,small){font-size:12px!important;line-height:15px!important;letter-spacing:0!important;white-space:nowrap!important}
+.duel-combat.v12-design>.scoreboard .scoreboard-count{height:auto!important;max-height:none!important;gap:1px!important}
+.duel-combat.v12-design>.scoreboard .scoreboard-count>div{height:auto!important;min-height:14px!important;max-height:none!important;align-items:center!important}
+.duel-combat.v12-design>.scoreboard .scoreboard-count b{font-size:12px!important;line-height:14px!important}
+.duel-combat.v12-design>.v10-combat-hp .v10-hp-count span{font-size:12px!important}
+.duel-combat.v12-design>.v10-combat-hp :is(.v10-hp-name,.v10-hp-phase,.v10-hp-note){font-size:12px!important;line-height:16px!important}
+.duel-combat.v12-design>.v10-combat-hp .v10-hp-phase{white-space:nowrap!important;flex:none!important}
+.duel-combat.v12-design>.v10-combat-hp .v10-hp-count b{font-size:16px!important;line-height:18px!important}
+.duel-combat.v12-design>.duel-arena .intent :is(span,small,em,b){font-size:12px!important;line-height:15px!important}
+.duel-combat.v12-design>.duel-arena :is(.batter-presence,.base-slot,.home-plate) :is(b,span){font-size:12px!important;line-height:14px!important}
+.duel-combat.v12-design>.duel-arena :is(.batter-nameplate,.pitcher-nameplate){font-size:12px!important;line-height:16px!important}
+.duel-combat.v12-design>.duel-arena .home-plate b{font-size:12px!important}
+.duel-combat.v12-design>.zone-panel .ball-read{font-size:12px!important;line-height:16px!important}
+/* cells lead with the read band; the position words move to a legend on the frame (spec §4.1) and
+   stay in each cell's aria-label ("몸쪽 높음"), so nothing leaves the accessibility tree */
+.duel-combat.v12-design>.zone-panel .zone-cell [data-zone-copy]{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap!important}
+.duel-combat.v12-design>.zone-panel .zone-cell strong{font-size:14px!important;line-height:17px!important}
+.duel-combat.v12-design>.zone-panel .zone-cell small{font-size:12px!important;line-height:14px!important;white-space:nowrap!important}
+.duel-combat.v12-design>.zone-panel::before,
+.duel-combat.v12-design>.zone-panel::after{position:absolute!important;bottom:-9px!important;z-index:3!important;padding:0 6px!important;border-radius:2px!important;background:#101826!important;color:#e7dcc4!important;font-weight:800!important;font-size:12px!important;line-height:16px!important;letter-spacing:0!important;pointer-events:none!important;inset-block-start:auto!important;width:auto!important;height:auto!important;opacity:1!important;border:0!important;box-shadow:none!important;transform:none!important}
+.duel-combat.v12-design>.zone-panel::before{content:"◀ 몸쪽"!important;left:10px!important;right:auto!important}
+.duel-combat.v12-design>.zone-panel::after{content:"바깥쪽 ▶"!important;right:10px!important;left:auto!important}
+.duel-combat.v12-design>.pitch-read :is(span,b,small){font-size:12px!important;line-height:16px!important}
+.duel-combat.v12-design>.duel-table>.diamond-events b{font-size:12px!important}
+.duel-combat.v12-design>.duel-table .drawer-back{font-size:12px!important}
+.duel-combat.v12-design>.duel-table .drawer-head small{font-size:12px!important;line-height:16px!important}
+.duel-combat.v12-design>.duel-table .drawer-watch{font-size:12px!important}
+.duel-combat.v12-design>.duel-table .drawer-escape>span{font-size:12px!important;line-height:15px!important}
+.duel-combat.v12-design>.duel-table .decision-preview:not(.active){grid-template-columns:1fr!important;gap:2px!important}
+.duel-combat.v12-design>.duel-table .decision-preview:not(.active)>:is(b,span){font-size:12px!important;line-height:16px!important;grid-column:1!important;writing-mode:horizontal-tb!important}
+.duel-combat.v12-design>.duel-table .card-drawer .stack-discovery span{font-size:12px!important}
+.duel-combat.v12-design>.duel-table .card-drawer strong:not(.duel-card strong){font-size:12px!important}
+.duel-combat.v12-design>.duel-table .pile-buttons button{font-size:12px!important}
+.duel-combat.v12-design>.duel-table .deck-rule{font-size:12px!important}
+/* the 9ZONE power line: HP multiplier and the 1–4 card rates at 12px; the FULL/-20% tags only restate
+   the ×1.00/×0.80 beside them, so they step back to make room */
+.duel-combat.v12-design>.zone-panel .zone-power-head :is(span,strong){font-size:12px!important;line-height:16px!important}
+.duel-combat.v12-design>.zone-panel .zone-board-power>small{font-size:12px!important;line-height:16px!important}
+.duel-combat.v12-design>.zone-panel .zone-board-rate>i{display:grid!important;grid-template-columns:auto auto!important;align-items:center!important;column-gap:3px!important;min-height:22px!important}
+.duel-combat.v12-design>.zone-panel .zone-board-rate>i>:is(b,span){font-size:12px!important;line-height:14px!important}
+.duel-combat.v12-design>.zone-panel .zone-board-rate>i>em{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0 0 0 0)!important}
+/* labels injected by the landscape/desktop battleboard scripts */
+.duel-combat.v12-design>.zone-panel .landscape-zone-bar :is(strong,span,b,button),
+.duel-combat.v12-design>.zone-panel .landscape-zone-info-toggle{font-size:12px!important;line-height:16px!important}
+.duel-combat.v12-design .landscape-read-toggle{font-size:12px!important;line-height:16px!important;white-space:nowrap!important;max-width:none!important}
+.duel-combat.v12-design>.duel-arena .intent strong{font-size:12px!important;line-height:15px!important}
+.duel-combat.v12-design>.duel-arena .landscape-duel-axis :is(span,b,strong){font-size:12px!important;line-height:14px!important}
+.duel-combat.v12-design>.scoreboard button{font-size:12px!important}

@@ -1,0 +1,27 @@
+/* V12 P6-1 — reward and facility screens: card faces at a 12px floor (they were 7–11px) and the
+   choice outcome box (what changes, before it is confirmed). Colours: surface-1 #07141B, edge #235060,
+   ink-1 #F4ECD8, ink-2 #CCD8D0, aim #FFE4A2, cover-support #6FD7C6. */
+.reward-screen .reward-cards .duel-card :is(.card-cost,.card-type,.card-gives i,.card-rule,.card-foot,.card-upgrade,.card-relation,.card-note){font-size:12px!important;line-height:16px!important;letter-spacing:0!important}
+.reward-screen .reward-cards .duel-card strong{font-size:15px!important;line-height:20px!important}
+.reward-screen .reward-cards .duel-card .card-gives i{padding:1px 5px!important}
+.reward-screen .reward-actions button{min-height:44px!important}
+.reward-screen>.eyebrow{font-size:12px!important}
+.reward-screen>p{font-size:13px!important;line-height:18px!important}
+.choice-outcome{display:grid;gap:4px;width:min(560px,100%);margin:10px auto;padding:10px 12px;border:1px solid #235060;border-left:4px solid #FFE4A2;border-radius:2px;background:rgba(7,20,27,.88);color:#F4ECD8;text-align:left;font-size:13px;line-height:18px;box-sizing:border-box}
+.choice-outcome.is-empty{border-left-color:#235060;color:#CCD8D0}
+.choice-title{font-size:15px;line-height:20px;font-weight:900;color:#FFE4A2}
+.choice-line{font-size:13px;line-height:18px;font-weight:700}
+.choice-compare{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+.choice-compare p{margin:0;padding:6px 8px;border:1px solid #235060;border-radius:2px;font-size:12px;line-height:16px}
+.choice-compare b{display:block;margin-bottom:2px;font-size:12px;color:#CCD8D0}
+.choice-after{border-color:#6FD7C6!important}
+.choice-after b{color:#6FD7C6!important}
+@media (max-width:420px){
+  .choice-compare{grid-template-columns:1fr}
+}
+/* short landscape: the reward's choice buttons ride a bar on the bottom edge (they sat at y=579 of a
+   390px screen once the outcome box was added) */
+@media (orientation:landscape) and (max-height:500px){
+  .reward-screen{padding-bottom:72px!important}
+  .reward-screen .reward-actions{position:fixed!important;left:0!important;right:0!important;bottom:0!important;z-index:45!important;display:flex!important;justify-content:center!important;gap:8px!important;margin:0!important;padding:8px 12px calc(8px + env(safe-area-inset-bottom))!important;background:rgba(7,20,27,.94)!important;box-shadow:0 -10px 24px rgba(3,8,12,.6)!important}
+}

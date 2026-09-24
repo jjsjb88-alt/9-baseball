@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=390,initial-scale=1">
+<title>V12 D1 New Direction Preview</title>
+<style>
+:root{
+  --bg:#07110f;--deep:#06100f;--panel:rgba(6,18,18,.82);--panel2:rgba(10,30,29,.82);
+  --ink:#f5ecd8;--muted:#9cafaa;--edge:rgba(126,190,176,.24);
+  --gold:#ffe0a1;--teal:#6fd7c6;--rust:#c78568;--green:#5bc79f;
+}
+*{box-sizing:border-box}html,body{margin:0;width:390px;height:844px;overflow:hidden}
+body{font-family:Inter,Pretendard,"Noto Sans KR",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+.stage{position:relative;width:390px;height:844px;overflow:hidden;background:
+ radial-gradient(100% 58% at 50% 30%,#315c4b 0,#17392f 34%,#0a1c18 70%,#06100f 100%)}
+.stage:before{content:"";position:absolute;inset:0;background:
+ linear-gradient(180deg,rgba(255,239,190,.045),transparent 18%),
+ repeating-linear-gradient(180deg,rgba(255,255,255,.018) 0 1px,transparent 1px 3px);pointer-events:none}
+.crowd{position:absolute;left:-5%;right:-5%;top:55px;height:210px;background:
+ radial-gradient(circle at 12% 40%,rgba(246,214,159,.13) 0 1px,transparent 2px),
+ radial-gradient(circle at 26% 60%,rgba(111,215,198,.12) 0 1px,transparent 2px),
+ radial-gradient(circle at 44% 32%,rgba(246,214,159,.10) 0 1px,transparent 2px),
+ radial-gradient(circle at 67% 54%,rgba(111,215,198,.10) 0 1px,transparent 2px),
+ radial-gradient(circle at 82% 44%,rgba(246,214,159,.11) 0 1px,transparent 2px),
+ linear-gradient(180deg,#102820,#0a1916);background-size:18px 18px,22px 22px,24px 24px,20px 20px,26px 26px,auto;
+ opacity:.75;mask-image:linear-gradient(180deg,#000,rgba(0,0,0,.88),transparent)}
+.field{position:absolute;left:-120px;right:-120px;top:190px;height:470px;border-radius:50% 50% 0 0;
+ background:radial-gradient(70% 60% at 50% 20%,#3d7157,#214b3b 42%,#143326 70%,#0a1c17);
+ transform:perspective(560px) rotateX(54deg);transform-origin:50% 0;box-shadow:inset 0 70px 100px rgba(255,255,255,.025)}
+.field:after{content:"";position:absolute;inset:0;background:
+ repeating-linear-gradient(90deg,rgba(255,255,255,.028) 0 34px,transparent 34px 68px)}
+.topbar{position:absolute;z-index:20;left:14px;right:14px;top:12px;height:40px;display:flex;align-items:center;gap:9px}
+.brand{font-weight:900;font-size:11px;letter-spacing:.16em;color:var(--gold);opacity:.92}
+.atbat{font-weight:800;font-size:13px}
+.count{margin-left:auto;display:flex;align-items:center;gap:7px;font-size:11px;color:var(--muted)}
+.dots{display:flex;gap:3px}.dots i{display:block;width:6px;height:6px;border-radius:50%;border:1px solid rgba(180,220,208,.34)}
+.dots i.on{background:var(--gold);border-color:var(--gold)}
+.pitcher-info{position:absolute;z-index:20;top:64px;left:50%;transform:translateX(-50%);width:210px;text-align:center}
+.pitcher-name{font-size:13px;font-weight:900;text-shadow:0 2px 10px #000}
+.pitcher-type{font-size:10px;color:var(--muted);margin-top:2px}
+.hp{height:8px;margin-top:7px;border-radius:999px;background:rgba(2,9,8,.72);overflow:hidden;border:1px solid rgba(160,220,200,.22)}
+.hp:before{content:"";display:block;width:78%;height:100%;background:linear-gradient(90deg,#42a77f,#79ddb0);box-shadow:0 0 12px rgba(111,215,198,.4)}
+.hpnum{font-size:11px;color:#dbe7df;margin-top:3px}
+.moundmark{position:absolute;z-index:5;left:50%;top:166px;width:132px;height:38px;transform:translateX(-50%);border-radius:50%;
+ background:radial-gradient(ellipse at center,rgba(201,174,122,.36) 0 28%,rgba(88,75,56,.30) 29% 48%,rgba(0,0,0,0) 70%);
+ box-shadow:0 18px 34px rgba(0,0,0,.28)}
+.release{position:absolute;z-index:16;left:50%;top:164px;width:10px;height:10px;transform:translate(-50%,-50%);border-radius:50%;
+ background:#fff1bb;box-shadow:0 0 0 5px rgba(255,224,161,.10),0 0 22px rgba(255,224,161,.62)}
+.release:before{content:"";position:absolute;left:50%;top:50%;width:54px;height:1px;transform:translate(-50%,-50%);
+ background:linear-gradient(90deg,transparent,rgba(255,235,188,.72),transparent)}
+.release:after{content:"";position:absolute;left:50%;top:50%;width:1px;height:40px;transform:translate(-50%,-50%);
+ background:linear-gradient(180deg,transparent,rgba(255,235,188,.58),transparent)}
+.opponent-glyph{position:absolute;z-index:12;left:50%;top:134px;transform:translateX(-50%);width:52px;height:26px;border-radius:50%;
+ border:1px solid rgba(255,224,161,.24);box-shadow:inset 0 0 16px rgba(255,224,161,.08),0 0 22px rgba(0,0,0,.24)}
+.opponent-glyph:before,.opponent-glyph:after{content:"";position:absolute;top:50%;width:20px;height:1px;background:rgba(255,224,161,.32)}
+.opponent-glyph:before{right:100%;margin-right:8px}.opponent-glyph:after{left:100%;margin-left:8px}
+.batter{position:absolute;z-index:7;width:188px;left:-10px;top:215px;filter:drop-shadow(0 12px 18px rgba(0,0,0,.62))}
+.intent{position:absolute;z-index:19;font-size:11px;font-weight:800;color:var(--gold);padding:5px 9px;border-radius:999px;background:rgba(5,15,15,.64);border:1px solid rgba(255,224,161,.26);backdrop-filter:blur(6px)}
+.zone{position:absolute;z-index:15;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:4px}
+.z{position:relative;border:1px solid rgba(177,220,208,.20);background:rgba(7,24,24,.28);backdrop-filter:blur(3px);box-shadow:inset 0 0 16px rgba(0,0,0,.22)}
+.z.hot{background:rgba(255,188,95,.09);border-color:rgba(255,215,150,.28)}
+.z.main{border:2px solid var(--gold);box-shadow:0 0 14px rgba(255,224,161,.22),inset 0 0 15px rgba(255,224,161,.10)}
+.z.support{border:1px solid var(--teal);box-shadow:inset 0 0 14px rgba(111,215,198,.13)}
+.token{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:900}
+.token.main{background:var(--gold);color:#1d1607}.token.sup{background:var(--teal);color:#04241f}
+.pitchline{position:absolute;z-index:14;pointer-events:none}
+.readout{position:absolute;z-index:20;display:flex;gap:6px;align-items:center}
+.pill{font-size:11px;font-weight:800;padding:6px 9px;border-radius:999px;border:1px solid var(--edge);background:rgba(6,18,18,.68);color:#d7e2dc;backdrop-filter:blur(6px)}
+.pill strong{color:var(--gold)}
+.cards{position:absolute;z-index:30;display:flex;gap:8px}
+.card{width:102px;height:126px;border-radius:10px;padding:9px;background:linear-gradient(165deg,#f0e8cf,#c9bea0);border:1px solid rgba(105,92,68,.8);box-shadow:0 12px 18px rgba(0,0,0,.34);color:#152328}
+.card.selected{transform:translateY(-10px);box-shadow:0 0 0 2px var(--gold),0 18px 22px rgba(0,0,0,.42)}
+.card b{display:block;font-size:13px;line-height:1.15}.card small{font-size:10px;color:#59635e}
+.mini{margin-top:9px;display:grid;grid-template-columns:repeat(3,1fr);gap:2px}.mini i{display:block;aspect-ratio:1;background:#a9a287}.mini i.on{background:#327565}
+.card .tag{display:none}
+.actions{position:absolute;z-index:35;display:flex;gap:8px}
+.action{height:46px;border-radius:12px;border:1px solid rgba(142,194,182,.24);background:rgba(5,16,16,.82);color:#d6e0db;font-size:12px;font-weight:800;display:grid;place-items:center;backdrop-filter:blur(8px)}
+.action.primary{background:linear-gradient(180deg,#f2d38d,#bd8a35);border-color:#ffe1a2;color:#1c1608;box-shadow:0 0 24px rgba(255,224,161,.22)}
+.label{display:none}
+
+/* D · broadcast field-first */
+body[data-v="d"] .pitcher-info{top:62px}
+body[data-v="d"] .moundmark{top:166px;width:150px;height:42px}
+body[data-v="d"] .release{top:164px}
+body[data-v="d"] .batter{top:208px;left:-6px;width:204px}
+body[data-v="d"] .zone{left:136px;top:288px;width:226px;height:226px;gap:5px;transform:perspective(500px) rotateX(3deg)}
+body[data-v="d"] .intent{left:252px;top:242px}
+body[data-v="d"] .pitchline{left:164px;top:172px;width:168px;height:196px}
+body[data-v="d"] .readout{left:132px;top:526px}
+body[data-v="d"] .cards{left:14px;bottom:62px;width:450px}
+body[data-v="d"] .actions{left:14px;right:14px;bottom:10px}
+body[data-v="d"] .action{flex:1}body[data-v="d"] .label:after{content:"D · FIELD FIRST"}
+
+/* E · batter-eye immersive */
+body[data-v="e"] .stage{background:radial-gradient(115% 65% at 50% 26%,#285140,#112f27 45%,#071613 78%,#040c0b)}
+body[data-v="e"] .pitcher-info{top:60px;width:180px}
+body[data-v="e"] .moundmark{top:172px;width:116px;height:34px;opacity:.72}
+body[data-v="e"] .release{top:168px}
+body[data-v="e"] .batter{top:342px;left:210px;width:248px;transform:scaleX(-1);opacity:.98}
+body[data-v="e"] .zone{left:104px;top:258px;width:182px;height:182px;gap:3px}
+body[data-v="e"] .zone .z{border-color:rgba(224,245,236,.32);background:rgba(8,32,30,.20)}
+body[data-v="e"] .intent{left:145px;top:226px}
+body[data-v="e"] .pitchline{left:122px;top:160px;width:164px;height:168px}
+body[data-v="e"] .readout{left:20px;top:458px}
+body[data-v="e"] .cards{left:18px;bottom:68px;gap:9px}
+body[data-v="e"] .card{width:110px;height:132px}
+body[data-v="e"] .actions{left:18px;right:18px;bottom:12px}
+body[data-v="e"] .action{flex:1}body[data-v="e"] .label:after{content:"E · BATTER EYE"}
+
+/* F · tactical half-sheet */
+body[data-v="f"] .batter{top:172px;left:-14px;width:184px}
+body[data-v="f"] .pitcher-info{top:58px}
+body[data-v="f"] .moundmark{top:164px;width:138px;height:38px}
+body[data-v="f"] .release{top:162px}
+body[data-v="f"] .sheet{display:block}
+body[data-v="f"] .zone{left:20px;top:398px;width:202px;height:202px;gap:4px}
+body[data-v="f"] .intent{left:20px;top:344px}
+body[data-v="f"] .pitchline{left:122px;top:166px;width:172px;height:176px}
+body[data-v="f"] .readout{left:236px;top:415px;display:flex;flex-direction:column;align-items:stretch}
+body[data-v="f"] .readout .pill{font-size:10px;padding:8px 9px;border-radius:8px}
+body[data-v="f"] .cards{left:14px;bottom:62px}
+body[data-v="f"] .card{width:100px;height:118px}
+body[data-v="f"] .actions{left:14px;right:14px;bottom:10px}
+body[data-v="f"] .action{flex:1}body[data-v="f"] .label:after{content:"F · TACTICAL SHEET"}
+.sheet{display:none;position:absolute;z-index:11;left:0;right:0;top:360px;bottom:0;background:
+ linear-gradient(180deg,rgba(6,18,17,.18),rgba(5,15,15,.94) 10%,rgba(5,15,15,.99));border-top:1px solid rgba(151,205,190,.22);
+ backdrop-filter:blur(6px);box-shadow:0 -16px 35px rgba(0,0,0,.32)}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="crowd"></div><div class="field"></div><div class="moundmark"></div><div class="opponent-glyph"></div><div class="release"></div><div class="sheet"></div>
+  <div class="topbar">
+    <span class="brand">9ZONE</span><span class="atbat">#7 강한결</span>
+    <div class="count">B <span class="dots"><i class="on"></i><i></i><i></i><i></i></span>
+      S <span class="dots"><i class="on"></i><i></i><i></i></span></div>
+  </div>
+
+  <div class="pitcher-info"><div class="pitcher-name">권재민 · 바깥쪽 제구형</div>
+    <div class="pitcher-type">구속보다 제구 · 현재 투구 의도: 바깥쪽</div>
+    <div class="hp"></div><div class="hpnum">72 / 72</div></div>
+
+  <!-- Pitcher actor intentionally omitted until an art asset clears the visual-quality bar.
+       File format is not the gate: SVG/PNG are both allowed when the art itself is approved. -->
+  <img class="batter" src="https://raw.githubusercontent.com/jjsjb88-alt/9-baseball/codex/batter-motion-loop-v3/assets/batter-reboot-v1/batter-ready.png" alt="">
+
+  <span class="intent">바깥쪽 읽음</span>
+  <svg class="pitchline" viewBox="0 0 180 200">
+    <defs><filter id="glow"><feGaussianBlur stdDeviation="3"/></filter></defs>
+    <path d="M90 5 C96 50 122 82 140 127" fill="none" stroke="rgba(255,224,161,.28)" stroke-width="7" filter="url(#glow)"/>
+    <path d="M90 5 C96 50 122 82 140 127" fill="none" stroke="#ffe0a1" stroke-width="2" stroke-dasharray="5 7"/>
+    <circle cx="140" cy="127" r="5" fill="#fff2c8"/>
+  </svg>
+
+  <div class="zone">
+    <div class="z"></div><div class="z"></div><div class="z hot"></div>
+    <div class="z"></div><div class="z main"><span class="token main">1</span></div><div class="z support hot"><span class="token sup">2</span></div>
+    <div class="z support"><span class="token sup">3</span></div><div class="z"></div><div class="z hot"></div>
+  </div>
+
+  <div class="readout">
+    <span class="pill">스윙 효율 <strong>85%</strong></span>
+    <span class="pill">연결 <strong>2</strong></span>
+    <span class="pill">선택 <strong>3장</strong></span>
+  </div>
+
+  <div class="cards">
+    <div class="card selected"><b>정타 노림</b><small>메인</small><div class="mini"><i></i><i></i><i></i><i></i><i class="on"></i><i></i><i></i><i></i><i></i></div><div class="tag">정확 적중 압박</div></div>
+    <div class="card"><b>밀어치기</b><small>지원</small><div class="mini"><i></i><i></i><i class="on"></i><i></i><i></i><i class="on"></i><i></i><i></i><i class="on"></i></div><div class="tag">바깥쪽 대응</div></div>
+    <div class="card"><b>커트 스윙</b><small>지원</small><div class="mini"><i></i><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i></i></div><div class="tag">파울 생존</div></div>
+    <div class="card"><b>끝장 승부</b><small>대기</small><div class="mini"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="on"></i></div><div class="tag">장타 성향</div></div>
+  </div>
+
+  <div class="actions"><button class="action">준비</button><button class="action primary">스윙 확정</button><button class="action">지켜보기</button></div>
+  <div class="label"></div>
+</div>
+<script>
+const v=new URLSearchParams(location.search).get('v')||'d';
+document.body.dataset.v=['d','e','f'].includes(v)?v:'d';
+</script>
+</body></html>

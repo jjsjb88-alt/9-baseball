@@ -1,0 +1,10 @@
+/* V12 P3-2 — order links on the 9ZONE. Never takes the pointer; drawn above the cell faces and under
+   the order tokens. Connected = solid link-on #6FD7C6; broken = dashed link-off #AA7E67 with a gap
+   (line language as well as colour); same-zone = a ring. A dark under-stroke keeps it off the numbers. */
+.zone-grid:has(>.zone-links){position:relative!important}
+.zone-links{position:absolute!important;left:0;top:0;overflow:visible;pointer-events:none!important;z-index:3}
+.zone-links .zone-link,.zone-links .zone-link line,.zone-links .zone-link-ring{fill:none;stroke-linecap:round;paint-order:stroke}
+.zone-links line{stroke:#6FD7C6;stroke-width:4px;filter:drop-shadow(0 0 1.5px #03080c) drop-shadow(0 0 1.5px #03080c)}
+.zone-links .zone-link-ring{stroke:#6FD7C6;stroke-width:3px;filter:drop-shadow(0 0 1.5px #03080c)}
+.zone-links [data-connected="0"] line,.zone-links .zone-link-ring[data-connected="0"]{stroke:#AA7E67;stroke-dasharray:6 6}
+.zone-links .zone-link-ring[data-connected="0"]{stroke-dasharray:6 6}

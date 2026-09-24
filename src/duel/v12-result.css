@@ -1,0 +1,56 @@
+/* V12 P4-1b — the result state (a pitch revealed, before the next pitch/batter), V10 only.
+   One screen per result: what happened (title), why (cause chain, P4-1a), the lesson, and the next
+   step — whose button is always on screen (it was below the fold or inside a 96px scroll box).
+   Text floor 12px in the result and debrief panels (they were 6–10px). The PLAN/ACTUAL rows of the
+   first-plate debrief repeat the cause chain, so only its lesson stays.
+   Scoped to .duel-combat.v12-result (App adds it only when no cinematic is playing). */
+
+/* type: 12px floor, then the few larger roles */
+.duel-combat.v12-result .pa-result :is(p,small,span,i,em,b,li):not(.result-chain *){font-size:12px!important;line-height:16px!important;letter-spacing:0!important}
+.duel-combat.v12-result .pa-result>span{font-size:12px!important;letter-spacing:.06em!important}
+.duel-combat.v12-result .pa-result .result-call{font-size:28px!important;line-height:34px!important}
+.duel-combat.v12-result .pa-result h2{font-size:18px!important;line-height:24px!important;margin:2px 0!important}
+.duel-combat.v12-result .pa-result .decision-debrief :is(strong,b){font-size:13px!important;line-height:18px!important}
+.duel-combat.v12-result .pa-result .decision-debrief :is(.debrief-step.plan,.debrief-step.actual),
+.duel-combat.v12-result .pa-result .decision-debrief .debrief-step+i{display:none!important}
+.duel-combat.v12-result .pa-result .next-batter{min-height:52px!important;font-size:15px!important;line-height:20px!important}
+.duel-combat.v12-result .pa-result .next-batter span{font-size:12px!important}
+/* the placement guide belongs to the swing, not the result */
+.duel-combat.v12-result>.zone-panel .zone-card-board-guide{display:none!important}
+/* with its PLAN/ACTUAL rows gone, the lesson takes the full width */
+.duel-combat.v12-result .pa-result .decision-debrief{display:block!important}
+.duel-combat.v12-result .pa-result .decision-debrief .debrief-step.lesson{width:auto!important;max-width:none!important}
+
+/* portrait phone: the next step is pinned to the bottom edge like the execute strip */
+@media (max-width:900px) and (orientation:portrait){
+  .duel-combat.v12-result{padding-bottom:84px!important}
+  /* the chain (with its mini board) comes right under the stadium; the big reveal board and the
+     RESULT line repeat it */
+  .duel-combat.v12-result>:is(.zone-panel,.pitch-read){display:none!important}
+  .duel-combat.v12-result>.duel-table>.diamond-events{display:none!important}
+  .duel-combat.v12-result .pa-result .next-batter{position:fixed!important;left:6px!important;right:6px!important;bottom:6px!important;z-index:45!important;width:auto!important;margin:0!important;box-shadow:0 -10px 24px rgba(4,6,10,.7)!important}
+}
+
+/* short landscape: the stadium keeps the left, the result takes the right side; the chain's mini
+   board carries the reveal, so the big board steps aside */
+@media (orientation:landscape) and (max-height:500px){
+  .duel-combat.v12-result>.zone-panel{display:none!important}
+  .duel-combat.v12-result>.duel-arena{left:0!important;right:auto!important;width:56%!important}
+  .duel-combat.v12-result>.duel-table{left:56%!important;right:0!important;top:0!important;bottom:0!important;width:auto!important;height:auto!important;max-height:none!important;overflow:visible!important;background:none!important;pointer-events:none!important}
+  .duel-combat.v12-result>.duel-table>*{pointer-events:auto!important}
+  .duel-combat.v12-result>.duel-table>.diamond-events{display:none!important}
+  .duel-combat.v12-result>.duel-table>.pa-result{position:absolute!important;left:6px!important;right:8px!important;top:8px!important;bottom:8px!important;width:auto!important;height:auto!important;max-height:none!important;transform:none!important;margin:0!important;display:flex!important;flex-direction:column!important;gap:2px!important;overflow:auto!important;padding:10px 12px!important}
+  .duel-combat.v12-result>.duel-table>.pa-result .result-call{font-size:24px!important;line-height:28px!important}
+  .duel-combat.v12-result>.duel-table>.pa-result .next-batter{position:sticky!important;bottom:0!important;margin-top:auto!important;flex:none!important;width:100%!important}
+}
+
+/* desktop: the result card sits where the 9ZONE was, right of the duel */
+@media (min-width:1080px) and (min-height:650px){
+  .duel-combat.v12-result>.zone-panel{display:none!important}
+  /* the legacy desktop table is a bottom band; the result card is placed against the whole screen */
+  .duel-combat.v12-result.v12-result>.duel-table{left:0!important;right:0!important;top:0!important;bottom:0!important;width:auto!important;height:auto!important;max-height:none!important;overflow:visible!important;background:none!important;border:0!important;box-shadow:none!important;pointer-events:none!important}
+  .duel-combat.v12-result.v12-result>.duel-table>*{pointer-events:auto!important}
+  .duel-combat.v12-result.v12-result>.duel-table>.diamond-events{display:none!important}
+  .duel-combat.v12-result.v12-result>.duel-table>.pa-result{position:absolute!important;left:930px!important;right:auto!important;top:120px!important;bottom:auto!important;width:440px!important;height:auto!important;max-height:calc(100% - 150px)!important;transform:none!important;margin:0!important;display:flex!important;flex-direction:column!important;overflow:auto!important;padding:14px 16px!important}
+  .duel-combat.v12-result.v12-result>.duel-table>.pa-result .next-batter{position:sticky!important;bottom:0!important;margin-top:8px!important;width:100%!important}
+}

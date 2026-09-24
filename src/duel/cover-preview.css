@@ -1,0 +1,10 @@
+/* V12 P2-2 — exact cover preview during placement (D2: translucent cover + edge, never an opaque card).
+   Main = solid aim edge (--cover-main #FFE4A2), support = dashed teal (--cover-support #6FD7C6).
+   Inset outline + translucent wash only: the cell's read shading, numbers and ★ stay readable. */
+.duel-combat .zone-panel .zone-grid .zone-cell.cover-preview{outline-offset:-4px!important;transition:outline-color 120ms cubic-bezier(.2,.8,.2,1),background-color 120ms cubic-bezier(.2,.8,.2,1)!important}
+.duel-combat .zone-panel .zone-grid .zone-cell.cover-preview-main{outline:3px solid #FFE4A2!important;background-color:rgba(255,228,162,.22)!important}
+.duel-combat .zone-panel .zone-grid .zone-cell.cover-preview-support{outline:3px dashed #6FD7C6!important;background-color:rgba(111,215,198,.20)!important}
+.duel-combat .zone-panel .zone-grid .zone-cell.cover-preview-anchor{box-shadow:inset 0 0 0 7px rgba(3,8,12,.55)!important}
+@media (prefers-reduced-motion:reduce){
+  .duel-combat .zone-panel .zone-grid .zone-cell.cover-preview{transition:none!important}
+}

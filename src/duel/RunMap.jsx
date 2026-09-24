@@ -32,16 +32,17 @@ function MapIcon({type}){
   </svg>;
 }
 
-const ZONE_HEAT={
-  outside:[2,5,8],
-  sinker:[6,7,8],
-  high:[0,1,2],
-  closer:[0,2,4,6,8],
-};
+// V12 P6-2: the fingerprint lights only the zones the engine opens on the first plate appearance,
+// carried by the opponent (run-map.js: ZONE_ORDER[style].slice(0, zoneOpen)). It used a hand-written
+// "hot zone" table; a map saved before this has no such field and shows no fingerprint.
+export function openingZones(opponent){
+  const z=opponent?.openingZones;
+  return Array.isArray(z)&&z.every(n=>Number.isInteger(n)&&n>=0&&n<=8)?[...z]:[];
+}
 function ZoneFingerprint({opponent,compact=false}){
   if(!opponent)return null;
-  const hot=new Set(ZONE_HEAT[opponent.archetypeKey]||[4]);
-  return <span className={compact?'v10-zone-fingerprint is-compact':'v10-zone-fingerprint'} aria-label={`${opponent.archetype||'투수'} 주요 승부 존`}>
+  const hot=new Set(openingZones(opponent));if(!hot.size)return null;
+  return <span className={compact?'v10-zone-fingerprint is-compact':'v10-zone-fingerprint'} aria-label={`${opponent.archetype||'투수'} · 첫 타석 ${hot.size}존`}>
     {Array.from({length:9},(_,i)=><i key={i} className={hot.has(i)?'hot':''}/>)}
   </span>;
 }
@@ -230,6 +231,8 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
   const previewType=preview?nodeType(preview.type):null;
   const previewDetail=preview?nodeDetail(preview,previewType):null;
   const previewOpen=!!preview&&reachable.has(preview.id);
+  // V12 P5-2: with a real choice, the open stops are compared side by side (same nodeDetail as the report)
+  const openStops=(reachableIds||[]).map(id=>byId.get(id)).filter(Boolean);
   const nextLabels=preview?(edges||[]).filter(edge=>edge.from===preview.id).map(edge=>{
     const node=byId.get(edge.to);
     return node?nodeName(node)||nodeType(node.type).title:edge.to;
@@ -329,6 +332,12 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
       <aside className="v10-map-preview" data-testid="v10-map-preview">
         <div className="v10-preview-scoreline"><span>SCOUTING REPORT</span><b>{previewDetail?.route||'NEXT STOP'}</b></div>
         <p className="v10-map-hint" id="v10-map-hint">{MAP_HINT}</p>
+        {openStops.length>1&&<ul className="v10-preview-compare" aria-label="갈 수 있는 곳 비교">
+          {openStops.map(node=>{const type=nodeType(node.type),d=nodeDetail(node,type);return <li key={node.id}>
+            <button type="button" aria-pressed={activePreviewId===node.id} disabled={!!departingId} onClick={()=>look(node.id)}>
+              <strong>{nodeName(node)||type.title}</strong><span className="reward">보상 · {d.reward}</span><span className="risk">위험 · {d.risk}</span>
+            </button></li>;})}
+        </ul>}
         <div className="v10-preview-live" aria-live="polite">
           {preview?(
             <>

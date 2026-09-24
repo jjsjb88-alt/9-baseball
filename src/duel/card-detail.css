@@ -1,0 +1,31 @@
+/* V12 P2-1 — card detail sheet. Values mirror the V12 design tokens (the token sheet stays unimported per P0):
+   surface-1 #07141B, edge #235060, ink-1 #F4ECD8, ink-2 #CCD8D0, aim #FFE4A2, cover-support #6FD7C6,
+   link-off #AA7E67, z-modal 70, target-min 44px, type h2 22/28, body 15/22, label 13/18, micro 12/16. */
+.card-detail-backdrop{position:fixed;inset:0;z-index:70;display:grid;place-items:end center;padding:12px 12px max(12px,env(safe-area-inset-bottom));background:rgba(3,8,12,.74)}
+.card-detail-sheet{box-sizing:border-box;width:min(440px,100%);max-height:min(86dvh,640px);overflow:auto;overscroll-behavior:contain;padding:16px;border:2px solid #235060;border-top:4px solid #6FD7C6;border-radius:2px;background:#07141B;color:#F4ECD8;box-shadow:0 0 0 2px #03080c,0 18px 40px rgba(0,0,0,.55);font-family:inherit;text-align:left;animation:card-detail-in 180ms cubic-bezier(0,0,.2,1)}
+.card-detail-sheet.attack{border-top-color:#FFE4A2}
+.card-detail-head{display:grid;grid-template-columns:1fr auto;grid-template-areas:"kind close" "name close";align-items:center;column-gap:12px;row-gap:4px;margin:0 0 12px}
+.card-detail-kind{grid-area:kind;font-size:12px;line-height:16px;font-weight:800;letter-spacing:.04em;color:#CCD8D0}
+.card-detail-head h2{grid-area:name;margin:0;font-size:22px;line-height:28px;font-weight:900;color:#F4ECD8;word-break:keep-all}
+.card-detail-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.card-detail-close{grid-area:close;min-width:64px;min-height:44px;padding:0 12px;border:2px solid #235060;border-radius:2px;background:#132B33;color:#F4ECD8;font:inherit;font-size:13px;line-height:18px;font-weight:800;cursor:pointer}
+.card-detail-close:focus-visible{outline:3px solid #FFE4A2;outline-offset:2px}
+.card-detail-problem{margin:0 0 12px;padding:8px 12px;border-left:4px solid #AA7E67;background:#132B33;font-size:13px;line-height:18px;font-weight:800;color:#F4ECD8}
+.card-detail-rule{margin:0 0 12px;font-size:15px;line-height:22px;color:#F4ECD8;word-break:keep-all}
+.card-detail-tags{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px;padding:0;list-style:none}
+.card-detail-tags li{padding:4px 8px;border:1px solid #6FD7C6;border-radius:2px;font-size:12px;line-height:16px;font-weight:800;color:#6FD7C6}
+.card-detail-tags li.need{border-color:#AA7E67;color:#F4ECD8}
+.card-detail-stack{margin:0 0 12px;padding-left:8px;border-left:3px solid #6FD7C6;font-size:13px;line-height:18px;font-weight:800;color:#CCD8D0}
+.card-detail-upgrade{margin:0 0 12px;font-size:13px;line-height:18px;font-weight:800;color:#FFE4A2}
+.card-detail-flavor{margin:0;font-size:13px;line-height:18px;font-style:italic;color:#CCD8D0}
+@media (orientation:landscape),(min-width:700px){
+  .card-detail-backdrop{place-items:center}
+}
+@media (prefers-reduced-motion:reduce){
+  .card-detail-sheet{animation:none}
+}
+@keyframes card-detail-in{from{transform:translateY(12px);opacity:0}to{transform:none;opacity:1}}
+
+/* the explicit way in: one button for the selected card, in the execute strip */
+.duel-combat .card-detail-open{min-height:44px;padding:0 12px;border:2px solid #235060;border-radius:2px;background:#07141B;color:#F4ECD8;font:inherit;font-size:13px;line-height:18px;font-weight:800;cursor:pointer;white-space:nowrap}
+.duel-combat .card-detail-open:focus-visible{outline:3px solid #FFE4A2;outline-offset:2px}

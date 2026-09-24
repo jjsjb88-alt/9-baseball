@@ -1,0 +1,126 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="tokens.css"><style>
+html,body{overflow:hidden}
+body{background:#0a0f10;position:relative}
+.felt{position:absolute;inset:0;background:
+ radial-gradient(90% 55% at 50% 64%,#17362f 0%,#0e2420 45%,#070f0f 100%)}
+.felt:after{content:"";position:absolute;inset:0;opacity:.5;background:
+ repeating-linear-gradient(45deg,rgba(255,255,255,.012) 0 2px,transparent 2px 4px)}
+/* opponent frame */
+.foe{position:absolute;top:14px;left:50%;transform:translateX(-50%);width:214px;text-align:center}
+.portrait{width:214px;height:152px;border-radius:10px;position:relative;overflow:hidden;
+ background:radial-gradient(70% 70% at 50% 34%,#24403a,#0e1f1c 70%);
+ border:2px solid #38504a;box-shadow:0 14px 30px rgba(0,0,0,.65),inset 0 0 40px rgba(0,0,0,.5)}
+.portrait img{position:absolute;left:50%;bottom:-10px;transform:translateX(-50%);width:150px;
+ filter:drop-shadow(0 6px 10px rgba(0,0,0,.7))}
+.portrait:after{content:"";position:absolute;inset:0;
+ background:linear-gradient(180deg,transparent 58%,rgba(8,16,15,.85));pointer-events:none}
+.foename{margin-top:8px;font-size:var(--t-label);color:var(--ink1);font-weight:800}
+.hpwrap{margin-top:7px;height:16px;border-radius:3px;background:#0a1614;border:1px solid #2b4640;
+ display:flex;overflow:hidden;box-shadow:inset 0 2px 5px rgba(0,0,0,.6)}
+.hpwrap .f{width:70%;background:linear-gradient(180deg,#6fd0a4,#2d8f70)}
+.hpwrap .g{width:16%;background:repeating-linear-gradient(45deg,rgba(255,180,106,.95) 0 3px,rgba(140,80,35,.9) 3px 7px)}
+.hpwrap .c{width:5%;background:#3a2a19;box-shadow:inset 0 0 0 1px rgba(255,200,140,.8)}
+.me{position:absolute;top:18px;left:14px}
+.me b{font-size:var(--t-label);color:var(--ink1);font-weight:800;display:block}
+.me .count{margin-top:6px;flex-direction:column;align-items:flex-start;gap:4px;display:flex}
+/* physical slot board */
+.slots{position:absolute;left:16px;right:16px;top:248px;padding:10px;border-radius:10px;
+ background:linear-gradient(180deg,#3a2f22,#231c14);border:1px solid #4c3f2e;
+ box-shadow:0 16px 34px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.07)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.slot{height:88px;border-radius:5px;position:relative;display:flex;align-items:center;justify-content:center;
+ background:#141d1c;box-shadow:inset 0 3px 7px rgba(0,0,0,.75),inset 0 -1px 0 rgba(255,255,255,.05)}
+.slot.h1{background:#17231f}.slot.h2{background:#1f2a20;box-shadow:inset 0 3px 7px rgba(0,0,0,.7),inset 0 0 22px rgba(255,180,100,.10)}
+.slot.h3{background:#2a2b1c;box-shadow:inset 0 3px 7px rgba(0,0,0,.7),inset 0 0 26px rgba(255,180,100,.22)}
+.slot.dead{background:#0f1514;box-shadow:inset 0 3px 7px rgba(0,0,0,.85)}
+.slot.dead:after{content:"";width:16px;height:2px;background:#26312e;border-radius:1px}
+.slot.main{box-shadow:inset 0 0 0 2px var(--gold),inset 0 0 26px rgba(255,214,140,.3)}
+.slot.sup{box-shadow:inset 0 0 0 1px var(--link),inset 0 0 22px rgba(111,215,198,.22)}
+.chip{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+ font-size:15px;font-weight:800;position:relative;z-index:3}
+.chip.m{background:radial-gradient(60% 60% at 40% 32%,#ffeec0,#e0a63f);color:#2a1a04;
+ box-shadow:0 4px 0 #a9761f,0 8px 14px rgba(0,0,0,.6)}
+.chip.s{background:radial-gradient(60% 60% at 40% 35%,#b6f4e8,#41b7a2);color:#04302a;
+ box-shadow:0 4px 0 #24806f,0 8px 14px rgba(0,0,0,.6)}
+.arc{position:absolute;left:10px;top:10px;pointer-events:none;z-index:2}
+/* actions */
+.acts{position:absolute;left:16px;right:16px;top:572px;display:flex;gap:8px}
+.act{flex:1;height:44px;border-radius:8px;border:1px solid #33463f;
+ background:linear-gradient(180deg,#15211e,#0d1614);display:flex;align-items:center;justify-content:center;gap:6px;
+ box-shadow:0 3px 0 #070d0c}
+.act.on{border-color:var(--gold);background:linear-gradient(180deg,#2e2a16,#1b190c);
+ box-shadow:0 0 18px rgba(255,228,162,.2),0 3px 0 #070d0c}
+.act span{font-size:var(--t-micro);font-weight:700;color:var(--ink2)}.act.on span{color:var(--gold)}
+.act svg{width:17px;height:17px}
+/* big cards */
+.hand{position:absolute;left:0;right:0;bottom:0;height:194px}
+.card{position:absolute;bottom:-26px;width:118px;height:176px;border-radius:10px;padding:10px;
+ background:linear-gradient(168deg,#f2ecd6,#cdc4a3 72%,#bdb392);
+ border:1px solid #877e62;box-shadow:0 -4px 16px rgba(0,0,0,.55),0 10px 22px rgba(0,0,0,.55);
+ transform-origin:50% 120%}
+.card.used{filter:grayscale(.62) brightness(.72)}
+.card strong{font-size:15px;color:#18282b;font-weight:800;letter-spacing:-.01em}
+.card .role{position:absolute;right:10px;top:10px;width:17px;height:17px;opacity:.55}
+.card .mini{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-top:9px}
+.card .mini i{aspect-ratio:1;background:#aaa287;border-radius:2px;display:block;
+ box-shadow:inset 0 1px 2px rgba(0,0,0,.25)}
+.card .mini i.f{background:linear-gradient(180deg,#2c8d7a,#186153)}
+.card .pips{position:absolute;left:10px;bottom:10px;display:flex;gap:4px}
+.card .pips i{width:7px;height:7px;border-radius:50%;background:#9a9279;display:block}
+.card .pips i.on{background:#1f6f60}
+.k1{left:2px;transform:rotate(-10deg) translateY(16px)}
+.k2{left:94px;transform:rotate(-3.5deg) translateY(2px)}
+.k3{left:186px;transform:rotate(3.5deg) translateY(2px)}
+.k4{left:270px;transform:rotate(10deg) translateY(16px)}
+</style></head><body>
+<div class="felt"></div>
+<div class="me"><b>#7 강한결</b>
+ <div class="count">
+  <div class="cg"><b>B</b><i class="on"></i><i></i><i></i><i></i></div>
+  <div class="cg"><b>S</b><i class="on"></i><i></i><i></i></div>
+  <div class="cg o"><b>O</b><i class="on"></i><i></i><i></i></div>
+ </div></div>
+<div class="foe">
+ <div class="portrait"><img src="file:///home/user/9-baseball/assets/sprites-v2/frames/pitcher-pitch-04.png"></div>
+ <div class="foename">유상혁 · 바깥쪽</div>
+ <div class="hpwrap"><div class="f"></div><div class="g"></div><div class="c"></div></div>
+</div>
+<div class="slots">
+ <div class="grid">
+  <div class="slot dead"></div><div class="slot h1"></div><div class="slot h2"></div>
+  <div class="slot dead"></div><div class="slot h2 main"><i class="chip m">1</i></div><div class="slot h3 sup"><i class="chip s">2</i></div>
+  <div class="slot h1 sup"><i class="chip s">3</i></div><div class="slot dead"></div><div class="slot h3"></div>
+ </div>
+ <svg class="arc" width="338" height="278" viewBox="0 0 338 278">
+  <defs><filter id="gc"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+  <path d="M169 139 C200 128 236 130 282 139" stroke="#6fd7c6" stroke-width="7" fill="none" stroke-linecap="round" filter="url(#gc)" opacity=".92"/>
+  <path d="M169 139 C200 128 236 130 282 139" stroke="#e6fffa" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M282 139 C244 168 208 188 186 198" stroke="#a8614f" stroke-width="5" fill="none" stroke-linecap="round" opacity=".7"/>
+  <path d="M124 218 C110 222 92 224 58 226" stroke="#a8614f" stroke-width="5" fill="none" stroke-linecap="round" opacity=".7"/>
+  <circle cx="174" cy="204" r="2.4" fill="#c98a75"/><circle cx="158" cy="210" r="1.7" fill="#c98a75" opacity=".75"/><circle cx="141" cy="215" r="1.9" fill="#c98a75" opacity=".5"/>
+ </svg>
+</div>
+<div class="acts">
+ <div class="act"><svg viewBox="0 0 24 24" fill="none" stroke="#ccd8d0" stroke-width="1.8"><path d="M5 13c0-4 3-7 7-7s7 3 7 7v5H5z"/></svg><span>준비</span></div>
+ <div class="act on"><svg viewBox="0 0 24 24" fill="none" stroke="#ffe4a2" stroke-width="1.8"><path d="M4 20L17 7"/><path d="M15 5l4 4-2 2-4-4z"/></svg><span>스윙</span></div>
+ <div class="act"><svg viewBox="0 0 24 24" fill="none" stroke="#ccd8d0" stroke-width="1.8"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="2.5"/></svg><span>지켜보기</span></div>
+</div>
+<div class="hand">
+ <div class="card k1 used"><strong>정타 노림</strong>
+  <svg class="role" viewBox="0 0 24 24" fill="none" stroke="#35453e" stroke-width="2.2"><path d="M4 20L17 7"/></svg>
+  <div class="mini"><i></i><i></i><i></i><i></i><i class="f"></i><i></i><i></i><i></i><i></i></div>
+  <div class="pips"><i class="on"></i><i></i><i></i><i></i></div></div>
+ <div class="card k2 used"><strong>정타 노림</strong>
+  <svg class="role" viewBox="0 0 24 24" fill="none" stroke="#35453e" stroke-width="2.2"><path d="M4 20L17 7"/></svg>
+  <div class="mini"><i></i><i></i><i></i><i></i><i></i><i class="f"></i><i></i><i></i><i></i></div>
+  <div class="pips"><i class="on"></i><i></i><i></i><i></i></div></div>
+ <div class="card k3"><strong>밀어치기</strong>
+  <svg class="role" viewBox="0 0 24 24" fill="none" stroke="#35453e" stroke-width="2.2"><path d="M6 12h12M13 7l5 5-5 5"/></svg>
+  <div class="mini"><i></i><i></i><i class="f"></i><i></i><i></i><i class="f"></i><i></i><i></i><i class="f"></i></div>
+  <div class="pips"><i class="on"></i><i class="on"></i><i></i><i></i></div></div>
+ <div class="card k4"><strong>끈질긴 컨택</strong>
+  <svg class="role" viewBox="0 0 24 24" fill="none" stroke="#35453e" stroke-width="2.2"><circle cx="12" cy="12" r="7"/></svg>
+  <div class="mini"><i></i><i class="f"></i><i></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i class="f"></i><i></i></div>
+  <div class="pips"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div></div>
+</div>
+</body></html>

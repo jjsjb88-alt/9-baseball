@@ -1,0 +1,32 @@
+/* V12 P2-3 — prepare cards read as prepare cards (D5), design state only.
+   Swing cards stay home-plate cards; a prepare card is a round token: the circle is painted by ::before
+   inside the unchanged card rectangle, so the touch target keeps the card's full, regular size (no
+   shape-fitted hit area). Name stays (D3/D4), uses left and the unusable reason are on the token; the
+   full rule is in the detail sheet (P2-1). Colours: bone #DED6B9, ink #102024, cover-support #6FD7C6,
+   aim #FFE4A2, link-off #AA7E67. Scoped to .duel-combat.v12-design. */
+.duel-combat.v12-design .duel-hand .duel-card.skill{position:relative!important;display:grid!important;grid-auto-rows:auto!important;align-content:center!important;justify-items:center!important;gap:2px!important;background:none!important;border-color:transparent!important;box-shadow:none!important;overflow:visible!important;text-align:center!important}
+.duel-combat.v12-design .duel-hand .duel-card.skill::before{content:""!important;position:absolute!important;left:50%!important;top:50%!important;width:calc(100% - 4px)!important;aspect-ratio:1!important;height:auto!important;transform:translate(-50%,-50%)!important;border-radius:50%!important;box-sizing:border-box!important;border:3px solid #6FD7C6!important;background:radial-gradient(circle at 50% 38%,#F4ECD8 0,#DED6B9 62%,#BFB595 100%)!important;box-shadow:0 0 0 2px #102024,0 6px 12px rgba(0,0,0,.45)!important;z-index:0!important;pointer-events:none!important}
+.duel-combat.v12-design .duel-hand .duel-card.skill>*{position:relative!important;z-index:1!important}
+.duel-combat.v12-design .duel-hand .duel-card.skill>:is(.card-cost,.card-type,.card-gives,.card-foot,.card-upgrade,.card-relation,.card-note){display:none!important}
+.duel-combat.v12-design .duel-hand .duel-card.skill>.card-rule{display:none!important}
+.duel-combat.v12-design .duel-hand .duel-card.skill>.card-art{width:28px!important;height:28px!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;background:none!important;box-shadow:none!important;color:#1d6b62!important}
+.duel-combat.v12-design .duel-hand .duel-card.skill>.card-art svg{width:28px!important;height:28px!important}
+.duel-combat.v12-design .duel-hand .duel-card.skill>strong{max-width:78%!important;margin:0!important;font-size:13px!important;line-height:16px!important;font-weight:900!important;color:#102024!important;word-break:keep-all!important;white-space:normal!important}
+.duel-combat.v12-design .duel-hand .duel-card.skill>.card-uses{padding:0 6px!important;border-radius:999px!important;background:#102024!important;color:#6FD7C6!important;font-size:12px!important;line-height:16px!important;font-weight:800!important;white-space:nowrap!important}
+/* chosen: the aim edge */
+.duel-combat.v12-design .duel-hand .duel-card.skill.selected::before{border-color:#FFE4A2!important;box-shadow:0 0 0 2px #102024,0 0 0 5px #FFE4A2,0 6px 14px rgba(0,0,0,.5)!important}
+/* cannot be used: greyed token, and the reason replaces the uses line */
+.duel-combat.v12-design .duel-hand .duel-card.skill.unavailable{opacity:1!important;filter:none!important}
+.duel-combat.v12-design .duel-hand .duel-card.skill.unavailable::before{border-color:#AA7E67!important;border-style:dashed!important;background:radial-gradient(circle at 50% 38%,#C9C3B2 0,#A9A393 70%,#8E8878 100%)!important}
+.duel-combat.v12-design .duel-hand .duel-card.skill.unavailable>:is(.card-art,.card-uses){display:none!important}
+.duel-combat.v12-design .duel-hand .duel-card.skill.unavailable>.card-rule{display:-webkit-box!important;-webkit-box-orient:vertical!important;-webkit-line-clamp:3!important;overflow:hidden!important;max-width:80%!important;margin:0!important;padding:0!important;border:0!important;background:none!important;font-size:12px!important;line-height:14px!important;font-weight:800!important;color:#3a1f14!important;white-space:normal!important;word-break:keep-all!important}
+/* short landscape: a smaller token, so the icon goes and the name leads */
+@media (orientation:landscape) and (max-height:500px){
+  .duel-combat.v12-design .duel-hand .duel-card.skill>.card-art{display:none!important}
+  .duel-combat.v12-design .duel-hand .duel-card.skill>strong{font-size:12px!important;line-height:14px!important}
+}
+@media (orientation:landscape) and (max-height:500px){
+  .duel-combat.v12-design .duel-hand .duel-card.skill>.card-uses{max-width:84%!important;white-space:normal!important;line-height:14px!important;padding:1px 6px!important}
+  .duel-combat.v12-design .duel-hand .duel-card.skill.unavailable>strong{-webkit-line-clamp:1!important;display:-webkit-box!important;-webkit-box-orient:vertical!important;overflow:hidden!important}
+  .duel-combat.v12-design .duel-hand .duel-card.skill.unavailable>.card-rule{-webkit-line-clamp:2!important;max-width:74%!important}
+}

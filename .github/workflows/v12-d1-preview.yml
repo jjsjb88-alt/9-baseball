@@ -1,0 +1,46 @@
+name: V12 D1 Preview
+
+on:
+  push:
+    branches:
+      - claude/feedback-review-plan-vw24at
+    paths:
+      - docs/design/v12/d1-preview.html
+      - scripts/v12-d1-preview.mjs
+      - .github/workflows/v12-d1-preview.yml
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Install Playwright Chromium
+        run: |
+          pnpm add --save-dev --ignore-workspace-root-check playwright
+          pnpm exec playwright install --with-deps chromium
+      - name: Start static preview server
+        run: |
+          python3 -m http.server 5177 --bind 127.0.0.1 > /tmp/v12-d1-preview.log 2>&1 &
+          for i in {1..60}; do
+            if curl -fsS http://127.0.0.1:5177/docs/design/v12/d1-preview.html >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/v12-d1-preview.log
+          exit 1
+      - name: Capture D1 D/E/F
+        run: node scripts/v12-d1-preview.mjs v12-d1-preview
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v12-d1-new-directions
+          path: v12-d1-preview

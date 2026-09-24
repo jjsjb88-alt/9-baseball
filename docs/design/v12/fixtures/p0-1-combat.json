@@ -1,0 +1,1678 @@
+{
+  "version": 10,
+  "seed": 3594774754,
+  "pitchSeed": 2758192104,
+  "initialSeed": 12012026,
+  "build": "starter",
+  "phase": "battle",
+  "stage": 0,
+  "growth": {
+    "patience": 0,
+    "relay": 0,
+    "fortune": 0
+  },
+  "growthHistory": [],
+  "fortune": 0,
+  "relics": [],
+  "growthStats": {
+    "waitStrikes": 0,
+    "patienceSwings": 0,
+    "relayCreated": 0,
+    "relayHits": 0,
+    "fortuneEarned": 0,
+    "fortuneUses": 0
+  },
+  "deck": [
+    {
+      "id": "c0",
+      "kind": "place"
+    },
+    {
+      "id": "c1",
+      "kind": "place"
+    },
+    {
+      "id": "c2",
+      "kind": "place"
+    },
+    {
+      "id": "c3",
+      "kind": "place"
+    },
+    {
+      "id": "c4",
+      "kind": "strike"
+    },
+    {
+      "id": "c5",
+      "kind": "strike"
+    },
+    {
+      "id": "c6",
+      "kind": "setup"
+    },
+    {
+      "id": "c7",
+      "kind": "watch"
+    },
+    {
+      "id": "c8",
+      "kind": "scout"
+    }
+  ],
+  "nextId": 9,
+  "rewards": [],
+  "facilities": [],
+  "route": "home-opener",
+  "routeHistory": [],
+  "victories": 0,
+  "battle": {
+    "turn": 1,
+    "batterIndex": 0,
+    "preparations": 0,
+    "runSignal": false,
+    "results": [],
+    "history": [],
+    "outs": 0,
+    "runs": 0,
+    "strikes": 0,
+    "balls": 0,
+    "aim": 0,
+    "aimZone": 4,
+    "expanded": false,
+    "patient": false,
+    "scouted": false,
+    "expandedPlus": false,
+    "scoutPlus": false,
+    "runSignalPlus": false,
+    "waitCharge": 0,
+    "relayPending": 0,
+    "relayActive": 0,
+    "growthMode": "normal",
+    "bases": [
+      null,
+      null,
+      null
+    ],
+    "hand": [
+      "c0",
+      "c1",
+      "c2",
+      "c3",
+      "c4"
+    ],
+    "draw": [
+      "c8",
+      "c5",
+      "c6",
+      "c7"
+    ],
+    "discard": [],
+    "log": [],
+    "intent": {
+      "kind": "fastball",
+      "name": "바깥쪽 승부",
+      "detail": "루키는 바깥쪽을 선호합니다. 2스트라이크에서는 몸쪽 비중이 높아집니다. 지금은 4존만 씁니다 · 2타석마다 넓어집니다.",
+      "repertoire": [
+        2,
+        4,
+        5,
+        8
+      ],
+      "width": 4,
+      "maxWidth": 6,
+      "probabilities": [
+        0,
+        0,
+        0.14285714285714285,
+        0,
+        0.11428571428571428,
+        0.21428571428571427,
+        0,
+        0,
+        0.17142857142857143,
+        0.35714285714285715
+      ]
+    },
+    "pending": {
+      "zone": 2,
+      "roll": 0.5583511248696595,
+      "powerRoll": 0.6421916428953409
+    },
+    "revealed": null
+  },
+  "last": {
+    "kind": "start",
+    "text": "1번 강한결 입장 · 경향을 읽고 노릴 존과 스윙을 고르세요.",
+    "events": [],
+    "runs": 0,
+    "outs": 0
+  },
+  "stats": {
+    "cards": 0,
+    "pitches": 0,
+    "runs": 0,
+    "outs": 0,
+    "appearances": 0,
+    "hits": 0,
+    "walks": 0,
+    "fouls": 0,
+    "whiffs": 0,
+    "totalBases": 0
+  },
+  "runMap": {
+    "seed": 12012026,
+    "nodes": [
+      {
+        "id": "a1-entry",
+        "act": 1,
+        "row": 0,
+        "lane": 1,
+        "type": "battle",
+        "name": "정규 승부",
+        "route": "steady",
+        "routeLabel": "안정 루트",
+        "seed": 1078060067,
+        "opponent": {
+          "name": "레드 러시",
+          "archetype": "바깥쪽 제구형",
+          "archetypeKey": "outside",
+          "style": "rookie",
+          "maxHp": 72,
+          "statBonus": 0,
+          "zoneOpen": 4,
+          "zoneMax": 6,
+          "openingZones": [
+            2,
+            4,
+            5,
+            8
+          ],
+          "threat": "바깥 코스 비중이 높아 좁은 노림을 흔듭니다.",
+          "rewardTier": 1,
+          "act": 1,
+          "actName": "개막",
+          "escalation": {
+            "name": "개막",
+            "hp": 0,
+            "stat": 0,
+            "zone": 0,
+            "note": "바깥·낮은 공 중심. 읽은 대로 치며 덱의 첫 방향을 정하는 막."
+          },
+          "risk": "보통",
+          "reward": "막별 기본 3장 드래프트",
+          "artId": "regular-01-red-rush"
+        },
+        "risk": "보통",
+        "reward": "막별 기본 3장 드래프트",
+        "preview": "레드 러시 · 바깥쪽 제구형 · HP 72"
+      },
+      {
+        "id": "a1-craft",
+        "act": 1,
+        "row": 1,
+        "lane": 0,
+        "type": "locker",
+        "name": "라커룸",
+        "route": "craft",
+        "routeLabel": "정비 루트",
+        "seed": 1686993941,
+        "utility": {
+          "effect": "덱 정리",
+          "detail": "약한 카드를 덜 뽑도록 덱을 정리하는 구간입니다.",
+          "risk": "낮음",
+          "reward": "덱 압축"
+        },
+        "risk": "낮음",
+        "reward": "덱 압축",
+        "preview": "덱 정리 · 약한 카드를 덜 뽑도록 덱을 정리하는 구간입니다."
+      },
+      {
+        "id": "a1-steady",
+        "act": 1,
+        "row": 1,
+        "lane": 1,
+        "type": "training",
+        "name": "타격 훈련",
+        "route": "development",
+        "routeLabel": "육성 루트",
+        "seed": 2992131402,
+        "utility": {
+          "effect": "카드 강화",
+          "detail": "핵심 카드 하나를 강화해 다음 경기부터 역할을 선명하게 만듭니다.",
+          "risk": "낮음",
+          "reward": "덱 강화"
+        },
+        "risk": "낮음",
+        "reward": "덱 강화",
+        "preview": "카드 강화 · 핵심 카드 하나를 강화해 다음 경기부터 역할을 선명하게 만듭니다."
+      },
+      {
+        "id": "a1-risk",
+        "act": 1,
+        "row": 1,
+        "lane": 3,
+        "type": "elite",
+        "name": "강적 승부",
+        "route": "gauntlet",
+        "routeLabel": "강행군",
+        "seed": 4648321,
+        "opponent": {
+          "name": "유상혁",
+          "archetype": "바깥쪽 제구형",
+          "archetypeKey": "outside",
+          "style": "rookie",
+          "maxHp": 100,
+          "statBonus": 10,
+          "zoneOpen": 4,
+          "zoneMax": 6,
+          "openingZones": [
+            2,
+            4,
+            5,
+            8
+          ],
+          "threat": "바깥 코스 비중이 높아 좁은 노림을 흔듭니다.",
+          "rewardTier": 2,
+          "act": 1,
+          "actName": "개막",
+          "escalation": {
+            "name": "개막",
+            "hp": 0,
+            "stat": 0,
+            "zone": 0,
+            "note": "바깥·낮은 공 중심. 읽은 대로 치며 덱의 첫 방향을 정하는 막."
+          },
+          "risk": "높음",
+          "reward": "시그니처 카드 포함 4장 드래프트"
+        },
+        "risk": "높음",
+        "reward": "시그니처 카드 포함 4장 드래프트",
+        "preview": "유상혁 · 바깥쪽 제구형 · HP 100"
+      },
+      {
+        "id": "a1-craft-game",
+        "act": 1,
+        "row": 2,
+        "lane": 0,
+        "type": "battle",
+        "name": "정규 승부",
+        "route": "craft",
+        "routeLabel": "정비 루트",
+        "seed": 644229853,
+        "opponent": {
+          "name": "장민석",
+          "archetype": "바깥쪽 제구형",
+          "archetypeKey": "outside",
+          "style": "rookie",
+          "maxHp": 72,
+          "statBonus": 0,
+          "zoneOpen": 4,
+          "zoneMax": 6,
+          "openingZones": [
+            2,
+            4,
+            5,
+            8
+          ],
+          "threat": "바깥 코스 비중이 높아 좁은 노림을 흔듭니다.",
+          "rewardTier": 1,
+          "act": 1,
+          "actName": "개막",
+          "escalation": {
+            "name": "개막",
+            "hp": 0,
+            "stat": 0,
+            "zone": 0,
+            "note": "바깥·낮은 공 중심. 읽은 대로 치며 덱의 첫 방향을 정하는 막."
+          },
+          "risk": "보통",
+          "reward": "막별 기본 3장 드래프트"
+        },
+        "risk": "보통",
+        "reward": "막별 기본 3장 드래프트",
+        "preview": "장민석 · 바깥쪽 제구형 · HP 72"
+      },
+      {
+        "id": "a1-steady-game",
+        "act": 1,
+        "row": 2,
+        "lane": 1,
+        "type": "battle",
+        "name": "정규 승부",
+        "route": "steady",
+        "routeLabel": "안정 루트",
+        "seed": 2027046849,
+        "opponent": {
+          "name": "차도훈",
+          "archetype": "낮은 싱커형",
+          "archetypeKey": "sinker",
+          "style": "sinker",
+          "maxHp": 72,
+          "statBonus": 0,
+          "zoneOpen": 5,
+          "zoneMax": 7,
+          "openingZones": [
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "threat": "낮은 3분할을 오래 압박하고 병살 위험을 만듭니다.",
+          "rewardTier": 1,
+          "act": 1,
+          "actName": "개막",
+          "escalation": {
+            "name": "개막",
+            "hp": 0,
+            "stat": 0,
+            "zone": 0,
+            "note": "바깥·낮은 공 중심. 읽은 대로 치며 덱의 첫 방향을 정하는 막."
+          },
+          "risk": "보통",
+          "reward": "막별 기본 3장 드래프트"
+        },
+        "risk": "보통",
+        "reward": "막별 기본 3장 드래프트",
+        "preview": "차도훈 · 낮은 싱커형 · HP 72"
+      },
+      {
+        "id": "a1-risk-game",
+        "act": 1,
+        "row": 2,
+        "lane": 3,
+        "type": "elite",
+        "name": "강적 승부",
+        "route": "gauntlet",
+        "routeLabel": "강행군",
+        "seed": 3968228792,
+        "opponent": {
+          "name": "표세진",
+          "archetype": "낮은 싱커형",
+          "archetypeKey": "sinker",
+          "style": "sinker",
+          "maxHp": 100,
+          "statBonus": 10,
+          "zoneOpen": 5,
+          "zoneMax": 7,
+          "openingZones": [
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "threat": "낮은 3분할을 오래 압박하고 병살 위험을 만듭니다.",
+          "rewardTier": 2,
+          "act": 1,
+          "actName": "개막",
+          "escalation": {
+            "name": "개막",
+            "hp": 0,
+            "stat": 0,
+            "zone": 0,
+            "note": "바깥·낮은 공 중심. 읽은 대로 치며 덱의 첫 방향을 정하는 막."
+          },
+          "risk": "높음",
+          "reward": "시그니처 카드 포함 4장 드래프트"
+        },
+        "risk": "높음",
+        "reward": "시그니처 카드 포함 4장 드래프트",
+        "preview": "표세진 · 낮은 싱커형 · HP 100"
+      },
+      {
+        "id": "a1-craft-shop",
+        "act": 1,
+        "row": 3,
+        "lane": 0,
+        "type": "shop",
+        "name": "장비 상점",
+        "route": "craft",
+        "routeLabel": "정비 루트",
+        "seed": 3113378558,
+        "utility": {
+          "effect": "전력 보강",
+          "detail": "카드와 런 전체를 바꾸는 유물 중 하나를 골라 전력을 보강합니다.",
+          "risk": "낮음",
+          "reward": "카드 / 유물"
+        },
+        "risk": "낮음",
+        "reward": "카드 / 유물",
+        "preview": "전력 보강 · 카드와 런 전체를 바꾸는 유물 중 하나를 골라 전력을 보강합니다."
+      },
+      {
+        "id": "a1-steady-rest",
+        "act": 1,
+        "row": 3,
+        "lane": 1,
+        "type": "rest",
+        "name": "휴식일",
+        "route": "steady",
+        "routeLabel": "안정 루트",
+        "seed": 132024910,
+        "utility": {
+          "effect": "컨디션 회복",
+          "detail": "다음 전투에서 타선의 타격 기술 +8. 강행군을 끊고 다음 투수를 안정적으로 공략합니다.",
+          "risk": "최저",
+          "reward": "다음 전투 타격 +8"
+        },
+        "risk": "최저",
+        "reward": "다음 전투 타격 +8",
+        "preview": "컨디션 회복 · 다음 전투에서 타선의 타격 기술 +8. 강행군을 끊고 다음 투수를 안정적으로 공략합니다."
+      },
+      {
+        "id": "a1-risk-shop",
+        "act": 1,
+        "row": 3,
+        "lane": 2,
+        "type": "shop",
+        "name": "장비 상점",
+        "route": "gauntlet",
+        "routeLabel": "강행군",
+        "seed": 2905344723,
+        "utility": {
+          "effect": "전력 보강",
+          "detail": "카드와 런 전체를 바꾸는 유물 중 하나를 골라 전력을 보강합니다.",
+          "risk": "낮음",
+          "reward": "카드 / 유물"
+        },
+        "risk": "낮음",
+        "reward": "카드 / 유물",
+        "preview": "전력 보강 · 카드와 런 전체를 바꾸는 유물 중 하나를 골라 전력을 보강합니다."
+      },
+      {
+        "id": "a1-risk-elite",
+        "act": 1,
+        "row": 3,
+        "lane": 3,
+        "type": "elite",
+        "name": "강적 승부",
+        "route": "gauntlet",
+        "routeLabel": "강행군",
+        "seed": 2323631482,
+        "opponent": {
+          "name": "홍기준",
+          "archetype": "낮은 싱커형",
+          "archetypeKey": "sinker",
+          "style": "sinker",
+          "maxHp": 100,
+          "statBonus": 10,
+          "zoneOpen": 5,
+          "zoneMax": 7,
+          "openingZones": [
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "threat": "낮은 3분할을 오래 압박하고 병살 위험을 만듭니다.",
+          "rewardTier": 2,
+          "act": 1,
+          "actName": "개막",
+          "escalation": {
+            "name": "개막",
+            "hp": 0,
+            "stat": 0,
+            "zone": 0,
+            "note": "바깥·낮은 공 중심. 읽은 대로 치며 덱의 첫 방향을 정하는 막."
+          },
+          "risk": "높음",
+          "reward": "시그니처 카드 포함 4장 드래프트"
+        },
+        "risk": "높음",
+        "reward": "시그니처 카드 포함 4장 드래프트",
+        "preview": "홍기준 · 낮은 싱커형 · HP 100"
+      },
+      {
+        "id": "a1-boss",
+        "act": 1,
+        "row": 4,
+        "lane": 1,
+        "type": "boss",
+        "name": "막 보스",
+        "route": "playoff",
+        "routeLabel": "플레이오프",
+        "seed": 1703354606,
+        "opponent": {
+          "name": "윤태성",
+          "archetype": "낮은 싱커형",
+          "archetypeKey": "sinker",
+          "style": "sinker",
+          "maxHp": 124,
+          "statBonus": 12,
+          "zoneOpen": 5,
+          "zoneMax": 7,
+          "openingZones": [
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "threat": "낮은 3분할을 오래 압박하고 병살 위험을 만듭니다.",
+          "rewardTier": 3,
+          "act": 1,
+          "actName": "개막",
+          "escalation": {
+            "name": "개막",
+            "hp": 0,
+            "stat": 0,
+            "zone": 0,
+            "note": "바깥·낮은 공 중심. 읽은 대로 치며 덱의 첫 방향을 정하는 막."
+          },
+          "risk": "최종",
+          "reward": "막 돌파 · 시그니처 4장 드래프트"
+        },
+        "risk": "최종",
+        "reward": "막 돌파 · 시그니처 4장 드래프트",
+        "preview": "윤태성 · 낮은 싱커형 · HP 124"
+      },
+      {
+        "id": "a2-entry",
+        "act": 2,
+        "row": 0,
+        "lane": 1,
+        "type": "battle",
+        "name": "정규 승부",
+        "route": "steady",
+        "routeLabel": "안정 루트",
+        "seed": 898709491,
+        "opponent": {
+          "name": "민재호",
+          "archetype": "바깥쪽 제구형",
+          "archetypeKey": "outside",
+          "style": "rookie",
+          "maxHp": 88,
+          "statBonus": 4,
+          "zoneOpen": 5,
+          "zoneMax": 7,
+          "openingZones": [
+            1,
+            2,
+            4,
+            5,
+            8
+          ],
+          "threat": "바깥 코스 비중이 높아 좁은 노림을 흔듭니다.",
+          "rewardTier": 1,
+          "act": 2,
+          "actName": "중반",
+          "escalation": {
+            "name": "중반",
+            "hp": 16,
+            "stat": 4,
+            "zone": 1,
+            "note": "싱커와 높은 공이 섞이고 코스가 하나 더 열린다. 1막에서 고른 카드끼리 연계를 만들 시점."
+          },
+          "risk": "보통",
+          "reward": "막별 기본 3장 드래프트"
+        },
+        "risk": "보통",
+        "reward": "막별 기본 3장 드래프트",
+        "preview": "민재호 · 바깥쪽 제구형 · HP 88"
+      },
+      {
+        "id": "a2-recover",
+        "act": 2,
+        "row": 1,
+        "lane": 0,
+        "type": "rest",
+        "name": "휴식일",
+        "route": "steady",
+        "routeLabel": "안정 루트",
+        "seed": 1545939408,
+        "utility": {
+          "effect": "컨디션 회복",
+          "detail": "다음 전투에서 타선의 타격 기술 +8. 강행군을 끊고 다음 투수를 안정적으로 공략합니다.",
+          "risk": "최저",
+          "reward": "다음 전투 타격 +8"
+        },
+        "risk": "최저",
+        "reward": "다음 전투 타격 +8",
+        "preview": "컨디션 회복 · 다음 전투에서 타선의 타격 기술 +8. 강행군을 끊고 다음 투수를 안정적으로 공략합니다."
+      },
+      {
+        "id": "a2-analyze",
+        "act": 2,
+        "row": 1,
+        "lane": 1,
+        "type": "locker",
+        "name": "라커룸",
+        "route": "scout",
+        "routeLabel": "분석 루트",
+        "seed": 1043414255,
+        "utility": {
+          "effect": "덱 정리",
+          "detail": "약한 카드를 덜 뽑도록 덱을 정리하는 구간입니다.",
+          "risk": "낮음",
+          "reward": "덱 압축"
+        },
+        "risk": "낮음",
+        "reward": "덱 압축",
+        "preview": "덱 정리 · 약한 카드를 덜 뽑도록 덱을 정리하는 구간입니다."
+      },
+      {
+        "id": "a2-hunt",
+        "act": 2,
+        "row": 1,
+        "lane": 3,
+        "type": "elite",
+        "name": "강적 승부",
+        "route": "ace",
+        "routeLabel": "에이스 사냥",
+        "seed": 907634998,
+        "opponent": {
+          "name": "강도윤",
+          "archetype": "바깥쪽 제구형",
+          "archetypeKey": "outside",
+          "style": "rookie",
+          "maxHp": 116,
+          "statBonus": 14,
+          "zoneOpen": 5,
+          "zoneMax": 7,
+          "openingZones": [
+            1,
+            2,
+            4,
+            5,
+            8
+          ],
+          "threat": "바깥 코스 비중이 높아 좁은 노림을 흔듭니다.",
+          "rewardTier": 2,
+          "act": 2,
+          "actName": "중반",
+          "escalation": {
+            "name": "중반",
+            "hp": 16,
+            "stat": 4,
+            "zone": 1,
+            "note": "싱커와 높은 공이 섞이고 코스가 하나 더 열린다. 1막에서 고른 카드끼리 연계를 만들 시점."
+          },
+          "risk": "높음",
+          "reward": "시그니처 카드 포함 4장 드래프트"
+        },
+        "risk": "높음",
+        "reward": "시그니처 카드 포함 4장 드래프트",
+        "preview": "강도윤 · 바깥쪽 제구형 · HP 116"
+      },
+      {
+        "id": "a2-recover-game",
+        "act": 2,
+        "row": 2,
+        "lane": 0,
+        "type": "battle",
+        "name": "정규 승부",
+        "route": "steady",
+        "routeLabel": "안정 루트",
+        "seed": 2687455923,
+        "opponent": {
+          "name": "박현우",
+          "archetype": "바깥쪽 제구형",
+          "archetypeKey": "outside",
+          "style": "rookie",
+          "maxHp": 88,
+          "statBonus": 4,
+          "zoneOpen": 5,
+          "zoneMax": 7,
+          "openingZones": [
+            1,
+            2,
+            4,
+            5,
+            8
+          ],
+          "threat": "바깥 코스 비중이 높아 좁은 노림을 흔듭니다.",
+          "rewardTier": 1,
+          "act": 2,
+          "actName": "중반",
+          "escalation": {
+            "name": "중반",
+            "hp": 16,
+            "stat": 4,
+            "zone": 1,
+            "note": "싱커와 높은 공이 섞이고 코스가 하나 더 열린다. 1막에서 고른 카드끼리 연계를 만들 시점."
+          },
+          "risk": "보통",
+          "reward": "막별 기본 3장 드래프트"
+        },
+        "risk": "보통",
+        "reward": "막별 기본 3장 드래프트",
+        "preview": "박현우 · 바깥쪽 제구형 · HP 88"
+      },
+      {
+        "id": "a2-analyze-game",
+        "act": 2,
+        "row": 2,
+        "lane": 1,
+        "type": "battle",
+        "name": "정규 승부",
+        "route": "scout",
+        "routeLabel": "분석 루트",
+        "seed": 3174952939,
+        "opponent": {
+          "name": "이시훈",
+          "archetype": "낮은 싱커형",
+          "archetypeKey": "sinker",
+          "style": "sinker",
+          "maxHp": 88,
+          "statBonus": 4,
+          "zoneOpen": 6,
+          "zoneMax": 8,
+          "openingZones": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "threat": "낮은 3분할을 오래 압박하고 병살 위험을 만듭니다.",
+          "rewardTier": 1,
+          "act": 2,
+          "actName": "중반",
+          "escalation": {
+            "name": "중반",
+            "hp": 16,
+            "stat": 4,
+            "zone": 1,
+            "note": "싱커와 높은 공이 섞이고 코스가 하나 더 열린다. 1막에서 고른 카드끼리 연계를 만들 시점."
+          },
+          "risk": "보통",
+          "reward": "막별 기본 3장 드래프트"
+        },
+        "risk": "보통",
+        "reward": "막별 기본 3장 드래프트",
+        "preview": "이시훈 · 낮은 싱커형 · HP 88"
+      },
+      {
+        "id": "a2-hunt-game",
+        "act": 2,
+        "row": 2,
+        "lane": 3,
+        "type": "elite",
+        "name": "강적 승부",
+        "route": "ace",
+        "routeLabel": "에이스 사냥",
+        "seed": 2363575821,
+        "opponent": {
+          "name": "최준혁",
+          "archetype": "높은 공 수비형",
+          "archetypeKey": "high",
+          "style": "deep",
+          "maxHp": 116,
+          "statBonus": 14,
+          "zoneOpen": 6,
+          "zoneMax": 9,
+          "openingZones": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "threat": "높은 공과 깊은 수비로 장타 기대값을 낮춥니다.",
+          "rewardTier": 2,
+          "act": 2,
+          "actName": "중반",
+          "escalation": {
+            "name": "중반",
+            "hp": 16,
+            "stat": 4,
+            "zone": 1,
+            "note": "싱커와 높은 공이 섞이고 코스가 하나 더 열린다. 1막에서 고른 카드끼리 연계를 만들 시점."
+          },
+          "risk": "높음",
+          "reward": "시그니처 카드 포함 4장 드래프트"
+        },
+        "risk": "높음",
+        "reward": "시그니처 카드 포함 4장 드래프트",
+        "preview": "최준혁 · 높은 공 수비형 · HP 116"
+      },
+      {
+        "id": "a2-recover-train",
+        "act": 2,
+        "row": 3,
+        "lane": 0,
+        "type": "training",
+        "name": "타격 훈련",
+        "route": "development",
+        "routeLabel": "육성 루트",
+        "seed": 1387234436,
+        "utility": {
+          "effect": "카드 강화",
+          "detail": "핵심 카드 하나를 강화해 다음 경기부터 역할을 선명하게 만듭니다.",
+          "risk": "낮음",
+          "reward": "덱 강화"
+        },
+        "risk": "낮음",
+        "reward": "덱 강화",
+        "preview": "카드 강화 · 핵심 카드 하나를 강화해 다음 경기부터 역할을 선명하게 만듭니다."
+      },
+      {
+        "id": "a2-analyze-shop",
+        "act": 2,
+        "row": 3,
+        "lane": 1,
+        "type": "shop",
+        "name": "장비 상점",
+        "route": "scout",
+        "routeLabel": "분석 루트",
+        "seed": 1292100683,
+        "utility": {
+          "effect": "전력 보강",
+          "detail": "카드와 런 전체를 바꾸는 유물 중 하나를 골라 전력을 보강합니다.",
+          "risk": "낮음",
+          "reward": "카드 / 유물"
+        },
+        "risk": "낮음",
+        "reward": "카드 / 유물",
+        "preview": "전력 보강 · 카드와 런 전체를 바꾸는 유물 중 하나를 골라 전력을 보강합니다."
+      },
+      {
+        "id": "a2-hunt-cash",
+        "act": 2,
+        "row": 3,
+        "lane": 2,
+        "type": "shop",
+        "name": "장비 상점",
+        "route": "ace",
+        "routeLabel": "에이스 사냥",
+        "seed": 1597845087,
+        "utility": {
+          "effect": "전력 보강",
+          "detail": "카드와 런 전체를 바꾸는 유물 중 하나를 골라 전력을 보강합니다.",
+          "risk": "낮음",
+          "reward": "카드 / 유물"
+        },
+        "risk": "낮음",
+        "reward": "카드 / 유물",
+        "preview": "전력 보강 · 카드와 런 전체를 바꾸는 유물 중 하나를 골라 전력을 보강합니다."
+      },
+      {
+        "id": "a2-hunt-ace",
+        "act": 2,
+        "row": 3,
+        "lane": 3,
+        "type": "elite",
+        "name": "강적 승부",
+        "route": "ace",
+        "routeLabel": "에이스 사냥",
+        "seed": 3340336138,
+        "opponent": {
+          "name": "김태겸",
+          "archetype": "높은 공 수비형",
+          "archetypeKey": "high",
+          "style": "deep",
+          "maxHp": 116,
+          "statBonus": 14,
+          "zoneOpen": 6,
+          "zoneMax": 9,
+          "openingZones": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "threat": "높은 공과 깊은 수비로 장타 기대값을 낮춥니다.",
+          "rewardTier": 2,
+          "act": 2,
+          "actName": "중반",
+          "escalation": {
+            "name": "중반",
+            "hp": 16,
+            "stat": 4,
+            "zone": 1,
+            "note": "싱커와 높은 공이 섞이고 코스가 하나 더 열린다. 1막에서 고른 카드끼리 연계를 만들 시점."
+          },
+          "risk": "높음",
+          "reward": "시그니처 카드 포함 4장 드래프트"
+        },
+        "risk": "높음",
+        "reward": "시그니처 카드 포함 4장 드래프트",
+        "preview": "김태겸 · 높은 공 수비형 · HP 116"
+      },
+      {
+        "id": "a2-boss",
+        "act": 2,
+        "row": 4,
+        "lane": 1,
+        "type": "boss",
+        "name": "막 보스",
+        "route": "playoff",
+        "routeLabel": "플레이오프",
+        "seed": 1329812670,
+        "opponent": {
+          "name": "한지우",
+          "archetype": "높은 공 수비형",
+          "archetypeKey": "high",
+          "style": "deep",
+          "maxHp": 140,
+          "statBonus": 16,
+          "zoneOpen": 6,
+          "zoneMax": 9,
+          "openingZones": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "threat": "높은 공과 깊은 수비로 장타 기대값을 낮춥니다.",
+          "rewardTier": 3,
+          "act": 2,
+          "actName": "중반",
+          "escalation": {
+            "name": "중반",
+            "hp": 16,
+            "stat": 4,
+            "zone": 1,
+            "note": "싱커와 높은 공이 섞이고 코스가 하나 더 열린다. 1막에서 고른 카드끼리 연계를 만들 시점."
+          },
+          "risk": "최종",
+          "reward": "막 돌파 · 시그니처 4장 드래프트"
+        },
+        "risk": "최종",
+        "reward": "막 돌파 · 시그니처 4장 드래프트",
+        "preview": "한지우 · 높은 공 수비형 · HP 140"
+      },
+      {
+        "id": "a3-entry",
+        "act": 3,
+        "row": 0,
+        "lane": 1,
+        "type": "battle",
+        "name": "정규 승부",
+        "route": "playoff",
+        "routeLabel": "플레이오프",
+        "seed": 1598503647,
+        "opponent": {
+          "name": "오세민",
+          "archetype": "높은 공 수비형",
+          "archetypeKey": "high",
+          "style": "deep",
+          "maxHp": 112,
+          "statBonus": 11,
+          "zoneOpen": 7,
+          "zoneMax": 9,
+          "openingZones": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            7
+          ],
+          "threat": "높은 공과 깊은 수비로 장타 기대값을 낮춥니다.",
+          "rewardTier": 1,
+          "act": 3,
+          "actName": "결승",
+          "escalation": {
+            "name": "결승",
+            "hp": 36,
+            "stat": 9,
+            "zone": 2,
+            "note": "높은 공·반대 코스 승부가 본격화되고 코스 둘이 더 열린다. 압축과 시그니처 카드가 없으면 한 타석이 비싸다."
+          },
+          "risk": "중상",
+          "reward": "막별 기본 3장 드래프트"
+        },
+        "risk": "중상",
+        "reward": "막별 기본 3장 드래프트",
+        "preview": "오세민 · 높은 공 수비형 · HP 112"
+      },
+      {
+        "id": "a3-wildcard",
+        "act": 3,
+        "row": 1,
+        "lane": 0,
+        "type": "battle",
+        "name": "정규 승부",
+        "route": "playoff",
+        "routeLabel": "플레이오프",
+        "seed": 2036339782,
+        "opponent": {
+          "name": "정우찬",
+          "archetype": "반대 코스 승부형",
+          "archetypeKey": "closer",
+          "style": "closer",
+          "maxHp": 112,
+          "statBonus": 11,
+          "zoneOpen": 9,
+          "zoneMax": 9,
+          "openingZones": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "threat": "이전 노림 반대편을 찌르며 2스트라이크에 존을 넓힙니다.",
+          "rewardTier": 1,
+          "act": 3,
+          "actName": "결승",
+          "escalation": {
+            "name": "결승",
+            "hp": 36,
+            "stat": 9,
+            "zone": 2,
+            "note": "높은 공·반대 코스 승부가 본격화되고 코스 둘이 더 열린다. 압축과 시그니처 카드가 없으면 한 타석이 비싸다."
+          },
+          "risk": "중상",
+          "reward": "막별 기본 3장 드래프트"
+        },
+        "risk": "중상",
+        "reward": "막별 기본 3장 드래프트",
+        "preview": "정우찬 · 반대 코스 승부형 · HP 112"
+      },
+      {
+        "id": "a3-rival",
+        "act": 3,
+        "row": 1,
+        "lane": 1,
+        "type": "elite",
+        "name": "강적 승부",
+        "route": "playoff",
+        "routeLabel": "플레이오프",
+        "seed": 465342684,
+        "opponent": {
+          "name": "임건호",
+          "archetype": "반대 코스 승부형",
+          "archetypeKey": "closer",
+          "style": "closer",
+          "maxHp": 132,
+          "statBonus": 17,
+          "zoneOpen": 9,
+          "zoneMax": 9,
+          "openingZones": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "threat": "이전 노림 반대편을 찌르며 2스트라이크에 존을 넓힙니다.",
+          "rewardTier": 2,
+          "act": 3,
+          "actName": "결승",
+          "escalation": {
+            "name": "결승",
+            "hp": 36,
+            "stat": 9,
+            "zone": 2,
+            "note": "높은 공·반대 코스 승부가 본격화되고 코스 둘이 더 열린다. 압축과 시그니처 카드가 없으면 한 타석이 비싸다."
+          },
+          "risk": "높음",
+          "reward": "시그니처 카드 포함 4장 드래프트"
+        },
+        "risk": "높음",
+        "reward": "시그니처 카드 포함 4장 드래프트",
+        "preview": "임건호 · 반대 코스 승부형 · HP 132"
+      },
+      {
+        "id": "a3-ace",
+        "act": 3,
+        "row": 1,
+        "lane": 3,
+        "type": "elite",
+        "name": "강적 승부",
+        "route": "ace",
+        "routeLabel": "에이스 사냥",
+        "seed": 2381124808,
+        "opponent": {
+          "name": "서재윤",
+          "archetype": "반대 코스 승부형",
+          "archetypeKey": "closer",
+          "style": "closer",
+          "maxHp": 136,
+          "statBonus": 19,
+          "zoneOpen": 9,
+          "zoneMax": 9,
+          "openingZones": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "threat": "이전 노림 반대편을 찌르며 2스트라이크에 존을 넓힙니다.",
+          "rewardTier": 2,
+          "act": 3,
+          "actName": "결승",
+          "escalation": {
+            "name": "결승",
+            "hp": 36,
+            "stat": 9,
+            "zone": 2,
+            "note": "높은 공·반대 코스 승부가 본격화되고 코스 둘이 더 열린다. 압축과 시그니처 카드가 없으면 한 타석이 비싸다."
+          },
+          "risk": "높음",
+          "reward": "시그니처 카드 포함 4장 드래프트"
+        },
+        "risk": "높음",
+        "reward": "시그니처 카드 포함 4장 드래프트",
+        "preview": "서재윤 · 반대 코스 승부형 · HP 136"
+      },
+      {
+        "id": "a3-wildcard-2",
+        "act": 3,
+        "row": 2,
+        "lane": 0,
+        "type": "battle",
+        "name": "정규 승부",
+        "route": "playoff",
+        "routeLabel": "플레이오프",
+        "seed": 923871766,
+        "opponent": {
+          "name": "노경환",
+          "archetype": "낮은 싱커형",
+          "archetypeKey": "sinker",
+          "style": "sinker",
+          "maxHp": 112,
+          "statBonus": 11,
+          "zoneOpen": 7,
+          "zoneMax": 9,
+          "openingZones": [
+            1,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "threat": "낮은 3분할을 오래 압박하고 병살 위험을 만듭니다.",
+          "rewardTier": 1,
+          "act": 3,
+          "actName": "결승",
+          "escalation": {
+            "name": "결승",
+            "hp": 36,
+            "stat": 9,
+            "zone": 2,
+            "note": "높은 공·반대 코스 승부가 본격화되고 코스 둘이 더 열린다. 압축과 시그니처 카드가 없으면 한 타석이 비싸다."
+          },
+          "risk": "중상",
+          "reward": "막별 기본 3장 드래프트"
+        },
+        "risk": "중상",
+        "reward": "막별 기본 3장 드래프트",
+        "preview": "노경환 · 낮은 싱커형 · HP 112"
+      },
+      {
+        "id": "a3-rival-2",
+        "act": 3,
+        "row": 2,
+        "lane": 1,
+        "type": "elite",
+        "name": "강적 승부",
+        "route": "playoff",
+        "routeLabel": "플레이오프",
+        "seed": 285276530,
+        "opponent": {
+          "name": "백승호",
+          "archetype": "낮은 싱커형",
+          "archetypeKey": "sinker",
+          "style": "sinker",
+          "maxHp": 132,
+          "statBonus": 17,
+          "zoneOpen": 7,
+          "zoneMax": 9,
+          "openingZones": [
+            1,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "threat": "낮은 3분할을 오래 압박하고 병살 위험을 만듭니다.",
+          "rewardTier": 2,
+          "act": 3,
+          "actName": "결승",
+          "escalation": {
+            "name": "결승",
+            "hp": 36,
+            "stat": 9,
+            "zone": 2,
+            "note": "높은 공·반대 코스 승부가 본격화되고 코스 둘이 더 열린다. 압축과 시그니처 카드가 없으면 한 타석이 비싸다."
+          },
+          "risk": "높음",
+          "reward": "시그니처 카드 포함 4장 드래프트"
+        },
+        "risk": "높음",
+        "reward": "시그니처 카드 포함 4장 드래프트",
+        "preview": "백승호 · 낮은 싱커형 · HP 132"
+      },
+      {
+        "id": "a3-ace-2",
+        "act": 3,
+        "row": 2,
+        "lane": 3,
+        "type": "elite",
+        "name": "강적 승부",
+        "route": "ace",
+        "routeLabel": "에이스 사냥",
+        "seed": 64928400,
+        "opponent": {
+          "name": "류지환",
+          "archetype": "반대 코스 승부형",
+          "archetypeKey": "closer",
+          "style": "closer",
+          "maxHp": 136,
+          "statBonus": 19,
+          "zoneOpen": 9,
+          "zoneMax": 9,
+          "openingZones": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "threat": "이전 노림 반대편을 찌르며 2스트라이크에 존을 넓힙니다.",
+          "rewardTier": 2,
+          "act": 3,
+          "actName": "결승",
+          "escalation": {
+            "name": "결승",
+            "hp": 36,
+            "stat": 9,
+            "zone": 2,
+            "note": "높은 공·반대 코스 승부가 본격화되고 코스 둘이 더 열린다. 압축과 시그니처 카드가 없으면 한 타석이 비싸다."
+          },
+          "risk": "높음",
+          "reward": "시그니처 카드 포함 4장 드래프트"
+        },
+        "risk": "높음",
+        "reward": "시그니처 카드 포함 4장 드래프트",
+        "preview": "류지환 · 반대 코스 승부형 · HP 136"
+      },
+      {
+        "id": "a3-wildcard-rest",
+        "act": 3,
+        "row": 3,
+        "lane": 0,
+        "type": "rest",
+        "name": "휴식일",
+        "route": "steady",
+        "routeLabel": "안정 루트",
+        "seed": 2606425685,
+        "utility": {
+          "effect": "컨디션 회복",
+          "detail": "다음 전투에서 타선의 타격 기술 +8. 강행군을 끊고 다음 투수를 안정적으로 공략합니다.",
+          "risk": "최저",
+          "reward": "다음 전투 타격 +8"
+        },
+        "risk": "최저",
+        "reward": "다음 전투 타격 +8",
+        "preview": "컨디션 회복 · 다음 전투에서 타선의 타격 기술 +8. 강행군을 끊고 다음 투수를 안정적으로 공략합니다."
+      },
+      {
+        "id": "a3-rival-shop",
+        "act": 3,
+        "row": 3,
+        "lane": 1,
+        "type": "shop",
+        "name": "장비 상점",
+        "route": "playoff",
+        "routeLabel": "플레이오프",
+        "seed": 1406247045,
+        "utility": {
+          "effect": "전력 보강",
+          "detail": "카드와 런 전체를 바꾸는 유물 중 하나를 골라 전력을 보강합니다.",
+          "risk": "낮음",
+          "reward": "카드 / 유물"
+        },
+        "risk": "낮음",
+        "reward": "카드 / 유물",
+        "preview": "전력 보강 · 카드와 런 전체를 바꾸는 유물 중 하나를 골라 전력을 보강합니다."
+      },
+      {
+        "id": "a3-ace-3",
+        "act": 3,
+        "row": 3,
+        "lane": 3,
+        "type": "elite",
+        "name": "강적 승부",
+        "route": "ace",
+        "routeLabel": "에이스 사냥",
+        "seed": 861811835,
+        "opponent": {
+          "name": "문성주",
+          "archetype": "낮은 싱커형",
+          "archetypeKey": "sinker",
+          "style": "sinker",
+          "maxHp": 136,
+          "statBonus": 19,
+          "zoneOpen": 7,
+          "zoneMax": 9,
+          "openingZones": [
+            1,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "threat": "낮은 3분할을 오래 압박하고 병살 위험을 만듭니다.",
+          "rewardTier": 2,
+          "act": 3,
+          "actName": "결승",
+          "escalation": {
+            "name": "결승",
+            "hp": 36,
+            "stat": 9,
+            "zone": 2,
+            "note": "높은 공·반대 코스 승부가 본격화되고 코스 둘이 더 열린다. 압축과 시그니처 카드가 없으면 한 타석이 비싸다."
+          },
+          "risk": "높음",
+          "reward": "시그니처 카드 포함 4장 드래프트"
+        },
+        "risk": "높음",
+        "reward": "시그니처 카드 포함 4장 드래프트",
+        "preview": "문성주 · 낮은 싱커형 · HP 136"
+      },
+      {
+        "id": "a3-boss",
+        "act": 3,
+        "row": 4,
+        "lane": 1,
+        "type": "boss",
+        "name": "막 보스",
+        "route": "ace",
+        "routeLabel": "에이스 사냥",
+        "seed": 77774014,
+        "opponent": {
+          "name": "조현성",
+          "archetype": "반대 코스 승부형",
+          "archetypeKey": "closer",
+          "style": "closer",
+          "maxHp": 164,
+          "statBonus": 23,
+          "zoneOpen": 9,
+          "zoneMax": 9,
+          "openingZones": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "threat": "이전 노림 반대편을 찌르며 2스트라이크에 존을 넓힙니다.",
+          "rewardTier": 3,
+          "act": 3,
+          "actName": "결승",
+          "escalation": {
+            "name": "결승",
+            "hp": 36,
+            "stat": 9,
+            "zone": 2,
+            "note": "높은 공·반대 코스 승부가 본격화되고 코스 둘이 더 열린다. 압축과 시그니처 카드가 없으면 한 타석이 비싸다."
+          },
+          "risk": "최종",
+          "reward": "최종 결승 · 런 완주"
+        },
+        "risk": "최종",
+        "reward": "최종 결승 · 런 완주",
+        "preview": "조현성 · 반대 코스 승부형 · HP 164"
+      }
+    ],
+    "edges": [
+      {
+        "from": "a1-entry",
+        "to": "a1-craft"
+      },
+      {
+        "from": "a1-entry",
+        "to": "a1-steady"
+      },
+      {
+        "from": "a1-entry",
+        "to": "a1-risk"
+      },
+      {
+        "from": "a1-craft",
+        "to": "a1-craft-game"
+      },
+      {
+        "from": "a1-steady",
+        "to": "a1-steady-game"
+      },
+      {
+        "from": "a1-risk",
+        "to": "a1-risk-game"
+      },
+      {
+        "from": "a1-craft-game",
+        "to": "a1-craft-shop"
+      },
+      {
+        "from": "a1-steady-game",
+        "to": "a1-steady-rest"
+      },
+      {
+        "from": "a1-risk-game",
+        "to": "a1-risk-shop"
+      },
+      {
+        "from": "a1-risk-game",
+        "to": "a1-risk-elite"
+      },
+      {
+        "from": "a1-craft-shop",
+        "to": "a1-boss"
+      },
+      {
+        "from": "a1-steady-rest",
+        "to": "a1-boss"
+      },
+      {
+        "from": "a1-risk-shop",
+        "to": "a1-boss"
+      },
+      {
+        "from": "a1-risk-elite",
+        "to": "a1-boss"
+      },
+      {
+        "from": "a1-boss",
+        "to": "a2-entry"
+      },
+      {
+        "from": "a2-entry",
+        "to": "a2-recover"
+      },
+      {
+        "from": "a2-entry",
+        "to": "a2-analyze"
+      },
+      {
+        "from": "a2-entry",
+        "to": "a2-hunt"
+      },
+      {
+        "from": "a2-recover",
+        "to": "a2-recover-game"
+      },
+      {
+        "from": "a2-analyze",
+        "to": "a2-analyze-game"
+      },
+      {
+        "from": "a2-hunt",
+        "to": "a2-hunt-game"
+      },
+      {
+        "from": "a2-recover-game",
+        "to": "a2-recover-train"
+      },
+      {
+        "from": "a2-analyze-game",
+        "to": "a2-analyze-shop"
+      },
+      {
+        "from": "a2-hunt-game",
+        "to": "a2-hunt-cash"
+      },
+      {
+        "from": "a2-hunt-game",
+        "to": "a2-hunt-ace"
+      },
+      {
+        "from": "a2-recover-train",
+        "to": "a2-boss"
+      },
+      {
+        "from": "a2-analyze-shop",
+        "to": "a2-boss"
+      },
+      {
+        "from": "a2-hunt-cash",
+        "to": "a2-boss"
+      },
+      {
+        "from": "a2-hunt-ace",
+        "to": "a2-boss"
+      },
+      {
+        "from": "a2-boss",
+        "to": "a3-entry"
+      },
+      {
+        "from": "a3-entry",
+        "to": "a3-wildcard"
+      },
+      {
+        "from": "a3-entry",
+        "to": "a3-rival"
+      },
+      {
+        "from": "a3-entry",
+        "to": "a3-ace"
+      },
+      {
+        "from": "a3-wildcard",
+        "to": "a3-wildcard-2"
+      },
+      {
+        "from": "a3-rival",
+        "to": "a3-rival-2"
+      },
+      {
+        "from": "a3-ace",
+        "to": "a3-ace-2"
+      },
+      {
+        "from": "a3-wildcard-2",
+        "to": "a3-wildcard-rest"
+      },
+      {
+        "from": "a3-rival-2",
+        "to": "a3-rival-shop"
+      },
+      {
+        "from": "a3-ace-2",
+        "to": "a3-ace-3"
+      },
+      {
+        "from": "a3-wildcard-rest",
+        "to": "a3-boss"
+      },
+      {
+        "from": "a3-rival-shop",
+        "to": "a3-boss"
+      },
+      {
+        "from": "a3-ace-3",
+        "to": "a3-boss"
+      }
+    ],
+    "currentNodeId": "a1-entry",
+    "completedNodeIds": [],
+    "reachableIds": []
+  },
+  "pitcher": {
+    "name": "레드 러시",
+    "hp": 72,
+    "maxHp": 72,
+    "phase": "steady",
+    "lastDamage": 0,
+    "lastPitchId": null,
+    "foulStreak": 0,
+    "pattern": [
+      "가운데 유인",
+      "낮은 공",
+      "몸쪽 승부",
+      "바깥 승부"
+    ],
+    "patternSeed": 1089908185
+  },
+  "v10": {
+    "nodeId": "a1-entry",
+    "opponent": {
+      "name": "레드 러시",
+      "archetype": "바깥쪽 제구형",
+      "archetypeKey": "outside",
+      "style": "rookie",
+      "maxHp": 72,
+      "statBonus": 0,
+      "zoneOpen": 4,
+      "zoneMax": 6,
+      "openingZones": [
+        2,
+        4,
+        5,
+        8
+      ],
+      "threat": "바깥 코스 비중이 높아 좁은 노림을 흔듭니다.",
+      "rewardTier": 1,
+      "act": 1,
+      "actName": "개막",
+      "escalation": {
+        "name": "개막",
+        "hp": 0,
+        "stat": 0,
+        "zone": 0,
+        "note": "바깥·낮은 공 중심. 읽은 대로 치며 덱의 첫 방향을 정하는 막."
+      },
+      "risk": "보통",
+      "reward": "막별 기본 3장 드래프트",
+      "artId": "regular-01-red-rush"
+    },
+    "lastCombat": null,
+    "rewardChoices": [],
+    "runComplete": false,
+    "nextBattleBonus": null,
+    "activeBattleBonus": null,
+    "utilityHistory": []
+  }
+}

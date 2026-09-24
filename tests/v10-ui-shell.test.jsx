@@ -153,15 +153,16 @@ describe('RunMap',()=>{
 
   it('전투 노드는 9존 성향 지문을 지도와 스카우팅 패널에 보여준다',()=>{
     const richNodes=[
-      {id:'a',type:'battle',depth:0,label:'선발전',opponent:{name:'싱커맨',archetype:'낮은 싱커형',archetypeKey:'sinker',maxHp:72}},
-      {id:'b',type:'elite',depth:1,label:'강적',opponent:{name:'하이볼',archetype:'높은 공 수비형',archetypeKey:'high',maxHp:92}},
+      /* V12 P6-2: the fingerprint shows the zones the engine opens first (opponent.openingZones), no table */
+      {id:'a',type:'battle',depth:0,label:'선발전',opponent:{name:'싱커맨',archetype:'낮은 싱커형',archetypeKey:'sinker',maxHp:72,openingZones:[4,6,7]}},
+      {id:'b',type:'elite',depth:1,label:'강적',opponent:{name:'하이볼',archetype:'높은 공 수비형',archetypeKey:'high',maxHp:92,openingZones:[0,1,2,4]}},
     ];
     const {container}=render(<RunMap nodes={richNodes} edges={[{from:'a',to:'b'}]} currentNodeId="a" reachableIds={['b']}/>);
     expect(container.querySelectorAll('.v10-zone-fingerprint.is-compact').length).toBe(2);
     expect(screen.getByTestId('v10-node-a').querySelectorAll('.v10-zone-fingerprint .hot').length).toBe(3);
     fireEvent.click(screen.getByTestId('v10-node-b'));
     expect(container.querySelector('.v10-preview-diorama .v10-zone-fingerprint')).toBeTruthy();
-    expect(container.querySelectorAll('.v10-preview-diorama .v10-zone-fingerprint .hot').length).toBe(3);
+    expect(container.querySelectorAll('.v10-preview-diorama .v10-zone-fingerprint .hot').length).toBe(4);
   });
 
   it('훈련·휴식·영입·라커룸은 같은 아이콘이 아니라 각 장소 장면을 가진다',()=>{

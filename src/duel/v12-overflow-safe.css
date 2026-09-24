@@ -1,0 +1,8 @@
+/* V12 — centred rows that overflow must stay reachable. With justify-content:center an overflowing
+   flex row pushes its first items past the left edge where scrolling cannot reach them (found in the
+   full-flow smoke: the locker room's first cards sat at x=-482 on 844×390, so the deck could not be
+   trimmed). `safe center` is identical while the row fits and falls back to start when it overflows.
+   Landscape (phones and desktop) only — the portrait reward rows wrap and are unaffected. */
+@media (orientation:landscape){
+  .reward-screen .reward-cards{justify-content:safe center!important}
+}

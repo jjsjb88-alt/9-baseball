@@ -1,0 +1,14 @@
+/* V12 P8-1 — run end from records. Colours: surface-1 #07141B, edge #235060, ink-1 #F4ECD8,
+   ink-2 #CCD8D0, aim #FFE4A2, link-off #AA7E67. 12px floor. */
+.run-end{display:grid;gap:10px;width:min(560px,100%);margin:12px auto;text-align:left;box-sizing:border-box}
+.run-end-last h2{margin:0 0 4px;font-size:15px;line-height:20px;font-weight:900;color:#FFE4A2}
+.run-end-opponent{margin:0;padding:8px 12px;border:1px solid #235060;border-radius:2px;background:rgba(7,20,27,.8);font-size:14px;line-height:20px;font-weight:800;color:#F4ECD8}
+.run-end-path{display:grid;gap:4px;margin:0;padding:0;list-style:none;counter-reset:stop}
+.run-end-path li{position:relative;display:grid;grid-template-columns:minmax(0,auto) 1fr;gap:10px;align-items:baseline;padding:6px 10px 6px 34px;border-left:3px solid #235060;background:rgba(7,20,27,.6)}
+.run-end-path li::before{counter-increment:stop;content:counter(stop);position:absolute;left:8px;top:7px;width:18px;height:18px;border-radius:50%;background:#235060;color:#F4ECD8;font-size:12px;line-height:18px;text-align:center;font-weight:900}
+.run-end-path li.ended{border-left-color:#AA7E67}
+.run-end-path strong{font-size:13px;line-height:18px;color:#F4ECD8}
+.run-end-path span{font-size:13px;line-height:18px;color:#CCD8D0}
+.duel-result :is(p,.eyebrow){font-size:max(12px,1em)}
+.duel-result .route-run-summary,.duel-result>p{font-size:13px;line-height:19px}
+.duel-result:has(.run-end-path) .route-run-summary{display:none}

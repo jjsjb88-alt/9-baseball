@@ -1,0 +1,160 @@
+{
+  "source": "docs/design/v12/fixtures/p0-1-combat.json",
+  "readLevel": 0,
+  "intent": "바깥쪽 승부",
+  "count": {
+    "balls": 0,
+    "strikes": 0,
+    "outs": 0
+  },
+  "pitcher": {
+    "hp": 72,
+    "maxHp": 72,
+    "name": "권재민"
+  },
+  "read": [
+    {
+      "zone": 0,
+      "shade": 1,
+      "bounds": null
+    },
+    {
+      "zone": 1,
+      "shade": 1,
+      "bounds": null
+    },
+    {
+      "zone": 2,
+      "shade": 2,
+      "bounds": null
+    },
+    {
+      "zone": 3,
+      "shade": 1,
+      "bounds": null
+    },
+    {
+      "zone": 4,
+      "shade": 1,
+      "bounds": null
+    },
+    {
+      "zone": 5,
+      "shade": 2,
+      "bounds": null
+    },
+    {
+      "zone": 6,
+      "shade": 1,
+      "bounds": null
+    },
+    {
+      "zone": 7,
+      "shade": 1,
+      "bounds": null
+    },
+    {
+      "zone": 8,
+      "shade": 2,
+      "bounds": null
+    }
+  ],
+  "steps": [
+    {
+      "id": "c4",
+      "order": 1,
+      "main": true,
+      "aimZone": 5,
+      "name": "밀어치기",
+      "shape": "column"
+    },
+    {
+      "id": "c0",
+      "order": 2,
+      "main": false,
+      "aimZone": 4,
+      "name": "정타 노림",
+      "shape": "point"
+    },
+    {
+      "id": "c1",
+      "order": 3,
+      "main": false,
+      "aimZone": 2,
+      "name": "정타 노림",
+      "shape": "point"
+    }
+  ],
+  "coverage": {
+    "main": [
+      2,
+      5,
+      8
+    ],
+    "supports": [
+      {
+        "aimZone": 4,
+        "cells": [
+          4
+        ]
+      },
+      {
+        "aimZone": 2,
+        "cells": [
+          2
+        ]
+      }
+    ]
+  },
+  "links": [
+    {
+      "fromOrder": 1,
+      "toOrder": 2,
+      "fromZone": 5,
+      "toZone": 4,
+      "connected": true
+    },
+    {
+      "fromOrder": 2,
+      "toOrder": 3,
+      "fromZone": 4,
+      "toZone": 2,
+      "connected": true
+    }
+  ],
+  "connectCount": 2,
+  "cardCount": 3,
+  "damageRate": 0.79,
+  "hand": [
+    {
+      "id": "c0",
+      "name": "정타 노림",
+      "shape": "point",
+      "type": "attack"
+    },
+    {
+      "id": "c1",
+      "name": "정타 노림",
+      "shape": "point",
+      "type": "attack"
+    },
+    {
+      "id": "c2",
+      "name": "정타 노림",
+      "shape": "point",
+      "type": "attack"
+    },
+    {
+      "id": "c3",
+      "name": "정타 노림",
+      "shape": "point",
+      "type": "attack"
+    },
+    {
+      "id": "c4",
+      "name": "밀어치기",
+      "shape": "column",
+      "type": "attack"
+    }
+  ]
+}

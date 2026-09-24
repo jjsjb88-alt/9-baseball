@@ -1,0 +1,18 @@
+:root{
+ --s0:#07120f;--s1:#07141b;--s2:#132b33;--s3:#10252d;--edge:#235060;
+ --ink1:#f4ecd8;--ink2:#ccd8d0;--ink3:#7d9388;
+ --gold:#ffe4a2;--bone:#ded6b9;--rust:#aa7e67;
+ --link:#6fd7c6;--break:#a8614f;--ghost:#ffb46a;
+ --t-h3:18px;--t-body:15px;--t-label:13px;--t-micro:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:390px;height:844px;overflow:hidden;background:var(--s0);
+ font-family:"Pretendard","Noto Sans KR",system-ui,sans-serif;color:var(--ink2);letter-spacing:0;
+ -webkit-font-smoothing:antialiased}
+img{image-rendering:pixelated}
+.count{display:flex;gap:9px;align-items:center}
+.cg{display:flex;align-items:center;gap:3px}
+.cg b{font-size:var(--t-micro);color:var(--ink3);font-weight:700;width:9px}
+.cg i{width:7px;height:7px;border-radius:50%;border:1px solid #2d4a52;display:block}
+.cg i.on{background:var(--gold);border-color:var(--gold);box-shadow:0 0 7px rgba(255,228,162,.7)}
+.cg.o i.on{background:var(--rust);border-color:var(--rust);box-shadow:0 0 7px rgba(170,126,103,.6)}
