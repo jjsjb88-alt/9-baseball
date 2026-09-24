@@ -1,0 +1,104 @@
+name: Actor runtime smoothness
+
+on:
+  push:
+    branches:
+      - codex/actor-animation-runtime-smoothness
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out optimized branch
+        uses: actions/checkout@v6
+        with:
+          path: candidate
+          fetch-depth: 0
+
+      - name: Check out main baseline
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          path: baseline
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: candidate/pnpm-lock.yaml
+
+      - name: Install candidate
+        working-directory: candidate
+        run: pnpm install --frozen-lockfile
+
+      - name: Test candidate
+        working-directory: candidate
+        run: pnpm test
+
+      - name: Build candidate
+        working-directory: candidate
+        run: pnpm build
+
+      - name: Install Playwright in candidate
+        working-directory: candidate
+        run: |
+          pnpm add --save-dev --ignore-workspace-root-check playwright
+          pnpm exec playwright install --with-deps chromium
+
+      - name: Install baseline
+        working-directory: baseline
+        run: pnpm install --frozen-lockfile
+
+      - name: Start both builds
+        run: |
+          (cd candidate && pnpm dev --host 127.0.0.1 --port 5177 --strictPort > /tmp/candidate.log 2>&1 &)
+          (cd baseline && pnpm dev --host 127.0.0.1 --port 5178 --strictPort > /tmp/baseline.log 2>&1 &)
+          for port in 5177 5178; do
+            for i in {1..60}; do
+              curl -fsS http://127.0.0.1:$port/ >/dev/null && break
+              sleep 1
+            done
+            curl -fsS http://127.0.0.1:$port/ >/dev/null
+          done
+
+      - name: Measure optimized gameplay
+        working-directory: candidate
+        run: node scripts/actor-runtime-perf.mjs http://127.0.0.1:5177/ .qa-actor-runtime candidate | tee .qa-candidate.log
+
+      - name: Measure main gameplay
+        working-directory: candidate
+        run: node scripts/actor-runtime-perf.mjs http://127.0.0.1:5178/ .qa-actor-runtime baseline | tee .qa-baseline.log
+
+      - name: Compare frame pacing
+        working-directory: candidate
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const a=JSON.parse(fs.readFileSync('.qa-actor-runtime/candidate.json'));
+          const b=JSON.parse(fs.readFileSync('.qa-actor-runtime/baseline.json'));
+          for(let i=0;i<a.length;i++){
+            const x=a[i],y=b.find(z=>z.name===x.name);
+            console.log(x.name, 'p95', y.p95FrameMs, '->', x.p95FrameMs, 'over33', y.over33ms, '->', x.over33ms, 'fps', y.approxFps, '->', x.approxFps);
+            if(x.pitcherTag!=='CANVAS')throw new Error(x.name+': optimized Red Rush is not canvas driven');
+          }
+          NODE
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: actor-runtime-smoothness
+          path: |
+            candidate/.qa-actor-runtime
+            candidate/.qa-candidate.log
+            candidate/.qa-baseline.log
+            /tmp/candidate.log
+            /tmp/baseline.log
