@@ -1,5 +1,8 @@
 # 9ZONE SHOWDOWN
 
+**플레이: https://9-baseball.vercel.app/** (Vercel, main push 시 자동 배포 · PR마다 미리보기 URL 자동 생성)
+기존 GitHub Pages(`jjsjb88-alt.github.io/9-baseball/`)는 전환 확인 기간 동안 병행 유지한다. 세이브는 도메인별이라 두 주소 간 이어지지 않는다.
+
 ## 배포 V8.10 · 덱 설계와 신뢰성 개선 (2026-09-15)
 
 현행 진입점은 `src/main.jsx → src/duel/App.jsx`. GitHub `deckbuilding-v8@87cba77`을 기준으로 통합했다.
