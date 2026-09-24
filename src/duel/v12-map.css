@@ -1,0 +1,29 @@
+/* V12 P5-1 — the run map. The scouting report of the picked stop, with "이 원정으로 간다", is always
+   on screen: phones pin it to the bottom edge (it sat ~1300px down, under the whole map), short
+   landscape puts it beside the map (desktop already did). Map text floor 12px (it was 6–11px).
+   Scoped to .v10-run-map-screen. */
+
+/* type */
+.v10-run-map-screen :is(.v10-node-type,.v10-node-badge,.v10-node-route,.v10-act-count,.v10-act-step,.v10-act-link,.v10-map-hint,.v10-preview-type,.v10-preview-facing,.v10-preview-why,.v10-preview-locked,.v10-preview-scoreline span,.v10-preview-scoreline b,.v10-preview-lines dt,.v10-preview-lines dd,.v10-preview-empty small){font-size:12px!important;line-height:16px!important;letter-spacing:0!important}
+.v10-run-map-screen .v10-node-name{font-size:13px!important;line-height:17px!important}
+.v10-run-map-screen .v10-act-name{font-size:13px!important}
+.v10-run-map-screen .v10-map-copy .eyebrow,.v10-run-map-screen .map-copy .eyebrow{font-size:12px!important}
+.v10-run-map-screen .v10-node-badge,.v10-run-map-screen .v10-node-name{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;max-width:100%!important;word-break:keep-all!important}
+.v10-run-map-screen .v10-preview-lines dt{min-width:36px!important}
+
+/* phones, portrait: the report is a bottom sheet; the map scrolls above it */
+@media (max-width:899px) and (orientation:portrait){
+  .v10-run-map-screen{padding-bottom:316px!important}
+  .v10-run-map-screen .v10-map-preview{position:fixed!important;left:6px!important;right:6px!important;bottom:0!important;z-index:45!important;max-height:min(46dvh,300px)!important;overflow:auto!important;padding:10px 12px calc(10px + env(safe-area-inset-bottom))!important;border-radius:2px 2px 0 0!important;box-shadow:0 -12px 28px rgba(3,8,12,.75)!important}
+  .v10-run-map-screen .v10-map-preview :is(.v10-map-hint,.v10-preview-diorama){display:none!important}
+  .v10-run-map-screen .v10-map-preview .v10-preview-lines{margin:6px 0!important}
+  .v10-run-map-screen .v10-map-preview .v10-map-cta{position:sticky!important;bottom:0!important;min-height:48px!important}
+}
+
+/* short landscape: map and report side by side, the report follows the scroll */
+@media (orientation:landscape) and (max-height:500px){
+  .v10-run-map-screen .v10-map{grid-template-columns:minmax(0,1fr) 270px!important;align-items:start!important;gap:10px!important}
+  .v10-run-map-screen .v10-map-preview{position:sticky!important;top:8px!important;max-height:calc(100dvh - 60px)!important;overflow:auto!important}
+  .v10-run-map-screen .v10-map-preview :is(.v10-map-hint,.v10-preview-diorama){display:none!important}
+  .v10-run-map-screen .v10-map-preview .v10-map-cta{position:sticky!important;bottom:0!important;min-height:44px!important}
+}

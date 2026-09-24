@@ -24,6 +24,7 @@ import "./duel/v12-card-prepare.css";
 import "./duel/v12-board-cover.css";
 import "./duel/v12-result.css";
 import "./duel/v12-overflow-safe.css";
+import "./duel/v12-map.css";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
