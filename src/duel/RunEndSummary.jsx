@@ -42,12 +42,12 @@ export function runEndOf(s){
   return {opponent,path};
 }
 
-export default function RunEndSummary({s}){
+export default function RunEndSummary({s,portrait=null}){
   const e=runEndOf(s);if(!e)return null;
   const revealed=s.battle?.revealed,combat=s.v10?.lastCombat||null;
   return <section className="run-end" aria-label="런 기록">
     {revealed&&<div className="run-end-last"><h2>{s.phase==='lost'?'마지막 공 · 세 번째 아웃':'마지막 공'}</h2><ResultChain revealed={revealed} combat={combat}/></div>}
-    {e.opponent&&<p className="run-end-opponent">{e.opponent}</p>}
+    {e.opponent&&<p className="run-end-opponent">{portrait&&<span className="run-end-opponent-art"><img src={portrait} alt={(s.pitcher?.name||'상대')+' 투수 원화'}/></span>}<span>{e.opponent}</span></p>}
     {e.path.length>0&&<ol className="run-end-path" aria-label="지나온 길">
       {e.path.map((x,i)=><li key={i} className={x.ended?'ended':''}><strong>{x.name}</strong><span>{x.did}</span></li>)}
     </ol>}

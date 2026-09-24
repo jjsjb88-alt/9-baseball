@@ -12,3 +12,8 @@
 .duel-result :is(p,.eyebrow){font-size:max(12px,1em)}
 .duel-result .route-run-summary,.duel-result>p{font-size:13px;line-height:19px}
 .duel-result:has(.run-end-path) .route-run-summary{display:none}
+
+/* the opponent's authored art beside the HP line (Red Rush has one) */
+.run-end-opponent:has(.run-end-opponent-art){display:flex;align-items:center;gap:12px}
+.run-end-opponent-art{position:relative;width:72px;height:96px;overflow:hidden;border:1px solid #235060;border-radius:2px;background:#221923;flex:none}
+.run-end-opponent-art img{position:absolute;left:50%;top:-6%;width:190%;transform:translateX(-50%);max-width:none}

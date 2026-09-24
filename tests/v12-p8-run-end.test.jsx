@@ -54,3 +54,16 @@ describe('V12 P8-1 RunEndSummary',()=>{
     expect(container.querySelector('.run-end-opponent')).toBeNull();
   });
 });
+
+describe('opponent art on the end and reward screens',()=>{
+  it('shows the opponent portrait beside the HP line only when given one',()=>{
+    const {container,rerender}=render(<RunEndSummary s={lost} portrait="red-rush.png"/>);
+    expect(container.querySelector('.run-end-opponent-art img').getAttribute('src')).toBe('red-rush.png');
+    rerender(<RunEndSummary s={lost}/>);
+    expect(container.querySelector('.run-end-opponent-art')).toBeNull();
+  });
+  it('the reward screen shows the knocked-out pitcher only when she has authored art',()=>{
+    const app=require('node:fs').readFileSync(require('node:path').resolve(process.cwd(),'src/duel/App.jsx'),'utf8');
+    expect(app).toContain("{s.v10?.opponent?.artId===RED_RUSH_ASSET_ID&&<img className=\"opponent-art reward-opponent-art\"");
+  });
+});
