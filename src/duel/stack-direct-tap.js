@@ -305,6 +305,8 @@ export function installSwingStackDirectTap(root=document){
   const onPointerMove=e=>{
     const d=state.drag;if(!d||e.pointerId!==d.pointerId)return;
     const distance=Math.hypot(e.clientX-d.startX,e.clientY-d.startY);
+    // V12 P3-5: a mostly sideways touch belongs to the hand's native scroll (cards are pan-x), never a drag
+    if(!d.moved&&distance>=DRAG_START&&e.pointerType==='touch'&&Math.abs(e.clientX-d.startX)>Math.abs(e.clientY-d.startY)){state.drag=null;return;}
     if(!d.moved&&distance>=DRAG_START){
       d.moved=true;collapseSecondaryUi(root);setPlacementFocus(root,true);
       const made=ghostFor(d.card,e);d.ghost=made.el;d.rect=made.rect;d.card.classList.add('board-drag-source');zonePanel(root)?.classList.add('board-dragging');
