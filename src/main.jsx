@@ -22,6 +22,7 @@ import "./duel/v12-battle-type-hud.css";
 import "./duel/v12-battle-type.css";
 import "./duel/v12-card-prepare.css";
 import "./duel/v12-board-cover.css";
+import "./duel/v12-result.css";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>

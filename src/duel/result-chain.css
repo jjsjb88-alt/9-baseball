@@ -1,0 +1,18 @@
+/* V12 P4-1 — result cause chain. Mini board: main = solid aim, support = dashed teal, actual = ball.
+   Colours: aim #FFE4A2, cover-support #6FD7C6, link-off #AA7E67, ink-1 #F4ECD8, ink-2 #CCD8D0. 12px floor. */
+.result-chain{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:center;margin:8px 0;padding:8px 10px;border:1px solid #235060;border-radius:2px;background:rgba(7,20,27,.72);text-align:left}
+.result-mini{position:relative;display:grid;grid-template-columns:repeat(3,18px);grid-auto-rows:18px;gap:3px;padding:4px;border:1px solid #235060;border-radius:2px;background:#07141B}
+.result-mini i{display:block;border:1px solid #235060;border-radius:1px;background:#132B33}
+.result-mini i.main{border:2px solid #FFE4A2;background:rgba(255,228,162,.22)}
+.result-mini i.support{box-shadow:inset 0 0 0 2px rgba(111,215,198,.9);background:rgba(111,215,198,.2)}
+.result-mini i.main.support{box-shadow:inset 0 0 0 2px #6FD7C6}
+.result-mini i.actual{background:radial-gradient(circle,#F4ECD8 0 40%,transparent 43%),rgba(255,228,162,.25)}
+.result-mini.ball-outside::after{content:"";position:absolute;right:-9px;top:-9px;width:14px;height:14px;border-radius:50%;background:#F4ECD8;box-shadow:0 0 0 2px #07141B}
+.result-chain-steps{display:grid;gap:2px;margin:0;padding:0;list-style:none;counter-reset:chain}
+.result-chain-step{position:relative;padding-left:18px;font-size:13px;line-height:18px;font-weight:800;color:#F4ECD8}
+.result-chain-step::before{counter-increment:chain;content:counter(chain);position:absolute;left:0;top:2px;width:14px;height:14px;border-radius:50%;background:#235060;color:#F4ECD8;font-size:12px;line-height:14px;text-align:center;font-weight:900}
+.result-chain-step.cover.main{color:#FFE4A2}
+.result-chain-step.cover.support{color:#6FD7C6}
+.result-chain-step.cover.miss{color:#e9b39c}
+.result-chain-step.cover.take,.result-chain-step.pitch{color:#CCD8D0}
+.result-chain-step.call{font-size:15px;line-height:20px;font-weight:900}
