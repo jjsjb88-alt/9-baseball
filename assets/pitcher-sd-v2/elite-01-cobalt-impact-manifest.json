@@ -95,5 +95,15 @@
       "source": "keys",
       "cell": 0
     }
+  ],
+  "facingCorrections": [
+    "keys:0",
+    "keys:1",
+    "keys:2",
+    "keys:3",
+    "bridges:0",
+    "bridges:1",
+    "bridges:2",
+    "bridges:3"
   ]
 }

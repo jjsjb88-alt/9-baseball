@@ -15,7 +15,7 @@ import math
 from pathlib import Path
 
 import numpy as np
-from PIL import Image, ImageChops, ImageFilter
+from PIL import Image, ImageChops, ImageFilter, ImageOps
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSET = ROOT / "assets" / "pitcher-sd-v2"
@@ -47,6 +47,13 @@ TIMELINE = [
     ("keys", 0, "reset", 8),
 ]
 assert sum(item[3] for item in TIMELINE) == FRAMES
+
+# These authored windup poses look right before the leftward release. Mirror
+# only the affected silhouettes, preserving the remaining pose art and timing.
+FACING_CORRECTIONS = {
+    "elite-01-cobalt-impact": {"keys": (0, 1, 2, 3), "bridges": (0, 1, 2, 3)},
+    "elite-02-neon-trick": {"keys": (0, 1, 2), "bridges": (0, 1)},
+}
 
 
 def connected_silhouettes(sheet: Image.Image) -> list[Image.Image]:
@@ -126,6 +133,8 @@ def fitted_poses(character: str) -> list[Image.Image]:
         if sheet.size != (1536, 1024):
             raise ValueError(f"{filename}: expected 1536x1024, got {sheet.size}")
         sheets[kind] = connected_silhouettes(sheet)
+        for pose_index in FACING_CORRECTIONS.get(character, {}).get(kind, ()):
+            sheets[kind][pose_index] = ImageOps.mirror(sheets[kind][pose_index])
 
     # A single scale is used for all poses of a character. The bent stride
     # therefore looks shorter than the upright windup, with no size popping.
@@ -226,6 +235,11 @@ def build(character: str, loose_frames: bool = False) -> None:
         "frameSize": [SIZE, SIZE], "atlas": f"atlases/{atlas_name}",
         "atlasColumns": COLS, "atlasRows": ROWS,
         "authoredPoseCount": len(poses), "keyPoses": markers,
+        "facingCorrections": [
+            f"{kind}:{index}"
+            for kind, indices in FACING_CORRECTIONS.get(character, {}).items()
+            for index in indices
+        ],
     }
     (ASSET / f"{character}-manifest.json").write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -248,3 +262,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

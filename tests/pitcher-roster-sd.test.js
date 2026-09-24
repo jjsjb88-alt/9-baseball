@@ -4,6 +4,10 @@ import fs from 'node:fs';
 const root=new URL('../assets/pitcher-sd-v2/',import.meta.url);
 const roster=JSON.parse(fs.readFileSync(new URL('../assets/pitcher-mobs-v1/roster.json',import.meta.url),'utf8'));
 const remaining=roster.filter(entry=>entry.id!=='regular-01-red-rush');
+const expectedFacingCorrections={
+  'elite-01-cobalt-impact':['keys:0','keys:1','keys:2','keys:3','bridges:0','bridges:1','bridges:2','bridges:3'],
+  'elite-02-neon-trick':['keys:0','keys:1','keys:2','bridges:0','bridges:1'],
+};
 
 const dimensions=file=>{
   const data=fs.readFileSync(new URL(file,root));
@@ -26,6 +30,7 @@ describe('remaining pitcher SD roster',()=>{
       expect(manifest.character).toBe(entry.id);
       expect(manifest.facing).toBe('screen-left');
       expect(manifest.throws).toBe('screen-left');
+      expect(manifest.facingCorrections).toEqual(expectedFacingCorrections[entry.id]??[]);
       expect(manifest.frameCount).toBe(120);
       expect(manifest.uniqueFrameCount).toBe(120);
       expect(manifest.authoredPoseCount).toBe(12);
@@ -37,3 +42,4 @@ describe('remaining pitcher SD roster',()=>{
     }
   });
 });
+

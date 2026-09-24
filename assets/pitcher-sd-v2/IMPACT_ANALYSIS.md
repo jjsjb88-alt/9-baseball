@@ -15,3 +15,7 @@ Scope: create source pose sheets and 120-frame transparent atlases for all 11 pi
 | Build / deploy | Impact | 11 PNG atlases are present as assets but not yet imported by Vite. Run production build to catch packaging problems. |
 
 Quality gate: inspect face/throw direction, transparent cutouts, pose boundaries, anticipation/stride/release/follow-through, and game-size readability. The authored poses are the art source; the 120-frame atlases are a deterministic playback package.
+
+## Direction correction (2026-09-25)
+
+Two pitchers, Cobalt Impact and Neon Trick, turn toward screen-right during their windup before releasing left. Normalize only their affected pose silhouettes during atlas assembly, then rebuild their previews and 120-frame packages. This changes no UI, input, game balance, save/load, mobile viewport, scrolling, or existing user flow. The affected surface is the isolated art build output; keep frame dimensions, count, timing, release frame, and transparency unchanged. Regression check the correction list in manifests, visually inspect every affected pose at game size, run the complete test suite, smoke reports, and production build.
