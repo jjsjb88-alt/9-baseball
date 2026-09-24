@@ -1,0 +1,42 @@
+/* 타이틀 화면 픽셀 패널 — 외부 피드백 "AI 특유의 패널 디자인" 대응 (INBOX #10).
+   둥근 반투명 카드·그라데이션·글로우 대신 직각 면 + 2단 베벨 + 오프셋 하드 섀도 1종.
+   전부 .duel-title 아래로 한정한다. 경로·전투·보상·시설 화면은 이 파일의 영향을 받지 않는다. */
+.duel-title{--px-ink:#05080a;--px-face:#13303a;--px-lit:#2b5562;--px-shade:#0a1d24;--px-gold:#f2c864;--px-gold-lit:#ffe7a6;--px-gold-shade:#b3802c}
+
+.duel-title .title-main{
+  border-radius:0;border:2px solid var(--px-ink);background:var(--px-face);
+  box-shadow:inset 0 3px 0 var(--px-gold),inset 2px 0 0 var(--px-lit),inset -2px -2px 0 var(--px-shade),4px 4px 0 var(--px-ink);
+}
+.duel-title .title-main-tag{
+  border-radius:0;padding:3px 7px;background:var(--px-gold);color:#13262b;
+  font-size:11px;letter-spacing:0;box-shadow:2px 2px 0 var(--px-ink);
+}
+.duel-title .title-main h2{letter-spacing:-.5px}
+
+/* 버튼: 둥근 모서리·세로 그라데이션 대신 단색 면 + 위 하이라이트/아래 그림자 + 눌리면 섀도만큼 내려간다. */
+.duel-title button{
+  border-radius:0;border:2px solid var(--px-ink);background:var(--px-face);
+  box-shadow:inset 2px 2px 0 var(--px-lit),inset -2px -2px 0 var(--px-shade),3px 3px 0 var(--px-ink);
+  letter-spacing:0;
+}
+.duel-title button:hover:not(:disabled){border-color:var(--px-ink);background:#1a3c47}
+.duel-title button:active:not(:disabled){transform:translate(2px,2px);box-shadow:inset 2px 2px 0 var(--px-lit),inset -2px -2px 0 var(--px-shade),1px 1px 0 var(--px-ink)}
+.duel-title .primary{
+  background:var(--px-gold);color:#13262b;border-color:var(--px-ink);
+  box-shadow:inset 0 2px 0 var(--px-gold-lit),inset 0 -4px 0 var(--px-gold-shade),3px 3px 0 var(--px-ink);
+}
+.duel-title .primary:hover:not(:disabled){background:#f7d47a;color:#13262b}
+.duel-title .primary:active:not(:disabled){box-shadow:inset 0 2px 0 var(--px-gold-lit),inset 0 -2px 0 var(--px-gold-shade),1px 1px 0 var(--px-ink)}
+
+/* 튜토리얼 덱: 알약 태그를 걷어내고 한 줄 라벨로. 선택은 왼쪽 금색 막대 하나로만 표시한다. */
+.duel-title .build-picker button{background:#102a32}
+.duel-title .build-picker button[aria-pressed=true]{
+  border-color:var(--px-ink);
+  box-shadow:inset 5px 0 0 var(--px-gold),inset -2px -2px 0 var(--px-shade),3px 3px 0 var(--px-ink);
+}
+.duel-title .v9-build-picker .build-mode{border:0;border-radius:0;padding:0;font-size:10px;letter-spacing:0;color:#8fa59c}
+.duel-title .v9-build-picker button[aria-pressed=true] .build-mode{color:var(--px-gold)}
+
+.duel-title .title-tutorial{border-top:2px solid var(--px-shade)}
+.duel-title .title-tutorial-label{display:block;font-size:12px;font-weight:800;color:#e7bd70}
+.duel-title .trial-seed input{border-radius:0;border:2px solid var(--px-ink);background:#0c2129;box-shadow:inset 2px 2px 0 var(--px-shade)}
