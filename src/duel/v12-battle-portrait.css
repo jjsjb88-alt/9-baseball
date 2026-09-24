@@ -77,6 +77,10 @@
   .duel-combat.v12-design>.duel-table .decision-preview.active:has(.card-detail-open)>div{grid-column:1/-1!important}
   .duel-combat.v12-design>.duel-table .decision-preview.active>.card-detail-open{grid-column:1!important;width:auto!important;align-self:stretch!important}
   .duel-combat.v12-design>.duel-table .decision-preview.active:has(.card-detail-open)>[data-testid=execute-action]{grid-column:2!important;width:100%!important;max-width:none!important;min-width:0!important}
+  /* P3-4: with a stack, the order button joins them: [설명][순서][실행] */
+  .duel-combat.v12-design>.duel-table .decision-preview.active:has(.card-order-open){grid-template-columns:auto auto minmax(0,1fr)!important}
+  .duel-combat.v12-design>.duel-table .decision-preview.active>.card-order-open{grid-column:2!important;width:auto!important;align-self:stretch!important}
+  .duel-combat.v12-design>.duel-table .decision-preview.active:has(.card-order-open)>[data-testid=execute-action]{grid-column:3!important}
   .duel-combat.v12-design>.duel-table>.table-footer{min-height:0!important;padding:2px 6px!important}
   .duel-combat.v12-design>.duel-table>.table-footer .deck-rule{display:none!important}
 }

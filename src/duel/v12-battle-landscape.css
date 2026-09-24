@@ -52,6 +52,9 @@
   .duel-combat.v12-design.v12-design>.duel-table .card-drawer>.decision-preview.active:has(.card-detail-open)>:is(div,[data-testid=execute-action]){grid-column:1/-1!important}
   .duel-combat.v12-design.v12-design>.duel-table .card-drawer>.decision-preview.active:has(.card-detail-open)>:is(.card-detail-open,.landscape-choice-toggle){grid-column:auto!important;min-height:44px!important;height:44px!important;padding:0 6px!important}
   .duel-combat.v12-design.v12-design>.duel-table .card-drawer>.decision-preview.active>.card-detail-open{order:0!important}
+  /* P3-4: the order button takes its own row; the readout starts below it */
+  .duel-combat.v12-design.v12-design>.duel-table .card-drawer>.decision-preview.active:has(.card-detail-open)>.card-order-open{grid-column:1/-1!important;min-height:44px!important;height:44px!important}
+  .duel-combat.v12-design.v12-design>.duel-table .card-drawer:has(.card-order-open)>.battle-readout{top:230px!important}
   /* the armed-swing readout lives in the action column between the execute strip and the hand */
   .duel-combat.v12-design.v12-design>.duel-table .card-drawer>.battle-readout{position:absolute!important;left:59.4%!important;right:auto!important;top:180px!important;bottom:114px!important;width:39%!important;height:auto!important;max-height:none!important;overflow:auto!important;margin:0!important;transform:none!important}
 }

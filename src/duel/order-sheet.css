@@ -1,0 +1,22 @@
+/* V12 P3-4 — order sheet. Shares the detail sheet frame (card-detail.css); rows here.
+   Colours: ink-1 #F4ECD8, ink-2 #CCD8D0, surface-2 #132B33, edge #235060, aim #FFE4A2,
+   link-on #6FD7C6, link-off #AA7E67. Controls 44px, text 12px and up. */
+.order-rate{margin:0 0 12px;font-size:13px;line-height:18px;font-weight:800;color:#FFE4A2}
+.order-list{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+.order-row{display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:8px;padding:6px 8px;border:1px solid #235060;border-radius:2px;background:#132B33}
+.order-row.main{border-color:#FFE4A2}
+.order-badge{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#FFE4A2;color:#102024;font-size:15px;line-height:1;font-weight:900}
+.order-row.support .order-badge{background:#6FD7C6}
+.order-text{display:grid;min-width:0}
+.order-text strong{font-size:15px;line-height:20px;font-weight:900;color:#F4ECD8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.order-text small{font-size:12px;line-height:16px;font-weight:700;color:#CCD8D0}
+.order-actions{display:flex;gap:4px}
+.order-row button{min-width:44px;min-height:44px;padding:0 8px;border:2px solid #235060;border-radius:2px;background:#07141B;color:#F4ECD8;font:inherit;font-size:13px;line-height:18px;font-weight:900;cursor:pointer}
+.order-row button.recall{border-color:#AA7E67}
+.order-row button:disabled{opacity:.35;cursor:not-allowed}
+.order-row button:focus-visible{outline:3px solid #FFE4A2;outline-offset:2px}
+.order-empty{margin:12px 0 0;font-size:13px;line-height:18px;color:#CCD8D0}
+
+/* the way in: beside the card-detail button in the execute strip */
+.duel-combat .card-order-open{min-height:44px;padding:0 12px;border:2px solid #6FD7C6;border-radius:2px;background:#07141B;color:#F4ECD8;font:inherit;font-size:13px;line-height:18px;font-weight:800;cursor:pointer;white-space:nowrap}
+.duel-combat .card-order-open:focus-visible{outline:3px solid #FFE4A2;outline-offset:2px}
