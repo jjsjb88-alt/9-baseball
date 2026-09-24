@@ -32,16 +32,17 @@ function MapIcon({type}){
   </svg>;
 }
 
-const ZONE_HEAT={
-  outside:[2,5,8],
-  sinker:[6,7,8],
-  high:[0,1,2],
-  closer:[0,2,4,6,8],
-};
+// V12 P6-2: the fingerprint lights only the zones the engine opens on the first plate appearance,
+// carried by the opponent (run-map.js: ZONE_ORDER[style].slice(0, zoneOpen)). It used a hand-written
+// "hot zone" table; a map saved before this has no such field and shows no fingerprint.
+export function openingZones(opponent){
+  const z=opponent?.openingZones;
+  return Array.isArray(z)&&z.every(n=>Number.isInteger(n)&&n>=0&&n<=8)?[...z]:[];
+}
 function ZoneFingerprint({opponent,compact=false}){
   if(!opponent)return null;
-  const hot=new Set(ZONE_HEAT[opponent.archetypeKey]||[4]);
-  return <span className={compact?'v10-zone-fingerprint is-compact':'v10-zone-fingerprint'} aria-label={`${opponent.archetype||'투수'} 주요 승부 존`}>
+  const hot=new Set(openingZones(opponent));if(!hot.size)return null;
+  return <span className={compact?'v10-zone-fingerprint is-compact':'v10-zone-fingerprint'} aria-label={`${opponent.archetype||'투수'} · 첫 타석 ${hot.size}존`}>
     {Array.from({length:9},(_,i)=><i key={i} className={hot.has(i)?'hot':''}/>)}
   </span>;
 }

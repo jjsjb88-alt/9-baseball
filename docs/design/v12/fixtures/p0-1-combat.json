@@ -182,6 +182,12 @@
           "statBonus": 0,
           "zoneOpen": 4,
           "zoneMax": 6,
+          "openingZones": [
+            2,
+            4,
+            5,
+            8
+          ],
           "threat": "바깥 코스 비중이 높아 좁은 노림을 흔듭니다.",
           "rewardTier": 1,
           "act": 1,
@@ -259,6 +265,12 @@
           "statBonus": 10,
           "zoneOpen": 4,
           "zoneMax": 6,
+          "openingZones": [
+            2,
+            4,
+            5,
+            8
+          ],
           "threat": "바깥 코스 비중이 높아 좁은 노림을 흔듭니다.",
           "rewardTier": 2,
           "act": 1,
@@ -296,6 +308,12 @@
           "statBonus": 0,
           "zoneOpen": 4,
           "zoneMax": 6,
+          "openingZones": [
+            2,
+            4,
+            5,
+            8
+          ],
           "threat": "바깥 코스 비중이 높아 좁은 노림을 흔듭니다.",
           "rewardTier": 1,
           "act": 1,
@@ -333,6 +351,13 @@
           "statBonus": 0,
           "zoneOpen": 5,
           "zoneMax": 7,
+          "openingZones": [
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
           "threat": "낮은 3분할을 오래 압박하고 병살 위험을 만듭니다.",
           "rewardTier": 1,
           "act": 1,
@@ -370,6 +395,13 @@
           "statBonus": 10,
           "zoneOpen": 5,
           "zoneMax": 7,
+          "openingZones": [
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
           "threat": "낮은 3분할을 오래 압박하고 병살 위험을 만듭니다.",
           "rewardTier": 2,
           "act": 1,
@@ -467,6 +499,13 @@
           "statBonus": 10,
           "zoneOpen": 5,
           "zoneMax": 7,
+          "openingZones": [
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
           "threat": "낮은 3분할을 오래 압박하고 병살 위험을 만듭니다.",
           "rewardTier": 2,
           "act": 1,
@@ -504,6 +543,13 @@
           "statBonus": 12,
           "zoneOpen": 5,
           "zoneMax": 7,
+          "openingZones": [
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
           "threat": "낮은 3분할을 오래 압박하고 병살 위험을 만듭니다.",
           "rewardTier": 3,
           "act": 1,
@@ -541,6 +587,13 @@
           "statBonus": 4,
           "zoneOpen": 5,
           "zoneMax": 7,
+          "openingZones": [
+            1,
+            2,
+            4,
+            5,
+            8
+          ],
           "threat": "바깥 코스 비중이 높아 좁은 노림을 흔듭니다.",
           "rewardTier": 1,
           "act": 2,
@@ -618,6 +671,13 @@
           "statBonus": 14,
           "zoneOpen": 5,
           "zoneMax": 7,
+          "openingZones": [
+            1,
+            2,
+            4,
+            5,
+            8
+          ],
           "threat": "바깥 코스 비중이 높아 좁은 노림을 흔듭니다.",
           "rewardTier": 2,
           "act": 2,
@@ -655,6 +715,13 @@
           "statBonus": 4,
           "zoneOpen": 5,
           "zoneMax": 7,
+          "openingZones": [
+            1,
+            2,
+            4,
+            5,
+            8
+          ],
           "threat": "바깥 코스 비중이 높아 좁은 노림을 흔듭니다.",
           "rewardTier": 1,
           "act": 2,
@@ -692,6 +759,14 @@
           "statBonus": 4,
           "zoneOpen": 6,
           "zoneMax": 8,
+          "openingZones": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
           "threat": "낮은 3분할을 오래 압박하고 병살 위험을 만듭니다.",
           "rewardTier": 1,
           "act": 2,
@@ -729,6 +804,14 @@
           "statBonus": 14,
           "zoneOpen": 6,
           "zoneMax": 9,
+          "openingZones": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
           "threat": "높은 공과 깊은 수비로 장타 기대값을 낮춥니다.",
           "rewardTier": 2,
           "act": 2,
@@ -826,6 +909,14 @@
           "statBonus": 14,
           "zoneOpen": 6,
           "zoneMax": 9,
+          "openingZones": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
           "threat": "높은 공과 깊은 수비로 장타 기대값을 낮춥니다.",
           "rewardTier": 2,
           "act": 2,
@@ -863,6 +954,14 @@
           "statBonus": 16,
           "zoneOpen": 6,
           "zoneMax": 9,
+          "openingZones": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
           "threat": "높은 공과 깊은 수비로 장타 기대값을 낮춥니다.",
           "rewardTier": 3,
           "act": 2,
@@ -900,6 +999,15 @@
           "statBonus": 11,
           "zoneOpen": 7,
           "zoneMax": 9,
+          "openingZones": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            7
+          ],
           "threat": "높은 공과 깊은 수비로 장타 기대값을 낮춥니다.",
           "rewardTier": 1,
           "act": 3,
@@ -937,6 +1045,17 @@
           "statBonus": 11,
           "zoneOpen": 9,
           "zoneMax": 9,
+          "openingZones": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
           "threat": "이전 노림 반대편을 찌르며 2스트라이크에 존을 넓힙니다.",
           "rewardTier": 1,
           "act": 3,
@@ -974,6 +1093,17 @@
           "statBonus": 17,
           "zoneOpen": 9,
           "zoneMax": 9,
+          "openingZones": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
           "threat": "이전 노림 반대편을 찌르며 2스트라이크에 존을 넓힙니다.",
           "rewardTier": 2,
           "act": 3,
@@ -1011,6 +1141,17 @@
           "statBonus": 19,
           "zoneOpen": 9,
           "zoneMax": 9,
+          "openingZones": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
           "threat": "이전 노림 반대편을 찌르며 2스트라이크에 존을 넓힙니다.",
           "rewardTier": 2,
           "act": 3,
@@ -1048,6 +1189,15 @@
           "statBonus": 11,
           "zoneOpen": 7,
           "zoneMax": 9,
+          "openingZones": [
+            1,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
           "threat": "낮은 3분할을 오래 압박하고 병살 위험을 만듭니다.",
           "rewardTier": 1,
           "act": 3,
@@ -1085,6 +1235,15 @@
           "statBonus": 17,
           "zoneOpen": 7,
           "zoneMax": 9,
+          "openingZones": [
+            1,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
           "threat": "낮은 3분할을 오래 압박하고 병살 위험을 만듭니다.",
           "rewardTier": 2,
           "act": 3,
@@ -1122,6 +1281,17 @@
           "statBonus": 19,
           "zoneOpen": 9,
           "zoneMax": 9,
+          "openingZones": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
           "threat": "이전 노림 반대편을 찌르며 2스트라이크에 존을 넓힙니다.",
           "rewardTier": 2,
           "act": 3,
@@ -1199,6 +1369,15 @@
           "statBonus": 19,
           "zoneOpen": 7,
           "zoneMax": 9,
+          "openingZones": [
+            1,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
           "threat": "낮은 3분할을 오래 압박하고 병살 위험을 만듭니다.",
           "rewardTier": 2,
           "act": 3,
@@ -1236,6 +1415,17 @@
           "statBonus": 23,
           "zoneOpen": 9,
           "zoneMax": 9,
+          "openingZones": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
           "threat": "이전 노림 반대편을 찌르며 2스트라이크에 존을 넓힙니다.",
           "rewardTier": 3,
           "act": 3,
@@ -1456,6 +1646,12 @@
       "statBonus": 0,
       "zoneOpen": 4,
       "zoneMax": 6,
+      "openingZones": [
+        2,
+        4,
+        5,
+        8
+      ],
       "threat": "바깥 코스 비중이 높아 좁은 노림을 흔듭니다.",
       "rewardTier": 1,
       "act": 1,

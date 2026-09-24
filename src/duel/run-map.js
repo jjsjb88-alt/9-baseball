@@ -1,3 +1,5 @@
+import {ZONE_ORDER} from './cards.js';
+
 const TYPES=new Set(['battle','elite','training','locker','shop','rest','boss']);
 const COMBAT_TYPES=new Set(['battle','elite','boss']);
 const LABELS={
@@ -58,6 +60,8 @@ function makeOpponent(seed,act,type,row,lane,route){
     name:sample(seed,salt+13,NAMES),archetype:archetype.label,archetypeKey:archetype.key,style:archetype.style,
     maxHp,statBonus:(type==='battle'?0:type==='elite'?6:10)+step.stat+Math.floor(routeBonus/2),
     zoneOpen:Math.min(9,archetype.zoneOpen+step.zone),zoneMax:Math.min(9,archetype.zoneMax+step.zone),
+    /* V12 P6-2: the map fingerprint shows exactly the zones the engine opens first (repertoire at plate 1) */
+    openingZones:(ZONE_ORDER[archetype.style]||[]).slice(0,Math.min(9,archetype.zoneOpen+step.zone)).sort((a,z)=>a-z),
     threat:archetype.threat,rewardTier,act,actName:step.name,
     /* 화면이 막 난도를 추론하지 않게, 이 막에서 무엇이 얼마나 올랐는지 그대로 실어 보낸다. */
     escalation:{name:step.name,hp:step.hp,stat:step.stat,zone:step.zone,note:step.note},
