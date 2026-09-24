@@ -16,6 +16,7 @@ import "./duel/v10-relic-ui.css";
 import "./duel/landscape-declutter.js";
 import "./duel/landscape-declutter.css";
 import "./duel/golden-master.css";
+import "./duel/title-pixel.css";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
