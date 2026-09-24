@@ -1,7 +1,7 @@
 import {describe,it,expect} from 'vitest';
 import fs from 'node:fs';
 import {
-  PERF_DPR_CAP,PERF_PARTICLE_SCALE,lowerPerfTier,raisePerfTier,
+  PERF_DPR_CAP,PERF_PARTICLE_SCALE,lowerPerfTier,raisePerfTier,initialPerfTier,
 } from '../src/duel/useAdaptivePerformance.js';
 
 const app=fs.readFileSync(new URL('../src/duel/App.jsx',import.meta.url),'utf8');
@@ -20,11 +20,23 @@ describe('adaptive 60fps background budget',()=>{
     expect(raisePerfTier('high')).toBe('high');
   });
 
+  it('starts compact/coarse devices below high so the first pitch is not the expensive warm-up',()=>{
+    const oldWindow=globalThis.window,oldNavigator=globalThis.navigator;
+    Object.defineProperty(globalThis,'window',{configurable:true,value:{innerWidth:390,innerHeight:844,matchMedia:()=>({matches:true})}});
+    Object.defineProperty(globalThis,'navigator',{configurable:true,value:{hardwareConcurrency:8,deviceMemory:8}});
+    expect(initialPerfTier()).toBe('balanced');
+    Object.defineProperty(globalThis,'window',{configurable:true,value:{innerWidth:1440,innerHeight:900,matchMedia:()=>({matches:false})}});
+    expect(initialPerfTier()).toBe('high');
+    Object.defineProperty(globalThis,'window',{configurable:true,value:oldWindow});
+    Object.defineProperty(globalThis,'navigator',{configurable:true,value:oldNavigator});
+  });
+
   it('reduces WebGL pixel cost substantially before touching actors',()=>{
     expect(PERF_DPR_CAP).toEqual({high:2,balanced:1.25,low:1});
     expect(PERF_DPR_CAP.low).toBeLessThan(PERF_DPR_CAP.high);
     expect(arena).toContain('PERF_DPR_CAP[quality]');
     expect(arena).toContain("quality='high'");
+    expect(arena).toContain("quality==='balanced'?28:40");
     expect(arena).toContain('canvas.dataset.quality=quality');
   });
 
@@ -34,6 +46,7 @@ describe('adaptive 60fps background budget',()=>{
     expect(PERF_PARTICLE_SCALE.low).toBeLessThan(PERF_PARTICLE_SCALE.balanced);
     expect(vfx).toContain('buildParticles(seed,shot,quality)');
     expect(vfx).toContain("quality='high'");
+    expect(vfx).toContain("quality==='balanced'?28:40");
   });
 
   it('reacts only to sustained frame pressure, not a single long task',()=>{

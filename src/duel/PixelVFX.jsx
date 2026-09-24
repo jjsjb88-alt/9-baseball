@@ -102,14 +102,18 @@ export default function PixelVFX({stage,shot,token=0,drawCore=true,quality='high
   useEffect(()=>{
     if(!stage||!shot)return;
     const canvas=ref.current;let ctx;
-    try{ctx=canvas?.getContext?.('2d',{alpha:true});}catch{return;}
+    try{ctx=canvas?.getContext?.('2d',{alpha:true,desynchronized:true});}catch{return;}
     if(!ctx)return;
     ctx.imageSmoothingEnabled=false;
-    let raf=0,start=performance.now(),alive=true;
+    let raf=0,start=performance.now(),alive=true,lastPaint=0;
+    const frameBudget=quality==='high'?0:quality==='balanced'?28:40;
     const seed=hash(String(token)+'|'+stage+'|'+(shot.grade||shot.kind)),data=buildParticles(seed,shot,quality);
     const duration={windup:.18,impact:.55,slowmo:.8,release:1.05,settle:1}[stage]||.8;
     const loop=now=>{
-      if(!alive)return;const t=(now-start)/1000;ctx.clearRect(0,0,320,180);ctx.globalCompositeOperation='source-over';
+      if(!alive)return;
+      if(frameBudget&&now-lastPaint<frameBudget){raf=requestAnimationFrame(loop);return;}
+      lastPaint=now;
+      const t=(now-start)/1000;ctx.clearRect(0,0,320,180);ctx.globalCompositeOperation='source-over';
       if(stage==='impact')impactPass(ctx,t,shot,data);
       else if(stage==='slowmo')slowmoPass(ctx,t,shot,data);
       else if(stage==='release')releasePass(ctx,t,shot,data,drawCore);

@@ -25,6 +25,8 @@ describe('actor runtime smoothness',()=>{
     expect(src).not.toContain('useState(');
     expect(src).not.toContain('setFrame(');
     expect(src).not.toContain('backgroundPosition');
+    expect(src).not.toContain('echo-mid');
+    expect(src).toContain("stage==='impact'&&frame%3===0");
   });
 
   it('does not force a layout read from the WebGL render loop',()=>{

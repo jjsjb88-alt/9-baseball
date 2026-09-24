@@ -24,3 +24,19 @@
   .duel-combat.perf-balanced .gm-atmosphere>i:nth-child(n+7){display:none}
   .duel-combat.perf-low .gm-atmosphere>i:nth-child(n+3){display:none}
 }
+
+/* During live motion, compact screens spend their budget on the two actors.
+   Secondary cinema layers stay readable but stop competing for every frame. */
+.duel-combat.perf-balanced .pixel-cinema .air-pixel:nth-of-type(n+8),
+.duel-combat.perf-balanced .pixel-cinema .impact-debris:nth-of-type(n+8){display:none}
+.duel-combat.perf-balanced .pixel-cinema .cinema-light{filter:blur(2px)}
+.duel-combat.perf-balanced .pixel-vfx-canvas,
+.duel-combat.perf-balanced .pixel-cinema{contain:paint}
+
+.duel-combat.perf-low .pixel-cinema .air-pixel:nth-of-type(n+5),
+.duel-combat.perf-low .pixel-cinema .impact-debris:nth-of-type(n+5),
+.duel-combat.perf-low .pixel-cinema .crowd-flash:nth-of-type(n+3){display:none}
+.duel-combat.perf-low .pixel-cinema .cinema-light,
+.duel-combat.perf-low .pixel-cinema .cinema-haze{filter:none!important}
+.duel-combat.perf-low .pixel-vfx-canvas,
+.duel-combat.perf-low .pixel-cinema{contain:strict}

@@ -11,12 +11,21 @@ export function raisePerfTier(tier){
   return tier==='low'?'balanced':tier==='balanced'?'high':'high';
 }
 
+export const initialPerfTier=()=>{
+  if(typeof window==='undefined')return 'high';
+  const coarse=!!window.matchMedia?.('(pointer:coarse)').matches;
+  const compact=window.innerWidth<=900||window.innerHeight<=760;
+  const cores=Number(globalThis.navigator?.hardwareConcurrency)||8;
+  const memory=Number(globalThis.navigator?.deviceMemory)||8;
+  if((cores<=4&&memory<=4)||(compact&&cores<=4))return 'low';
+  return coarse||compact?'balanced':'high';
+};
 export const hasFakeFrameClock=()=>!!(globalThis.setTimeout?.clock||globalThis.requestAnimationFrame?.clock||globalThis.Date?.clock);
 export const canMeasureFrameBudget=()=>!hasFakeFrameClock()&&(typeof navigator==='undefined'||!/happy-dom|jsdom/i.test(navigator.userAgent||''));
 
 export default function useAdaptivePerformance(active=true){
-  const [tier,setTier]=useState('high');
-  const tierRef=useRef('high');
+  const [tier,setTier]=useState(()=>initialPerfTier());
+  const tierRef=useRef(tier);
 
   useEffect(()=>{
     if(!active||typeof requestAnimationFrame!=='function'||!canMeasureFrameBudget())return;

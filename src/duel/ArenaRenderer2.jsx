@@ -104,13 +104,17 @@ export default function ArenaRenderer2({stage=null,shot=null,match=0,rival=false
     const uniform=name=>gl.getUniformLocation(p,name),U={resolution:uniform('u_resolution'),time:uniform('u_time'),phase:uniform('u_phase'),match:uniform('u_match'),rival:uniform('u_rival'),success:uniform('u_success'),danger:uniform('u_danger'),power:uniform('u_power'),director:uniform('u_director'),stage:uniform('u_stage'),ballMode:uniform('u_ballMode'),trace:uniform('u_trace'),coverMask:uniform('u_coverMask'),aim:uniform('u_aim'),actual:uniform('u_actual')};
     const code=STAGE[stage]||0,start=performance.now(),duration=durationFor(stage,shot),f=flags(shot),director=cinemaDirector(shot);
     const tactical=!!revealed&&['dead-center','solid','jammed','lucky','extra','homer','grand-slam','near-miss','near-miss-k','chase','chase-k','fooled','strikeout'].includes(shot?.grade||'')&&[2,3,4].includes(code);
-    let raf=0,alive=true,ro;
+    let raf=0,alive=true,ro,lastPaint=0;
+    const frameBudget=quality==='high'?0:quality==='balanced'?28:40;
     const resize=()=>{const rect=canvas.getBoundingClientRect?.()||{width:640,height:360},cap=PERF_DPR_CAP[quality]||PERF_DPR_CAP.high,dpr=Math.min(cap,globalThis.devicePixelRatio||1),w=Math.max(320,Math.round((rect.width||640)*dpr)),h=Math.max(180,Math.round((rect.height||360)*dpr));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h);}canvas.dataset.quality=quality;canvas.dataset.dpr=String(dpr);};
     resize();if(globalThis.ResizeObserver){ro=new ResizeObserver(resize);ro.observe(canvas);}
     const onWindowResize=()=>resize();
     globalThis.addEventListener?.('resize',onWindowResize,{passive:true});
     const draw=now=>{
-      if(!alive)return;const phase=Math.min(1,(now-start)/duration);gl.useProgram(p);
+      if(!alive)return;
+      if(frameBudget&&now-lastPaint<frameBudget){raf=requestAnimationFrame(draw);return;}
+      lastPaint=now;
+      const phase=Math.min(1,(now-start)/duration);gl.useProgram(p);
       gl.uniform2f(U.resolution,canvas.width,canvas.height);gl.uniform1f(U.time,now/1000);gl.uniform1f(U.phase,phase);gl.uniform1f(U.match,match);gl.uniform1f(U.rival,rival?1:0);gl.uniform1f(U.success,f.success);gl.uniform1f(U.danger,f.danger);gl.uniform1f(U.power,f.power);gl.uniform1i(U.director,director.code);gl.uniform1i(U.stage,code);gl.uniform1i(U.ballMode,stage==='windup'&&shot?.grade?1:(stage==='release'||stage==='slowmo')?f.ballMode:0);gl.uniform1i(U.trace,tactical?1:0);gl.uniform1i(U.coverMask,coverMask(revealed?.coverage));gl.uniform1i(U.aim,revealed?.aimZone??-1);gl.uniform1i(U.actual,revealed?.zone??-1);
       gl.drawArrays(gl.TRIANGLES,0,3);raf=requestAnimationFrame(draw);
     };

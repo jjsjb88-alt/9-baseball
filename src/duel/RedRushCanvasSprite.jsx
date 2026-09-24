@@ -24,18 +24,17 @@ function paint(ctx,img,frame){
 }
 
 export default function RedRushCanvasSprite({stage=null,shot=null,playToken=0,pose='idle'}){
-  const core=useRef(null),back=useRef(null),mid=useRef(null);
+  const core=useRef(null),back=useRef(null);
   const reduced=typeof window!=='undefined'&&!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   const active=!!stage&&hasPitchVisual(shot)&&!reduced;
 
   useEffect(()=>{
     let raf=0,alive=true,last=-1;
     const startedAt=performance.now();
-    const contexts=[back.current,mid.current,core.current].map(canvas=>{
-      const ctx=canvas?.getContext?.('2d',{alpha:true,desynchronized:true});
-      if(ctx)ctx.imageSmoothingEnabled=false;
-      return ctx;
-    });
+    const coreCtx=core.current?.getContext?.('2d',{alpha:true,desynchronized:true})||null;
+    const backCtx=back.current?.getContext?.('2d',{alpha:true,desynchronized:true})||null;
+    if(coreCtx)coreCtx.imageSmoothingEnabled=false;
+    if(backCtx)backCtx.imageSmoothingEnabled=false;
     loadAtlas().then(img=>{
       if(!alive||!img)return;
       const tick=now=>{
@@ -43,7 +42,10 @@ export default function RedRushCanvasSprite({stage=null,shot=null,playToken=0,po
         const frame=active?redRushFrameAt(now-startedAt):0;
         if(frame!==last){
           last=frame;
-          for(const ctx of contexts)paint(ctx,img,frame);
+          paint(coreCtx,img,frame);
+          // The pitcher echo is visible only during the short impact beat.
+          // Keep it at 20Hz instead of repainting a hidden 256x256 canvas at 60Hz.
+          if(stage==='impact'&&frame%3===0)paint(backCtx,img,frame);
           if(core.current)core.current.dataset.frame=String(frame);
         }
         if(active&&frame<119)raf=requestAnimationFrame(tick);
@@ -56,7 +58,6 @@ export default function RedRushCanvasSprite({stage=null,shot=null,playToken=0,po
   return <span className={'sprite-stage sprite-pitcher pose-'+pose+' golden-actor red-rush-actor'}>
     <i className="actor-contact-shadow" aria-hidden="true"/>
     <canvas ref={back} width="256" height="256" aria-hidden="true" className="sprite-echo echo-back red-rush-frame"/>
-    <canvas ref={mid} width="256" height="256" aria-hidden="true" className="sprite-echo echo-mid red-rush-frame"/>
     <canvas ref={core} width="256" height="256" aria-hidden="true" className="duel-sprite red-rush-frame"/>
     <i className="sprite-bloom" aria-hidden="true"/>
   </span>;
