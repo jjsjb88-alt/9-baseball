@@ -1,0 +1,11 @@
+/* V12 P7-1 — help modal: 12px text floor (it was 10–11px) and the verified-controls list.
+   Colours: edge #235060, ink-1 #F4ECD8, ink-2 #CCD8D0, aim #FFE4A2. Scoped to the modal. */
+.duel-modal :is(p,.combo-example,.eyebrow,b,dd,dt,li){font-size:max(12px,1em)!important}
+.duel-modal p,.duel-modal .combo-example{font-size:13px!important;line-height:19px!important}
+.duel-modal .eyebrow{font-size:12px!important;letter-spacing:.08em!important}
+.duel-modal .collection .duel-card :is(.card-cost,.card-type,.card-gives i,.card-rule,.card-foot,.card-upgrade){font-size:12px!important;line-height:16px!important}
+.duel-modal .help-controls{display:grid;gap:6px;margin:8px 0 14px}
+.duel-modal .help-controls>div{display:grid;grid-template-columns:minmax(96px,auto) 1fr;gap:10px;padding:6px 8px;border-left:3px solid #FFE4A2;background:rgba(7,20,27,.6)}
+.duel-modal .help-controls dt{margin:0;font-size:13px!important;line-height:19px;font-weight:900;color:#FFE4A2}
+.duel-modal .help-controls dd{margin:0;font-size:13px!important;line-height:19px;color:#F4ECD8}
+@media (max-width:420px){.duel-modal .help-controls>div{grid-template-columns:1fr;gap:2px}}
