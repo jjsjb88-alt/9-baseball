@@ -22,7 +22,8 @@ export function validateV10State(s){
     /* 표시용 이름은 나중에 붙었다. 있으면 문자열이어야 하고, 없는 예전 기록도 그대로 읽는다. */
     const labels=['choiceLabel','aimLabel','pitchLabel','pitchName'];
     if(labels.some(key=>last[key]!==undefined&&typeof last[key]!=='string'))return false;
-    if(last.aimZone!==undefined&&(!Number.isInteger(last.aimZone)||last.aimZone<0||last.aimZone>9))return false;
+    /* 지켜보기는 노린 존이 없어 null이다. 그 외에는 0~9 정수여야 한다. */
+    if(last.aimZone!==undefined&&last.aimZone!==null&&(!Number.isInteger(last.aimZone)||last.aimZone<0||last.aimZone>9))return false;
   }
   return true;
 }
