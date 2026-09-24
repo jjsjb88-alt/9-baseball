@@ -1,0 +1,34 @@
+/* 10x12 atlas: one network request, a 256x256 transparent pixel cell per tick. */
+.sprite-stage.red-rush-actor .red-rush-frame{
+  position:absolute;
+  inset:0;
+  display:block;
+  width:100%;
+  height:100%;
+  background-repeat:no-repeat;
+  image-rendering:pixelated!important;
+  pointer-events:none;
+}
+.sprite-stage.red-rush-actor .red-rush-frame.duel-sprite{position:absolute;z-index:3}
+.sprite-stage.red-rush-actor .red-rush-frame.sprite-echo{position:absolute;z-index:2}
+@media(prefers-reduced-motion:reduce){
+  .sprite-stage.red-rush-actor{animation:none!important;transition:none!important}
+}
+.v10-map-preview .v10-preview-diorama:has(.v10-preview-red-rush-art){
+  height:clamp(180px,26vh,260px);
+  background:radial-gradient(circle at 52% 40%,#61232b,#221923 61%,#10191a);
+}
+.v10-map-preview .v10-preview-diorama:has(.v10-preview-red-rush-art) .v10-diorama-art{opacity:0}
+.v10-preview-red-rush-art{
+  position:absolute;
+  z-index:2;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  object-position:center bottom;
+  filter:drop-shadow(0 8px 9px #03080ba8);
+}
+@media(max-height:480px){
+  .v10-map-preview .v10-preview-diorama:has(.v10-preview-red-rush-art){height:160px}
+}

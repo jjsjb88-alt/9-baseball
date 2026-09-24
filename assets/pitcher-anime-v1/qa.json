@@ -1,0 +1,53 @@
+[
+  {
+    "file": "pitcher-crimson-ace.png",
+    "width": 1254,
+    "height": 1254,
+    "pixelFormat": "Format32bppArgb",
+    "fullyTransparentPixels": 1353544,
+    "fullyTransparentPercent": 86.08,
+    "canvasEdgeNontransparentPixels": 0,
+    "silhouetteBoundsAtAlpha128": {
+      "bottom": 1185,
+      "right": 855,
+      "left": 480,
+      "top": 111
+    },
+    "sha256": "210566A96B9173C6BF4FBF3574654A5CE53FAB1AF552DC236D68009089F27DA9",
+    "runtimeIntegrated": false
+  },
+  {
+    "file": "pitcher-silver-control.png",
+    "width": 1254,
+    "height": 1254,
+    "pixelFormat": "Format32bppArgb",
+    "fullyTransparentPixels": 1278362,
+    "fullyTransparentPercent": 81.29,
+    "canvasEdgeNontransparentPixels": 0,
+    "silhouetteBoundsAtAlpha128": {
+      "bottom": 1213,
+      "right": 877,
+      "left": 380,
+      "top": 34
+    },
+    "sha256": "69915CFD6557F41B71C2D646DD951CDBCA93DDB378519302B540BCA619E200F7",
+    "runtimeIntegrated": false
+  },
+  {
+    "file": "pitcher-violet-closer.png",
+    "width": 1536,
+    "height": 1024,
+    "pixelFormat": "Format32bppArgb",
+    "fullyTransparentPixels": 1178659,
+    "fullyTransparentPercent": 74.94,
+    "canvasEdgeNontransparentPixels": 0,
+    "silhouetteBoundsAtAlpha128": {
+      "bottom": 991,
+      "right": 1374,
+      "left": 199,
+      "top": 20
+    },
+    "sha256": "7267C82B4274D6301599967BDF066C39D3DCCEFF1F9F52703F0DE451BD471C3C",
+    "runtimeIntegrated": false
+  }
+]

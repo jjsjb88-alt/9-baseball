@@ -157,8 +157,13 @@
 .golden-master-stage.fx-stage-release .gm-depth-mid{transform:scale(1.047) translate3d(-.15%,.35%,0);transition:transform .34s cubic-bezier(.2,.8,.2,1),filter .34s ease}
 .golden-master-stage.fx-stage-settle .gm-depth-mid{transform:none;filter:none;transition:transform .28s ease-out,filter .28s ease-out}
 
-/* Contact light is spatial: it appears at the barrel, expands in slow motion, then decays. */
-.golden-master-stage.fx-stage-impact .gm-contact-halo{opacity:.82;transform:scale(1.02);transition:opacity .045s steps(2,end),transform .075s steps(2,end)}
+/* Contact light is spatial: it appears at the barrel, expands in slow motion, then decays.
+   impact 단계는 실측 2프레임(약 83ms, 프레임 간격 36ms)뿐이다. 45ms steps(2,end)는 전반 22.5ms 동안
+   시작값(opacity 0 / scale .62)을 그대로 유지하므로 실측에서 impact 두 프레임 모두 0으로 렌더됐다.
+   판정 등급별 impact 길이는 freeze 18~110ms이고, 45ms 미만인 등급(foul 38 / lucky 42 / called 42 /
+   sacrifice 42)은 프레임레이트와 무관하게 .82에 도달하지 못한다.
+   gm-groundplane.css의 지면 조명과 같은 고장이라 같은 방식으로 즉시 켠다. 여운은 slowmo와 release가 맡는다. */
+.golden-master-stage.fx-stage-impact .gm-contact-halo{opacity:.82;transform:scale(1.02);transition:none}
 .golden-master-stage.fx-stage-impact .gm-depth-mid.gm-power .gm-contact-halo{opacity:1;transform:scale(1.16)}
 .golden-master-stage.fx-stage-impact .gm-depth-mid.gm-danger .gm-contact-halo{opacity:0}
 .golden-master-stage.fx-stage-slowmo .gm-contact-halo{opacity:.34;transform:scale(1.42);filter:blur(2px)}

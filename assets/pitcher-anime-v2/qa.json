@@ -1,0 +1,41 @@
+[
+  {
+    "file": "pitcher-teal-portrait.png",
+    "width": 1122,
+    "height": 1402,
+    "format": "Format32bppArgb",
+    "fullyTransparentPixels": 640363,
+    "fullyTransparentPercent": 40.71,
+    "topEdgePixelsAtAlpha128": 0,
+    "bottomEdgePixelsAtAlpha128": 593,
+    "framing": "Upper-body portrait; bottom crop intentional; not a full-body runtime sprite",
+    "sha256": "C926D6012FFAA013177E147CF7F20E6E274986F4C71935A84A422662B5A728AE",
+    "runtimeIntegrated": false
+  },
+  {
+    "file": "pitcher-rose-portrait.png",
+    "width": 1122,
+    "height": 1402,
+    "format": "Format32bppArgb",
+    "fullyTransparentPixels": 682217,
+    "fullyTransparentPercent": 43.37,
+    "topEdgePixelsAtAlpha128": 0,
+    "bottomEdgePixelsAtAlpha128": 667,
+    "framing": "Upper-body portrait; bottom crop intentional; not a full-body runtime sprite",
+    "sha256": "E4FC52144670E173265C9155C9CAE75D54AFB0C7A24F3D181AAB6F498E551512",
+    "runtimeIntegrated": false
+  },
+  {
+    "file": "pitcher-amber-portrait-v2.png",
+    "width": 1122,
+    "height": 1402,
+    "format": "Format32bppArgb",
+    "fullyTransparentPixels": 720592,
+    "fullyTransparentPercent": 45.81,
+    "topEdgePixelsAtAlpha128": 0,
+    "bottomEdgePixelsAtAlpha128": 652,
+    "framing": "Upper-body portrait; bottom crop intentional; top cap margin corrected; not a full-body runtime sprite",
+    "sha256": "C72B704FFF878BCF8E73D5383B37ED90D98C7FF66472BCFFC2B34258033A7235",
+    "runtimeIntegrated": false
+  }
+]

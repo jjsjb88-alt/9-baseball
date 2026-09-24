@@ -206,6 +206,11 @@ export function createRunMap(seed=0){
     if(act<3)edges.push({from:`a${act}-boss`,to:`a${act+1}-entry`});
   }
   nameOpponents(seed,nodes);
+  // First playable SD mob: one stable Red Rush encounter per new run.
+  // Older saves have no artId and continue to use their existing appearance.
+  const redRush=nodes.find(n=>n.id==='a1-entry'&&n.type==='battle')
+    ||nodes.find(n=>n.type==='battle');
+  if(redRush){redRush.opponent.name='레드 러시';redRush.opponent.artId='regular-01-red-rush';}
   for(const node of nodes)if(node.opponent)node.preview=`${node.opponent.name} · ${node.opponent.archetype} · HP ${node.opponent.maxHp}`;
   return {seed:seed>>>0,nodes,edges,currentNodeId:null,completedNodeIds:[],reachableIds:['a1-entry']};
 }
