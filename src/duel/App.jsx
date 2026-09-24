@@ -1,4 +1,5 @@
 import React,{useEffect,useRef,useState} from 'react';
+import {flushSync} from 'react-dom';
 import {CARDS,TYPE_NAMES,STAGES,GLOSSARY,LINEUP,BUILDS,ZONES,GROWTHS,growthCost,rewardChoices,AXES,AXIS_NAMES,ROLES,REWARD_ACTIONS,AFFINITY_CARDS,upgradeText,canUpgrade,DECK_MIN,DECK_MAX,
   READ_LEVELS,RELICS,RELIC_OFFERS,bandFor,rangeFor,shadeFor,shadeNameFor,observeScore,cardText,ZONE_ORDER,DECKBUILDER_BUILD,FACILITIES,FACILITY_ROUTES,ROUTE_CHOICES,routeChoice} from './cards.js';
 import {createDuel,startBattle,chooseRoute,battleTarget,playCard,endTurn,chooseReward,chooseFacility,facilityProblem,previewCard,readDuel,saveDuel,advanceBatter,currentBatter,advancePitch,setAimZone,coverage,publicProbabilities,pitchClue,matchup,setGrowthMode,growthProblem,readLevel,knownPitchZones} from './engine.js';
@@ -12,6 +13,7 @@ import './adaptive-performance.css';
 import {coverageText} from './information.js';
 import {cue} from './audio.js';
 import {presentationFor,presentationTimeline} from './presentation.js';
+import {batterMotionV3Timeline} from './batterMotionV3.js';
 import {haptic} from './haptics.js';
 import PixelVFX from './PixelVFX.jsx';
 import PitcherHpHud from './PitcherHpHud.jsx';
@@ -36,6 +38,7 @@ import {helpFacts} from './help-facts.js';
 import {resolveTourTarget} from './tour-target.js';
 import useAdaptivePerformance from './useAdaptivePerformance.js';
 import {rewardLinks,failureJourney,runStoryItems} from './ux.js';
+import {mainRunSeed} from './run-seed.js';
 import batterIdle from '../../assets/sprites-v1/batter-idle.png';
 import batterLoad from '../../assets/sprites-v1/batter-load.png';
 import batterContact from '../../assets/sprites-v1/batter-contact.png';
@@ -61,6 +64,16 @@ import batterMissV4 from '../../assets/sprites-v4/batter-miss-60.png';
 import batterHomerV4 from '../../assets/sprites-v4/batter-homer-60.png';
 import pitcherPitchV4 from '../../assets/sprites-v4/pitcher-pitch-60.png';
 import pitcherStrikeoutV4 from '../../assets/sprites-v4/pitcher-strikeout-60.png';
+import batterRebootReady from '../../assets/batter-reboot-v1/batter-ready.png';
+import batterRebootTrigger from '../../assets/batter-reboot-v1/batter-trigger.png';
+import batterRebootContact from '../../assets/batter-reboot-v1/batter-contact.png';
+import batterRebootFinish from '../../assets/batter-reboot-v1/batter-finish.png';
+import batterRebootLoadV3 from '../../assets/batter-reboot-v3/batter-load.png';
+import batterRebootSwingStartV3 from '../../assets/batter-reboot-v3/batter-swing-start.png';
+import batterRebootSwingMidV3 from '../../assets/batter-reboot-v3/batter-swing-mid.png';
+import batterRebootFollowEarlyV3 from '../../assets/batter-reboot-v3/batter-follow-through-early.png';
+import batterRebootFollowLateV3 from '../../assets/batter-reboot-v3/batter-follow-through-late.png';
+import batterRebootSettleV3 from '../../assets/batter-reboot-v3/batter-settle.png';
 
 /* 엔진은 lastCombat.choice를 카드 kind로, actualPitch를 존 번호로 준다. 화면 문구로 옮기는 건 연결부 일이다. */
 const v10ZoneName=zone=>zone===9?'존 밖':ZONES[zone]||'코스 미확인';
@@ -128,7 +141,19 @@ const BATTER_POSES={idle:batterIdle,load:batterLoad,contact:batterContact,follow
 const PITCHER_POSES={idle:pitcherIdle,set:pitcherSet,legkick:pitcherLegkick,release:pitcherRelease,follow:pitcherFollow,strikeout:pitcherStrikeout};
 const PITCHER_RELEASE_V3={sinker:pitcherSinkerReleaseV3,high:pitcherHighReleaseV3,closer:pitcherCloserReleaseV3};
 const BATTER_HERO_V5={idle:batterIdleHeroV5,contact:batterContactHeroV5,homer:batterHomerHeroV5,miss:batterMissHeroV5};
-const ACTOR_ASSETS=[...new Set([...BATTER_SWING_V2,...BATTER_MISS_V2,...PITCHER_PITCH_V2,...PITCHER_K_V2,batterSwingV4,pitcherPitchV4,batterHomerHeroV3,...Object.values(BATTER_HERO_V5),...Object.values(PITCHER_RELEASE_V3)])];
+const BATTER_REBOOT_V3={
+  ready:batterRebootReady,
+  load:batterRebootLoadV3,
+  trigger:batterRebootTrigger,
+  'swing-start':batterRebootSwingStartV3,
+  'swing-mid':batterRebootSwingMidV3,
+  contact:batterRebootContact,
+  'follow-through-early':batterRebootFollowEarlyV3,
+  'follow-through-late':batterRebootFollowLateV3,
+  finish:batterRebootFinish,
+  settle:batterRebootSettleV3,
+};
+const ACTOR_ASSETS=[...new Set([...BATTER_SWING_V2,...BATTER_MISS_V2,...PITCHER_PITCH_V2,...PITCHER_K_V2,batterSwingV4,pitcherPitchV4,batterHomerHeroV3,...Object.values(BATTER_HERO_V5),...Object.values(BATTER_REBOOT_V3),...Object.values(PITCHER_RELEASE_V3)])];
 function useActorAssetPreload(){
   useEffect(()=>{
     if(typeof Image==='undefined')return;
@@ -234,18 +259,56 @@ function v4SheetFor(who,shot){
   const homer=['homer','grand-slam'].includes(shot.grade);
   return homer?batterHomerV4:miss?batterMissV4:batterSwingV4;
 }
+function useBatterMotionV3Pose(stage,shot,playToken,enabled){
+  const [pose,setPose]=useState('ready');
+  const timer=useRef(null);
+  const raf=useRef(null);
+  const clear=()=>{
+    if(timer.current!=null)clearTimeout(timer.current);
+    if(raf.current!=null)cancelAnimationFrame(raf.current);
+    timer.current=null;raf.current=null;
+  };
+  useEffect(()=>{
+    clear();
+    if(!enabled||!shot||!stage){setPose('ready');return clear;}
+    const timeline=batterMotionV3Timeline(shot);
+    setPose(timeline[0]?.pose||'ready');
+    // V3 schedules one authored silhouette at a time and waits for a browser
+    // paint before arming the next timer. This avoids React/WebGL load turning
+    // the fastest part of the swing into an invisible state jump.
+    const schedule=index=>{
+      if(index>=timeline.length)return;
+      const previous=timeline[index-1]||timeline[0];
+      const keyframe=timeline[index];
+      const delay=Math.max(30,keyframe.at-previous.at);
+      timer.current=setTimeout(()=>{
+        // React may defer DOM commits under the landscape WebGL load. Commit
+        // this sparse authored frame synchronously, then wait for a browser
+        // paint before arming the next key pose.
+        flushSync(()=>setPose(keyframe.pose));
+        timer.current=null;
+        raf.current=requestAnimationFrame(()=>{
+          raf.current=null;
+          schedule(index+1);
+        });
+      },delay);
+    };
+    schedule(1);
+    return clear;
+  },[enabled,playToken,shot?.grade,shot?.motion?.impactAt,shot?.motion?.settleAt,shot?.motion?.duration,shot?.motion?.freeze,shot?.motion?.slowmo]);
+  return pose;
+}
 function Sprite({who,stage=null,shot=null,golden=false,variant=null,playToken=0}){
-  if(golden&&who==='batter'){
-    const standinStage=stage||'idle',standinGrade=shot?.grade||'idle';
-    return <span className={'sprite-stage sprite-batter golden-actor batter-standin standin-stage-'+standinStage+' standin-grade-'+standinGrade}>
+  const rebootEnabled=golden&&who==='batter';
+  const rebootPose=useBatterMotionV3Pose(stage,shot,playToken,rebootEnabled);
+  const qaPose=rebootEnabled&&typeof window!=='undefined'&&new URLSearchParams(window.location.search).get('cinema')==='1'
+    ?new URLSearchParams(window.location.search).get('batterPose'):null;
+  const displayedRebootPose=qaPose&&BATTER_REBOOT_V3[qaPose]?qaPose:rebootPose;
+  if(rebootEnabled){
+    const rebootSrc=BATTER_REBOOT_V3[displayedRebootPose]||BATTER_REBOOT_V3.ready;
+    return <span data-batter-pose={displayedRebootPose} className={'sprite-stage sprite-batter golden-actor batter-reboot-v3 reboot-pose-'+displayedRebootPose}>
       <i className="actor-contact-shadow" aria-hidden="true"/>
-      <span className="batter-presence" aria-hidden="true">
-        <i className="presence-box"/>
-        <i className="presence-plate"/>
-        <i className="presence-bat"/>
-        <i className="presence-contact"/>
-        <b>AT BAT</b>
-      </span>
+      <img aria-hidden="true" className="duel-sprite batter-reboot-art" src={rebootSrc}/>
     </span>;
   }
   const pose=actorPose(who,stage,shot),v4Sheet=golden&&stage? v4SheetFor(who,shot):null;
@@ -693,8 +756,9 @@ export default function Duel(){
   const showPreview=id=>{const p=previewCard(s,id);return {...p,coverageLabel:p.coverage?coverageText(s,id):undefined};};
   const b=s?.battle,isV10=s?.version===10,showBattle=screen==='run'&&b&&(['battle','pitch','between'].includes(s.phase)||fx),fxPresentation=fx?presentationFor(s):null,fxStakes=fx?stakesFor(s):null,resultPresentation=b?.revealed?presentationFor(s):null,byId=id=>s.deck.find(c=>c.id===id);
   const perfTier=useAdaptivePerformance(!!(showBattle&&isV10&&fxStage));
-  const pile=modal&&['draw','discard','deck'].includes(modal)?(modal==='deck'?s.deck:b[modal].map(byId)):null;
-  const hand=b?b.hand.map(id=>({id,entry:byId(id),preview:showPreview(id)})):[];
+  const pile=modal&&['draw','discard','deck'].includes(modal)?(modal==='deck'?s.deck:b[modal].map(byId).filter(Boolean)):null;
+  // 손패 id는 덱 항목이 있을 때만 읽는다. 없는 id 하나가 화면 전체를 내렸다.
+  const hand=b?b.hand.filter(id=>{const e=byId(id);return e&&CARDS[e.kind];}).map(id=>({id,entry:byId(id),preview:showPreview(id)})):[];
   const prepareHand=hand.filter(x=>CARDS[x.entry.kind].type==='skill'),swingHand=hand.filter(x=>CARDS[x.entry.kind].type!=='skill');
   const visibleHand=decisionMode==='prepare'?prepareHand:decisionMode==='swing'?swingHand:[];
   // The other group stays on screen. 릴리스 간파 and 주자 연결 live in different groups and that pair is the whole point.
@@ -806,7 +870,7 @@ export default function Duel(){
     persist(next);
     if(animate)startPresentation(next);
   }
-  function freshV10(){setGrowthChoice(null);setRewardAction(null);setFacilityChoice(null);setStackResolve(null);persist(createV10Duel(Number(trialSeed)>>>0));setScreen('run');setModal(null);setSelected(null);setSwingStack([]);setStackEdit(null);setDecisionMode(null);setTour({open:false,step:0});}
+  function freshV10(){setGrowthChoice(null);setRewardAction(null);setFacilityChoice(null);setStackResolve(null);persist(createV10Duel(mainRunSeed()));setScreen('run');setModal(null);setSelected(null);setSwingStack([]);setStackEdit(null);setDecisionMode(null);setTour({open:false,step:0});}
   function fresh(){setGrowthChoice(null);setRewardAction(null);setFacilityChoice(null);setStackResolve(null);persist(createDuel(Number(trialSeed)>>>0,build));setScreen('run');setModal(null);setSelected(null);setSwingStack([]);setStackEdit(null);setDecisionMode(null);setTour({open:false,step:0});}
   function toggleGrowth(mode){if(lock.current||tour.open)return;persist(setGrowthMode(current.current,mode));}
   function openDecision(mode){

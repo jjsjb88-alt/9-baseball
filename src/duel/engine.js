@@ -91,9 +91,13 @@ export function startBattle(state){
   const live=repertoire(s);
   if(!live.includes(s.battle.aimZone))
     s.battle.aimZone=live.reduce((best,z)=>Math.abs(z-s.battle.aimZone)<Math.abs(best-s.battle.aimZone)?z:best,live[0]);
-  // the first match opens with the fixed tutorial hand — only the cards still in the deck (a trimmed
-  // deck used to deal a removed card and crash the battle screen); any gap is drawn normally
-  if(s.stage===0){const inDeck=new Set(s.deck.map(c=>c.id));s.battle.hand=['c0','c1','c2','c3','c4'].filter(id=>inDeck.has(id));s.battle.draw=s.battle.draw.filter(id=>!s.battle.hand.includes(id));draw(s,5-s.battle.hand.length);}else draw(s,5);
+  // The fixed opening hand only holds while those cards are still in the deck. 1막의 모든 노드가
+  // stage 0이라 라커룸에서 c0을 빼면 그 뒤 전투가 덱에 없는 id를 손패에 얹고 화면이 죽었다.
+  if(s.stage===0){
+    const opening=['c0','c1','c2','c3','c4'].filter(id=>s.deck.some(c=>c.id===id));
+    s.battle.hand=opening;s.battle.draw=s.battle.draw.filter(id=>!opening.includes(id));
+    if(opening.length<5)draw(s,5-opening.length);
+  }else draw(s,5);
   dealPitch(s);s.last={kind:'start',text:'1번 강한결 입장 · 경향을 읽고 노릴 존과 스윙을 고르세요.',events:[],runs:0,outs:0};return s;
 }
 export function setAimZone(state,zone){
@@ -775,4 +779,10 @@ export const selectV10Map=state=>state?.version===10?runMapSelector(state.runMap
 
 export const V10_SAVE_KEY=V10_STORAGE_KEY;
 export function saveV10Duel(storage,state){saveV10State(storage,state);}
-export function readV10Duel(storage){return readV10State(storage);}
+// 이 수정 이전에 오염된 저장은 손패에 덱에 없는 id를 들고 있다. 불러올 때 버린다.
+export function v10NormalizeHand(state){
+  const hand=state?.battle?.hand;if(!Array.isArray(hand)||!Array.isArray(state.deck))return state;
+  const ids=new Set(state.deck.map(c=>c.id)),kept=hand.filter(id=>ids.has(id));
+  return kept.length===hand.length?state:{...state,battle:{...state.battle,hand:kept}};
+}
+export function readV10Duel(storage){return v10NormalizeHand(readV10State(storage));}

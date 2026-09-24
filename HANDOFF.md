@@ -37,6 +37,84 @@ SVG/PNG 같은 포맷은 품질 기준이 아니며, 실루엣·인체비례·�
 Golden Master는 `docs/design/v12/` 아래 정적 결정용 산출물로만 작업한다.
 런타임 제품 코드, App.jsx, 엔진, 규칙, 밸런스, 저장, main, deploy는 사용자 D1 승인 전까지 건드리지 않는다.
 390×844 실제 PNG를 직접 검수하고 사용자에게 보여준 뒤 명시적 승인을 받아야 D1을 열 수 있다.
+## 배포 전환 — Vercel · 2026-09-24
+
+- 공개 플레이 주소: **https://9-baseball.vercel.app/** — 사용자가 Vercel 연결 후 정상 진입 확인.
+- Vercel은 main push마다 자동 배포, PR/브랜치마다 미리보기 URL 자동 생성. 앞으로 확인용 빌드는 `deploy-pages.yml`에 `/batter-vN/` 경로를 추가하지 말고 PR 미리보기를 쓴다.
+- `vite.config.js` base는 GitHub Actions 밖에서 `/`라 Vercel용 코드 변경 없음.
+- GitHub Pages는 **당분간 병행 유지**. 저장소 private 전환 시(무료 플랜에선 Pages 중단) `deploy-pages.yml`과 Pages 링크 문서를 함께 정리한다.
+- localStorage 세이브는 도메인별 → Pages 세이브는 Vercel로 넘어가지 않는다.
+- MAIN RUN 새 런은 매번 무작위 시드(`src/duel/run-seed.js`). 이전엔 타이틀의 비교용 시드 `20260910`이 메인런에도 쓰여 모든 런이 같은 지도·상대·투구였다. 재현이 필요하면 `?seed=N`.
+- 참고: #88(batter v3)은 이미 main에 merge·배포됐다. 아래 V3 절의 "main merge 금지"는 당시 기록이다.
+
+## 최우선 인수인계 — BATTER MOTION LOOP V3 · 2026-09-22
+
+**사용자 최신 판정: "스윙할때 약간 배트랑얼굴 그래픽 깨지는것같고, 부드럽다는 느낌보다는 끊어지는 느낌이 강해"**
+
+이 피드백을 V2보다 우선한다.
+
+새 세션은 먼저 아래를 읽는다.
+
+1. `docs/visual/BATTER-MOTION-LOOP-V3.md`
+2. `docs/visual/BATTER-MOTION-LOOP-V2.md`
+3. `docs/visual/BATTER-ASSET-LOOP-V1.md`
+4. `VISUAL-REBOOT-LOOP-ENGINEERING.md`
+5. `AGENTS.md`
+
+### 현재 브랜치 / 확인 링크
+
+- 작업 브랜치: `codex/batter-motion-loop-v3`
+- 부모: `codex/batter-motion-loop-v2`
+- 실제 플레이: `https://jjsjb88-alt.github.io/9-baseball/batter-v3/`
+- Cinema Lab: `https://jjsjb88-alt.github.io/9-baseball/batter-v3/?cinema=1`
+- **main은 건드리지 않는다. 사용자 확인 전 merge 금지.**
+
+### V3 핵심
+
+V2 8포즈를 다음 10포즈로 확장했다.
+
+`ready → load → trigger → swing-start → swing-mid → contact → follow-through-early → follow-through-late → finish → settle`
+
+핵심 변경:
+- 승인된 V1 ready / trigger / contact / finish 앵커는 유지.
+- V3 intermediate는 `assets/batter-reboot-v3/`.
+- 얼굴/헬멧은 clean source layer를 다시 덮어써 warp 파손 방지.
+- 배트는 body warp에 섞지 않고 protected rigid layer로 분리/회전.
+- follow-through의 ghost barrel 잔상도 full-tube extraction으로 제거.
+- runtime은 한 pose씩 `flushSync` commit → `requestAnimationFrame` paint → 다음 pose 예약.
+- 투수 V4 60-frame playback은 보호.
+
+### 실제 QA
+
+필수 뷰포트:
+- 390×844
+- 844×390
+- 1440×900
+
+현재 real-browser QA에서 세 뷰 모두:
+- 10포즈 순서 관찰
+- intermediate pose 최소 노출시간 기준 통과
+- 192×192 runtime art 확인
+- stand-in 0
+- WebGL2 active
+- page error 0
+- `failures: []`
+
+전체 Vitest / smoke / production build도 통과했다.
+
+### 현재 판정
+
+**V3는 사용자 재검수용 candidate다.**
+
+자동 QA 성공만으로 최종 visual PASS라고 선언하지 않는다.
+사용자가 `/batter-v3/` 실제 플레이에서 얼굴·배트 무결성과 모션 흐름을 확인해야 한다.
+
+통과 전:
+- 60Hz 보간/재생 확장 금지.
+- main merge 금지.
+- procedural/block batter 회귀 금지.
+
+사용자에게 추가 피드백이 오면 V3 키포즈/타이밍을 먼저 수정한다.
 
 ---
 
@@ -71,6 +149,78 @@ P0은 결정 없이 지금 시작할 수 있고, P1부터는 D1이 필요하다.
 검증: CSS 정적 집계 및 실제 엔진 함수 반례는 재현 가능하다.
 기존 브라우저 수치의 임계값/좌표 해석을 정정했다. 수정안의 브라우저·사람 검증은 미완료다.
 다음 구현 시에는 승인된 범위와 D1~D8 상태를 확인하고 대표 전투 프로토타입부터 검증한다.
+## 최우선 인수인계 — BATTER MOTION LOOP V2 · 2026-09-21
+
+**사용자 최신 판정: "그냥 서있는 모습만 반복되는 것 같다."**
+
+이 판정을 최우선으로 적용한다.
+
+새 세션은 어떤 기능 추가보다 먼저 아래 문서를 읽고 즉시 이어서 작업한다.
+
+1. `docs/visual/BATTER-MOTION-LOOP-V2.md`
+2. `docs/visual/BATTER-ASSET-LOOP-V1.md`
+3. `VISUAL-REBOOT-LOOP-ENGINEERING.md`
+4. `AGENTS.md`
+
+### 현재 작업 브랜치
+
+- 작업 브랜치: `codex/batter-motion-loop-v2`
+- 부모: `codex/batter-asset-loop-v1`
+- V1 확인용 프리뷰: `https://jjsjb88-alt.github.io/9-baseball/batter-v1/`
+
+### 현재 판정
+
+V1은 새 authored batter art를 실제 게임에 넣는 데는 성공했지만,
+실제 플레이에서는 `idle / trigger / contact / finish` 포즈 전환만 보여
+**스윙이 아니라 정지 이미지 반복처럼 읽힌다.**
+
+따라서:
+- V1 visual PASS 아님.
+- main 병합 금지.
+- 60Hz 완성 선언 금지.
+- procedural/block batter로 회귀 금지.
+
+### 다음 작업의 단일 목표
+
+**타자가 실제로 스윙하는 것처럼 보여야 한다.**
+
+최소 8단계:
+`ready → load → trigger → swing-start → contact → follow-through-early → finish → settle`
+
+현재 4개 앵커:
+- `assets/batter-reboot-v1/batter-ready.png`
+- `assets/batter-reboot-v1/batter-trigger.png`
+- `assets/batter-reboot-v1/batter-contact.png`
+- `assets/batter-reboot-v1/batter-finish.png`
+
+추가 authored pose:
+- load
+- swing-start
+- follow-through-early
+- settle
+
+정적/키포즈 흐름이 실제 모바일 화면에서 통과한 뒤에만 60Hz 보간/재생으로 확장한다.
+
+### 필수 QA
+
+- 390×844
+- 844×390
+- 1440×900
+
+각 뷰에서 ready / swing-start / contact / finish를 직접 확인한다.
+
+다음이 모두 충족되어야 통과:
+- 더 이상 서있는 그림 반복처럼 보이지 않음.
+- trigger→contact 가속이 읽힘.
+- contact 순간이 분명함.
+- 하체→몸통→손→배트 흐름이 연결됨.
+- finish가 contact의 결과처럼 보임.
+- 배트 순간이동 없음.
+- 발/기준선 흔들림 없음.
+- 투수와 같은 게임 세계에 속해 보임.
+- 모바일 가독성 유지.
+
+**테스트/빌드 성공은 visual PASS의 증거가 아니다. 사용자 확인 전 merge 금지.**
 
 ---
 
