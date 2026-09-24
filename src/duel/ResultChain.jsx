@@ -21,8 +21,10 @@ export function resultChainOf(revealed,combat){
     cover=hit?{tone:'support',text:'지원 커버 안 · '+nameOf(hit.kind)}:{tone:'miss',text:'커버 밖'};
   }
   let hp=null;
-  if(combat&&revealed.action!=='take'){
-    hp=combat.damage>0?'투수 HP −'+combat.damage+' · 피해 효율 ×'+Math.round((combat.damageRate??1)*100)+'%'+(combat.precisionBonus>0?' · 정확 적중 +'+combat.precisionBonus:''):'투수 HP 변화 없음';
+  // a watched pitch can cost HP too (ball, walk): the HP step always reads the engine's damage
+  if(combat){
+    const rate=revealed.action==='take'?'':' · 피해 효율 ×'+Math.round((combat.damageRate??1)*100)+'%';
+    hp=combat.damage>0?'투수 HP −'+combat.damage+rate+(combat.precisionBonus>0?' · 정확 적중 +'+combat.precisionBonus:''):'투수 HP 변화 없음';
   }
   return {pitch,cover,call:revealed.label,hp};
 }

@@ -34,10 +34,13 @@ describe('V12 P4-1 cause chain data',()=>{
     expect(c.pitch).toBe('실제 공 · 존 밖 볼');
     expect(c.cover.tone).toBe('miss');
   });
-  it('a watched pitch has no cover step',()=>{
-    const c=resultChainOf({zone:9,label:'볼',kind:'ball',action:'take',primaryCoverage:[],supportCoverages:[],coverage:[]},null);
+  it('a watched pitch has no cover step, but its HP change is still shown',()=>{
+    const take={zone:9,label:'볼넷',kind:'walk',action:'take',primaryCoverage:[],supportCoverages:[],coverage:[]};
+    const c=resultChainOf(take,null);
     expect(c.cover).toEqual({tone:'take',text:'지켜봄 · 스윙 안 함'});
     expect(c.hp).toBeNull();
+    expect(resultChainOf(take,combat({damage:6})).hp).toBe('투수 HP −6');
+    expect(resultChainOf(take,combat({damage:0})).hp).toBe('투수 HP 변화 없음');
   });
   it('shows a precision bonus as its own HP part, from the engine',()=>{
     const c=resultChainOf(swing(),combat({damage:15,precisionBonus:3}));
