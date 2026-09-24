@@ -181,6 +181,15 @@ describe('V10 engine loop and save isolation',()=>{
     expect(readV10Duel(storage)).toEqual(s);
   });
 
+  it('saves and resumes a taken pitch with no aim zone',()=>{
+    const bag=new Map(),storage={getItem:k=>bag.get(k)??null,setItem:(k,v)=>bag.set(k,String(v))};
+    let s=createV10Duel(29);
+    s=enterV10Node(s,'a1-entry');
+    s=playV10Action(s,{type:'take'});
+    expect(s.v10.lastCombat.aimZone).toBeNull();
+    saveV10Duel(storage,s);
+    expect(readV10Duel(storage)).toEqual(s);
+  });
   it('ignores the legacy score target until pitcher HP actually reaches zero',()=>{
     let s=createV10Duel(29);s=enterV10Node(s,'a1-entry');
     const hp=s.pitcher.hp;s.battle.runs=99;

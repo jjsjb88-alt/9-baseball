@@ -6,6 +6,7 @@ import Duel from '../src/duel/App.jsx';
 import {createDuel,startBattle,chooseRoute,playCard,advanceBatter,readDuel,saveDuel,createV10Duel,enterV10Node,saveV10Duel,readV10Duel} from '../src/duel/engine.js';
 import {planAction} from '../src/duel/policy.js';
 import {presentationFor,presentationTimeline} from '../src/duel/presentation.js';
+import {redRushTimeline} from '../src/duel/pitcher-sd.js';
 import {batterMotionV3Timeline} from '../src/duel/batterMotionV3.js';
 import {BUILDS,CARDS,ZONES,DECKBUILDER_BUILD,ROUTE_CHOICES} from '../src/duel/cards.js';
 beforeEach(()=>{localStorage.clear();vi.useFakeTimers()});
@@ -108,7 +109,7 @@ describe('9-zone strategic UI',()=>{
     expect(arena.querySelector('.judgement-layer')).toBeTruthy();
     expect(arena.querySelector('.pixel-cinema')).toBeTruthy();
     expect(arena.querySelector('.pixel-vfx-canvas')).toBeTruthy();
-    const timeline=presentationTimeline(presentationFor(readV10Duel(localStorage)));
+    const timeline=redRushTimeline(presentationTimeline(presentationFor(readV10Duel(localStorage))));
     act(()=>vi.advanceTimersByTime(timeline.impactAt+1));
     expect(arena.className).toContain('fx-stage-impact');
     expect(arena.querySelector('.sprite-batter.batter-reboot-v3 img.batter-reboot-art')).toBeTruthy();
@@ -156,28 +157,46 @@ describe('9-zone strategic UI',()=>{
     expect(arena.querySelector('canvas.pixel-vfx-canvas')).toBeTruthy();
   });
 
-  it('keeps pitcher 60-frame playback while the batter uses authored reboot key poses and overlays the tactical read trace',()=>{
+  it('plays the Red Rush 120-frame atlas beside authored batter poses and tactical read trace',()=>{
     fakeAnimationFrame();
     beginV10();
     fireEvent.click(screen.getByRole('button',{name:'스윙하기',exact:true}));
     fireEvent.click(screen.getByRole('button',{name:'밀어치기',exact:true}));
     fireEvent.click(screen.getByTestId('execute-action'));
     expect(document.querySelector('.sprite-batter.batter-reboot-v3.reboot-pose-ready img.batter-reboot-art')).toBeTruthy();
-    expect(document.querySelector('.sprite-pitcher.v4-sequence.pose-legkick canvas.v4-canvas')).toBeTruthy();
+    expect(document.querySelector('.sprite-pitcher.red-rush-actor.pose-legkick .red-rush-frame.duel-sprite')).toBeTruthy();
     const shot=presentationFor(readV10Duel(localStorage));
-    const timeline=presentationTimeline(shot);
+    const timeline=redRushTimeline(presentationTimeline(shot));
     const motion=batterMotionV3Timeline(shot);
     expect(motion.map(x=>x.pose)).toContain('swing-mid');
     expect(motion.map(x=>x.pose)).toContain('follow-through-late');
     act(()=>vi.advanceTimersByTime(timeline.impactAt+1));
     const batter=document.querySelector('.sprite-batter.batter-reboot-v3 img.batter-reboot-art');
     expect(batter).toBeTruthy();
-    expect(document.querySelector('.sprite-pitcher.v4-sequence.pose-release canvas.v4-canvas')).toBeTruthy();
+    expect(document.querySelector('.sprite-pitcher.red-rush-actor.pose-release .red-rush-frame.duel-sprite')).toBeTruthy();
     expect(document.querySelector('.read-trace')).toBeTruthy();
     expect(document.querySelector('.read-trace .actual')).toBeTruthy();
     finish();
   });
 
+  it('shows Red Rush art on the first selectable route',()=>{
+    saveV10Duel(localStorage,createV10Duel(1));
+    render(<Duel/>);
+    fireEvent.click(screen.getByRole('button',{name:'MAIN RUN 이어하기',exact:true}));
+    expect(screen.getByRole('img',{name:'레드 러시 투수 전신 원화'})).toBeTruthy();
+  });
+
+  it('retains the V4 pitcher for a saved encounter without an art ID',()=>{
+    fakeAnimationFrame();
+    let s=createV10Duel(2);
+    s=enterV10Node(s,'a1-entry');
+    delete s.runMap.nodes.find(node=>node.id==='a1-entry').opponent.artId;
+    saveV10Duel(localStorage,s);
+    render(<Duel/>);
+    fireEvent.click(screen.getByRole('button',{name:'MAIN RUN 이어하기',exact:true}));
+    expect(document.querySelector('.sprite-pitcher.golden-actor')).toBeTruthy();
+    expect(document.querySelector('.sprite-pitcher.red-rush-actor')).toBeNull();
+  });
   it('uses selective slow motion for a one-zone miss instead of every whiff',()=>{
     beginV10(0,.99);
     fireEvent.click(screen.getByRole('button',{name:'한가운데',exact:true}));
@@ -185,7 +204,7 @@ describe('9-zone strategic UI',()=>{
     fireEvent.click(screen.getByRole('button',{name:'밀어치기',exact:true}));
     fireEvent.click(screen.getByTestId('execute-action'));
     expect(document.querySelector('.presentation-stage-windup')).toBeTruthy();
-    const timeline=presentationTimeline(presentationFor(readV10Duel(localStorage)));
+    const timeline=redRushTimeline(presentationTimeline(presentationFor(readV10Duel(localStorage))));
     act(()=>vi.advanceTimersByTime(timeline.impactAt+1));expect(document.querySelector('.presentation-stage-impact')).toBeTruthy();
     act(()=>vi.advanceTimersByTime(timeline.freeze+1));expect(document.querySelector('.presentation-stage-slowmo')).toBeTruthy();
     expect(document.querySelector('.slowmo-mark')?.textContent).toBe('ONE ZONE');

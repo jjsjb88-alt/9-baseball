@@ -1,0 +1,345 @@
+{
+  "id": "red-rush-pitch-v1",
+  "character": "regular-01-red-rush",
+  "facing": "screen-left",
+  "throws": "screen-left",
+  "frameCount": 120,
+  "uniqueFrameCount": 120,
+  "fps": 60,
+  "durationMs": 2000,
+  "frameSize": [
+    256,
+    256
+  ],
+  "atlas": "red-rush-pitch-120-atlas.png",
+  "atlasColumns": 10,
+  "atlasRows": 12,
+  "keyPoses": [
+    {
+      "frame": 0,
+      "pose": "set",
+      "sheet": "keys",
+      "cell": 0
+    },
+    {
+      "frame": 4,
+      "pose": "set-breathe",
+      "sheet": "load",
+      "cell": 0
+    },
+    {
+      "frame": 8,
+      "pose": "glove-raise",
+      "sheet": "load",
+      "cell": 1
+    },
+    {
+      "frame": 12,
+      "pose": "coil-early",
+      "sheet": "load",
+      "cell": 2
+    },
+    {
+      "frame": 16,
+      "pose": "coil-late",
+      "sheet": "load",
+      "cell": 3
+    },
+    {
+      "frame": 20,
+      "pose": "heel-rise",
+      "sheet": "load",
+      "cell": 4
+    },
+    {
+      "frame": 24,
+      "pose": "knee-rise",
+      "sheet": "load",
+      "cell": 5
+    },
+    {
+      "frame": 28,
+      "pose": "coil",
+      "sheet": "keys",
+      "cell": 1
+    },
+    {
+      "frame": 31,
+      "pose": "ball-separate",
+      "sheet": "inbetweens",
+      "cell": 1
+    },
+    {
+      "frame": 34,
+      "pose": "leg-kick",
+      "sheet": "keys",
+      "cell": 2
+    },
+    {
+      "frame": 37,
+      "pose": "balance",
+      "sheet": "stride",
+      "cell": 0
+    },
+    {
+      "frame": 40,
+      "pose": "hand-break",
+      "sheet": "stride",
+      "cell": 1
+    },
+    {
+      "frame": 43,
+      "pose": "glove-reach",
+      "sheet": "stride",
+      "cell": 2
+    },
+    {
+      "frame": 46,
+      "pose": "stride-start",
+      "sheet": "stride",
+      "cell": 3
+    },
+    {
+      "frame": 49,
+      "pose": "front-foot",
+      "sheet": "stride",
+      "cell": 4
+    },
+    {
+      "frame": 52,
+      "pose": "plant",
+      "sheet": "stride",
+      "cell": 5
+    },
+    {
+      "frame": 55,
+      "pose": "wide-stride",
+      "sheet": "keys",
+      "cell": 3
+    },
+    {
+      "frame": 58,
+      "pose": "arm-cock",
+      "sheet": "inbetweens",
+      "cell": 3
+    },
+    {
+      "frame": 61,
+      "pose": "arm-back",
+      "sheet": "release",
+      "cell": 0
+    },
+    {
+      "frame": 64,
+      "pose": "hip-turn",
+      "sheet": "release",
+      "cell": 1
+    },
+    {
+      "frame": 67,
+      "pose": "elbow-lead",
+      "sheet": "release",
+      "cell": 2
+    },
+    {
+      "frame": 70,
+      "pose": "whip",
+      "sheet": "release",
+      "cell": 3
+    },
+    {
+      "frame": 73,
+      "pose": "fingertips",
+      "sheet": "release",
+      "cell": 4
+    },
+    {
+      "frame": 76,
+      "pose": "ball-out",
+      "sheet": "release",
+      "cell": 5
+    },
+    {
+      "frame": 79,
+      "pose": "release",
+      "sheet": "keys",
+      "cell": 4
+    },
+    {
+      "frame": 81,
+      "pose": "post-release",
+      "sheet": "inbetweens",
+      "cell": 4
+    },
+    {
+      "frame": 83,
+      "pose": "decelerate",
+      "sheet": "follow",
+      "cell": 0
+    },
+    {
+      "frame": 87,
+      "pose": "rear-leg-rise",
+      "sheet": "follow",
+      "cell": 1
+    },
+    {
+      "frame": 91,
+      "pose": "fold",
+      "sheet": "follow",
+      "cell": 2
+    },
+    {
+      "frame": 95,
+      "pose": "deep-follow",
+      "sheet": "follow",
+      "cell": 3
+    },
+    {
+      "frame": 99,
+      "pose": "rise",
+      "sheet": "follow",
+      "cell": 4
+    },
+    {
+      "frame": 103,
+      "pose": "recover",
+      "sheet": "follow",
+      "cell": 5
+    },
+    {
+      "frame": 107,
+      "pose": "reset",
+      "sheet": "follow",
+      "cell": 5
+    },
+    {
+      "frame": 112,
+      "pose": "set-again",
+      "sheet": "keys",
+      "cell": 0
+    }
+  ],
+  "frames": [
+    "red-rush-pitch-000.png",
+    "red-rush-pitch-001.png",
+    "red-rush-pitch-002.png",
+    "red-rush-pitch-003.png",
+    "red-rush-pitch-004.png",
+    "red-rush-pitch-005.png",
+    "red-rush-pitch-006.png",
+    "red-rush-pitch-007.png",
+    "red-rush-pitch-008.png",
+    "red-rush-pitch-009.png",
+    "red-rush-pitch-010.png",
+    "red-rush-pitch-011.png",
+    "red-rush-pitch-012.png",
+    "red-rush-pitch-013.png",
+    "red-rush-pitch-014.png",
+    "red-rush-pitch-015.png",
+    "red-rush-pitch-016.png",
+    "red-rush-pitch-017.png",
+    "red-rush-pitch-018.png",
+    "red-rush-pitch-019.png",
+    "red-rush-pitch-020.png",
+    "red-rush-pitch-021.png",
+    "red-rush-pitch-022.png",
+    "red-rush-pitch-023.png",
+    "red-rush-pitch-024.png",
+    "red-rush-pitch-025.png",
+    "red-rush-pitch-026.png",
+    "red-rush-pitch-027.png",
+    "red-rush-pitch-028.png",
+    "red-rush-pitch-029.png",
+    "red-rush-pitch-030.png",
+    "red-rush-pitch-031.png",
+    "red-rush-pitch-032.png",
+    "red-rush-pitch-033.png",
+    "red-rush-pitch-034.png",
+    "red-rush-pitch-035.png",
+    "red-rush-pitch-036.png",
+    "red-rush-pitch-037.png",
+    "red-rush-pitch-038.png",
+    "red-rush-pitch-039.png",
+    "red-rush-pitch-040.png",
+    "red-rush-pitch-041.png",
+    "red-rush-pitch-042.png",
+    "red-rush-pitch-043.png",
+    "red-rush-pitch-044.png",
+    "red-rush-pitch-045.png",
+    "red-rush-pitch-046.png",
+    "red-rush-pitch-047.png",
+    "red-rush-pitch-048.png",
+    "red-rush-pitch-049.png",
+    "red-rush-pitch-050.png",
+    "red-rush-pitch-051.png",
+    "red-rush-pitch-052.png",
+    "red-rush-pitch-053.png",
+    "red-rush-pitch-054.png",
+    "red-rush-pitch-055.png",
+    "red-rush-pitch-056.png",
+    "red-rush-pitch-057.png",
+    "red-rush-pitch-058.png",
+    "red-rush-pitch-059.png",
+    "red-rush-pitch-060.png",
+    "red-rush-pitch-061.png",
+    "red-rush-pitch-062.png",
+    "red-rush-pitch-063.png",
+    "red-rush-pitch-064.png",
+    "red-rush-pitch-065.png",
+    "red-rush-pitch-066.png",
+    "red-rush-pitch-067.png",
+    "red-rush-pitch-068.png",
+    "red-rush-pitch-069.png",
+    "red-rush-pitch-070.png",
+    "red-rush-pitch-071.png",
+    "red-rush-pitch-072.png",
+    "red-rush-pitch-073.png",
+    "red-rush-pitch-074.png",
+    "red-rush-pitch-075.png",
+    "red-rush-pitch-076.png",
+    "red-rush-pitch-077.png",
+    "red-rush-pitch-078.png",
+    "red-rush-pitch-079.png",
+    "red-rush-pitch-080.png",
+    "red-rush-pitch-081.png",
+    "red-rush-pitch-082.png",
+    "red-rush-pitch-083.png",
+    "red-rush-pitch-084.png",
+    "red-rush-pitch-085.png",
+    "red-rush-pitch-086.png",
+    "red-rush-pitch-087.png",
+    "red-rush-pitch-088.png",
+    "red-rush-pitch-089.png",
+    "red-rush-pitch-090.png",
+    "red-rush-pitch-091.png",
+    "red-rush-pitch-092.png",
+    "red-rush-pitch-093.png",
+    "red-rush-pitch-094.png",
+    "red-rush-pitch-095.png",
+    "red-rush-pitch-096.png",
+    "red-rush-pitch-097.png",
+    "red-rush-pitch-098.png",
+    "red-rush-pitch-099.png",
+    "red-rush-pitch-100.png",
+    "red-rush-pitch-101.png",
+    "red-rush-pitch-102.png",
+    "red-rush-pitch-103.png",
+    "red-rush-pitch-104.png",
+    "red-rush-pitch-105.png",
+    "red-rush-pitch-106.png",
+    "red-rush-pitch-107.png",
+    "red-rush-pitch-108.png",
+    "red-rush-pitch-109.png",
+    "red-rush-pitch-110.png",
+    "red-rush-pitch-111.png",
+    "red-rush-pitch-112.png",
+    "red-rush-pitch-113.png",
+    "red-rush-pitch-114.png",
+    "red-rush-pitch-115.png",
+    "red-rush-pitch-116.png",
+    "red-rush-pitch-117.png",
+    "red-rush-pitch-118.png",
+    "red-rush-pitch-119.png"
+  ]
+}

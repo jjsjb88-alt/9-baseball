@@ -31,12 +31,12 @@ export function batterMotionV3Timeline(shot){
   if(!shot)return [{pose:'ready',at:0}];
   const grade=shot.grade||'';
   const motion=shot.motion||{};
-  const impact=clamp(Number(motion.impactAt)||260,220,390);
+  const impact=motion.syncToPitcher?Math.max(220,Number(motion.impactAt)||260):clamp(Number(motion.impactAt)||260,220,390);
   const settleAt=Math.max(impact+500,Number(motion.settleAt)||impact+610);
   const duration=Math.max(settleAt+150,Number(motion.duration)||settleAt+300);
 
-  const loadAt=rounded(clamp(impact*0.18,42,72));
-  const triggerAt=rounded(clamp(impact*0.39,88,148));
+  const loadAt=rounded(motion.syncToPitcher?Math.max(42,impact-320):clamp(impact*0.18,42,72));
+  const triggerAt=rounded(motion.syncToPitcher?Math.max(loadAt+42,impact-200):clamp(impact*0.39,88,148));
   const swingStartAt=rounded(Math.max(triggerAt+42,impact-118));
   const swingMidAt=rounded(Math.max(swingStartAt+38,impact-58));
 

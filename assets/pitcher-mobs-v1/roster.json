@@ -1,0 +1,139 @@
+[
+  {
+    "id": "regular-01-red-rush",
+    "name": "레드 러시",
+    "tier": "battle",
+    "archetype": "high",
+    "age": 27,
+    "pose": "windup",
+    "file": "regular-01-red-rush.png",
+    "generated": true,
+    "runtimeIntegrated": false
+  },
+  {
+    "id": "regular-02-teal-mirage",
+    "name": "청록 미라주",
+    "tier": "battle",
+    "archetype": "outside",
+    "age": 26,
+    "pose": "set",
+    "file": "regular-02-teal-mirage.png",
+    "generated": true,
+    "runtimeIntegrated": false
+  },
+  {
+    "id": "regular-03-amber-sinker",
+    "name": "앰버 싱커",
+    "tier": "battle",
+    "archetype": "sinker",
+    "age": 28,
+    "pose": "ready",
+    "file": "regular-03-amber-sinker.png",
+    "generated": true,
+    "runtimeIntegrated": false
+  },
+  {
+    "id": "regular-04-ivory-ace",
+    "name": "아이보리 에이스",
+    "tier": "battle",
+    "archetype": "outside",
+    "age": 30,
+    "pose": "set",
+    "file": "regular-04-ivory-ace.png",
+    "generated": true,
+    "runtimeIntegrated": false
+  },
+  {
+    "id": "regular-05-violet-sting",
+    "name": "바이올렛 스팅",
+    "tier": "battle",
+    "archetype": "sinker",
+    "age": 25,
+    "pose": "sidearm-ready",
+    "file": "regular-05-violet-sting.png",
+    "generated": true,
+    "runtimeIntegrated": false
+  },
+  {
+    "id": "regular-06-rose-paint",
+    "name": "로즈 페인트",
+    "tier": "battle",
+    "archetype": "outside",
+    "age": 26,
+    "pose": "ready",
+    "file": "regular-06-rose-paint.png",
+    "generated": true,
+    "runtimeIntegrated": false
+  },
+  {
+    "id": "elite-01-cobalt-impact",
+    "name": "코발트 임팩트",
+    "tier": "elite",
+    "archetype": "high",
+    "age": 29,
+    "pose": "power-set",
+    "file": "elite-01-cobalt-impact.png",
+    "generated": true,
+    "runtimeIntegrated": false
+  },
+  {
+    "id": "elite-02-neon-trick",
+    "name": "네온 트릭",
+    "tier": "elite",
+    "archetype": "sinker",
+    "age": 27,
+    "pose": "stride",
+    "file": "elite-02-neon-trick.png",
+    "generated": true,
+    "runtimeIntegrated": false
+  },
+  {
+    "id": "elite-03-wine-bluff",
+    "name": "와인 블러프",
+    "tier": "elite",
+    "archetype": "closer",
+    "age": 31,
+    "pose": "taunt-set",
+    "file": "elite-03-wine-bluff.png",
+    "generated": true,
+    "runtimeIntegrated": false
+  },
+  {
+    "id": "boss-01-emerald-tyrant",
+    "name": "에메랄드 타이런트",
+    "tier": "boss",
+    "act": 1,
+    "archetype": "sinker",
+    "age": 32,
+    "pose": "coiled-set",
+    "file": "boss-01-emerald-tyrant.png",
+    "generated": true,
+    "runtimeIntegrated": false
+  },
+  {
+    "id": "boss-02-platinum-halo",
+    "name": "플래티넘 헤일로",
+    "tier": "boss",
+    "act": 2,
+    "archetype": "high",
+    "age": 30,
+    "pose": "leg-kick",
+    "file": "boss-02-platinum-halo.png",
+    "generated": true,
+    "runtimeIntegrated": false,
+    "designAdjustment": "Closed baseball uniform with full-length trousers; nonsexual competitive boss design"
+  },
+  {
+    "id": "boss-03-black-eclipse",
+    "name": "블랙 이클립스",
+    "tier": "boss",
+    "act": 3,
+    "archetype": "closer",
+    "age": 33,
+    "pose": "release",
+    "file": "boss-03-black-eclipse.png",
+    "generated": true,
+    "runtimeIntegrated": false,
+    "designAdjustment": "Closed baseball uniform with full-length trousers; nonsexual competitive boss design"
+  }
+]

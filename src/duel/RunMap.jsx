@@ -152,7 +152,7 @@ function roadPath(a,b,rowCount){
   return `M ${p.x1} ${p.y1} C ${p.x1} ${mid}, ${p.x2} ${mid}, ${p.x2} ${p.y2}`;
 }
 
-export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableIds=[],onSelect}){
+export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableIds=[],onSelect,redRushPortrait=null}){
   const reduced=useReducedMotion();
   const acts=useMemo(()=>buildActs(nodes),[nodes]);
   const reachable=useMemo(()=>new Set(reachableIds||[]),[reachableIds]);
@@ -333,6 +333,7 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
           {preview?(
             <>
               <div className={`v10-preview-diorama v10-preview-diorama-${preview.type}`}>
+                {preview.opponent?.artId==='regular-01-red-rush'&&redRushPortrait&&<img className="v10-preview-red-rush-art" src={redRushPortrait} alt="레드 러시 투수 전신 원화"/>}
                 <PixelDiorama type={preview.type} opponent={preview.opponent}/>
                 {preview.opponent&&<ZoneFingerprint opponent={preview.opponent}/>}
                 <span className="v10-preview-emblem"><MapIcon type={preview.type}/></span>
