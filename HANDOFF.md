@@ -7,6 +7,7 @@
 - `vite.config.js` base는 GitHub Actions 밖에서 `/`라 Vercel용 코드 변경 없음.
 - GitHub Pages는 **당분간 병행 유지**. 저장소 private 전환 시(무료 플랜에선 Pages 중단) `deploy-pages.yml`과 Pages 링크 문서를 함께 정리한다.
 - localStorage 세이브는 도메인별 → Pages 세이브는 Vercel로 넘어가지 않는다.
+- MAIN RUN 새 런은 매번 무작위 시드(`src/duel/run-seed.js`). 이전엔 타이틀의 비교용 시드 `20260910`이 메인런에도 쓰여 모든 런이 같은 지도·상대·투구였다. 재현이 필요하면 `?seed=N`.
 - 참고: #88(batter v3)은 이미 main에 merge·배포됐다. 아래 V3 절의 "main merge 금지"는 당시 기록이다.
 
 ## 최우선 인수인계 — BATTER MOTION LOOP V3 · 2026-09-22
