@@ -74,22 +74,22 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          node scripts/actor-runtime-perf.mjs http://127.0.0.1:5177/ .qa-actor-runtime candidate | tee .qa-candidate.log
+          node scripts/actor-runtime-perf.mjs http://127.0.0.1:5177/ qa-actor-runtime candidate | tee .qa-candidate.log
 
       - name: Measure main gameplay
         working-directory: candidate
         shell: bash
         run: |
           set -o pipefail
-          node scripts/actor-runtime-perf.mjs http://127.0.0.1:5178/ .qa-actor-runtime baseline | tee .qa-baseline.log
+          node scripts/actor-runtime-perf.mjs http://127.0.0.1:5178/ qa-actor-runtime baseline | tee .qa-baseline.log
 
       - name: Compare frame pacing
         working-directory: candidate
         run: |
           node - <<'NODE'
           const fs=require('fs');
-          const a=JSON.parse(fs.readFileSync('.qa-actor-runtime/candidate.json'));
-          const b=JSON.parse(fs.readFileSync('.qa-actor-runtime/baseline.json'));
+          const a=JSON.parse(fs.readFileSync('qa-actor-runtime/candidate.json'));
+          const b=JSON.parse(fs.readFileSync('qa-actor-runtime/baseline.json'));
           for(let i=0;i<a.length;i++){
             const x=a[i],y=b.find(z=>z.name===x.name);
             console.log(x.name, 'p95', y.p95FrameMs, '->', x.p95FrameMs, 'over33', y.over33ms, '->', x.over33ms, 'fps', y.approxFps, '->', x.approxFps);
@@ -103,7 +103,7 @@ jobs:
         with:
           name: actor-runtime-smoothness
           path: |
-            candidate/.qa-actor-runtime
+            candidate/qa-actor-runtime
             candidate/.qa-candidate.log
             candidate/.qa-baseline.log
             /tmp/candidate.log
