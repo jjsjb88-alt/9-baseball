@@ -27,6 +27,7 @@ import "./duel/v12-result.css";
 import "./duel/v12-overflow-safe.css";
 import "./duel/v12-map.css";
 import "./duel/v12-help.css";
+import "./duel/title-pixel.css";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
