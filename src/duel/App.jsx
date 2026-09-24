@@ -29,6 +29,7 @@ import BattleReadout from './BattleReadout.jsx';
 import DecisionDebrief from './DecisionDebrief.jsx';
 import useAdaptivePerformance from './useAdaptivePerformance.js';
 import {rewardLinks,failureJourney,runStoryItems} from './ux.js';
+import {mainRunSeed} from './run-seed.js';
 import batterIdle from '../../assets/sprites-v1/batter-idle.png';
 import batterLoad from '../../assets/sprites-v1/batter-load.png';
 import batterContact from '../../assets/sprites-v1/batter-contact.png';
@@ -843,7 +844,7 @@ export default function Duel(){
     persist(next);
     if(animate)startPresentation(next);
   }
-  function freshV10(){setGrowthChoice(null);setRewardAction(null);setFacilityChoice(null);setStackResolve(null);persist(createV10Duel(Number(trialSeed)>>>0));setScreen('run');setModal(null);setSelected(null);setSwingStack([]);setStackEdit(null);setDecisionMode(null);setTour({open:false,step:0});}
+  function freshV10(){setGrowthChoice(null);setRewardAction(null);setFacilityChoice(null);setStackResolve(null);persist(createV10Duel(mainRunSeed()));setScreen('run');setModal(null);setSelected(null);setSwingStack([]);setStackEdit(null);setDecisionMode(null);setTour({open:false,step:0});}
   function fresh(){setGrowthChoice(null);setRewardAction(null);setFacilityChoice(null);setStackResolve(null);persist(createDuel(Number(trialSeed)>>>0,build));setScreen('run');setModal(null);setSelected(null);setSwingStack([]);setStackEdit(null);setDecisionMode(null);setTour({open:false,step:0});}
   function toggleGrowth(mode){if(lock.current||tour.open)return;persist(setGrowthMode(current.current,mode));}
   function openDecision(mode){

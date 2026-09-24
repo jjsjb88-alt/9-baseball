@@ -1,5 +1,15 @@
 # 9ZONE SHOWDOWN — Codex 인수인계
 
+## 배포 전환 — Vercel · 2026-09-24
+
+- 공개 플레이 주소: **https://9-baseball.vercel.app/** — 사용자가 Vercel 연결 후 정상 진입 확인.
+- Vercel은 main push마다 자동 배포, PR/브랜치마다 미리보기 URL 자동 생성. 앞으로 확인용 빌드는 `deploy-pages.yml`에 `/batter-vN/` 경로를 추가하지 말고 PR 미리보기를 쓴다.
+- `vite.config.js` base는 GitHub Actions 밖에서 `/`라 Vercel용 코드 변경 없음.
+- GitHub Pages는 **당분간 병행 유지**. 저장소 private 전환 시(무료 플랜에선 Pages 중단) `deploy-pages.yml`과 Pages 링크 문서를 함께 정리한다.
+- localStorage 세이브는 도메인별 → Pages 세이브는 Vercel로 넘어가지 않는다.
+- MAIN RUN 새 런은 매번 무작위 시드(`src/duel/run-seed.js`). 이전엔 타이틀의 비교용 시드 `20260910`이 메인런에도 쓰여 모든 런이 같은 지도·상대·투구였다. 재현이 필요하면 `?seed=N`.
+- 참고: #88(batter v3)은 이미 main에 merge·배포됐다. 아래 V3 절의 "main merge 금지"는 당시 기록이다.
+
 ## 최우선 인수인계 — BATTER MOTION LOOP V3 · 2026-09-22
 
 **사용자 최신 판정: "스윙할때 약간 배트랑얼굴 그래픽 깨지는것같고, 부드럽다는 느낌보다는 끊어지는 느낌이 강해"**
