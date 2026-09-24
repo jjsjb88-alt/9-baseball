@@ -91,7 +91,9 @@ export function startBattle(state){
   const live=repertoire(s);
   if(!live.includes(s.battle.aimZone))
     s.battle.aimZone=live.reduce((best,z)=>Math.abs(z-s.battle.aimZone)<Math.abs(best-s.battle.aimZone)?z:best,live[0]);
-  if(s.stage===0){s.battle.hand=['c0','c1','c2','c3','c4'];s.battle.draw=s.battle.draw.filter(id=>!s.battle.hand.includes(id));}else draw(s,5);
+  // the first match opens with the fixed tutorial hand — only the cards still in the deck (a trimmed
+  // deck used to deal a removed card and crash the battle screen); any gap is drawn normally
+  if(s.stage===0){const inDeck=new Set(s.deck.map(c=>c.id));s.battle.hand=['c0','c1','c2','c3','c4'].filter(id=>inDeck.has(id));s.battle.draw=s.battle.draw.filter(id=>!s.battle.hand.includes(id));draw(s,5-s.battle.hand.length);}else draw(s,5);
   dealPitch(s);s.last={kind:'start',text:'1번 강한결 입장 · 경향을 읽고 노릴 존과 스윙을 고르세요.',events:[],runs:0,outs:0};return s;
 }
 export function setAimZone(state,zone){
