@@ -42,8 +42,25 @@ for(const viewport of viewports){
   await page.goto(baseUrl,{waitUntil:'networkidle'});
   await page.getByRole('button',{name:'MAIN RUN 이어하기'}).click();
   await page.waitForSelector('.duel-combat');
-  await page.getByRole('button',{name:'스윙하기',exact:true}).click();
-  await page.getByRole('button',{name:'BASIC SWING',exact:true}).click();
+  const tourSkip=page.getByRole('button',{name:'건너뛰기',exact:true});
+  if(await tourSkip.count())await tourSkip.click().catch(()=>{});
+  const battleState=await page.evaluate(()=>({
+    className:document.querySelector('.duel-combat')?.className||'',
+    phase:document.querySelector('.duel-combat')?.className.match(/phase-([^ ]+)/)?.[1]||'',
+    decision:document.querySelector('.duel-combat')?.className.match(/decision-([^ ]+)/)?.[1]||'',
+    swingButtons:document.querySelectorAll('button.action.swing').length,
+    drawer:!!document.querySelector('.card-drawer'),
+  }));
+  console.log(label,viewport.name,'battle',JSON.stringify(battleState));
+  if(!battleState.drawer){
+    const swing=page.locator('button.action.swing');
+    if(!await swing.count()){
+      await page.screenshot({path:path.join(outDir,label+'-'+viewport.name+'-missing-swing.png'),fullPage:true});
+      throw new Error(label+' '+viewport.name+': battle hub has no swing control · '+JSON.stringify(battleState));
+    }
+    await swing.click({timeout:5000});
+  }
+  await page.locator('button.basic-card').click({timeout:5000});
 
   await page.evaluate(()=>{
     const perf={times:[],longTasks:[],layoutReads:0};

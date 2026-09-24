@@ -71,11 +71,17 @@ jobs:
 
       - name: Measure optimized gameplay
         working-directory: candidate
-        run: node scripts/actor-runtime-perf.mjs http://127.0.0.1:5177/ .qa-actor-runtime candidate | tee .qa-candidate.log
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/actor-runtime-perf.mjs http://127.0.0.1:5177/ .qa-actor-runtime candidate | tee .qa-candidate.log
 
       - name: Measure main gameplay
         working-directory: candidate
-        run: node scripts/actor-runtime-perf.mjs http://127.0.0.1:5178/ .qa-actor-runtime baseline | tee .qa-baseline.log
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/actor-runtime-perf.mjs http://127.0.0.1:5178/ .qa-actor-runtime baseline | tee .qa-baseline.log
 
       - name: Compare frame pacing
         working-directory: candidate
