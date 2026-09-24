@@ -27,3 +27,36 @@
   .v10-run-map-screen .v10-map-preview :is(.v10-map-hint,.v10-preview-diorama){display:none!important}
   .v10-run-map-screen .v10-map-preview .v10-map-cta{position:sticky!important;bottom:0!important;min-height:44px!important}
 }
+
+/* P5-2: open stops side by side — name, reward, risk; the picked one is lit */
+.v10-run-map-screen .v10-preview-compare{display:grid;gap:4px;margin:8px 0;padding:0;list-style:none}
+.v10-run-map-screen .v10-preview-compare button{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"name name" "reward risk";gap:0 8px;width:100%;min-height:44px;padding:4px 8px;border:1px solid #235060;border-radius:2px;background:#07141B;color:#F4ECD8;text-align:left;font:inherit;cursor:pointer}
+.v10-run-map-screen .v10-preview-compare button[aria-pressed="true"]{border:2px solid #FFE4A2;background:#132B33}
+.v10-run-map-screen .v10-preview-compare button:focus-visible{outline:3px solid #FFE4A2;outline-offset:2px}
+.v10-run-map-screen .v10-preview-compare strong{grid-area:name;font-size:13px;line-height:18px;font-weight:900}
+.v10-run-map-screen .v10-preview-compare .reward{grid-area:reward;font-size:12px;line-height:16px;color:#6FD7C6}
+.v10-run-map-screen .v10-preview-compare .risk{grid-area:risk;font-size:12px;line-height:16px;color:#e9b39c;text-align:right}
+/* a node reached by the keyboard scrolls clear of the phone bottom sheet */
+@media (max-width:899px) and (orientation:portrait){
+  .v10-run-map-screen .v10-node{scroll-margin-bottom:330px}
+}
+
+/* landscape and desktop: the report does not scroll inside itself (the legacy overflow:hidden made it
+   its own scroll box, so a sticky button stuck to the box's hidden bottom); its go button sticks to
+   the bottom of the screen while the report is on screen */
+@media (orientation:landscape) and (max-height:500px){
+  .v10-run-map-screen>.map-copy{padding-block:4px!important}
+  .v10-run-map-screen>.map-copy p{display:none!important}
+  .v10-run-map-screen>.map-copy h1{font-size:22px!important;line-height:28px!important;margin:0!important}
+}
+/* #root/body are overflow:auto boxes that never scroll, so position:sticky cannot hold the button to
+   the screen here: it is fixed over the report column instead (the map screen's side padding is 7vw,
+   the report column is 270px on short landscape, 320px on desktop, 12px inner padding) */
+@media (orientation:landscape){
+  .v10-run-map-screen .v10-map-preview{max-height:none!important;overflow:visible!important}
+  .v10-run-map-screen .v10-map-preview .v10-map-cta{position:fixed!important;right:calc(7vw + 12px)!important;bottom:8px!important;width:296px!important;z-index:45!important;box-shadow:0 -8px 18px rgba(3,8,12,.6)!important}
+  .v10-run-map-screen .v10-map-preview{padding-bottom:68px!important}
+}
+@media (orientation:landscape) and (max-height:500px){
+  .v10-run-map-screen .v10-map-preview .v10-map-cta{width:246px!important}
+}

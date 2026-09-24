@@ -230,6 +230,8 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
   const previewType=preview?nodeType(preview.type):null;
   const previewDetail=preview?nodeDetail(preview,previewType):null;
   const previewOpen=!!preview&&reachable.has(preview.id);
+  // V12 P5-2: with a real choice, the open stops are compared side by side (same nodeDetail as the report)
+  const openStops=(reachableIds||[]).map(id=>byId.get(id)).filter(Boolean);
   const nextLabels=preview?(edges||[]).filter(edge=>edge.from===preview.id).map(edge=>{
     const node=byId.get(edge.to);
     return node?nodeName(node)||nodeType(node.type).title:edge.to;
@@ -329,6 +331,12 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
       <aside className="v10-map-preview" data-testid="v10-map-preview">
         <div className="v10-preview-scoreline"><span>SCOUTING REPORT</span><b>{previewDetail?.route||'NEXT STOP'}</b></div>
         <p className="v10-map-hint" id="v10-map-hint">{MAP_HINT}</p>
+        {openStops.length>1&&<ul className="v10-preview-compare" aria-label="갈 수 있는 곳 비교">
+          {openStops.map(node=>{const type=nodeType(node.type),d=nodeDetail(node,type);return <li key={node.id}>
+            <button type="button" aria-pressed={activePreviewId===node.id} disabled={!!departingId} onClick={()=>look(node.id)}>
+              <strong>{nodeName(node)||type.title}</strong><span className="reward">보상 · {d.reward}</span><span className="risk">위험 · {d.risk}</span>
+            </button></li>;})}
+        </ul>}
         <div className="v10-preview-live" aria-live="polite">
           {preview?(
             <>
