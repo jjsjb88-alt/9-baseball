@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>9ZONE · 투수 SD 로스터</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#080d19;color:#eef2ff}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 50% -10%,#1d294c,#080d19 55%) fixed}
+header{max-width:1440px;margin:auto;padding:36px 24px 18px}
+.kicker{color:#d7a76b;letter-spacing:.24em;font-size:11px;font-weight:800}
+h1{font-size:clamp(28px,5vw,54px);line-height:1.04;margin:8px 0 12px}
+header p{color:#a8b4cd;max-width:720px;line-height:1.6;margin:0}
+.controls{display:flex;flex-wrap:wrap;gap:12px;align-items:center;background:#111a2e;border-block:1px solid #283757;padding:15px max(24px,calc((100vw - 1392px)/2));position:sticky;top:0;z-index:3}
+button{font:inherit;color:#151019;background:#efbe80;border:0;border-radius:9px;padding:9px 18px;font-weight:800;cursor:pointer}
+input[type=range]{flex:1;min-width:180px;accent-color:#efbe80}
+output{font-variant-numeric:tabular-nums;min-width:70px;text-align:right;color:#e8d6bf}
+#phase{color:#a8b4cd;min-width:116px;font-size:13px}
+main{max-width:1440px;margin:auto;padding:26px 24px 60px;display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:18px}
+article{border:1px solid #33415f;border-radius:16px;overflow:hidden;background:linear-gradient(145deg,#17233b,#11192b);box-shadow:0 12px 32px #03061177}
+article.boss{border-color:#9d6d5a}
+article.elite{border-color:#6e73a4}
+.stage{height:260px;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 80%,#526a7955,transparent 49%),linear-gradient(#1b2639,#111a2b);position:relative}
+.stage:after{content:"";position:absolute;width:90px;height:11px;left:50%;bottom:16px;transform:translateX(-50%);border-radius:50%;background:#02060b7d;filter:blur(6px)}
+.sprite{height:256px;width:256px;display:block;position:relative;z-index:1;image-rendering:pixelated;background-size:1000% 1200%;background-repeat:no-repeat}
+.meta{padding:14px 16px 17px}
+.tier{font-size:10px;letter-spacing:.2em;color:#ecbd80;font-weight:800;text-transform:uppercase}
+h2{font-size:17px;margin:4px 0 3px}
+code{font-family:ui-monospace,Consolas,monospace;font-size:11px;color:#8997b6}
+.links{margin-top:12px;display:flex;gap:14px}
+a{color:#e5ba84;font-size:12px;text-decoration:none}
+a:hover{text-decoration:underline}
+footer{max-width:1440px;margin:auto;padding:0 24px 36px;color:#8997b6;font-size:12px}
+@media(max-width:550px){main{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:12px 8px}article{border-radius:10px}.stage{height:170px}.sprite{transform:scale(.62)}.meta{padding:8px}h2{font-size:13px}code{font-size:9px;overflow-wrap:anywhere}.links{gap:8px}a{font-size:10px}header{padding:20px 14px}.controls{padding:10px 12px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="kicker">9ZONE HOMEBOUND · PITCHER SD V2</div>
+  <h1>남은 투수 11명 · 120프레임</h1>
+  <p>모두 왼쪽 타자를 향해 와인드업부터 릴리스, 팔로스루까지 투구합니다. 재생을 멈추고 슬라이더로 각 프레임을 확인할 수 있습니다. 기존 레드 러시는 이 목록에서 제외했습니다.</p>
+</header>
+<div class="controls">
+  <button id="toggle" type="button" aria-label="일시정지">일시정지</button>
+  <input id="scrub" type="range" min="0" max="119" value="0" aria-label="프레임">
+  <output id="counter">000 / 119</output><span id="phase">SET</span>
+</div>
+<main id="roster"></main>
+<footer>원본: 캐릭터별 12개 자세 · 재생: 60fps / 2초 · 화면 오른쪽 방향은 수평 반전</footer>
+<script>
+const pitchers=[
+  ['regular-02-teal-mirage','청록 미라주','regular'],
+  ['regular-03-amber-sinker','앰버 싱커','regular'],
+  ['regular-04-ivory-ace','아이보리 에이스','regular'],
+  ['regular-05-violet-sting','바이올렛 스팅','regular'],
+  ['regular-06-rose-paint','로즈 페인트','regular'],
+  ['elite-01-cobalt-impact','코발트 임팩트','elite'],
+  ['elite-02-neon-trick','네온 트릭','elite'],
+  ['elite-03-wine-bluff','와인 블러프','elite'],
+  ['boss-01-emerald-tyrant','에메랄드 타이런트','boss'],
+  ['boss-02-platinum-halo','플래티넘 헤일로','boss'],
+  ['boss-03-black-eclipse','블랙 이클립스','boss']
+];
+const roster=document.getElementById('roster');
+for(const [id,name,tier] of pitchers){
+  const card=document.createElement('article');card.className=tier;
+  const stage=document.createElement('div');stage.className='stage';
+  const sprite=document.createElement('span');sprite.className='sprite';sprite.setAttribute('aria-label',name+' 투구 애니메이션');
+  sprite.style.backgroundImage='url("atlases/'+id+'-pitch-120-atlas.png")';
+  stage.append(sprite);card.append(stage);
+  const meta=document.createElement('div');meta.className='meta';
+  const rank=document.createElement('div');rank.className='tier';rank.textContent=tier;
+  const title=document.createElement('h2');title.textContent=name;
+  const code=document.createElement('code');code.textContent=id;
+  const links=document.createElement('div');links.className='links';
+  const pose=document.createElement('a');pose.href='previews/'+id+'-poses.png';pose.textContent='자세 시트 보기';
+  const gif=document.createElement('a');gif.href='previews/'+id+'-pitch.gif';gif.textContent='GIF 보기';
+  links.append(pose,gif);meta.append(rank,title,code,links);card.append(meta);roster.append(card);
+}
+const sprites=[...document.querySelectorAll('.sprite')];
+const scrub=document.getElementById('scrub'),counter=document.getElementById('counter'),phase=document.getElementById('phase'),toggle=document.getElementById('toggle');
+let frame=0,playing=true,last=0,accum=0;
+function phaseName(n){return n<17?'SET':n<34?'COIL':n<51?'LEG LIFT':n<68?'STRIDE':n<79?'ARM WHIP':n<85?'RELEASE':n<102?'FOLLOW THROUGH':n<112?'RECOVERY':'RESET'}
+function draw(){
+  const col=frame%10,row=Math.floor(frame/10),position=(col*100/9)+'% '+(row*100/11)+'%';
+  for(const sprite of sprites)sprite.style.backgroundPosition=position;
+  scrub.value=frame;counter.textContent=String(frame).padStart(3,'0')+' / 119';phase.textContent=phaseName(frame);
+}
+toggle.addEventListener('click',()=>{playing=!playing;toggle.textContent=playing?'일시정지':'재생';toggle.setAttribute('aria-label',toggle.textContent);last=0;});
+scrub.addEventListener('input',()=>{frame=Number(scrub.value);playing=false;toggle.textContent='재생';toggle.setAttribute('aria-label','재생');draw();});
+function tick(now){
+  if(playing){if(last)accum+=Math.min(100,now-last);while(accum>=1000/60){frame=(frame+1)%120;accum-=1000/60}draw();}
+  last=now;requestAnimationFrame(tick);
+}
+draw();requestAnimationFrame(tick);
+</script>
+</body>
+</html>

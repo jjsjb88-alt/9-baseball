@@ -1,0 +1,99 @@
+{
+  "id": "elite-01-cobalt-impact-pitch-v2",
+  "character": "elite-01-cobalt-impact",
+  "facing": "screen-left",
+  "throws": "screen-left",
+  "frameCount": 120,
+  "uniqueFrameCount": 120,
+  "fps": 60,
+  "durationMs": 2000,
+  "releaseFrame": 79,
+  "frameSize": [
+    256,
+    256
+  ],
+  "atlas": "atlases/elite-01-cobalt-impact-pitch-120-atlas.png",
+  "atlasColumns": 10,
+  "atlasRows": 12,
+  "authoredPoseCount": 12,
+  "keyPoses": [
+    {
+      "frame": 0,
+      "pose": "set",
+      "source": "keys",
+      "cell": 0
+    },
+    {
+      "frame": 9,
+      "pose": "hands-rise",
+      "source": "bridges",
+      "cell": 0
+    },
+    {
+      "frame": 17,
+      "pose": "coil",
+      "source": "keys",
+      "cell": 1
+    },
+    {
+      "frame": 26,
+      "pose": "deeper-coil",
+      "source": "bridges",
+      "cell": 1
+    },
+    {
+      "frame": 34,
+      "pose": "leg-lift",
+      "source": "keys",
+      "cell": 2
+    },
+    {
+      "frame": 43,
+      "pose": "knee-lower",
+      "source": "bridges",
+      "cell": 2
+    },
+    {
+      "frame": 51,
+      "pose": "stride",
+      "source": "keys",
+      "cell": 3
+    },
+    {
+      "frame": 60,
+      "pose": "foot-plant",
+      "source": "bridges",
+      "cell": 3
+    },
+    {
+      "frame": 68,
+      "pose": "arm-whip",
+      "source": "bridges",
+      "cell": 4
+    },
+    {
+      "frame": 79,
+      "pose": "release",
+      "source": "keys",
+      "cell": 4
+    },
+    {
+      "frame": 85,
+      "pose": "follow-through",
+      "source": "keys",
+      "cell": 5
+    },
+    {
+      "frame": 102,
+      "pose": "recovery",
+      "source": "bridges",
+      "cell": 5
+    },
+    {
+      "frame": 112,
+      "pose": "reset",
+      "source": "keys",
+      "cell": 0
+    }
+  ]
+}
