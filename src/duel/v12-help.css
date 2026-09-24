@@ -9,3 +9,23 @@
 .duel-modal .help-controls dt{margin:0;font-size:13px!important;line-height:19px;font-weight:900;color:#FFE4A2}
 .duel-modal .help-controls dd{margin:0;font-size:13px!important;line-height:19px;color:#F4ECD8}
 @media (max-width:420px){.duel-modal .help-controls>div{grid-template-columns:1fr;gap:2px}}
+
+/* V12 P7-2 — the welcome guide. On short landscape its card ran past the bottom edge, so 이전 /
+   건너뛰기 / 다음 설명 were unreachable (only × was). The card now fits the screen, scrolls inside,
+   and keeps its buttons stuck to its bottom. 12px floor for its small labels. */
+.tour-card .tour-eyebrow{font-size:12px!important;letter-spacing:.12em!important}
+.tour-card p,.tour-card .tour-tip{font-size:13px!important;line-height:19px!important}
+@media (orientation:landscape) and (max-height:500px){
+  .tour-card{max-height:calc(100dvh - 16px)!important;overflow:auto!important;padding:12px 16px 0!important}
+  .tour-card.tour-card-top{top:8px!important;bottom:auto!important}
+  .tour-card.tour-card-bottom{bottom:8px!important;top:auto!important}
+  .tour-card h2{font-size:18px!important;line-height:24px!important;margin-bottom:4px!important}
+  .tour-card .tour-dots{margin:8px 0!important}
+  .tour-card .tour-actions{position:sticky!important;bottom:0!important;padding:8px 0 12px!important;background:inherit!important}
+}
+
+/* V12 P7-2 — a save failure is announced without moving the screen: it used to be a 59px block that
+   pushed everything down (in landscape it pushed the result's next button off the screen), and a real
+   storage failure repeats on every save. It now rides over the header, retry button included. */
+.save-error{position:fixed!important;top:0!important;left:0!important;right:0!important;z-index:90!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:10px!important;min-height:44px!important;margin:0!important;padding:4px 12px calc(4px) !important;background:#5a1f16!important;color:#F4ECD8!important;font-size:13px!important;line-height:18px!important;font-weight:800!important;box-shadow:0 6px 18px rgba(0,0,0,.5)!important}
+.save-error button{min-height:36px!important;padding:0 12px!important;font-size:13px!important;white-space:nowrap!important}

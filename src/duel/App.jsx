@@ -32,6 +32,7 @@ import OrderSheet from './OrderSheet.jsx';
 import ResultChain from './ResultChain.jsx';
 import ChoiceOutcome from './ChoiceOutcome.jsx';
 import {helpFacts} from './help-facts.js';
+import {resolveTourTarget} from './tour-target.js';
 import useAdaptivePerformance from './useAdaptivePerformance.js';
 import {rewardLinks,failureJourney,runStoryItems} from './ux.js';
 import batterIdle from '../../assets/sprites-v1/batter-idle.png';
@@ -743,7 +744,7 @@ export default function Duel(){
   useEffect(()=>{
     if(!tour.open||!tourStep){setTourRect(null);return;}
     const refs={scoreboard:scoreboardRef,arena:arenaRef,prepare:prepareRef,swing:swingRef,watch:watchRef,events:eventsRef};
-    const el=refs[tourStep.target]?.current;
+    const el=resolveTourTarget(tourStep.target,refs);
     if(!el){setTourRect(null);return;}
     const update=()=>{const r=el.getBoundingClientRect();const pad=8;setTourRect({top:Math.max(6,r.top-pad),left:Math.max(6,r.left-pad),width:Math.max(16,Math.min(window.innerWidth-12,r.width+pad*2)),height:Math.max(16,r.height+pad*2)});};
     el.scrollIntoView?.({block:tourCardTop?'center':'nearest',behavior:'auto'});

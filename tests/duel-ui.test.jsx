@@ -236,7 +236,8 @@ describe('9-zone strategic UI',()=>{
       }
     }
     expect(guard).toBeLessThan(600);expect(['won','lost']).toContain(readDuel(localStorage).phase);expect(screen.getByRole('button',{name:'다시 도전'})).toBeTruthy();
-  });
+  // a whole run through the UI: ~2.5s alone, well past the 5s default when the full suite runs in parallel
+  },20000);
 
   it('pulls the arena into view when a swing starts its cinema, and leaves it alone when already visible',()=>{
     const rect=(top,height)=>()=>({top,bottom:top+height,height,left:0,right:390,width:390,x:0,y:top});
