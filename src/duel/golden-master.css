@@ -1086,6 +1086,23 @@
   pointer-events:none;
   user-select:none;
 }
+
+/* Runtime smoothness: keep approved pixels intact while the whole authored
+   silhouette carries momentum between sparse key-pose swaps. No image morphing. */
+.golden-master-stage .batter-reboot-v3 .batter-reboot-art{
+  transition:transform 72ms linear;
+  will-change:transform;
+}
+.golden-master-stage .batter-reboot-v3.reboot-pose-ready .batter-reboot-art{transform:translate3d(0,0,0) rotate(0deg)}
+.golden-master-stage .batter-reboot-v3.reboot-pose-load .batter-reboot-art{transform:translate3d(-2px,1px,0) rotate(-.45deg)}
+.golden-master-stage .batter-reboot-v3.reboot-pose-trigger .batter-reboot-art{transform:translate3d(-3px,1px,0) rotate(-.75deg)}
+.golden-master-stage .batter-reboot-v3.reboot-pose-swing-start .batter-reboot-art{transform:translate3d(-1px,0,0) rotate(-.35deg)}
+.golden-master-stage .batter-reboot-v3.reboot-pose-swing-mid .batter-reboot-art{transform:translate3d(1px,-1px,0) rotate(.35deg)}
+.golden-master-stage .batter-reboot-v3.reboot-pose-contact .batter-reboot-art{transform:translate3d(3px,-1px,0) rotate(.75deg) scale(1.006)}
+.golden-master-stage .batter-reboot-v3.reboot-pose-follow-through-early .batter-reboot-art{transform:translate3d(5px,-2px,0) rotate(1deg)}
+.golden-master-stage .batter-reboot-v3.reboot-pose-follow-through-late .batter-reboot-art{transform:translate3d(7px,-2px,0) rotate(1.25deg)}
+.golden-master-stage .batter-reboot-v3.reboot-pose-finish .batter-reboot-art{transform:translate3d(8px,-1px,0) rotate(1.45deg)}
+.golden-master-stage .batter-reboot-v3.reboot-pose-settle .batter-reboot-art{transform:translate3d(5px,0,0) rotate(.8deg)}
 .golden-master-stage .batter-reboot-v3 .actor-contact-shadow{
   left:20%;
   right:16%;

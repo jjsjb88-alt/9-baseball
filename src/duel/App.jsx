@@ -1,5 +1,4 @@
 import React,{useEffect,useRef,useState} from 'react';
-import {flushSync} from 'react-dom';
 import {CARDS,TYPE_NAMES,STAGES,GLOSSARY,LINEUP,BUILDS,ZONES,GROWTHS,growthCost,rewardChoices,AXES,AXIS_NAMES,ROLES,REWARD_ACTIONS,AFFINITY_CARDS,upgradeText,canUpgrade,DECK_MIN,DECK_MAX,
   READ_LEVELS,RELICS,RELIC_OFFERS,bandFor,rangeFor,shadeFor,shadeNameFor,observeScore,cardText,ZONE_ORDER,DECKBUILDER_BUILD,FACILITIES,FACILITY_ROUTES,ROUTE_CHOICES,routeChoice} from './cards.js';
 import {createDuel,startBattle,chooseRoute,battleTarget,playCard,endTurn,chooseReward,chooseFacility,facilityProblem,previewCard,readDuel,saveDuel,advanceBatter,currentBatter,advancePitch,setAimZone,coverage,publicProbabilities,pitchClue,matchup,setGrowthMode,growthProblem,readLevel,knownPitchZones} from './engine.js';
@@ -9,15 +8,13 @@ import {createV10Duel,enterV10Node,playV10Action,advanceV10Pitch,advanceV10Batte
 import {deckProfile,diagnose,applyRewardToDeck,rewardProblem,profileDelta,relationsFor,growthConflict} from './deck.js';
 import './duel.css';
 import './pitcher-sd.css';
-import redRushAtlas from '../../assets/pitcher-sd-v1/red-rush-pitch-120-atlas.png';
 import redRushPortrait from '../../assets/pitcher-mobs-v1/regular-01-red-rush.png';
-import {RED_RUSH_ASSET_ID,hasPitchVisual,redRushFrameAt,redRushTimeline,redRushBatterShot} from './pitcher-sd.js';
+import {RED_RUSH_ASSET_ID,redRushTimeline} from './pitcher-sd.js';
 import './v11-stack-core.css';
 import './adaptive-performance.css';
 import {coverageText} from './information.js';
 import {cue} from './audio.js';
 import {presentationFor,presentationTimeline} from './presentation.js';
-import {batterMotionV3Timeline} from './batterMotionV3.js';
 import {haptic} from './haptics.js';
 import PixelVFX from './PixelVFX.jsx';
 import PitcherHpHud from './PitcherHpHud.jsx';
@@ -26,6 +23,8 @@ import RunMap from './RunMap.jsx';
 import ArenaRenderer2 from './ArenaRenderer2.jsx';
 import GoldenMasterStage from './GoldenMasterStage.jsx';
 import V4CanvasSprite from './V4CanvasSprite.jsx';
+import BatterV3Sprite from './BatterV3Sprite.jsx';
+import RedRushCanvasSprite from './RedRushCanvasSprite.jsx';
 import StackBoard from './StackBoard.jsx';
 import StackResolve,{stackResolveDuration} from './StackResolve.jsx';
 import StackRouteEcho from './StackRouteEcho.jsx';
@@ -263,75 +262,10 @@ function v4SheetFor(who,shot){
   const homer=['homer','grand-slam'].includes(shot.grade);
   return homer?batterHomerV4:miss?batterMissV4:batterSwingV4;
 }
-function useBatterMotionV3Pose(stage,shot,playToken,enabled,syncRedRush=false){
-  const [pose,setPose]=useState('ready');
-  const timer=useRef(null);
-  const raf=useRef(null);
-  const clear=()=>{
-    if(timer.current!=null)clearTimeout(timer.current);
-    if(raf.current!=null)cancelAnimationFrame(raf.current);
-    timer.current=null;raf.current=null;
-  };
-  useEffect(()=>{
-    clear();
-    if(!enabled||!shot||!stage){setPose('ready');return clear;}
-    const timeline=batterMotionV3Timeline(syncRedRush?redRushBatterShot(shot,!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches):shot);
-    setPose(timeline[0]?.pose||'ready');
-    // V3 schedules one authored silhouette at a time and waits for a browser
-    // paint before arming the next timer. This avoids React/WebGL load turning
-    // the fastest part of the swing into an invisible state jump.
-    const schedule=index=>{
-      if(index>=timeline.length)return;
-      const previous=timeline[index-1]||timeline[0];
-      const keyframe=timeline[index];
-      const delay=Math.max(30,keyframe.at-previous.at);
-      timer.current=setTimeout(()=>{
-        // React may defer DOM commits under the landscape WebGL load. Commit
-        // this sparse authored frame synchronously, then wait for a browser
-        // paint before arming the next key pose.
-        flushSync(()=>setPose(keyframe.pose));
-        timer.current=null;
-        raf.current=requestAnimationFrame(()=>{
-          raf.current=null;
-          schedule(index+1);
-        });
-      },delay);
-    };
-    schedule(1);
-    return clear;
-  },[enabled,playToken,shot?.grade,shot?.motion?.impactAt,shot?.motion?.settleAt,shot?.motion?.duration,shot?.motion?.freeze,shot?.motion?.slowmo,syncRedRush]);
-  return pose;
-}
-function useRedRushFrame(active,token){
-  const [frame,setFrame]=useState(0);
-  useEffect(()=>{
-    if(!active){setFrame(0);return;}
-    let handle,start;
-    const request=window.requestAnimationFrame?.bind(window)||((fn)=>window.setTimeout(()=>fn(performance.now()),16));
-    const cancel=window.cancelAnimationFrame?.bind(window)||window.clearTimeout.bind(window);
-    const tick=now=>{
-      if(start==null)start=now;
-      const next=redRushFrameAt(now-start);
-      setFrame(next);
-      if(next<119)handle=request(tick);
-    };
-    handle=request(tick);
-    return ()=>cancel(handle);
-  },[active,token]);
-  return frame;
-}
 function Sprite({who,stage=null,shot=null,golden=false,variant=null,playToken=0,syncRedRush=false}){
   const rebootEnabled=golden&&who==='batter';
-  const rebootPose=useBatterMotionV3Pose(stage,shot,playToken,rebootEnabled,syncRedRush);
-  const qaPose=rebootEnabled&&typeof window!=='undefined'&&new URLSearchParams(window.location.search).get('cinema')==='1'
-    ?new URLSearchParams(window.location.search).get('batterPose'):null;
-  const displayedRebootPose=qaPose&&BATTER_REBOOT_V3[qaPose]?qaPose:rebootPose;
   if(rebootEnabled){
-    const rebootSrc=BATTER_REBOOT_V3[displayedRebootPose]||BATTER_REBOOT_V3.ready;
-    return <span data-batter-pose={displayedRebootPose} className={'sprite-stage sprite-batter golden-actor batter-reboot-v3 reboot-pose-'+displayedRebootPose}>
-      <i className="actor-contact-shadow" aria-hidden="true"/>
-      <img aria-hidden="true" className="duel-sprite batter-reboot-art" src={rebootSrc}/>
-    </span>;
+    return <BatterV3Sprite poses={BATTER_REBOOT_V3} shot={shot} playToken={playToken} syncRedRush={syncRedRush}/>;
   }
   const pose=actorPose(who,stage,shot),v4Sheet=golden&&stage? v4SheetFor(who,shot):null;
   const hero=golden&&who==='batter'?batterHeroPoseFor(pose,stage,shot):null;
@@ -345,17 +279,7 @@ function Sprite({who,stage=null,shot=null,golden=false,variant=null,playToken=0,
   </span>;
 }
 function RedRushSprite({stage=null,shot=null,playToken=0}){
-  const reduced=typeof window!=='undefined'&&!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-  const frame=useRedRushFrame(!!stage&&hasPitchVisual(shot)&&!reduced,playToken);
-  const pose=actorPose('pitcher',stage,shot),col=frame%10,row=Math.floor(frame/10);
-  const atlasStyle={backgroundImage:'url('+redRushAtlas+')',backgroundSize:'1000% 1200%',backgroundPosition:(col*100/9)+'% '+(row*100/11)+'%'};
-  return <span className={'sprite-stage sprite-pitcher pose-'+pose+' golden-actor red-rush-actor'}>
-    <i className="actor-contact-shadow" aria-hidden="true"/>
-    <span aria-hidden="true" className="sprite-echo echo-back red-rush-frame" style={atlasStyle}/>
-    <span aria-hidden="true" className="sprite-echo echo-mid red-rush-frame" style={atlasStyle}/>
-    <span aria-hidden="true" className="duel-sprite red-rush-frame" style={atlasStyle}/>
-    <i className="sprite-bloom" aria-hidden="true"/>
-  </span>;
+  return <RedRushCanvasSprite stage={stage} shot={shot} playToken={playToken} pose={actorPose('pitcher',stage,shot)}/>;
 }
 function PixelCinema({stage,shot}){
   const intense=['homer','grand-slam','extra','dead-center'].includes(shot?.grade),danger=['near-miss','near-miss-k','chase','chase-k','fooled','strikeout'].includes(shot?.grade);

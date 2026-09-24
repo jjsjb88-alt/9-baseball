@@ -16,15 +16,19 @@ describe('production batter motion loop v3',()=>{
     expect(app).toContain("const BATTER_REBOOT_V3={");
     expect(app).toContain("'swing-mid':batterRebootSwingMidV3");
     expect(app).toContain("'follow-through-late':batterRebootFollowLateV3");
-    expect(app).toContain("data-batter-pose={displayedRebootPose}");
+    const runtime=fs.readFileSync(new URL('../src/duel/BatterV3Sprite.jsx',import.meta.url),'utf8');
+    expect(runtime).toContain('data-batter-pose="ready"');
   });
 
   it('uses a ten-pose authored swing with bridge silhouettes around contact',()=>{
     for(const pose of ['ready','load','trigger','swing-start','swing-mid','contact','follow-through-early','follow-through-late','finish','settle']){
       expect(motion).toContain("'"+pose+"'");
     }
-    expect(app).toContain("import {batterMotionV3Timeline} from './batterMotionV3.js'");
-    expect(app).toContain('useBatterMotionV3Pose');
+    const runtime=fs.readFileSync(new URL('../src/duel/BatterV3Sprite.jsx',import.meta.url),'utf8');
+    expect(runtime).toContain("import {batterMotionV3Timeline} from './batterMotionV3.js'");
+    expect(app).toContain('<BatterV3Sprite');
+    expect(runtime).not.toContain('useState(');
+    expect(runtime).not.toContain('flushSync');
   });
 
   it('prevents the v2 face/bat corruption mechanism in offline authoring',()=>{

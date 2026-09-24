@@ -32,3 +32,14 @@
 @media(max-height:480px){
   .v10-map-preview .v10-preview-diorama:has(.v10-preview-red-rush-art){height:160px}
 }
+
+/* Runtime atlas playback is canvas-driven: no per-frame React style updates and
+   no 2560x3072 CSS background repaint on three DOM layers. */
+.sprite-stage.red-rush-actor{contain:paint}
+.sprite-stage.red-rush-actor canvas.red-rush-frame{
+  background:none!important;
+  object-fit:contain;
+  object-position:center bottom;
+  transform:translateZ(0);
+  backface-visibility:hidden;
+}
