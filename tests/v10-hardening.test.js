@@ -156,8 +156,8 @@ describe('막 난도 에스컬레이션', ()=>{
       return [2,3].map(act=>actDelta(stats(act),base));
     };
     const first=say(SEEDS[0]);
-    expect(first[0]).toBe('상대 HP +16 · 쓰는 코스 +1 · 투수 기본기 +4');
-    expect(first[1]).toBe('상대 HP +36 · 쓰는 코스 +2 · 투수 기본기 +9');
+    expect(first[0]).toBe('상대 HP +28 · 쓰는 코스 +1 · 투수 기본기 +4'); // V13: Act 1 is 12 HP lighter
+    expect(first[1]).toBe('상대 HP +48 · 쓰는 코스 +2 · 투수 기본기 +9');
     for(const seed of SEEDS.slice(1,30))expect(say(seed)).toEqual(first);
     expect(actDelta(actStats(createRunMap(7).nodes.filter(n=>n.act===1)),actStats(createRunMap(7).nodes.filter(n=>n.act===1)))).toBe(null);
   });

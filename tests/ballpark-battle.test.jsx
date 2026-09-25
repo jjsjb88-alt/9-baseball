@@ -164,8 +164,8 @@ describe('V13 BALLPARK playtest feedback 2026-09-25',()=>{
   });
   it('balls have a place: a band around the zone, and the watch button says the ball chance',()=>{
     begin();
-    expect(document.querySelector('.bp-zone .bp-band em').textContent).toBe('바깥 띠 = 볼');
-    expect(screen.getByTestId('bp-take').textContent).toMatch(/^지켜본다볼일 확률 \d+%$/);
+    expect(document.querySelector('.bp-zone .bp-band em').textContent).toMatch(/^바깥 띠 = 볼 \d+%$/);
+    expect(screen.getByTestId('bp-take').textContent).toBe('지켜본다');
   });
   it('the verdict leads with the baseball call',()=>{
     vi.useFakeTimers();
@@ -174,6 +174,32 @@ describe('V13 BALLPARK playtest feedback 2026-09-25',()=>{
     act(()=>{vi.advanceTimersByTime(6000)});
     const call=document.querySelector('.bp-verdict strong').textContent;
     expect(['안타','장타','홈런','만루 홈런','헛스윙','스트라이크','파울','볼','볼넷','아웃','희생타','삼진']).toContain(call);
+  });
+});
+
+describe('V13 BALLPARK BP-7 read the pitcher',()=>{
+  afterEach(()=>{vi.useRealTimers()});
+  it('every live cell shows its share of pitches, the likeliest one is marked, and they add up with the ball',()=>{
+    const s=begin();
+    const live=s.battle.intent.repertoire;
+    const shown=cells().map(c=>c.querySelector('.bp-pct')?.textContent);
+    for(let z=0;z<9;z++)expect(!!shown[z]).toBe(live.includes(z));
+    expect(document.querySelectorAll('.bp-pct.top')).toHaveLength(1);
+    const ball=+document.querySelector('.bp-band em').textContent.match(/(\d+)%/)[1];
+    const sum=shown.filter(Boolean).reduce((a,t)=>a+parseInt(t),0)+ball;
+    expect(Math.abs(sum-100)).toBeLessThanOrEqual(5);
+  });
+  it('the first chase explains a ball once',()=>{
+    vi.useFakeTimers();
+    let s=createV10Duel(1);
+    s.build='away';s.deck=BUILDS.away.cards.filter(k=>CARDS[k].type!=='skill').map((kind,i)=>({id:'c'+i,kind}));s.nextId=s.deck.length;
+    s=enterV10Node(s,'a1-entry');s.battle.pending={zone:9,roll:.5,powerRoll:.5};
+    saveV10Duel(localStorage,s);
+    render(<Duel/>);fireEvent.click(screen.getByRole('button',{name:'MAIN RUN 이어하기',exact:true}));
+    fireEvent.click(cards()[0]);fireEvent.click(cells()[4]);fireEvent.click(swingBtn());
+    act(()=>{vi.advanceTimersByTime(6000)});
+    expect(document.querySelector('.bp-coach').textContent).toContain('볼은 참으면 볼넷');
+    expect(localStorage.getItem('9zone-hint-chase')).toBe('done');
   });
 });
 

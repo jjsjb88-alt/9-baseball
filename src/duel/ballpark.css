@@ -359,3 +359,26 @@
 /* CONNECT lines sit over the cells, under the order tokens */
 .bp-zone>.zone-links{z-index:4}
 .bp-token{z-index:5}
+
+/* ---------- read the pitcher: the share of every pitch on each live cell (BP-7) ---------- */
+.bp-pct{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);font:400 clamp(12px,8cqw,22px)/1 var(--bp-impact);color:var(--bp-bone);text-shadow:0 1px 2px #000,0 0 6px #000;pointer-events:none}
+.bp-pct.top{color:var(--bp-sodium);font-size:clamp(13px,9.5cqw,26px)}
+.bp-pct.top::after{content:"최다";position:absolute;left:0;right:0;top:100%;margin-top:3px;font:400 11px/1 var(--bp-ko);color:var(--bp-sodium)}
+.bp-battle .bp-zone{container-type:inline-size}
+.bp-cell.aim .bp-pct,.bp-cell.cover .bp-pct{color:#1a1204;text-shadow:none}
+.bp-cell.aim .bp-pct.top::after,.bp-cell.cover .bp-pct.top::after{color:#1a1204}
+.bp-cell.aim::after{top:auto;bottom:6px;left:50%}
+/* short landscape: ~40px cells hold only the number */
+@media (orientation:landscape) and (max-height:500px){
+  .bp-pct.top::after{content:none}
+  .bp-dead{font-size:0!important}
+  .bp-dead::before{content:"—";font-size:12px;color:#ece4cf66}
+  .bp-cell.aim::after{display:none}
+}
+/* the number is the cell's content now; the aim diamond would sit on it (the fill + border already mark the aim) */
+.bp-cell.aim:has(.bp-pct)::after{display:none}
+@media (orientation:landscape) and (max-height:500px){
+  .bp-token{width:14px;height:14px;left:2px;top:2px;font-size:9px}
+  .bp-pct{top:60%}
+}
+.bp-cell:has(.bp-pct) .bp-token{width:15px;height:15px;left:2px;top:2px;font-size:9px}

@@ -13,6 +13,7 @@ function draw(s,n){const b=s.battle;while(n-->0&&b.hand.length<9){if(!b.draw.len
 // PUBLIC is the actual sampling distribution. No false odds, no input-dependent reroll.
 // V10 opponents advertise their actual pitch identity on the map; V9 keeps stage defaults.
 const v10Opponent=s=>s?.version===10?s.v10?.opponent:null;
+export const BALL_BY_ACT=Object.freeze({1:.35,2:1,3:1});
 const livePitchConfig=s=>{
   const base=STAGES[s.stage],opponent=v10Opponent(s);
   return {style:opponent?.style||base.style,zoneOpen:opponent?.zoneOpen??base.zoneOpen,zoneMax:opponent?.zoneMax??base.zoneMax};
@@ -51,6 +52,9 @@ export function baseIntent(s){
     weights=[6,6,6,6,6,6,6,6,6,25];for(let z=0;z<9;z++)if(z%3===2-col)weights[z]+=10;
     name='이전 노림의 반대편';detail='마무리는 이전 스윙 위치의 반대 열을 선호합니다. 지금 고르는 존에는 반응하지 않습니다.';
   }
+  /* V13: balls (pitches outside the nine cells) come in by act. Act 1 teaches reading, so the first
+     pitchers rarely throw one; Act 2 and 3 keep their full ball rate (playtest 2026-09-25). */
+  const act=v10Opponent(s)?.act;if(act)weights[9]*=BALL_BY_ACT[act]??1;
   if(b.balls===3){weights[9]*=.4;detail+=' 3볼에서는 스트라이크 비중이 높아집니다.';}
   // Zones outside the repertoire are not thrown at all. This is what makes the first pitcher readable.
   const live=repertoire(s),width=repertoireWidth(s);

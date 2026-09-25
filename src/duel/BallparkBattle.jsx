@@ -104,13 +104,22 @@ export default function BallparkBattle({
   const verb=mainIsSkill?'준비한다':'휘두른다';
   /* only what the board does not already show: the HP multiplier, or the prepare uses left */
   const verbSub=!selected?'':mainIsSkill?prepLeft+'회 남음':rate;
-  const coach=!deciding?'':choice?.problem||(armed?'덮을 칸을 누른다':lines.coach);
+  /* where the pitch is likely to go, as numbers: the share of every pitch (balls included), shown while deciding */
+  const pct=z=>Math.round((probs[z]||0)*100);
+  const topCell=live.reduce((a,z)=>(probs[z]||0)>(probs[a]||0)?z:a,live[0]);
   const tokens=judged?[r.coverage?.length?{z:r.aimZone,n:1}:null,...(r.supportZones||[]).map((z,i)=>({z,n:i+2}))].filter(Boolean)
     :[selected&&!mainIsSkill?{z:b.aimZone,n:1}:null,...stack.map((x,i)=>({z:x.aimZone,n:i+2}))].filter(Boolean);
   const call=judged?callOf(r,shot):'';
   /* a pitch in the ball band: say plainly what happened (players could not tell a chase from a miss) */
   const swung=!!r?.coverage?.length,outside=judged&&r.zone===9;
   const outNote=outside?(swung?'볼에 손이 나갔다':'볼을 골라냈다'):'';
+  /* the first time a player swings at a ball, say once what a ball is (playtest: "유인구고 뭐고 못 알아보겠음") */
+  const [chaseHint,setChaseHint]=useState(()=>{try{return localStorage.getItem('9zone-hint-chase')!=='done';}catch{return true;}});
+  const [hintAt,setHintAt]=useState(null);
+  const chased=!deciding&&outNote==='볼에 손이 나갔다'&&landed;
+  const firstChase=chased&&(chaseHint||hintAt===playToken);
+  useLayoutEffect(()=>{if(chased&&chaseHint){setHintAt(playToken);setChaseHint(false);try{localStorage.setItem('9zone-hint-chase','done');}catch{}}},[chased,chaseHint,playToken]);
+  const coach=firstChase?'볼은 참으면 볼넷이 된다. 바깥 띠로 올 것 같으면 지켜본다.':!deciding?'':choice?.problem||(armed?'덮을 칸을 누른다':lines.coach);
   const good=judged&&(r.kind==='hit'||r.kind==='sacrifice'||call==='볼넷');
 
   const cardButton=x=>{
@@ -156,7 +165,7 @@ export default function BallparkBattle({
             aria-label={word+(dead?' · 던지지 않는 코스':'')+(b.aimZone===z?' · 노림':'')} aria-pressed={b.aimZone===z}
             className={'bp-cell'+(dead?' dead':'')+(cover.has(z)?' cover':'')+(support.has(z)?' assist':'')+(aimAt===z?' aim':'')+(armed?' target':'')+(actual?' actual'+(good?' good':''):'')}
             style={{'--heat':dead?0:Math.min(1,share*3).toFixed(2)}}>
-            {dead&&!cover.has(z)&&<small className="bp-dead">안 던짐</small>}{tok.map(t=><b key={t.n} className="bp-token" data-board-order={t.n}>{t.n}</b>)}{actual&&<i className="bp-pitch-mark" aria-label="실제 공"/>}
+            {dead&&!cover.has(z)&&<small className="bp-dead">안 던짐</small>}{!dead&&deciding&&<span className={'bp-pct'+(z===topCell?' top':'')}>{pct(z)}%</span>}{tok.map(t=><b key={t.n} className="bp-token" data-board-order={t.n}>{t.n}</b>)}{actual&&<i className="bp-pitch-mark" aria-label="실제 공"/>}
           </button>;
         })}
         {/* CONNECT: the order links the engine scored, solid = connected (+HP back), dashed = broken */}
@@ -164,7 +173,7 @@ export default function BallparkBattle({
         <span className="bp-side l">몸쪽</span><span className="bp-side r">바깥쪽</span>
         {/* the ball band: the ring around the nine cells is where balls go. Swing at one = a whiff,
             watch one = a ball. It is drawn so the out-of-zone pitch has a place players can see. */}
-        <span className={'bp-band'+(outside&&landed?' hit':'')} aria-hidden="true"><em>바깥 띠 = 볼</em></span>
+        <span className={'bp-band'+(outside&&landed?' hit':'')} aria-hidden="true"><em>바깥 띠 = 볼{deciding?' '+pct(9)+'%':''}</em></span>
         {judged&&landed&&outside&&<i className="bp-pitch-mark outside" aria-label="실제 공 · 볼"/>}
       </div>
 
@@ -196,7 +205,7 @@ export default function BallparkBattle({
       <button type="button" className="bp-verb go" data-testid="bp-swing" disabled={!deciding||!selected||!!choice?.problem} onClick={onSwing}>
         {verb}{verbSub&&<small>{verbSub}</small>}
       </button>
-      <button type="button" className="bp-verb wait" data-testid="bp-take" disabled={!deciding} onClick={onTake}>지켜본다<small>볼일 확률 {Math.round((probs[9]||0)*100)}%</small></button>
+      <button type="button" className="bp-verb wait" data-testid="bp-take" disabled={!deciding} onClick={onTake}>지켜본다</button>
       {mainEntry&&deciding&&<button type="button" className="bp-info" aria-label={mainName+' 카드 설명'} onClick={e=>onDetail?.(mainEntry,e.currentTarget)}>ⓘ</button>}
     </div>}
   </main>;
