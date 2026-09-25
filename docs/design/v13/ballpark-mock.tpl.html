@@ -1,4 +1,4 @@
-<title>9ZONE 야간경기 시안</title>
+<title>9ZONE 볼파크 시안</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Black+Han+Sans&family=Silkscreen&display=swap">
 <style>
@@ -31,13 +31,10 @@ h1 em{font-style:normal;color:var(--sodium)}
 .bar b{color:var(--bone);font-weight:400}
 .frame{container-type:inline-size}
 .stage{position:relative;aspect-ratio:21/9;max-width:100%;overflow:hidden;background:var(--night)}
-.stage .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 70%;filter:saturate(.72) brightness(.66) contrast(1.08);image-rendering:pixelated}
+.stage .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 70%;image-rendering:pixelated}
 /* grade: pull the sunset into one night palette, keep the floodlights */
-.stage .grade{position:absolute;inset:0;background:
-  radial-gradient(ellipse 30% 40% at 14% 6%,#ffd98a33,transparent 70%),
-  radial-gradient(ellipse 30% 40% at 86% 6%,#ffd98a33,transparent 70%),
-  linear-gradient(180deg,#141a3399 0%,#141a3355 45%,#07080daa 100%);mix-blend-mode:normal}
-.stage .vignette{position:absolute;inset:0;background:radial-gradient(ellipse 75% 85% at 50% 55%,transparent 55%,#000d 100%)}
+.stage .grade{position:absolute;inset:0;background:linear-gradient(180deg,transparent 70%,#07080d99 100%)}
+.stage .vignette{position:absolute;inset:0;background:radial-gradient(ellipse 95% 90% at 50% 50%,transparent 70%,#0006 100%)}
 .stage .haze{position:absolute;left:-10%;right:-10%;top:48%;height:22%;background:linear-gradient(90deg,transparent,#c9d2ff14 30%,#c9d2ff1f 60%,transparent);filter:blur(6px);animation:drift 14s ease-in-out infinite alternate}
 @keyframes drift{to{transform:translateX(6%)}}
 
@@ -48,19 +45,19 @@ h1 em{font-style:normal;color:var(--sodium)}
 
 /* actors */
 .actor{position:absolute;image-rendering:pixelated;pointer-events:none}
-.pitcher{left:57%;top:32%;height:34%;filter:drop-shadow(0 0 1px #000) drop-shadow(-.3cqw 0 .6cqw #ffc86155) brightness(.92)}
-.batter{left:1.5%;bottom:-3%;height:92%;filter:drop-shadow(0 0 1px #000) drop-shadow(.5cqw -.2cqw .8cqw #ffc86140) brightness(.95)}
+.pitcher{left:57%;top:32%;height:34%;filter:drop-shadow(0 0 1px #000) drop-shadow(-.3cqw 0 .6cqw #ffc86155)}
+.batter{left:1.5%;bottom:-3%;height:92%;filter:drop-shadow(0 0 1px #000) drop-shadow(.5cqw -.2cqw .8cqw #ffc86140)}
 .shadow{position:absolute;border-radius:50%;background:radial-gradient(#000b,transparent 70%)}
 .shadow.p{left:59.5%;top:63%;width:10%;height:3%}
 .shadow.b{left:6%;bottom:1%;width:26%;height:6%}
 
 /* pitcher tag + HP, Artis-style: small, attached to the body */
-.ptag{position:absolute;left:57.5%;top:24%;width:15%;display:grid;gap:.35cqw;font:400 clamp(9px,1.05cqw,13px)/1 var(--ko);color:var(--bone)}
+.ptag{padding:.5cqw .7cqw;background:#07080dcc;border-radius:2px;position:absolute;left:57.5%;top:24%;width:15%;display:grid;gap:.35cqw;font:400 clamp(9px,1.05cqw,13px)/1 var(--ko);color:var(--bone)}
 .ptag .hp{display:grid;grid-template-columns:repeat(12,1fr);gap:2px}
 .ptag .hp i{height:clamp(3px,.45cqw,6px);background:#e8e0c8;box-shadow:0 0 4px #fff4}
 .ptag .hp i.lost{background:#e8e0c833;box-shadow:none}
 .ptag small{font:400 clamp(7px,.8cqw,10px)/1 var(--led);letter-spacing:.1em;color:var(--slate)}
-.whisper{position:absolute;left:73%;top:44%;font:italic 400 clamp(10px,1.35cqw,17px)/1.3 var(--ko);color:var(--bone);opacity:.85;text-shadow:0 0 12px #000}
+.whisper{padding:.4cqw .8cqw;background:#07080dcc;border-radius:2px;position:absolute;left:73%;top:44%;font:italic 400 clamp(10px,1.35cqw,17px)/1.3 var(--ko);color:var(--bone);opacity:.85;text-shadow:0 0 12px #000}
 .whisper::before{content:"";display:block;width:2.4cqw;height:1px;background:var(--bone-dim);margin-bottom:.5cqw}
 
 /* the 9ZONE — a broadcast strike zone floating in the scene, not a button table */
@@ -72,7 +69,7 @@ h1 em{font-style:normal;color:var(--sodium)}
 .zone b.aim::after{content:"";position:absolute;left:50%;top:50%;width:1.1cqw;height:1.1cqw;margin:-.55cqw 0 0 -.55cqw;border:2px solid var(--sodium);transform:rotate(45deg)}
 .zone .side{position:absolute;top:100%;margin-top:.6cqw;font:400 clamp(7px,.8cqw,10px)/1 var(--led);letter-spacing:.12em;color:var(--slate)}
 .zone .side.l{left:0}.zone .side.r{right:0}
-.count{position:absolute;right:2%;bottom:5%;display:grid;gap:.4cqw;justify-items:end;font:400 clamp(8px,.95cqw,12px)/1 var(--led);letter-spacing:.14em;color:var(--bone-dim)}
+.count{padding:.5cqw .7cqw;background:#07080dcc;border-radius:2px;position:absolute;right:2%;bottom:5%;display:grid;gap:.4cqw;justify-items:end;font:400 clamp(8px,.95cqw,12px)/1 var(--led);letter-spacing:.14em;color:var(--bone-dim)}
 .count div{display:flex;gap:.45cqw;align-items:center}
 .count u{display:inline-block;width:.8cqw;height:.8cqw;min-width:5px;min-height:5px;border-radius:50%;border:1px solid var(--bone-dim)}
 .count u.on{background:var(--sodium);border-color:var(--sodium);box-shadow:0 0 6px var(--sodium)}
@@ -127,11 +124,11 @@ figcaption{font-size:13px;color:var(--bone-dim)}
 .pbar b{color:var(--bone);font-weight:400}
 /* portrait battle */
 .pscene{position:relative;flex:1 1 calc(470*var(--p));overflow:hidden;background:var(--night)}
-.pscene .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:52% 64%;filter:saturate(.72) brightness(.62) contrast(1.08);image-rendering:pixelated}
-.pscene .grade{position:absolute;inset:0;background:radial-gradient(ellipse 60% 30% at 50% 0,#ffd98a22,transparent 70%),linear-gradient(180deg,#141a3388,#141a3333 45%,#07080dcc 100%)}
-.pscene .vignette{position:absolute;inset:0;background:radial-gradient(ellipse 90% 80% at 50% 50%,transparent 55%,#000c 100%)}
-.pscene .pitcher{left:44%;top:21%;height:22%;filter:drop-shadow(0 0 1px #000) drop-shadow(-2px 0 5px #ffc86155) brightness(.9)}
-.pscene .batter{left:-18%;bottom:-2%;height:62%;filter:drop-shadow(0 0 1px #000) drop-shadow(4px -2px 8px #ffc86140) brightness(.95)}
+.pscene .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:52% 64%;image-rendering:pixelated}
+.pscene .grade{position:absolute;inset:0;background:linear-gradient(180deg,transparent 70%,#07080d99 100%)}
+.pscene .vignette{position:absolute;inset:0;background:radial-gradient(ellipse 95% 90% at 50% 50%,transparent 70%,#0006 100%)}
+.pscene .pitcher{left:44%;top:21%;height:22%;filter:drop-shadow(0 0 1px #000) drop-shadow(-2px 0 5px #ffc86155)}
+.pscene .batter{left:-18%;bottom:-2%;height:62%;filter:drop-shadow(0 0 1px #000) drop-shadow(4px -2px 8px #ffc86140)}
 .pscene .ptag{left:43%;top:12.5%;width:30%;font-size:calc(12*var(--p));gap:calc(4*var(--p))}
 .pscene .ptag small{font-size:calc(9*var(--p))}
 .pscene .ptag .hp i{height:calc(4*var(--p))}
@@ -227,9 +224,9 @@ figcaption{font-size:13px;color:var(--bone-dim)}
 
 <div class="wrap">
   <header class="top">
-    <span class="eyebrow">9ZONE · 방향 시안 2 · 야간경기 · 가로 전투 / 세로 전투 / 지도</span>
+    <span class="eyebrow">9ZONE BALLPARK · 방향 시안 3 · 밝은 경기장 · 가로 전투 / 세로 전투 / 지도</span>
     <h1>박스를 걷어내고, <em>경기장</em>이 화면이 되게.</h1>
-    <p class="lede">지금 게임의 경기장 배경과 타자·투수 에셋을 그대로 썼다. 바뀐 건 그 위에 올리는 방식과 말투다. 카드를 누르면 노리는 칸이 바뀌고, 지도의 실루엣을 누르면 그 구장을 미리 본다.</p>
+    <p class="lede">지금 게임의 경기장 배경과 타자·투수 에셋을 그대로 썼다. 경기장은 원본 밝기 그대로, 캐릭터와 같은 밝기로. 바뀐 건 그 위에 올리는 방식과 말투다. 카드를 누르면 노리는 칸이 바뀌고, 지도의 실루엣을 누르면 그 구장을 미리 본다.</p>
   </header>
 
   <div class="frame" role="img" aria-label="전투 화면 시안: 야간 경기장, 왼쪽 앞 타자, 마운드의 투수, 경기장 안에 떠 있는 9칸 스트라이크 존, 아래 카드 줄">
@@ -324,9 +321,10 @@ figcaption{font-size:13px;color:var(--bone-dim)}
   </section>
 
   <section>
-    <h2>이 시안이 지키는 다섯 가지</h2>
+    <h2>이 시안이 지키는 여섯 가지</h2>
     <ul class="rules">
       <li><b>장면이 먼저</b><p>화면은 위아래 검은 띠 안의 경기장 한 장면. 정보 패널은 장면을 덮지 않고 띠 위로 내려간다.</p></li>
+      <li><b>경기장은 밝게</b><p>밝은 캐릭터를 어둡게 누르지 않고 경기장을 원본 밝기로 쓴다. 장면 위 글자는 먹색 받침 위에. 어두운 건 위아래 띠뿐.</p></li>
       <li><b>강조색은 하나</b><p>조명 노랑 하나만 쓴다. 노리는 칸, 휘두르기 버튼, 볼카운트 불빛. 노랑이 보이면 거기가 할 일이다. 나머지는 남색과 뼈색.</p></li>
       <li><b>UI는 그림 속에</b><p>볼카운트는 경기장 구석의 작은 불빛으로, 투수 HP는 투수 머리 위 눈금 12칸에, 9존은 중계 화면처럼 타석 앞에 뜬 스트라이크 존으로.</p></li>
       <li><b>행동은 동사 두 개</b><p>“휘두른다”와 “지켜본다”. 효율·커버·비용 계산은 버튼 아래 한 줄로 줄이고, 궁금하면 카드를 길게 눌러 본다.</p></li>
@@ -360,9 +358,8 @@ figcaption{font-size:13px;color:var(--bone-dim)}
     <h2>정해줄 것</h2>
     <ol>
       <li><b>말투.</b> 이 시안은 짧은 해설자 톤(“바깥쪽을 노린다”). 코치가 타자에게 반말로 하는 톤(“바깥쪽이야, 기다려”)도 가능.</li>
-      <li><b>캐릭터.</b> 지금 SD 캐릭터는 경기장 그림보다 선이 깨끗하고 밝아서 떠 보인다. 조명과 그림자로 맞춰 봤지만, 결국 경기장과 같은 도트 밀도로 다시 그릴지 정해야 한다.</li>
     </ol>
-    <p>이 페이지는 시안이다. 게임 코드는 바꾸지 않았다.</p>
+    <p>전투 화면은 게임에 들어갔다: 주소 뒤에 <b>?park=1</b>. 카드 배치부터 투구 결과까지 이 장면 안에서 돈다.</p>
   </div>
 </div>
 

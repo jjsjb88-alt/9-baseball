@@ -32,7 +32,7 @@ import StackBoard from './StackBoard.jsx';
 import StackResolve,{stackResolveDuration} from './StackResolve.jsx';
 import StackRouteEcho from './StackRouteEcho.jsx';
 import BattleReadout from './BattleReadout.jsx';
-import NightBattle from './NightBattle.jsx';
+import BallparkBattle from './BallparkBattle.jsx';
 import DecisionDebrief from './DecisionDebrief.jsx';
 import CardDetailSheet,{cardDetailOf,installCardDetailGestures} from './CardDetailSheet.jsx';
 import {installCoverPreview,coverMapOf} from './cover-preview.js';
@@ -787,9 +787,12 @@ export default function Duel(){
   const [s,setS]=useState(initial.save),[screen,setScreen]=useState(()=>typeof window!=='undefined'&&new URLSearchParams(window.location.search).get('cinema')==='1'?'cinema':'menu'),[modal,setModal]=useState(null),[selected,setSelected]=useState(null),[swingStack,setSwingStack]=useState([]),[stackEdit,setStackEdit]=useState(null),[decisionMode,setDecisionMode]=useState(null),[tour,setTour]=useState({open:false,step:0}),[tourRect,setTourRect]=useState(null),[fx,setFx]=useState(null),[fxStage,setFxStage]=useState(null),[stackResolve,setStackResolve]=useState(null),[frame,setFrame]=useState(0),[error,setError]=useState(initial.error||''),[sound,setSound]=useState(false);
   const current=useRef(s),lock=useRef(false),timers=useRef([]),tourDismissed=useRef(false);
   const [cardDetail,setCardDetail]=useState(null),detailOpener=useRef(null);
-  /* V13 NG-1: the night-game battle screen, opt-in while it grows (?ng=1 turns it on and remembers, ?ng=0 off) */
-  const [ngOn]=useState(()=>{if(typeof window==='undefined')return false;const q=new URLSearchParams(window.location.search).get('ng');
-    try{if(q==='1')localStorage.setItem('9zone-ng','1');if(q==='0')localStorage.removeItem('9zone-ng');return localStorage.getItem('9zone-ng')==='1';}catch{return q==='1';}});
+  const [fxImpactAt,setFxImpactAt]=useState(0);
+  /* V13 BALLPARK: the new battle screen, opt-in while it grows (?park=1 turns it on and remembers, ?park=0 off;
+     ?ng=1 and the 9zone-ng key are its first name) */
+  const [parkOn]=useState(()=>{if(typeof window==='undefined')return false;const u=new URLSearchParams(window.location.search),q=u.get('park')??u.get('ng');
+    try{if(localStorage.getItem('9zone-ng')==='1'){localStorage.setItem('9zone-park','1');localStorage.removeItem('9zone-ng');}
+      if(q==='1')localStorage.setItem('9zone-park','1');if(q==='0')localStorage.removeItem('9zone-park');return localStorage.getItem('9zone-park')==='1';}catch{return q==='1';}});
   const [inspectedPitcher,setInspectedPitcher]=useState(null),portraitOpener=useRef(null);
   const openPitcher=(opponent,e)=>{if(!opponent||!pitcherPortraits[opponent.artId])return;portraitOpener.current=e?.currentTarget||document.activeElement;setInspectedPitcher(opponent)};
   const closePitcher=()=>{setInspectedPitcher(null);const opener=portraitOpener.current;portraitOpener.current=null;setTimeout(()=>{if(opener?.isConnected)opener.focus()},0)};
@@ -826,7 +829,7 @@ export default function Duel(){
   const stackEditItem=activeStack.find(x=>x.id===stackEdit)||null;
   const moveStackOrder=(id,delta)=>setSwingStack(xs=>{const i=xs.findIndex(x=>x.id===id),j=i+delta;if(i<0||j<0||j>=xs.length)return xs;const next=[...xs];[next[i],next[j]]=[next[j],next[i]];return next;});
   const rawChoice=selected&&(selected==='basic'||b?.hand.includes(selected))
-    ?(isV10&&(decisionMode==='swing'||ngOn&&CARDS[selectedEntry?.kind]?.type!=='skill')&&selectedEntry?previewV10Stack(s,selected,activeStack):showPreview(selected)):null;
+    ?(isV10&&(decisionMode==='swing'||parkOn&&CARDS[selectedEntry?.kind]?.type!=='skill')&&selectedEntry?previewV10Stack(s,selected,activeStack):showPreview(selected)):null;
   const choice=rawChoice&&rawChoice.coverage?{...rawChoice,coverageLabel:rawChoice.coverage.length+(activeStack.length?'존 스택 커버':'존 커버')}:rawChoice;
   const plannedRelations=selectedEntry?relationsFor(selectedEntry,hand.map(x=>x.entry)):new Map();
   const relationOf=id=>{const g=b&&growthConflict(byId(id),b.growthMode);
@@ -885,7 +888,7 @@ export default function Duel(){
     const nextNode=next.runMap?.nodes?.find(n=>n.id===next.runMap.currentNodeId);
     const baseTimeline=presentationTimeline(shot,reduced);
     const timeline=pitcherAtlases[nextNode?.opponent?.artId]&&pitchJudgement?redRushTimeline(baseTimeline,reduced):baseTimeline;
-    lock.current=true;revealArena();setFx(next.last);setFxStage('windup');setFrame(1);
+    lock.current=true;revealArena();setFxImpactAt(timeline.impactAt||0);setFx(next.last);setFxStage('windup');setFrame(1);
     if(sound)cue(pitchJudgement?'pitch':shot?.cue||next.last.kind);
     const stakes=stakesFor(next),scheduled=[
       setTimeout(()=>{setFxStage('impact');setFrame(2);if(sound&&pitchJudgement)cue(shot?.cue||next.last.kind);haptic(timeline.haptic);},timeline.impactAt)
@@ -936,10 +939,13 @@ export default function Duel(){
     {error&&<div className="save-error" role="alert">{error}<button onClick={()=>s&&persist(s)}>저장 재시도</button></div>}
     {screen==='cinema'?<CinemaLab sound={sound} onBack={()=>setScreen('menu')}/>
     :screen==='menu'?<main key="screen-title" className="duel-title stadium"><div className="title-copy"><h1>내가 기다릴 공.<br/><em>내가 만드는 타격.</em></h1><section className="title-main" aria-label="메인런"><span className="title-main-tag">메인 런</span><h2>투수를 끌어내려라.</h2><p>투수 HP를 0으로 만들면 강판입니다. 갈림길을 골라 3막을 돌파하세요. 막이 올라갈수록 상대가 두꺼워지고 쓰는 코스가 늘어납니다.</p><div className="title-main-actions"><button className="primary v10-entry" aria-label="MAIN RUN 시작 · 투수 HP" onClick={()=>freshV10()}>새 런 시작</button>{initial.v10&&<button className="v10-entry" aria-label="MAIN RUN 이어하기" onClick={()=>{persist(initial.v10);setScreen('run')}}>이어하기</button>}</div></section><section className="title-tutorial" aria-label="튜토리얼"><span className="title-tutorial-label">튜토리얼 · 규칙 익히기</span><p>아래 네 덱은 규칙만 익히는 모드입니다. 연출을 줄여 빠르게 돌아갑니다.</p><div className="build-picker v9-build-picker" aria-label="런 방식">{Object.entries(BUILDS).map(([key,d])=><button key={key} aria-pressed={build===key} onClick={()=>setBuild(key)}><span className="build-mode">{key===DECKBUILDER_BUILD?'튜토리얼 · 덱 만들기':'튜토리얼 · 완성형 체험'}</span><strong>{d.name}</strong><small>{d.description}</small></button>)}</div><label className="trial-seed">비교용 시드 <input aria-label="비교용 시드" type="number" min="0" max="4294967295" value={trialSeed} onChange={e=>setTrialSeed(e.target.value)}/><span>같은 시드 = 같은 첫 투구 · 이후 카운트에 따라 변화</span></label><div className="title-actions"><button onClick={()=>s&&!['won','lost'].includes(s.phase)?setModal('new'):fresh()}>튜토리얼 시작</button>{s&&<button onClick={()=>setScreen('run')}>이어하기</button>}{typeof window!=='undefined'&&window.location.pathname.includes('/preview/')&&<button className="cinema-entry" onClick={()=>setScreen('cinema')}>✦ 연출 검수실</button>}</div></section></div><div className="title-actor"><Sprite who="batter"/></div></main>
-:showBattle&&ngOn&&isV10&&s.phase==='battle'&&!fx&&!stackResolve?<NightBattle key="screen-ng-battle" s={s} hand={hand} selected={selected} swingStack={swingStack} choice={choice}
+:showBattle&&parkOn&&isV10?<BallparkBattle key="screen-bp-battle" s={s} hand={hand} selected={selected} swingStack={swingStack} choice={choice} locked={!!stackResolve}
       label={v10Node?.act+'막 · '+(v10Node?.name||'승부')} pitcher={s.pitcher} batter={currentBatter(s)}
-      pitcherArt={pitcherAtlas?<span style={{backgroundImage:'url('+pitcherAtlas+')',backgroundSize:'1000% 1200%',backgroundPosition:'0% 0%'}}/>:<img alt="" src={pitcherIdle}/>}
-      batterArt={<img alt="" src={BATTER_REBOOT_V3.ready}/>}
+      pitcherArt={pitcherAtlas?<PitcherAtlasSprite atlas={pitcherAtlas} stage={fxStage} shot={fxPresentation} playToken={s.stats.pitches}/>:<Sprite who="pitcher" stage={fxStage} shot={fxPresentation} golden variant={pitcherForm} playToken={s.stats.pitches}/>}
+      batterArt={<Sprite who="batter" stage={fxStage} shot={fxPresentation} golden playToken={s.stats.pitches} syncRedRush={redRushEncounter}/>}
+      fxStage={fxStage} shot={fxPresentation||resultPresentation} impactAt={fxImpactAt} playToken={s.stats.pitches}
+      onNext={s.phase==='pitch'?()=>act(doNextPitch):s.phase==='between'?()=>act(doNextBatter):null}
+      nextLabel={s.phase==='pitch'?'다음 공 · 같은 타자':s.phase==='between'?'다음 타자 · '+((b.batterIndex+1)%9+1)+'번 '+LINEUP[(b.batterIndex+1)%LINEUP.length].name:''}
       onSelect={setSelected} onStack={setSwingStack} onAim={z=>{if(!lock.current)persist(setAimZone(current.current,z));}}
       onSwing={()=>act(doPlay,true,choice?.stackPlan)} onTake={()=>act(doTake,true)}
       onDetail={e=>setCardDetail(cardDetailOf(e.kind,e.plus,null))} onPile={w=>setModal(w)}/>

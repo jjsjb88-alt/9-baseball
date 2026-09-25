@@ -1,0 +1,176 @@
+/* V13 BALLPARK — battle scene (docs/design/v13/BALLPARK.md). Every rule lives under .bp-battle.
+   One accent (--bp-sodium); the scene is the screen, panels sit on the letterbox. */
+.bp-battle{
+  --bp-ink:#07080d;--bp-night:#141a33;--bp-bone:#ece4cf;--bp-bone-dim:#b7b09e;--bp-slate:#7b84a6;--bp-line:#2a3152;--bp-sodium:#ffc861;
+  --bp-ko:"Gowun Dodum","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
+  --bp-impact:"Black Han Sans","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
+  --bp-led:"Silkscreen",ui-monospace,Menlo,monospace;
+  --bp-top:58px;
+  display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(340px,1fr) auto auto auto;
+  min-height:calc(100dvh - var(--bp-top));background:var(--bp-ink);color:var(--bp-bone);font:15px/1.5 var(--bp-ko);
+}
+.bp-battle button{font:inherit;color:inherit}
+.bp-battle button:focus-visible{outline:2px solid var(--bp-bone);outline-offset:2px}
+.bp-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 14px;font:400 11px/1 var(--bp-led);letter-spacing:.1em;color:var(--bp-slate);text-transform:uppercase}
+.bp-bar b{font:400 13px/1 var(--bp-ko);letter-spacing:0;color:var(--bp-bone)}
+.bp-piles{display:flex;gap:6px}
+.bp-piles button{appearance:none;background:none;border:1px solid var(--bp-line);border-radius:2px;padding:6px 8px;font:400 12px/1 var(--bp-ko)!important;color:var(--bp-bone-dim)!important;cursor:pointer;min-height:32px}
+
+/* scene */
+.bp-scene{position:relative;overflow:hidden;background:var(--bp-night)}
+.bp-bg{position:absolute;inset:0;background:url('../../assets/duel/stadium.png') 52% 64%/cover no-repeat;image-rendering:pixelated}
+/* bright stadium (user call 2026-09-25): the SD actors are bright, so the park is too; only the bottom edge
+   darkens into the letterbox */
+.bp-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 70%,#07080d99 100%)}
+.bp-scene::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 95% 90% at 50% 50%,transparent 70%,#0006 100%)}
+.bp-haze{position:absolute;left:-10%;right:-10%;top:46%;height:20%;background:linear-gradient(90deg,transparent,#c9d2ff14 30%,#c9d2ff1f 60%,transparent);filter:blur(6px);animation:bp-drift 14s ease-in-out infinite alternate;pointer-events:none}
+@keyframes bp-drift{to{transform:translateX(6%)}}
+.bp-pitcher{position:absolute;left:44%;top:18%;height:24%;aspect-ratio:1;filter:drop-shadow(0 3px 2px #0005)}
+.bp-batter{position:absolute;left:-16%;bottom:-2%;height:64%;aspect-ratio:1;filter:drop-shadow(0 4px 3px #0005)}
+.bp-pitcher>*,.bp-batter>*{display:block;width:100%;height:100%;image-rendering:pixelated}
+.bp-ptag{position:absolute;left:43%;top:9%;width:32%;display:grid;gap:4px;padding:6px 8px;border-radius:2px;background:#07080dcc;font-size:13px;line-height:1;z-index:2}
+.bp-ticks{display:grid;grid-template-columns:repeat(12,1fr);gap:2px}
+.bp-ticks i{height:4px;background:#e8e0c8;box-shadow:0 0 4px #fff4}
+.bp-ticks i.lost{background:#e8e0c833;box-shadow:none}
+.bp-ptag small{font:400 9px/1 var(--bp-led);letter-spacing:.1em;color:var(--bp-slate)}
+.bp-whisper{position:absolute;right:14px;top:28%;margin:0;max-width:40%;padding:5px 9px;border-radius:2px;background:#07080dcc;text-align:right;font:italic 400 15px/1.3 var(--bp-ko);color:var(--bp-bone);z-index:2}
+.bp-whisper::before{content:none}
+
+/* the 9ZONE: a broadcast strike zone in the scene */
+.bp-zone{position:absolute;left:38%;top:44%;width:56%;height:46%;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);border:2px solid #fff;box-shadow:0 0 0 1px #0009,0 2px 10px #0006;background:#07080d33;z-index:3}
+.bp-cell{position:relative;appearance:none;border:1px solid #ffffff66;border-radius:0;padding:0;cursor:pointer;background:rgba(255,200,97,calc(var(--heat,0)*.16));transition:background .12s,box-shadow .12s}
+.bp-cell.dead{background:repeating-linear-gradient(135deg,#07080d55 0 4px,transparent 4px 8px)}
+.bp-cell.cover{background:#ffc86124;border-color:#ffc861aa}
+.bp-cell.assist{box-shadow:inset 0 0 0 2px #9fb4ff88}
+.bp-cell.aim{background:#ffc86155;border:3px solid var(--bp-sodium);outline:3px solid var(--bp-sodium);outline-offset:-3px;z-index:1;box-shadow:inset 0 0 18px #ffc861aa,0 0 0 1px #0008,0 0 18px #ffc86188}
+.bp-cell.aim::after{content:"";position:absolute;left:50%;top:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border:2px solid var(--bp-sodium);transform:rotate(45deg)}
+.bp-cell.target:hover{border-color:#9fb4ff}
+.bp-token{position:absolute;left:4px;top:4px;display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--bp-sodium);color:#1a1204;font:400 11px/1 var(--bp-led)}
+.bp-side{position:absolute;top:100%;margin-top:4px;padding:2px 4px;background:#07080dcc;font:400 9px/1 var(--bp-led);letter-spacing:.12em;color:var(--bp-bone-dim)}
+.bp-side.l{left:0}.bp-side.r{right:0}
+.bp-ball{position:absolute;bottom:100%;left:0;margin-bottom:4px;padding:2px 6px;background:#07080dcc;font-size:12px;color:var(--bp-bone);white-space:nowrap}
+.bp-count{position:absolute;left:12px;top:12px;display:grid;gap:5px;padding:6px 8px;background:#07080dcc;border-radius:2px;font:400 10px/1 var(--bp-led);letter-spacing:.12em;color:var(--bp-bone-dim);z-index:2}
+.bp-count div{display:flex;gap:5px;align-items:center}
+.bp-count u{display:inline-block;width:8px;height:8px;border-radius:50%;border:1px solid var(--bp-bone-dim)}
+.bp-count u.on{background:var(--bp-sodium);border-color:var(--bp-sodium);box-shadow:0 0 6px var(--bp-sodium)}
+.bp-bases{position:absolute;left:18px;top:86px;filter:drop-shadow(0 0 2px #000);width:34px;height:34px;transform:rotate(45deg);display:grid;grid-template-columns:1fr 1fr;gap:4px;z-index:2}
+.bp-bases i{border:1px solid var(--bp-bone-dim)}
+.bp-bases i.on{background:var(--bp-sodium);border-color:var(--bp-sodium);box-shadow:0 0 6px var(--bp-sodium)}
+.bp-bases i.base-2{grid-column:1;grid-row:1}.bp-bases i.base-3{grid-column:1;grid-row:2}.bp-bases i.base-1{grid-column:2;grid-row:1}
+
+/* letterbox: coach, hand, verbs */
+.bp-coach{margin:0;padding:12px 16px 0;font:italic 400 15px/1.4 var(--bp-ko);color:var(--bp-bone-dim);min-height:1.4em}
+.bp-hand{display:flex;gap:8px;overflow-x:auto;padding:18px 16px 8px;scrollbar-width:none;align-items:flex-start}
+.bp-card{position:relative;flex:0 0 108px;display:grid;gap:6px;align-content:start;text-align:left;padding:10px;border:1px solid var(--bp-line);border-radius:3px;background:#0d1122;cursor:pointer;transition:transform .15s,border-color .15s}
+.bp-card strong{font:400 15px/1.2 var(--bp-impact)}
+.bp-card strong sup{color:var(--bp-sodium);font-size:11px}
+.bp-card span{font-size:12px;line-height:1.35;color:var(--bp-bone-dim)}
+.bp-card.main{transform:translateY(-10px);border-color:var(--bp-sodium);box-shadow:0 0 0 1px var(--bp-sodium),0 12px 30px #000}
+.bp-card.support{transform:translateY(-6px);border-color:#9fb4ff}
+.bp-card.armed{transform:translateY(-10px);border-color:#9fb4ff;box-shadow:0 0 0 1px #9fb4ff,0 0 18px #9fb4ff55}
+.bp-card.off{opacity:.55}
+.bp-card.basic{border-style:dashed}
+.bp-order{position:absolute;right:8px;top:8px;font:400 11px/1 var(--bp-led);color:var(--bp-sodium)}
+.bp-glyph{display:grid;grid-template-columns:repeat(3,7px);gap:2px}
+.bp-glyph i{width:7px;height:7px;background:#ece4cf22}
+.bp-glyph i.on{background:var(--bp-sodium)}
+.bp-token-card{flex:0 0 92px;aspect-ratio:1;display:grid;place-content:center;gap:4px;text-align:center;border-radius:50%;border:1px solid var(--bp-line);background:radial-gradient(circle at 50% 35%,#1d2448,#0d1122);cursor:pointer;padding:8px}
+.bp-token-card strong{font:400 13px/1.15 var(--bp-impact)}
+.bp-token-card span{font-size:12px;color:var(--bp-bone-dim)}
+.bp-token-card.main{border-color:var(--bp-sodium);box-shadow:0 0 0 1px var(--bp-sodium)}
+.bp-token-card.off{opacity:.55}
+.bp-verbs{display:grid;grid-template-columns:1.5fr 1fr auto;gap:8px;padding:6px 16px calc(18px + env(safe-area-inset-bottom,0px))}
+.bp-verb{appearance:none;border:1px solid var(--bp-sodium);border-radius:2px;padding:12px 14px;display:grid;gap:4px;justify-items:start;text-align:left;cursor:pointer;font:400 20px/1 var(--bp-impact)!important;min-height:56px}
+.bp-verb small{font:400 12px/1.2 var(--bp-ko);opacity:.85}
+.bp-verb.go{background:var(--bp-sodium);color:#1a1204!important;box-shadow:0 0 30px #ffc86133}
+.bp-verb.go:disabled{background:transparent;color:var(--bp-slate)!important;border-color:var(--bp-line);box-shadow:none;cursor:default}
+.bp-verb.wait{background:transparent;border-color:#ece4cf55}
+.bp-info{appearance:none;width:48px;border:1px solid var(--bp-line);border-radius:2px;background:none;cursor:pointer;font-size:18px!important}
+
+/* the app-wide `button:hover:not(:disabled)` (duel.css) paints every button teal; the scene keeps its own */
+.bp-battle .bp-cell:hover:not(:disabled){background:rgba(255,255,255,.14);border-color:#fff}
+.bp-battle .bp-cell.cover:hover:not(:disabled){background:#ffc86133;border-color:#ffc861}
+.bp-battle .bp-cell.aim:hover:not(:disabled){background:#ffc86166;border-color:var(--bp-sodium)}
+.bp-battle .bp-card:hover:not(:disabled){background:#141a33;border-color:var(--bp-slate)}
+.bp-battle .bp-card.main:hover:not(:disabled){border-color:var(--bp-sodium)}
+.bp-battle .bp-card:is(.support,.armed):hover:not(:disabled){border-color:#9fb4ff}
+.bp-battle .bp-token-card:hover:not(:disabled){background:radial-gradient(circle at 50% 35%,#252d58,#0d1122);border-color:var(--bp-slate)}
+.bp-battle .bp-verb.go:hover:not(:disabled){background:#ffd584;border-color:var(--bp-sodium)}
+.bp-battle .bp-verb.wait:hover:not(:disabled),.bp-battle .bp-info:hover:not(:disabled),.bp-battle .bp-piles button:hover:not(:disabled){background:#141a33;border-color:var(--bp-bone-dim)}
+
+/* landscape phones and desktop: one screen, hand and verbs share the bottom band */
+@media (orientation:landscape){
+  .bp-battle{height:calc(100dvh - var(--bp-top));min-height:0;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto minmax(0,1fr) auto auto;
+    grid-template-areas:"bar bar" "scene scene" "coach verbs" "hand verbs"}
+  .bp-bar{grid-area:bar}.bp-scene{grid-area:scene}.bp-coach{grid-area:coach}.bp-hand{grid-area:hand}
+  .bp-verbs{grid-area:verbs;grid-template-columns:1fr auto;align-content:end;width:clamp(170px,22vw,260px);padding:10px 16px 14px}
+  .bp-verb.go{grid-column:1/-1}
+  .bp-info{width:44px}
+  .bp-bg{background-position:50% 70%}
+  .bp-pitcher{left:57%;top:24%;height:40%}
+  .bp-batter{left:1%;bottom:-4%;height:100%}
+  .bp-ptag{left:61%;top:10%;width:16%}
+  .bp-whisper{right:auto;left:74%;top:40%;max-width:22%;text-align:left}
+  .bp-whisper::before{margin-left:0}
+  .bp-zone{left:34%;top:18%;width:auto;height:72%;aspect-ratio:3/4}
+  .bp-count{left:auto;right:14px;top:auto;bottom:12px;justify-items:end}
+  .bp-bases{left:auto;right:22px;top:14px}
+  .bp-coach{padding-top:8px}
+  .bp-hand{padding:14px 16px 12px}
+}
+@media (orientation:landscape) and (max-height:500px){
+  .bp-bar{padding:4px 12px}
+  .bp-piles button{min-height:26px;padding:4px 6px}
+  .bp-coach{font-size:13px;padding-top:4px}
+  .bp-hand{padding:10px 12px 8px;gap:6px}
+  .bp-card{flex-basis:96px;padding:7px;gap:4px}
+  .bp-card span{display:none}
+  .bp-token-card{flex-basis:70px}
+  .bp-verb{padding:7px 10px;font-size:17px!important;min-height:44px}
+  .bp-verb.go{grid-column:1}
+  .bp-verb.go small{display:none}
+  .bp-verbs{grid-template-columns:1fr auto;grid-template-rows:auto auto;width:auto}
+  .bp-verb.wait{grid-column:1;min-height:40px}
+  .bp-info{grid-column:2;grid-row:1/3}
+  .bp-ptag{top:6%}
+  .bp-pitcher{top:30%;height:44%}
+  .bp-verbs{padding:6px 12px 8px;gap:6px}
+  .bp-count{font-size:9px}
+}
+@media (prefers-reduced-motion:reduce){.bp-battle *{animation:none!important;transition:none!important}}
+
+/* BP-2 — the pitch in the scene */
+.bp-battle.resolving .bp-hand{opacity:.45}
+.bp-battle.resolving .bp-card span{visibility:hidden}
+.bp-battle.resolving .bp-coach{color:var(--bp-bone)}
+.bp-flight{position:absolute;left:0;top:0;z-index:5;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px #0008,0 0 12px #fff;
+  transform:translate(var(--x0,0),var(--y0,0)) scale(.35);animation:bp-fly 360ms cubic-bezier(.55,0,.9,.6) var(--delay,0ms) forwards}
+@keyframes bp-fly{to{transform:translate(var(--x1,0),var(--y1,0)) scale(1.15)}}
+.bp-cell.actual{border-color:#fff}
+.bp-cell.actual.good{background:#ffc86188}
+.bp-pitch-mark{position:absolute;left:50%;top:50%;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px #07080d,0 0 16px #fff;animation:bp-land 260ms ease-out both}
+.bp-cell.actual.good .bp-pitch-mark{background:var(--bp-sodium);box-shadow:0 0 0 2px #07080d,0 0 22px var(--bp-sodium)}
+@keyframes bp-land{from{transform:scale(2.2);opacity:0}}
+.bp-ball.actual{background:var(--bp-bone);color:#07080d}
+/* the verdict sits in the open sky left of the pitcher (portrait) / above the zone (landscape), never on the HP tag */
+.bp-verdict{position:absolute;left:4%;top:27%;z-index:6;display:grid;justify-items:start;transform-origin:left center;gap:4px;padding:10px 18px 12px;background:#07080de6;border-radius:2px;text-align:left;white-space:nowrap;animation:bp-pop 280ms cubic-bezier(.2,1.4,.4,1) both}
+.bp-verdict small{font:400 12px/1 var(--bp-ko);color:var(--bp-bone-dim)}
+.bp-verdict strong{font:400 32px/1 var(--bp-impact);color:var(--bp-bone)}
+.bp-verdict.good strong{color:var(--bp-sodium);text-shadow:0 0 18px #ffc86166}
+@keyframes bp-pop{from{transform:scale(.6);opacity:0}}
+.bp-ticks i.drop{background:#ff6a4a;box-shadow:0 0 6px #ff6a4a;animation:bp-drop 900ms ease-in 200ms forwards}
+@keyframes bp-drop{to{background:#e8e0c833;box-shadow:none}}
+.bp-damage{position:absolute;right:6px;top:-14px;font:400 18px/1 var(--bp-impact);color:#ff8a6a;text-shadow:0 0 8px #000;animation:bp-rise 1.1s ease-out both}
+@keyframes bp-rise{from{transform:translateY(8px);opacity:0}30%{opacity:1}}
+.bp-verbs.next{grid-template-columns:1fr}
+@media (orientation:landscape){
+  .bp-verdict{top:3%;left:calc(34% + 4px)}
+  .bp-verbs.next{align-content:end}
+}
+@media (orientation:landscape) and (max-height:500px){
+  .bp-verdict strong{font-size:24px}
+  /* the short scene has no sky over the zone: the verdict stands on the grass in front of the mound */
+  .bp-verdict{top:auto;bottom:6%;left:60%}
+  .bp-verbs.next .bp-verb.go small{display:block}
+}
+@media (prefers-reduced-motion:reduce){.bp-flight{display:none}}
