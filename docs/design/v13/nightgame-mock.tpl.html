@@ -1,0 +1,445 @@
+<title>9ZONE 야간경기 시안</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Black+Han+Sans&family=Silkscreen&display=swap">
+<style>
+:root{
+  color-scheme:dark;
+  --ink:#07080d;
+  --night:#141a33;
+  --slate:#7b84a6;
+  --bone:#ece4cf;
+  --bone-dim:#b7b09e;
+  --sodium:#ffc861;
+  --sodium-deep:#c98a2a;
+  --line:#2a3152;
+  --ko:"Gowun Dodum","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
+  --impact:"Black Han Sans","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
+  --led:"Silkscreen",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ink);color:var(--bone);font:15px/1.7 var(--ko);padding-inline:16px;padding-block:28px 64px}
+.wrap{max-width:1180px;margin:0 auto;display:grid;gap:56px}
+header.top{display:grid;gap:6px}
+.eyebrow{font:400 11px/1 var(--led);letter-spacing:.14em;color:var(--slate);text-transform:uppercase}
+h1{margin:0;font:400 clamp(28px,4.4vw,46px)/1.15 var(--impact);letter-spacing:-.01em;text-wrap:balance}
+h1 em{font-style:normal;color:var(--sodium)}
+.lede{margin:0;max-width:62ch;color:var(--bone-dim)}
+
+/* ---------- the stage ---------- */
+.frame{display:grid;gap:0;border-radius:4px;overflow:hidden;background:#000;box-shadow:0 30px 80px #000c}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px clamp(10px,2cqw,22px);background:#000;font:400 clamp(9px,1.05cqw,12px)/1 var(--led);letter-spacing:.12em;color:var(--slate);text-transform:uppercase}
+.bar b{color:var(--bone);font-weight:400}
+.frame{container-type:inline-size}
+.stage{position:relative;aspect-ratio:21/9;max-width:100%;overflow:hidden;background:var(--night)}
+.stage .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 70%;filter:saturate(.72) brightness(.66) contrast(1.08);image-rendering:pixelated}
+/* grade: pull the sunset into one night palette, keep the floodlights */
+.stage .grade{position:absolute;inset:0;background:
+  radial-gradient(ellipse 30% 40% at 14% 6%,#ffd98a33,transparent 70%),
+  radial-gradient(ellipse 30% 40% at 86% 6%,#ffd98a33,transparent 70%),
+  linear-gradient(180deg,#141a3399 0%,#141a3355 45%,#07080daa 100%);mix-blend-mode:normal}
+.stage .vignette{position:absolute;inset:0;background:radial-gradient(ellipse 75% 85% at 50% 55%,transparent 55%,#000d 100%)}
+.stage .haze{position:absolute;left:-10%;right:-10%;top:48%;height:22%;background:linear-gradient(90deg,transparent,#c9d2ff14 30%,#c9d2ff1f 60%,transparent);filter:blur(6px);animation:drift 14s ease-in-out infinite alternate}
+@keyframes drift{to{transform:translateX(6%)}}
+
+/* LED board painted onto the outfield scoreboard */
+.led{position:absolute;left:43.2%;top:35.6%;width:13.6%;height:8.6%;display:grid;grid-template-columns:auto 1fr;align-content:center;column-gap:.7cqw;row-gap:.2cqw;padding:0 .8cqw;font:400 clamp(7px,.92cqw,11px)/1 var(--led);color:#ffb347;text-shadow:0 0 4px #ff9d2a,0 0 10px #ff9d2a66;letter-spacing:.08em}
+.led span{color:#ff7a2a99}
+.led i{font-style:normal}
+
+/* actors */
+.actor{position:absolute;image-rendering:pixelated;pointer-events:none}
+.pitcher{left:57%;top:32%;height:34%;filter:drop-shadow(0 0 1px #000) drop-shadow(-.3cqw 0 .6cqw #ffc86155) brightness(.92)}
+.batter{left:1.5%;bottom:-3%;height:92%;filter:drop-shadow(0 0 1px #000) drop-shadow(.5cqw -.2cqw .8cqw #ffc86140) brightness(.95)}
+.shadow{position:absolute;border-radius:50%;background:radial-gradient(#000b,transparent 70%)}
+.shadow.p{left:59.5%;top:63%;width:10%;height:3%}
+.shadow.b{left:6%;bottom:1%;width:26%;height:6%}
+
+/* pitcher tag + HP, Artis-style: small, attached to the body */
+.ptag{position:absolute;left:57.5%;top:24%;width:15%;display:grid;gap:.35cqw;font:400 clamp(9px,1.05cqw,13px)/1 var(--ko);color:var(--bone)}
+.ptag .hp{display:grid;grid-template-columns:repeat(12,1fr);gap:2px}
+.ptag .hp i{height:clamp(3px,.45cqw,6px);background:#e8e0c8;box-shadow:0 0 4px #fff4}
+.ptag .hp i.lost{background:#e8e0c833;box-shadow:none}
+.ptag small{font:400 clamp(7px,.8cqw,10px)/1 var(--led);letter-spacing:.1em;color:var(--slate)}
+.whisper{position:absolute;left:73%;top:44%;font:italic 400 clamp(10px,1.35cqw,17px)/1.3 var(--ko);color:var(--bone);opacity:.85;text-shadow:0 0 12px #000}
+.whisper::before{content:"";display:block;width:2.4cqw;height:1px;background:var(--bone-dim);margin-bottom:.5cqw}
+
+/* the 9ZONE — a broadcast strike zone floating in the scene, not a button table */
+.zone{position:absolute;left:36%;top:38%;width:17.5%;aspect-ratio:3/4;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);border:1px solid #ece4cfcc;box-shadow:0 0 0 1px #0006,0 0 24px #ece4cf22;background:#07080d22;backdrop-filter:blur(1px)}
+.zone b{position:relative;border:1px solid #ece4cf33;display:grid;place-items:end start;padding:.3cqw .4cqw;font:400 clamp(7px,.75cqw,10px)/1 var(--led);color:#ece4cf88}
+.zone b.hot{background:linear-gradient(#ffc86112,#ffc86112)}
+.zone b.aim{background:#ffc86133;border-color:var(--sodium);box-shadow:inset 0 0 1.4cqw #ffc86188,0 0 1.6cqw #ffc86155;color:var(--sodium);animation:aim 1.8s ease-in-out infinite}
+@keyframes aim{50%{box-shadow:inset 0 0 .6cqw #ffc86155,0 0 .8cqw #ffc86133}}
+.zone b.aim::after{content:"";position:absolute;left:50%;top:50%;width:1.1cqw;height:1.1cqw;margin:-.55cqw 0 0 -.55cqw;border:2px solid var(--sodium);transform:rotate(45deg)}
+.zone .side{position:absolute;top:100%;margin-top:.6cqw;font:400 clamp(7px,.8cqw,10px)/1 var(--led);letter-spacing:.12em;color:var(--slate)}
+.zone .side.l{left:0}.zone .side.r{right:0}
+.count{position:absolute;right:2%;bottom:5%;display:grid;gap:.4cqw;justify-items:end;font:400 clamp(8px,.95cqw,12px)/1 var(--led);letter-spacing:.14em;color:var(--bone-dim)}
+.count div{display:flex;gap:.45cqw;align-items:center}
+.count u{display:inline-block;width:.8cqw;height:.8cqw;min-width:5px;min-height:5px;border-radius:50%;border:1px solid var(--bone-dim)}
+.count u.on{background:var(--sodium);border-color:var(--sodium);box-shadow:0 0 6px var(--sodium)}
+
+/* hand: quiet, on the letterbox */
+.hand{display:grid;grid-template-columns:1fr auto;gap:clamp(10px,2cqw,28px);align-items:end;padding:clamp(12px,1.8cqw,22px) clamp(10px,2cqw,22px) clamp(14px,2cqw,24px);background:linear-gradient(#000,#05060b)}
+.cards{display:flex;gap:clamp(6px,1cqw,12px);overflow-x:auto;padding-top:14px;scrollbar-width:none}
+.card{flex:0 0 clamp(92px,11.5cqw,132px);display:grid;gap:6px;align-content:start;padding:10px 10px 12px;border:1px solid var(--line);border-radius:3px;background:#0d1122;color:var(--bone);font:13px/1.35 var(--ko);cursor:pointer;text-align:left;transition:transform .15s ease,border-color .15s ease}
+.card:hover,.card:focus-visible{border-color:var(--slate);outline:none}
+.card.sel{transform:translateY(-12px);border-color:var(--sodium);box-shadow:0 0 0 1px var(--sodium),0 12px 30px #000}
+.card .g{display:grid;grid-template-columns:repeat(3,7px);gap:2px}
+.card .g i{width:7px;height:7px;background:#ece4cf22}
+.card .g i.f{background:var(--sodium)}
+.card strong{font:400 15px/1.2 var(--impact);letter-spacing:.01em}
+.card span{color:var(--bone-dim);font-size:12px}
+.verbs{display:grid;gap:8px;min-width:clamp(120px,15cqw,190px)}
+.verb{appearance:none;border:1px solid var(--sodium);border-radius:2px;padding:12px 16px;font:400 clamp(17px,2cqw,24px)/1 var(--impact);cursor:pointer;display:grid;gap:4px;justify-items:start}
+.verb small{font:400 11px/1 var(--led);letter-spacing:.1em;opacity:.8}
+.verb.go{background:var(--sodium);color:#1a1204;box-shadow:0 0 30px #ffc86133}
+.verb.wait{background:transparent;color:var(--bone);border-color:#ece4cf55}
+.verb:focus-visible,.card:focus-visible{outline:2px solid var(--bone);outline-offset:2px}
+
+/* ---------- notes ---------- */
+section{display:grid;gap:22px}
+h2{margin:0;font:400 clamp(22px,2.8vw,30px)/1.2 var(--impact);text-wrap:balance}
+.split{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:28px}
+.split figure{margin:0;display:grid;gap:8px}
+.split img{width:100%;border:1px solid var(--line);border-radius:3px}
+figcaption{font-size:13px;color:var(--bone-dim)}
+.rules{list-style:none;margin:0;padding:0;display:grid;gap:18px}
+.rules li{display:grid;grid-template-columns:minmax(0,11ch) 1fr;gap:16px;align-items:baseline;padding-bottom:18px;border-bottom:1px solid var(--line)}
+.rules b{font:400 16px/1.3 var(--impact);color:var(--sodium)}
+.rules p{margin:0;max-width:64ch;color:var(--bone-dim)}
+.copy{width:100%;border-collapse:collapse;font-size:14px}
+.copy-wrap{overflow-x:auto}
+.copy th{text-align:left;font:400 10px/1 var(--led);letter-spacing:.14em;color:var(--slate);padding:0 12px 10px 0;border-bottom:1px solid var(--line);text-transform:uppercase}
+.copy td{vertical-align:top;padding:14px 12px 14px 0;border-bottom:1px solid var(--line)}
+.copy td:first-child{color:var(--slate);font-size:12px;white-space:nowrap}
+.copy td.old{color:#8f8a7e;max-width:44ch;text-decoration:line-through;text-decoration-color:#8f8a7e66}
+.copy td.new{color:var(--bone);font-size:16px;min-width:20ch}
+.ask{display:grid;gap:14px;padding:22px;border:1px solid var(--sodium-deep);border-radius:3px;background:#120f08}
+.ask ol{margin:0;padding-left:1.2em;display:grid;gap:8px}
+.ask p{margin:0;color:var(--bone-dim)}
+@container (max-width:560px){.hand{grid-template-columns:1fr}.verbs{grid-template-columns:1fr 1fr}}
+@media (max-width:640px){.rules li{grid-template-columns:1fr;gap:4px}}
+/* ---------- phones ---------- */
+.phones{display:flex;flex-wrap:wrap;gap:40px;justify-content:center;align-items:flex-start}
+.phones figure{margin:0;display:grid;gap:10px;justify-items:center;width:min(390px,100%)}
+.phone{width:100%;aspect-ratio:390/844;container-type:inline-size;border-radius:24px;overflow:hidden;background:#000;box-shadow:0 0 0 1px #1d2340,0 30px 70px #000c;position:relative}
+.scr{--p:calc(100cqw / 390);position:absolute;inset:0;display:flex;flex-direction:column;font-family:var(--ko);color:var(--bone)}
+.pbar{flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;height:calc(44*var(--p));padding:0 calc(16*var(--p));font:400 calc(10*var(--p))/1 var(--led);letter-spacing:.12em;color:var(--slate);text-transform:uppercase}
+.pbar b{color:var(--bone);font-weight:400}
+/* portrait battle */
+.pscene{position:relative;flex:1 1 calc(470*var(--p));overflow:hidden;background:var(--night)}
+.pscene .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:52% 64%;filter:saturate(.72) brightness(.62) contrast(1.08);image-rendering:pixelated}
+.pscene .grade{position:absolute;inset:0;background:radial-gradient(ellipse 60% 30% at 50% 0,#ffd98a22,transparent 70%),linear-gradient(180deg,#141a3388,#141a3333 45%,#07080dcc 100%)}
+.pscene .vignette{position:absolute;inset:0;background:radial-gradient(ellipse 90% 80% at 50% 50%,transparent 55%,#000c 100%)}
+.pscene .pitcher{left:44%;top:21%;height:22%;filter:drop-shadow(0 0 1px #000) drop-shadow(-2px 0 5px #ffc86155) brightness(.9)}
+.pscene .batter{left:-18%;bottom:-2%;height:62%;filter:drop-shadow(0 0 1px #000) drop-shadow(4px -2px 8px #ffc86140) brightness(.95)}
+.pscene .ptag{left:43%;top:12.5%;width:30%;font-size:calc(12*var(--p));gap:calc(4*var(--p))}
+.pscene .ptag small{font-size:calc(9*var(--p))}
+.pscene .ptag .hp i{height:calc(4*var(--p))}
+.pscene .whisper{left:auto;right:calc(16*var(--p));top:30%;font-size:calc(14*var(--p));text-align:right}
+.pscene .whisper::before{width:calc(24*var(--p));margin-left:auto;margin-bottom:calc(5*var(--p))}
+.pscene .zone{left:39%;top:44%;width:54%;aspect-ratio:auto;height:48%}
+.pscene .zone b{padding:calc(4*var(--p));font-size:calc(9*var(--p))}
+.pscene .zone b.aim::after{width:calc(14*var(--p));height:calc(14*var(--p));margin:calc(-7*var(--p)) 0 0 calc(-7*var(--p))}
+.pscene .zone .side{font-size:calc(9*var(--p));margin-top:calc(5*var(--p))}
+.pscene .count{right:auto;left:calc(14*var(--p));top:calc(14*var(--p));bottom:auto;justify-items:start;font-size:calc(9*var(--p));gap:calc(5*var(--p))}
+.pscene .count u{width:calc(8*var(--p));height:calc(8*var(--p))}
+.pscene .count div{gap:calc(5*var(--p))}
+.coach{flex:0 0 auto;margin:0;padding:calc(12*var(--p)) calc(16*var(--p)) 0;font:italic 400 calc(14*var(--p))/1.4 var(--ko);color:var(--bone-dim)}
+.coach b{font-style:normal;font-weight:400;color:var(--bone)}
+.pcards{flex:0 0 auto;display:flex;gap:calc(8*var(--p));overflow-x:auto;padding:calc(22*var(--p)) calc(16*var(--p)) calc(8*var(--p));scrollbar-width:none;align-items:flex-start}
+.pcards .card{flex:0 0 calc(104*var(--p));padding:calc(10*var(--p));gap:calc(6*var(--p));font-size:calc(12*var(--p))}
+.pcards .card strong{font-size:calc(15*var(--p))}
+.pcards .card span{font-size:calc(12*var(--p))}
+.pcards .card.sel{transform:translateY(calc(-10*var(--p)))}
+.pverbs{flex:0 0 auto;display:grid;grid-template-columns:1.7fr 1fr;gap:calc(8*var(--p));padding:0 calc(16*var(--p)) calc(22*var(--p))}
+.pverbs .verb{padding:calc(12*var(--p)) calc(14*var(--p));font-size:calc(20*var(--p));gap:calc(4*var(--p))}
+.pverbs .verb small{font-size:calc(9*var(--p))}
+
+/* map */
+.mhead{position:relative;flex:0 0 auto;padding:calc(18*var(--p)) calc(16*var(--p)) calc(16*var(--p));overflow:hidden}
+.mhead .sky{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 22%;filter:saturate(.7) brightness(.5);image-rendering:pixelated}
+.mhead::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#141a3366,#07080d 100%)}
+.mhead>*{position:relative;z-index:1}
+.mhead h3{margin:0;font:400 calc(28*var(--p))/1.15 var(--impact);text-wrap:balance}
+.mhead p{margin:calc(6*var(--p)) 0 0;font:400 calc(10*var(--p))/1 var(--led);letter-spacing:.12em;color:var(--slate);text-transform:uppercase}
+.route{position:relative;flex:1 1 auto;background:radial-gradient(ellipse 70% 50% at 50% 30%,#1a2146,transparent 75%),#07080d}
+.route svg{position:absolute;inset:0;width:100%;height:100%}
+.route line{stroke:#2e3660;stroke-width:1.2;stroke-dasharray:3 4;vector-effect:non-scaling-stroke}
+.route line.live{stroke:var(--sodium);stroke-dasharray:none;opacity:.7}
+.node{position:absolute;transform:translate(-50%,-100%);display:grid;justify-items:center;gap:2px;background:none;border:0;padding:0;color:var(--slate);cursor:pointer;font:400 11px/1.1 var(--ko)}
+.node .fig{display:block;height:var(--h,34px);image-rendering:auto;filter:brightness(0) drop-shadow(0 0 1px #4a5480) drop-shadow(0 0 4px #4a548088);transition:filter .15s}
+.node.elite .fig{--h:40px}
+.node.boss .fig{--h:58px}
+.node .glyph{display:grid;grid-template-columns:repeat(7,1fr);width:22px;height:22px;padding:4px;box-sizing:content-box;border:1px solid #2e3660;background:#0d1122}
+.node .glyph i{background:transparent}.node .glyph i.on{background:var(--slate)}
+.node .pl{display:block;width:26px;height:4px;border-radius:50%;background:#2e3660;margin-top:-2px}
+.node em{font-style:normal;white-space:nowrap}
+.node.reach{color:var(--bone)}
+.node.reach .fig{filter:brightness(0) drop-shadow(0 0 1px var(--sodium)) drop-shadow(0 0 6px #ffc86199)}
+.node.reach .pl{background:var(--sodium);box-shadow:0 0 8px var(--sodium)}
+.node.sel em{color:var(--sodium)}
+.node.sel .fig{filter:brightness(0) drop-shadow(0 0 1px var(--sodium)) drop-shadow(0 0 2px var(--sodium)) drop-shadow(0 0 10px #ffc861)}
+.node.sel .glyph{border-color:var(--sodium)}.node.sel .glyph i.on{background:var(--sodium)}
+.node.done{opacity:.4}
+.node:focus-visible{outline:2px solid var(--bone);outline-offset:4px}
+.sheet{flex:0 0 auto;display:grid;grid-template-columns:calc(104*var(--p)) 1fr;gap:calc(12*var(--p));padding:calc(14*var(--p)) calc(16*var(--p)) calc(18*var(--p));border-top:1px solid #2a3152;background:#0b0e1c}
+.sheet .por{position:relative;height:calc(150*var(--p));overflow:hidden;border:1px solid #2a3152;background:radial-gradient(ellipse at 50% 30%,#232a52,#0b0e1c)}
+.sheet .por img{position:absolute;left:50%;top:0;width:150%;transform:translateX(-50%);image-rendering:auto}
+.sheet .por .ico{position:absolute;inset:0;display:grid;place-items:center}
+.sheet .por .ico .glyph{transform:scale(2.4)}
+.sheet .info{display:grid;gap:calc(5*var(--p));align-content:start}
+.sheet .tag{font:400 calc(9*var(--p))/1 var(--led);letter-spacing:.14em;color:var(--slate);text-transform:uppercase}
+.sheet .nm{font:400 calc(22*var(--p))/1.1 var(--impact)}
+.sheet .ln{font:italic 400 calc(14*var(--p))/1.35 var(--ko);color:var(--bone)}
+.sheet .rw{font-size:calc(12*var(--p));color:var(--bone-dim)}
+.sheet .hpt{display:grid;grid-template-columns:repeat(12,1fr);gap:2px;max-width:calc(130*var(--p))}
+.sheet .hpt i{height:calc(4*var(--p));background:#e8e0c8}
+.sheet .go{grid-column:1/-1;appearance:none;border:1px solid var(--sodium);border-radius:2px;background:var(--sodium);color:#1a1204;padding:calc(13*var(--p));font:400 calc(18*var(--p))/1 var(--impact);cursor:pointer}
+.sheet .go[disabled]{background:transparent;color:var(--slate);border-color:#2a3152;cursor:default}
+.acts{flex:0 0 auto;display:grid;padding:0 calc(16*var(--p)) calc(14*var(--p));gap:calc(4*var(--p));font:400 calc(9*var(--p))/1.6 var(--led);letter-spacing:.1em;color:#4a5480;text-transform:uppercase}
+
+/* PC map */
+.frame.map .stagemap{display:grid;grid-template-columns:1fr minmax(260px,32%);aspect-ratio:16/9;max-width:100%}
+.frame.map .left{position:relative;display:flex;flex-direction:column;overflow:hidden}
+.frame.map .left .mhead{padding:2.2cqw 2.4cqw 1.6cqw}
+.frame.map .left .mhead h3{font-size:clamp(20px,2.8cqw,36px)}
+.frame.map .left .mhead p{font-size:clamp(8px,.9cqw,11px)}
+.frame.map .route .node{font-size:clamp(9px,1cqw,13px)}
+.frame.map .route .node .fig{height:calc(var(--h,34px)*1.25)}
+.frame.map .right{display:flex;flex-direction:column;background:#0b0e1c;border-left:1px solid #2a3152}
+.frame.map .right .big{position:relative;flex:1 1 auto;overflow:hidden;background:radial-gradient(ellipse at 50% 35%,#232a52,#0b0e1c 70%)}
+.frame.map .right .big img{position:absolute;left:50%;top:4%;height:118%;transform:translateX(-50%)}
+.frame.map .right .big .ico{position:absolute;inset:0;display:grid;place-items:center}
+.frame.map .right .big .ico .glyph{transform:scale(4)}
+.frame.map .right .info{display:grid;gap:.6cqw;padding:1.4cqw 1.8cqw 0}
+.frame.map .right .tag{font:400 clamp(8px,.85cqw,11px)/1 var(--led);letter-spacing:.14em;color:var(--slate);text-transform:uppercase}
+.frame.map .right .nm{font:400 clamp(20px,2.4cqw,30px)/1.1 var(--impact)}
+.frame.map .right .ln{font:italic 400 clamp(12px,1.25cqw,16px)/1.35 var(--ko)}
+.frame.map .right .rw{font-size:clamp(11px,1.05cqw,13px);color:var(--bone-dim)}
+.frame.map .right .hpt{display:grid;grid-template-columns:repeat(12,1fr);gap:2px;max-width:60%}
+.frame.map .right .hpt i{height:5px;background:#e8e0c8}
+.frame.map .right .go{margin:1.4cqw 1.8cqw 1.8cqw;appearance:none;border:1px solid var(--sodium);border-radius:2px;background:var(--sodium);color:#1a1204;padding:1.1cqw;font:400 clamp(15px,1.6cqw,20px)/1 var(--impact);cursor:pointer}
+.frame.map .right .go[disabled]{background:transparent;color:var(--slate);border-color:#2a3152;cursor:default}
+@container (max-width:700px){.frame.map .stagemap{grid-template-columns:1fr;aspect-ratio:auto}.frame.map .left{aspect-ratio:4/3}.frame.map .right .big{height:220px;flex:none}}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">9ZONE · 방향 시안 2 · 야간경기 · 가로 전투 / 세로 전투 / 지도</span>
+    <h1>박스를 걷어내고, <em>경기장</em>이 화면이 되게.</h1>
+    <p class="lede">지금 게임의 경기장 배경과 타자·투수 에셋을 그대로 썼다. 바뀐 건 그 위에 올리는 방식과 말투다. 카드를 누르면 노리는 칸이 바뀌고, 지도의 실루엣을 누르면 그 구장을 미리 본다.</p>
+  </header>
+
+  <div class="frame" role="img" aria-label="전투 화면 시안: 야간 경기장, 왼쪽 앞 타자, 마운드의 투수, 경기장 안에 떠 있는 9칸 스트라이크 존, 아래 카드 줄">
+    <div class="bar"><span>1막 · <b>정규전</b></span><span>1회말 · <b>#7 강한결</b></span></div>
+    <div class="stage">
+      <img class="bg" alt="" src="{{STADIUM}}">
+      <div class="grade"></div>
+      <div class="haze"></div>
+      <i class="shadow p"></i>
+      <img class="actor pitcher" alt="" src="{{PITCHER}}">
+      <div class="ptag"><span>레드 러시</span><div class="hp" id="hp"></div><small>HP 72 / 72</small></div>
+      <p class="whisper">바깥쪽을 노린다</p>
+      <i class="shadow b"></i>
+      <img class="actor batter" alt="" src="{{BATTER}}">
+      <div class="zone" id="zone">
+        <b></b><b class="hot"></b><b class="hot"></b>
+        <b></b><b class="aim"></b><b class="hot"></b>
+        <b></b><b></b><b class="hot"></b>
+        <span class="side l">몸쪽</span><span class="side r">바깥쪽</span>
+      </div>
+      <div class="count"><div>BALL <u class="on"></u><u></u><u></u><u></u></div><div>STRIKE <u class="on"></u><u></u></div><div>OUT <u></u><u></u></div></div>
+    </div>
+    <div class="hand">
+      <div class="cards" id="cards"></div>
+      <div class="verbs">
+        <button class="verb go" type="button" id="go">휘두른다<small id="goSub">정타 노림 · 가운데</small></button>
+        <button class="verb wait" type="button">지켜본다</button>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <h2>세로 휴대폰</h2>
+    <p class="lede">가로 시안과 같은 규칙. 9존은 엄지가 닿는 화면 가운데 아래로 내려오고, 칸 하나가 손가락보다 크다. 지도는 투수를 검은 실루엣으로만 보여주고, 고르면 불이 켜진다.</p>
+    <div class="phones">
+      <figure>
+        <div class="phone"><div class="scr">
+          <div class="pbar"><span>1막 · <b>정규전</b></span><span>1회말 · <b>#7 강한결</b></span></div>
+          <div class="pscene">
+            <img class="bg" alt="" src="{{STADIUM}}">
+            <div class="grade"></div><div class="haze"></div>
+            <img class="actor pitcher" alt="" src="{{PITCHER}}">
+            <div class="ptag"><span>레드 러시</span><div class="hp" data-hp="12"></div><small>HP 72 / 72</small></div>
+            <p class="whisper">바깥쪽을 노린다</p>
+            <img class="actor batter" alt="" src="{{BATTER}}">
+            <div class="zone" data-zone>
+              <b></b><b class="hot"></b><b class="hot"></b><b></b><b class="aim"></b><b class="hot"></b><b></b><b></b><b class="hot"></b>
+              <span class="side l">몸쪽</span><span class="side r">바깥쪽</span>
+            </div>
+            <div class="count"><div>B <u class="on"></u><u></u><u></u><u></u></div><div>S <u class="on"></u><u></u></div><div>O <u></u><u></u></div></div>
+            <div class="vignette"></div>
+          </div>
+          <p class="coach">바깥쪽을 좋아한다. <b>몰리면 몸쪽으로 온다.</b></p>
+          <div class="pcards" data-cards></div>
+          <div class="pverbs"><button class="verb go" type="button">휘두른다<small data-gosub>정타 노림 · 가운데</small></button><button class="verb wait" type="button">지켜본다</button></div>
+        </div></div>
+        <figcaption>전투. 카드를 고르면 존의 노랑이 움직인다.</figcaption>
+      </figure>
+      <figure>
+        <div class="phone"><div class="scr" data-map="v">
+          <div class="pbar"><span>1막 · <b>12개 구장</b></span><span>덱 <b>9장</b></span></div>
+          <div class="mhead"><img class="sky" alt="" src="{{STADIUM}}"><h3>오늘 밤은 어느 마운드부터.</h3><p>이길수록 밤이 깊어진다</p></div>
+          <div class="route" data-route></div>
+          <div class="sheet" data-sheet></div>
+          <div class="acts"><span>2막 · 투수 HP 88~140 · 코스 +1</span><span>3막 · 투수 HP 112~164 · 코스 +2</span></div>
+        </div></div>
+        <figcaption>지도. 실루엣을 눌러 보면 아래 카드가 바뀐다.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>지도 · PC</h2>
+    <div class="frame map">
+      <div class="bar"><span>1막 · <b>12개 구장</b></span><span>덱 <b>9장</b> · 유물 <b>0</b></span></div>
+      <div class="stagemap" data-map="h">
+        <div class="left">
+          <div class="mhead"><img class="sky" alt="" src="{{STADIUM}}"><h3>오늘 밤은 어느 마운드부터.</h3><p>1막 · 이길수록 밤이 깊어진다</p></div>
+          <div class="route" data-route></div>
+        </div>
+        <div class="right" data-sheet></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>지금 화면과 비교</h2>
+    <div class="split">
+      <figure><img alt="현재 전투 화면: 경기장 위에 점수판, HP, 9ZONE 패널, 효율 막대, READ 칩, 카드, 실행 칸, BATTLE READOUT 박스가 겹쳐 있다" src="{{CURRENT}}"><figcaption>지금. 경기장 위에 패널이 9개, 설명문이 12줄. 눈이 어디에 가야 할지 모른다.</figcaption></figure>
+      <figure><img alt="" src="{{CURRENT_P}}"><figcaption>지금, 세로 휴대폰. 장면은 위 3분의 1, 나머지는 표와 규칙문.</figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>이 시안이 지키는 다섯 가지</h2>
+    <ul class="rules">
+      <li><b>장면이 먼저</b><p>화면은 위아래 검은 띠 안의 경기장 한 장면. 정보 패널은 장면을 덮지 않고 띠 위로 내려간다.</p></li>
+      <li><b>강조색은 하나</b><p>조명 노랑 하나만 쓴다. 노리는 칸, 휘두르기 버튼, 볼카운트 불빛. 노랑이 보이면 거기가 할 일이다. 나머지는 남색과 뼈색.</p></li>
+      <li><b>UI는 그림 속에</b><p>볼카운트는 경기장 구석의 작은 불빛으로, 투수 HP는 투수 머리 위 눈금 12칸에, 9존은 중계 화면처럼 타석 앞에 뜬 스트라이크 존으로.</p></li>
+      <li><b>행동은 동사 두 개</b><p>“휘두른다”와 “지켜본다”. 효율·커버·비용 계산은 버튼 아래 한 줄로 줄이고, 궁금하면 카드를 길게 눌러 본다.</p></li>
+      <li><b>설명하지 말고 말하기</b><p>규칙을 풀어 쓰는 문장을 지운다. 덕아웃에서 코치가 한마디 하듯 짧게. 불확실함은 “확정 예고 아님” 같은 단서 대신 속삭이는 글씨체로 전한다.</p></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>문구 바꾸기</h2>
+    <div class="copy-wrap">
+      <table class="copy">
+        <thead><tr><th>화면</th><th>지금</th><th>바꿀 문구</th></tr></thead>
+        <tbody>
+          <tr><td>타이틀</td><td class="old">투수 HP를 0으로 만들면 강판입니다. 갈림길을 골라 3막을 돌파하세요. 막이 올라갈수록 상대가 두꺼워지고 쓰는 코스가 늘어납니다.</td><td class="new">마운드 위 투수를 끌어내려라. 세 번의 밤, 아홉 개의 코스.</td></tr>
+          <tr><td>지도</td><td class="old">3아웃 전에 투수 HP를 0으로 만든다. 쉬운 길은 덱을 다듬고, 위험한 길은 더 큰 보상을 연다. 상대의 9존 성향과 이후 경로까지 읽고 결정하세요.</td><td class="new">오늘 밤은 어느 마운드부터.</td></tr>
+          <tr><td>투수 의도</td><td class="old">투수 의도 · 바깥쪽 승부 · 코스 경향 · 확정 예고 아님</td><td class="new"><i>바깥쪽을 노린다</i></td></tr>
+          <tr><td>READ</td><td class="old">루키는 바깥쪽을 선호합니다. 2스트라이크에서는 몸쪽 비중이 높아집니다. 지금은 4존만 씁니다 · 2타석마다 넓어집니다.</td><td class="new">바깥쪽을 좋아한다. 몰리면 몸쪽으로 온다.</td></tr>
+          <tr><td>질문</td><td class="old">YOUR CALL · 이번 공, 어떻게 가져갈까? 준비와 스윙을 함께 비교하세요. 한 공에 스윙은 한 번입니다.</td><td class="new">(지움. 버튼 두 개가 질문이다)</td></tr>
+          <tr><td>9존 규칙</td><td class="old">커버 안 공 = 안타 · 스탯은 안타 종류만 결정</td><td class="new">덮은 칸으로 오면, 맞는다.</td></tr>
+          <tr><td>카드</td><td class="old">선택한 1존 커버. 메인 카드로 정확히 적중하면 투수 HP 압박 +50%. 좁게 읽은 공에 가장 효율적인 스타터 카드.</td><td class="new">한 칸만 믿는다. 맞히면 +50%.</td></tr>
+          <tr><td>실행</td><td class="old">정타 노림 · 단독 스윙 · 피해 효율 100%</td><td class="new">휘두른다<br><small>정타 노림 · 가운데</small></td></tr>
+          <tr><td>안내</td><td class="old">적중 뒤 실패 판정 없음 · 코스 확률과 타격 범위로 계산합니다.</td><td class="new">(지움. 도움말로)</td></tr>
+          <tr><td>강판</td><td class="old">레드 러시 강판. 0아웃 · 1구 — 카드 한 장을 고르거나 건너뜁니다.</td><td class="new">레드 러시가 마운드를 내려간다. 한 장 챙겨 가자.</td></tr>
+          <tr><td>라커룸</td><td class="old">약한 카드를 덜 뽑도록 덱을 정리하는 구간입니다.</td><td class="new">손에 안 붙는 배트는 두고 간다.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="ask">
+    <h2>정해줄 것</h2>
+    <ol>
+      <li><b>말투.</b> 이 시안은 짧은 해설자 톤(“바깥쪽을 노린다”). 코치가 타자에게 반말로 하는 톤(“바깥쪽이야, 기다려”)도 가능.</li>
+      <li><b>캐릭터.</b> 지금 SD 캐릭터는 경기장 그림보다 선이 깨끗하고 밝아서 떠 보인다. 조명과 그림자로 맞춰 봤지만, 결국 경기장과 같은 도트 밀도로 다시 그릴지 정해야 한다.</li>
+    </ol>
+    <p>이 페이지는 시안이다. 게임 코드는 바꾸지 않았다.</p>
+  </div>
+</div>
+
+<script>window.__P={{PORTRAITS}};</script>
+<script>
+(function(){
+  var P=window.__P||{};
+  var GL={
+    locker:['.......','.#####.','.#...#.','.#..##.','.#...#.','.#####.','.......'],
+    train:['......#','.....#.','....#..','...#...','..#....','.#.....','#......'],
+    shop:['.......','..###..','.#...#.','#######','#.....#','#######','.......'],
+    rest:['..###..','.##....','##.....','##.....','##.....','.##....','..###..']
+  };
+  var N=[
+    [{t:'fight',id:'regular-01-red-rush',n:'레드 러시',l:'바깥쪽을 좋아한다.',hp:72}],
+    [{t:'fac',g:'locker',n:'라커룸',l:'손에 안 붙는 배트는 두고 간다.'},{t:'fac',g:'train',n:'타격 훈련',l:'카드 한 장을 단련한다.'},{t:'elite',id:'elite-01-cobalt-impact',n:'코발트 임팩트',l:'힘으로 밀어붙인다.',hp:100}],
+    [{t:'fight',id:'regular-02-teal-mirage',n:'청록 미라주',l:'바깥으로 흘린다.',hp:72},{t:'fight',id:'regular-03-amber-sinker',n:'앰버 싱커',l:'낮게, 더 낮게.',hp:72},{t:'elite',id:'elite-02-neon-trick',n:'네온 트릭',l:'속이고 비튼다.',hp:100}],
+    [{t:'fac',g:'shop',n:'장비 상점',l:'새 카드를 들인다.'},{t:'fac',g:'rest',n:'휴식일',l:'하루 쉰다. 다음 경기 타격 +8.'},{t:'fac',g:'shop',n:'장비 상점',l:'새 카드를 들인다.'},{t:'elite',id:'elite-03-wine-bluff',n:'와인 블러프',l:'허세 뒤에 진짜가 있다.',hp:100}],
+    [{t:'boss',id:'boss-01-emerald-tyrant',n:'에메랄드 타이런트',l:'코스 아홉 개를 다 쓴다.',hp:124}]
+  ];
+  var E=[[[0,0],[0,1],[0,2]],[[0,0],[0,1],[1,1],[2,2]],[[0,0],[1,1],[1,2],[2,3]],[[0,0],[1,0],[2,0],[3,0]]];
+  var TAG={fight:'정규전',elite:'강적',boss:'막 보스',fac:'쉬어 가는 곳'};
+  var RW={fight:'이기면 카드 3장 중 1장',elite:'이기면 카드 1장 + 유물',boss:'이기면 2막으로',fac:''};
+  function pos(r,i,o){var n=N[r].length;var a=(i+1)/(n+1);var b=r/(N.length-1);return o==='v'?{x:a*100,y:14+b*76}:{x:8+b*84,y:14+a*80};}
+  function glyph(g){var s='<span class="glyph" aria-hidden="true">';GL[g].join('').split('').forEach(function(c){s+='<i class="'+(c==='#'?'on':'')+'"></i>';});return s+'</span>';}
+  function hpt(hp){var s='<span class="hpt" aria-hidden="true">';for(var i=0;i<12;i++)s+='<i></i>';return s+'</span>';}
+  function sheetHTML(d,reach,o){
+    var pic=d.id?'<img alt="" src="'+P[d.id]+'">':'<span class="ico">'+glyph(d.g)+'</span>';
+    var info='<div class="info"><span class="tag">'+TAG[d.t]+'</span><span class="nm">'+d.n+'</span><span class="ln">'+d.l+'</span>'+(d.hp?hpt(d.hp)+'<span class="rw">HP '+d.hp+' · '+RW[d.t]+'</span>':'')+'</div>';
+    var btn='<button class="go" type="button"'+(reach?'':' disabled')+'>'+(reach?(d.t==='fac'?'들른다':'이 구장으로 간다'):'아직 길이 없다')+'</button>';
+    return o==='v'?'<div class="por">'+pic+'</div>'+info+btn:'<div class="big">'+pic+'</div>'+info+btn;
+  }
+  document.querySelectorAll('[data-map]').forEach(function(root){
+    var o=root.getAttribute('data-map'),route=root.querySelector('[data-route]'),sheet=root.querySelector('[data-sheet]');
+    var svg='<svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">';
+    E.forEach(function(es,r){es.forEach(function(e){var a=pos(r,e[0],o),b=pos(r+1,e[1],o);svg+='<line class="'+(r===0?'':'')+'" x1="'+a.x+'" y1="'+(a.y-2)+'" x2="'+b.x+'" y2="'+(b.y-6)+'"/>';});});
+    route.innerHTML=svg+'</svg>';
+    var btns=[];
+    N.forEach(function(row,r){row.forEach(function(d,i){
+      var p=pos(r,i,o),b=document.createElement('button');b.type='button';
+      b.className='node '+d.t+(r===0?' reach':'');b.style.left=p.x+'%';b.style.top=p.y+'%';
+      b.setAttribute('aria-label',TAG[d.t]+' '+d.n);
+      b.innerHTML=(d.id?'<img class="fig" alt="" src="'+P[d.id]+'">':glyph(d.g))+'<span class="pl"></span><em>'+d.n+'</em>';
+      b.addEventListener('click',function(){btns.forEach(function(x){x.classList.remove('sel');});b.classList.add('sel');sheet.innerHTML=sheetHTML(d,r===0,o);});
+      route.appendChild(b);btns.push(b);
+    });});
+    btns[0].click();
+  });
+})();
+
+(function(){
+  document.querySelectorAll('[data-hp]').forEach(function(h){for(var i=0;i<12;i++)h.appendChild(document.createElement('i'));});
+  var hp=document.getElementById('hp');
+  for(var i=0;i<12;i++){var t=document.createElement('i');hp.appendChild(t);}
+  var cards=[
+    {n:'정타 노림',d:'한 칸만 믿는다. 맞히면 +50%.',g:[4],z:'가운데'},
+    {n:'밀어치기',d:'바깥쪽 세로 한 줄.',g:[2,5,8],z:'바깥쪽 세로'},
+    {n:'당겨 넘기기',d:'몸쪽 한 칸, 크게.',g:[3],z:'몸쪽 가운데'},
+    {n:'주자 연결',d:'가로 한 줄, 주자를 민다.',g:[3,4,5],z:'가운데 가로'},
+    {n:'커트 스윙',d:'십자로 버틴다.',g:[1,3,4,5,7],z:'십자'}
+  ];
+  function hand(wrap,zone,sub){
+    function pick(k){
+      [].forEach.call(wrap.children,function(c,i){c.classList.toggle('sel',i===k);c.setAttribute('aria-pressed',i===k);});
+      zone.forEach(function(z,i){z.classList.toggle('aim',cards[k].g.indexOf(i)>-1);});
+      sub.textContent=cards[k].n+' · '+cards[k].z;
+    }
+    cards.forEach(function(c,k){
+      var b=document.createElement('button');b.type='button';b.className='card';
+      var g='<span class="g" aria-hidden="true">';for(var i=0;i<9;i++)g+='<i class="'+(c.g.indexOf(i)>-1?'f':'')+'"></i>';g+='</span>';
+      b.innerHTML=g+'<strong>'+c.n+'</strong><span>'+c.d+'</span>';
+      b.addEventListener('click',function(){pick(k);});
+      wrap.appendChild(b);
+    });
+    pick(0);
+  }
+  hand(document.getElementById('cards'),[].slice.call(document.querySelectorAll('#zone b')),document.getElementById('goSub'));
+  hand(document.querySelector('[data-cards]'),[].slice.call(document.querySelectorAll('[data-zone] b')),document.querySelector('[data-gosub]'));
+})();
+</script>
