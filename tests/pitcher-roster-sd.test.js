@@ -1,5 +1,6 @@
 import {describe,expect,it} from 'vitest';
 import fs from 'node:fs';
+import {createRunMap} from '../src/duel/run-map.js';
 
 const root=new URL('../assets/pitcher-sd-v2/',import.meta.url);
 const roster=JSON.parse(fs.readFileSync(new URL('../assets/pitcher-mobs-v1/roster.json',import.meta.url),'utf8'));
@@ -16,6 +17,18 @@ const dimensions=file=>{
 };
 
 describe('remaining pitcher SD roster',()=>{
+  it('assigns authored pitcher art across map battles, elites and bosses',()=>{
+    const map=createRunMap(7);
+    const opponents=map.nodes.filter(node=>node.opponent);
+    const ids=new Set(opponents.map(node=>node.opponent.artId));
+    expect(opponents[0].opponent.artId).toBe('regular-01-red-rush');
+    expect(ids).toEqual(new Set(roster.map(entry=>entry.id)));
+    for(const node of opponents){
+      const entry=roster.find(pitcher=>pitcher.id===node.opponent.artId);
+      expect(entry?.tier).toBe(node.type);
+      if(node.type==='boss')expect(entry.act).toBe(node.act);
+    }
+  });
   it('packages every other pitcher with two transparent six-pose sheets',()=>{
     expect(remaining).toHaveLength(11);
     for(const entry of remaining){
@@ -42,4 +55,3 @@ describe('remaining pitcher SD roster',()=>{
     }
   });
 });
-

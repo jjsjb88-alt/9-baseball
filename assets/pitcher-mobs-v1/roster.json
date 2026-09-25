@@ -8,7 +8,7 @@
     "pose": "windup",
     "file": "regular-01-red-rush.png",
     "generated": true,
-    "runtimeIntegrated": false
+    "runtimeIntegrated": true
   },
   {
     "id": "regular-02-teal-mirage",
@@ -19,7 +19,7 @@
     "pose": "set",
     "file": "regular-02-teal-mirage.png",
     "generated": true,
-    "runtimeIntegrated": false
+    "runtimeIntegrated": true
   },
   {
     "id": "regular-03-amber-sinker",
@@ -30,7 +30,7 @@
     "pose": "ready",
     "file": "regular-03-amber-sinker.png",
     "generated": true,
-    "runtimeIntegrated": false
+    "runtimeIntegrated": true
   },
   {
     "id": "regular-04-ivory-ace",
@@ -41,7 +41,7 @@
     "pose": "set",
     "file": "regular-04-ivory-ace.png",
     "generated": true,
-    "runtimeIntegrated": false
+    "runtimeIntegrated": true
   },
   {
     "id": "regular-05-violet-sting",
@@ -52,7 +52,7 @@
     "pose": "sidearm-ready",
     "file": "regular-05-violet-sting.png",
     "generated": true,
-    "runtimeIntegrated": false
+    "runtimeIntegrated": true
   },
   {
     "id": "regular-06-rose-paint",
@@ -63,7 +63,7 @@
     "pose": "ready",
     "file": "regular-06-rose-paint.png",
     "generated": true,
-    "runtimeIntegrated": false
+    "runtimeIntegrated": true
   },
   {
     "id": "elite-01-cobalt-impact",
@@ -74,7 +74,7 @@
     "pose": "power-set",
     "file": "elite-01-cobalt-impact.png",
     "generated": true,
-    "runtimeIntegrated": false
+    "runtimeIntegrated": true
   },
   {
     "id": "elite-02-neon-trick",
@@ -85,7 +85,7 @@
     "pose": "stride",
     "file": "elite-02-neon-trick.png",
     "generated": true,
-    "runtimeIntegrated": false
+    "runtimeIntegrated": true
   },
   {
     "id": "elite-03-wine-bluff",
@@ -96,7 +96,7 @@
     "pose": "taunt-set",
     "file": "elite-03-wine-bluff.png",
     "generated": true,
-    "runtimeIntegrated": false
+    "runtimeIntegrated": true
   },
   {
     "id": "boss-01-emerald-tyrant",
@@ -108,7 +108,7 @@
     "pose": "coiled-set",
     "file": "boss-01-emerald-tyrant.png",
     "generated": true,
-    "runtimeIntegrated": false
+    "runtimeIntegrated": true
   },
   {
     "id": "boss-02-platinum-halo",
@@ -120,7 +120,7 @@
     "pose": "leg-kick",
     "file": "boss-02-platinum-halo.png",
     "generated": true,
-    "runtimeIntegrated": false,
+    "runtimeIntegrated": true,
     "designAdjustment": "Closed baseball uniform with full-length trousers; nonsexual competitive boss design"
   },
   {
@@ -133,7 +133,7 @@
     "pose": "release",
     "file": "boss-03-black-eclipse.png",
     "generated": true,
-    "runtimeIntegrated": false,
+    "runtimeIntegrated": true,
     "designAdjustment": "Closed baseball uniform with full-length trousers; nonsexual competitive boss design"
   }
 ]

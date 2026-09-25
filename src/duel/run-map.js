@@ -1,4 +1,5 @@
 import {ZONE_ORDER} from './cards.js';
+import pitcherRoster from '../../assets/pitcher-mobs-v1/roster.json' with {type:'json'};
 
 const TYPES=new Set(['battle','elite','training','locker','shop','rest','boss']);
 const COMBAT_TYPES=new Set(['battle','elite','boss']);
@@ -210,10 +211,22 @@ export function createRunMap(seed=0){
     if(act<3)edges.push({from:`a${act}-boss`,to:`a${act+1}-entry`});
   }
   nameOpponents(seed,nodes);
-  // Keep the authored SD pitcher available at the first selectable stop.
-  // Existing saves without artId retain the current V4 pitcher.
-  const redRush=nodes.find(n=>n.id==='a1-entry'&&n.type==='battle')||nodes.find(n=>n.type==='battle');
-  if(redRush){redRush.opponent.name='레드 러시';redRush.opponent.artId='regular-01-red-rush';}
+  // Assign a same-tier authored character without changing opponent stats.
+  // Pool repeats receive numbered names to preserve unique names per run.
+  const pools=Object.fromEntries(['battle','elite','boss'].map(type=>[type,pitcherRoster.filter(p=>p.tier===type)]));
+  const counts={battle:0,elite:0,boss:0};
+  const repeats=new Map();
+  for(const node of nodes){
+    if(!node.opponent)continue;
+    const pool=pools[node.type];
+    const index=counts[node.type]++;
+    const pitcher=node.type==='boss'?pool.find(p=>p.act===node.act):node.type==='battle'?pool[index===0?0:1+(index-1)%(pool.length-1)]:pool[index%pool.length];
+    if(!pitcher)continue;
+    const seen=repeats.get(pitcher.id)||0;
+    repeats.set(pitcher.id,seen+1);
+    node.opponent.name=pitcher.name+(seen?' '+(seen+1):'');
+    node.opponent.artId=pitcher.id;
+  }
   for(const node of nodes)if(node.opponent)node.preview=`${node.opponent.name} · ${node.opponent.archetype} · HP ${node.opponent.maxHp}`;
   return {seed:seed>>>0,nodes,edges,currentNodeId:null,completedNodeIds:[],reachableIds:['a1-entry']};
 }
