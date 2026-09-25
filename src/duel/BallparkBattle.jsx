@@ -107,6 +107,9 @@ export default function BallparkBattle({
   const tokens=judged?[r.coverage?.length?{z:r.aimZone,n:1}:null,...(r.supportZones||[]).map((z,i)=>({z,n:i+2}))].filter(Boolean)
     :[selected&&!mainIsSkill?{z:b.aimZone,n:1}:null,...stack.map((x,i)=>({z:x.aimZone,n:i+2}))].filter(Boolean);
   const call=judged?callOf(r,shot):'';
+  /* a pitch in the ball band: say plainly what happened (players could not tell a chase from a miss) */
+  const swung=!!r?.coverage?.length,outside=judged&&r.zone===9;
+  const outNote=outside?(swung?'볼에 손이 나갔다':'볼을 골라냈다'):'';
   const good=judged&&(r.kind==='hit'||r.kind==='sacrifice'||call==='볼넷');
 
   const cardButton=x=>{
@@ -137,7 +140,7 @@ export default function BallparkBattle({
         {damage>0&&<b className="bp-damage" key={'d'+playToken}>-{damage}</b>}
         <small aria-hidden="true">HP {judged&&!landed?(pitcher?.hp||0)+(pitcher?.lastDamage||0):pitcher?.hp} / {pitcher?.maxHp}</small>
       </div>
-      {showVerdict&&<div className={'bp-verdict'+(good?' good':'')} key={'v'+playToken+(shot.title||'')} role="status"><strong>{call||shot.title}</strong>{call&&shot.title&&shot.title!==call&&<small>{shot.title}</small>}</div>}
+      {showVerdict&&<div className={'bp-verdict'+(good?' good':'')} key={'v'+playToken+(shot.title||'')} role="status"><strong>{call||shot.title}</strong>{(outNote||call&&shot.title&&shot.title!==call)&&<small>{outNote||shot.title}</small>}</div>}
       {judged&&inFx&&!landed&&<i className="bp-flight" ref={flightRef} key={'f'+playToken} aria-hidden="true"/>}
       <div className="bp-batter" aria-hidden="true">{batterArt}</div>
 
@@ -153,9 +156,10 @@ export default function BallparkBattle({
           </button>;
         })}
         <span className="bp-side l">몸쪽</span><span className="bp-side r">바깥쪽</span>
-        {/* a pitch outside the nine cells is a ball; it lands beside the frame */}
-        {judged?(landed&&r.zone===9&&<><span className="bp-ball actual">볼 · 존 밖</span><i className="bp-pitch-mark outside" aria-label="실제 공 · 존 밖"/></>)
-          :<span className="bp-ball">볼 {Math.round((probs[9]||0)*100)}%</span>}
+        {/* the ball band: the ring around the nine cells is where balls go. Swing at one = a whiff,
+            watch one = a ball. It is drawn so the out-of-zone pitch has a place players can see. */}
+        <span className={'bp-band'+(outside&&landed?' hit':'')} aria-hidden="true"><em>바깥 띠 = 볼</em></span>
+        {judged&&landed&&outside&&<i className="bp-pitch-mark outside" aria-label="실제 공 · 볼"/>}
       </div>
 
       <div className="bp-count" aria-label={`볼 ${b.balls} 스트라이크 ${b.strikes} 아웃 ${b.outs}`}>
@@ -186,7 +190,7 @@ export default function BallparkBattle({
       <button type="button" className="bp-verb go" data-testid="bp-swing" disabled={!deciding||!selected||!!choice?.problem} onClick={onSwing}>
         {verb}{verbSub&&<small>{verbSub}</small>}
       </button>
-      <button type="button" className="bp-verb wait" data-testid="bp-take" disabled={!deciding} onClick={onTake}>지켜본다</button>
+      <button type="button" className="bp-verb wait" data-testid="bp-take" disabled={!deciding} onClick={onTake}>지켜본다<small>볼일 확률 {Math.round((probs[9]||0)*100)}%</small></button>
       {mainEntry&&deciding&&<button type="button" className="bp-info" aria-label={mainName+' 카드 설명'} onClick={()=>onDetail?.(mainEntry)}>ⓘ</button>}
     </div>}
   </main>;

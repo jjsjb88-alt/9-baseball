@@ -44,7 +44,7 @@ describe('V13 BALLPARK battle',()=>{
     expect(cells()).toHaveLength(9);
     expect(cards().length).toBeGreaterThan(0);
     expect(swingBtn().disabled).toBe(true);
-    expect(screen.getByTestId('bp-take').textContent).toBe('지켜본다');
+    expect(screen.getByTestId('bp-take').textContent).toMatch(/^지켜본다/);
   });
 
   it('speaks in short lines, not rules',()=>{
@@ -129,7 +129,7 @@ describe('V13 BALLPARK BP-2 pitch in the scene',()=>{
     const s=readV10Duel(localStorage),r=s.battle.revealed;
     expect(document.querySelector('.bp-verdict strong').textContent.length).toBeGreaterThan(0);
     if(r.zone<9)expect(cells()[r.zone].classList.contains('actual')).toBe(true);
-    else expect(document.querySelector('.bp-ball.actual')).not.toBeNull();
+    else{expect(document.querySelector('.bp-pitch-mark.outside')).not.toBeNull();expect(document.querySelector('.bp-band.hit')).not.toBeNull();}
     const next=screen.getByTestId('bp-next');
     expect(['다음 공','다음 타자']).toContain(next.textContent);
     expect(next.disabled).toBe(false);
@@ -173,9 +173,10 @@ describe('V13 BALLPARK playtest feedback 2026-09-25',()=>{
     expect([1,4,7].every(z=>cells()[z].classList.contains('cover'))).toBe(true);
     expect(document.querySelector('.bp-zone').classList.contains('has-cover')).toBe(true);
   });
-  it('the out-of-zone share is called a ball',()=>{
+  it('balls have a place: a band around the zone, and the watch button says the ball chance',()=>{
     begin();
-    expect(document.querySelector('.bp-ball').textContent).toMatch(/^볼 \d+%$/);
+    expect(document.querySelector('.bp-zone .bp-band em').textContent).toBe('바깥 띠 = 볼');
+    expect(screen.getByTestId('bp-take').textContent).toMatch(/^지켜본다볼일 확률 \d+%$/);
   });
   it('the verdict leads with the baseball call',()=>{
     vi.useFakeTimers();

@@ -193,7 +193,7 @@
   .bp-pitcher{left:auto;right:12%;top:auto;bottom:33%;height:21%}
   .bp-ptag{left:auto;right:4%;top:21%;width:40%}
   .bp-batter{left:-15%;bottom:-1%;height:58%}
-  .bp-zone{left:38%;top:auto;bottom:4%;width:52%;height:34%}
+  .bp-zone{left:38%;top:auto;bottom:calc(4% + 22px);width:50%;height:32%}
   .bp-bases{top:84px}
 }
 /* ---------- BP-3 map ---------- */
@@ -333,3 +333,14 @@
 /* a ball's chip sits under its mark beside the frame, clear of the verdict above the zone */
 @media (orientation:landscape){.bp-ball.actual{bottom:auto;top:calc(50% + 18px);left:calc(100% + 4px);margin:0}}
 @media (orientation:portrait){.bp-pitch-mark.outside{right:-22px;width:16px;height:16px}}
+
+/* ---------- ball band (BP-6) ---------- */
+/* the ring outside the nine cells, drawn dashed: balls land here */
+.bp-band{position:absolute;inset:-24px;z-index:-1;border:2px dashed #ece4cf99;border-radius:3px;background:#07080d33;pointer-events:none}
+.bp-band em{position:absolute;left:-2px;top:-2px;transform:translateY(-100%);font:400 12px/1.2 var(--bp-ko)!important;font-style:normal;color:var(--bp-bone);padding:2px 6px;background:#07080dcc;border-radius:2px;white-space:nowrap}
+.bp-band.hit{border-color:#fff;border-style:solid;background:#ffffff26;box-shadow:0 0 18px #fff6}
+.bp-battle .bp-zone .bp-pitch-mark.outside{left:auto;right:-21px;top:50%;margin:-8px 0 0 0;width:16px;height:16px}
+.bp-battle .bp-ball{display:none}
+.bp-battle .bp-side{margin-top:26px}
+.bp-verb.wait small{font:400 12px/1.2 var(--bp-ko);opacity:.85}
+@media (orientation:landscape){.bp-band em{left:auto;right:-2px}}
