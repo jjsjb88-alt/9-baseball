@@ -23,12 +23,14 @@ import "./duel/v12-battle-short.css";
 import "./duel/v12-battle-type-hud.css";
 import "./duel/v12-battle-type.css";
 import "./duel/v12-card-prepare.css";
+import "./duel/v12-card-swing.css";
 import "./duel/v12-board-cover.css";
 import "./duel/v12-result.css";
 import "./duel/v12-overflow-safe.css";
 import "./duel/v12-map.css";
 import "./duel/v12-help.css";
 import "./duel/pitcher-portrait.css";
+import "./duel/v12-polish.css";
 import "./duel/title-pixel.css";
 
 createRoot(document.getElementById("root")).render(

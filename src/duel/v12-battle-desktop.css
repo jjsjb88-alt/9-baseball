@@ -17,8 +17,11 @@
   .duel-combat.v12-design.v12-design>.zone-panel.zone-panel{transform:none!important}
   .duel-combat.v12-design.v12-design>.zone-panel.zone-panel .zone-cell{height:60px!important;min-height:60px!important}
 
-  /* hand centred along the bottom, actions bottom-right */
-  .duel-combat.v12-design>.duel-table .card-drawer>.duel-hand{left:430px!important;right:auto!important;width:590px!important}
+  /* hand along the bottom, actions bottom-right. The band under the arena is free from its left edge
+     to the watch button (1040px), so the hand uses all of it: six cards side by side without the
+     legacy -12px overlap that hid each card's text under the next one (P2-5). */
+  .duel-combat.v12-design>.duel-table .card-drawer>.duel-hand{left:24px!important;right:auto!important;width:996px!important;gap:8px!important}
+  .duel-combat.v12-design>.duel-table .card-drawer>.duel-hand>.duel-card{margin-left:0!important}
   /* centred content that overflows the hand is unreachable on its left side: centre only while it fits */
   .duel-combat.v12-design>.duel-table .card-drawer>.duel-hand{justify-content:safe center!important}
   .duel-combat.v12-design>.duel-table .card-drawer>.drawer-escape{left:1040px!important;right:auto!important;top:62px!important;bottom:auto!important;width:176px!important;height:56px!important;display:grid!important;place-items:center!important}

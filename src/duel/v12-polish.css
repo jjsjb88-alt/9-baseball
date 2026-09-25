@@ -1,0 +1,93 @@
+/* V12 UX-2 — polish pass from a render audit of 390×844 / 844×390 / 1440×900 (overlap, clip and
+   sub-12px text on live screens). Each rule names the defect it removes. */
+
+/* header actions (♪ / 덱 / ?) were forced to 8px on every landscape screen (landscape-declutter)
+   and sat at 11px on phones */
+@media (min-width:0px){
+  .duel-header nav button{font-size:12px!important;line-height:16px!important}
+}
+
+/* landscape + desktop battle: the batter's painted nameplate sat under the READ chip (both pinned
+   bottom-left). The scoreboard's AT BAT line already names the batter, so the plate steps out —
+   the same call P1-1b made for the painted "AT BAT" marker. */
+@media (orientation:landscape){
+  .duel-combat.v12-design>.duel-arena .batter-nameplate{display:none!important}
+}
+
+@media (min-width:1080px) and (min-height:650px){
+  /* the HP number floated over the bar and the fill ran through "72 / 72"; it reads under the bar */
+  .duel-combat.v12-design>.v10-combat-hp{height:auto!important;max-height:none!important}
+  .duel-combat.v12-design>.v10-combat-hp .v10-hp{height:auto!important;max-height:none!important;overflow:visible!important}
+  .duel-combat.v12-design>.v10-combat-hp .v10-hp .v10-hp-count{position:static!important;margin:4px 0 0!important;transform:none!important}
+  /* the idle hint card pinned its title to the top and its line to the bottom of a 132px box */
+  .duel-combat.v12-design>.duel-table .card-drawer>.decision-preview:not(.active){grid-template-rows:none!important;grid-auto-rows:auto!important;align-content:center!important;row-gap:8px!important}
+  /* "타순 보기" broke into "타순 보 / 기" inside the 72px count column */
+  .duel-combat.v12-design>.scoreboard .scoreboard-count button{white-space:nowrap!important;padding-inline:4px!important}
+}
+
+@media (orientation:landscape) and (max-height:500px){
+  /* the pitcher-intent chip lives inside the arena (56% wide), so "56% - 170px" resolved against the
+     arena, not the screen: 56px at 720×450 ("바…"). It also sat under the batter (actor z 38). */
+  .duel-combat.v12-design>.duel-arena .intent{max-width:min(calc(100% - 16px),260px)!important;z-index:40!important}
+  /* the faint "BATTER VS PITCHER" caption (6px) ran into the HOME plate label under the batter */
+  .duel-combat.v12-design>.duel-arena .landscape-duel-axis{display:none!important}
+}
+
+/* map, phones: the closed act bars (02 / 03) squeezed number · name · count · step · toggle into one
+   row — "2 / 막" broke in two, the count wrapped to four lines and the step chip ran off the screen.
+   Number, name, count and toggle keep one row; the step chip gets its own row and may wrap. */
+@media (max-width:600px){
+  .v10-run-map-screen .v10-act-bar{grid-template-columns:30px auto 1fr auto!important;row-gap:4px!important}
+  .v10-run-map-screen .v10-act-bar>.v10-act-name{white-space:nowrap!important}
+  .v10-run-map-screen .v10-act-bar>.v10-act-count{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;min-width:0!important}
+  .v10-run-map-screen .v10-act-bar>.v10-act-toggle{grid-column:4!important;grid-row:1!important}
+  .v10-run-map-screen .v10-act-bar>.v10-act-step{grid-column:2/-1!important;grid-row:2!important;justify-self:start!important;white-space:normal!important;max-width:100%!important}
+}
+
+/* title, short landscape: a 72px two-line headline under 12vh of padding pushed "새 런 시작" to
+   441–493px on a 390px-tall screen — the one button that starts the game began off-screen */
+@media (orientation:landscape) and (max-height:500px){
+  .duel-title{padding-top:14px!important}
+  .duel-title .title-copy h1{font-size:34px!important;line-height:1.12!important;margin:0!important}
+  .duel-title .title-main{margin:10px 0 14px!important;padding:12px 16px!important}
+  .duel-title .title-main h2{font-size:22px!important;margin:6px 0 4px!important}
+  .duel-title .title-main-actions{margin-top:10px!important}
+  .duel-title .title-main-actions button{min-height:44px!important}
+}
+
+/* the armed swing (a card on the board): the execute button — the one decision of the pitch — read
+   at 7–8px, and the BATTLE READOUT at 6–7px */
+@media (min-width:0px){
+  .duel-combat.v12-design>.duel-table .decision-preview [data-testid=execute-action]{font-size:13px!important;line-height:17px!important;font-weight:900!important;letter-spacing:0!important;white-space:normal!important;word-break:keep-all!important}
+  .duel-combat.v12-design>.duel-table .decision-preview .landscape-choice-toggle{font-size:12px!important;letter-spacing:0!important}
+  .duel-combat.v12-design>.duel-table .decision-preview.active>:is(b,span,.hp-efficiency-chip),
+  .duel-combat.v12-design>.duel-table .decision-preview.active>div>:is(b,span){font-size:12px!important;line-height:16px!important;letter-spacing:0!important}
+}
+/* phones, portrait: the readout sat in the page flow under the pinned strip (749–885px on an 844px
+   screen) — behind it and past the bottom. The strip already states the swing (card · stack · HP
+   efficiency) and the board shows the cover, so it steps out, as it already does on short phones. */
+@media (max-width:900px) and (orientation:portrait){
+  .duel-combat.v12-design>.duel-table .card-drawer>.battle-readout{display:none!important}
+}
+/* the strip's lines at 12px make it 134px tall; the page reserve follows so the hand's last row is
+   never under it */
+@media (max-width:900px) and (orientation:portrait) and (min-height:761px){
+  .duel-combat.v12-design:has(.decision-preview.active){padding-bottom:140px!important}
+}
+/* short landscape: the action-column readout was 146×61px with 6–7px text, and once a second card
+   opened the order button it was squeezed to 11px of height (58px of content). The execute button
+   already states the swing and its HP efficiency, and the board shows the cover — the same call the
+   short-portrait layer made — so it steps out; the execute button keeps the 12px floor. */
+@media (orientation:landscape) and (max-height:500px){
+  .duel-combat.v12-design>.duel-table .card-drawer>.battle-readout{display:none!important}
+  .duel-combat.v12-design>.duel-table .decision-preview [data-testid=execute-action]{font-size:12px!important;line-height:15px!important}
+}
+/* desktop: the readout spread across the whole bottom band behind the hand. It stands under the
+   9ZONE it describes, in the open stand area right of the pitcher, at the 12px floor. */
+@media (min-width:1080px) and (min-height:650px){
+  .duel-combat.v12-design>.duel-table .card-drawer>.battle-readout{position:absolute!important;left:930px!important;right:auto!important;top:auto!important;bottom:calc(100% + 2px)!important;width:380px!important;margin:0!important;padding:8px 10px!important;z-index:6!important}
+  .duel-combat.v12-design>.duel-table .card-drawer>.battle-readout header{margin-bottom:4px!important}
+  .duel-combat.v12-design>.duel-table .card-drawer>.battle-readout :is(header span,header em,.readout-meter span,.readout-meter small,.readout-meter b i,.battle-readout-coach,.battle-readout-coach span,.battle-readout-trade){font-size:12px!important;line-height:16px!important;letter-spacing:0!important}
+  .duel-combat.v12-design>.duel-table .card-drawer>.battle-readout :is(header strong,.readout-meter b){font-size:14px!important;line-height:18px!important}
+  .duel-combat.v12-design>.duel-table .card-drawer>.battle-readout .readout-meter>div{flex-wrap:wrap!important;row-gap:0!important}
+}
