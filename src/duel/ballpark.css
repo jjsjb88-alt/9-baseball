@@ -1,16 +1,16 @@
 /* V13 BALLPARK — battle scene (docs/design/v13/BALLPARK.md). Every rule lives under .bp-battle.
    One accent (--bp-sodium); the scene is the screen, panels sit on the letterbox. */
-.bp-battle{
+.bp-battle,.bp-map{
   --bp-ink:#07080d;--bp-night:#141a33;--bp-bone:#ece4cf;--bp-bone-dim:#b7b09e;--bp-slate:#7b84a6;--bp-line:#2a3152;--bp-sodium:#ffc861;
   --bp-ko:"Gowun Dodum","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
   --bp-impact:"Black Han Sans","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
   --bp-led:"Silkscreen",ui-monospace,Menlo,monospace;
   --bp-top:58px;
-  display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(340px,1fr) auto auto auto;
-  min-height:calc(100dvh - var(--bp-top));background:var(--bp-ink);color:var(--bp-bone);font:15px/1.5 var(--bp-ko);
+  background:var(--bp-ink);color:var(--bp-bone);font:15px/1.5 var(--bp-ko);
 }
-.bp-battle button{font:inherit;color:inherit}
-.bp-battle button:focus-visible{outline:2px solid var(--bp-bone);outline-offset:2px}
+.bp-battle{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto auto auto;min-height:calc(100dvh - var(--bp-top))}
+:is(.bp-battle,.bp-map) button{font:inherit;color:inherit}
+:is(.bp-battle,.bp-map) button:focus-visible{outline:2px solid var(--bp-bone);outline-offset:2px}
 .bp-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 14px;font:400 11px/1 var(--bp-led);letter-spacing:.1em;color:var(--bp-slate);text-transform:uppercase}
 .bp-bar b{font:400 13px/1 var(--bp-ko);letter-spacing:0;color:var(--bp-bone)}
 .bp-piles{display:flex;gap:6px}
@@ -18,6 +18,7 @@
 
 /* scene */
 .bp-scene{position:relative;overflow:hidden;background:var(--bp-night)}
+
 .bp-bg{position:absolute;inset:0;background:url('../../assets/duel/stadium.png') 52% 64%/cover no-repeat;image-rendering:pixelated}
 /* bright stadium (user call 2026-09-25): the SD actors are bright, so the park is too; only the bottom edge
    darkens into the letterbox */
@@ -102,7 +103,7 @@
 @media (orientation:landscape){
   .bp-battle{height:calc(100dvh - var(--bp-top));min-height:0;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto minmax(0,1fr) auto auto;
     grid-template-areas:"bar bar" "scene scene" "coach verbs" "hand verbs"}
-  .bp-bar{grid-area:bar}.bp-scene{grid-area:scene}.bp-coach{grid-area:coach}.bp-hand{grid-area:hand}
+  .bp-battle>.bp-bar{grid-area:bar}.bp-battle>.bp-scene{grid-area:scene}.bp-battle>.bp-coach{grid-area:coach}.bp-battle>.bp-hand{grid-area:hand}
   .bp-verbs{grid-area:verbs;grid-template-columns:1fr auto;align-content:end;width:clamp(170px,22vw,260px);padding:10px 16px 14px}
   .bp-verb.go{grid-column:1/-1}
   .bp-info{width:44px}
@@ -174,3 +175,78 @@
   .bp-verbs.next .bp-verb.go small{display:block}
 }
 @media (prefers-reduced-motion:reduce){.bp-flight{display:none}}
+
+/* portrait: a fixed 3:4 scene shows the park's full height, so the infield dirt starts at 64% and
+   the actors are placed on it — the pitcher on the rubber (feet 66%), the batter at the front edge.
+   (A free-height scene let the pitcher stand in the stands on tall phones.) */
+@media (orientation:portrait){
+  /* any portrait box is narrower than the 16:9 park, so `cover` scales it by height and the ground
+     stays at 64% of the scene whatever the phone; the scene gives up height before the hand does */
+  .bp-scene{aspect-ratio:3/4;max-height:min(68dvh,calc(100dvh - var(--bp-top) - 340px));min-height:280px;width:100%}
+  .bp-bg{background-position:54% 0}
+  .bp-pitcher{left:auto;right:12%;top:auto;bottom:33%;height:21%}
+  .bp-ptag{left:auto;right:4%;top:21%;width:40%}
+  .bp-batter{left:-15%;bottom:-1%;height:58%}
+  .bp-zone{left:38%;top:auto;bottom:4%;width:52%;height:34%}
+  .bp-bases{top:84px}
+}
+/* ---------- BP-3 map ---------- */
+.bp-map{min-height:calc(100dvh - var(--bp-top));display:grid;grid-template-rows:auto 1fr}
+.bp-mbody{display:grid;grid-template-rows:1fr auto;min-height:0}
+.bp-mleft{display:grid;grid-template-rows:auto minmax(360px,1fr) auto;min-height:0}
+.bp-mhead{position:relative;padding:18px 16px 16px;background:var(--bp-sky) 50% 26%/cover no-repeat;image-rendering:pixelated}
+.bp-mhead::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,#07080dcc 100%)}
+.bp-mhead h1{position:relative;z-index:1;display:inline-block;margin:28px 0 0;padding:8px 12px;background:#07080dcc;border-radius:2px;font:400 clamp(22px,6vw,34px)/1.15 var(--bp-impact);color:var(--bp-bone);text-wrap:balance}
+.bp-route{position:relative;background:radial-gradient(ellipse 70% 50% at 50% 35%,#1a2146,transparent 75%),var(--bp-ink)}
+.bp-route svg{position:absolute;inset:0;width:100%;height:100%}
+.bp-route line{stroke:#2e3660;stroke-width:1.4;stroke-dasharray:3 4;vector-effect:non-scaling-stroke}
+.bp-route line.live{stroke:var(--bp-sodium);stroke-dasharray:none;opacity:.8}
+.bp-node{position:absolute;transform:translate(-50%,-50%);display:grid;justify-items:center;gap:3px;min-width:44px;min-height:44px;padding:2px;background:none;border:0;border-radius:4px;color:var(--bp-slate);cursor:pointer;font:400 11px/1.1 var(--bp-ko)!important}
+.bp-node .bp-fig{display:block;height:38px;filter:brightness(0) drop-shadow(0 0 1px #4a5480) drop-shadow(0 0 4px #4a548088)}
+.bp-node.elite .bp-fig{height:46px}.bp-node.boss .bp-fig{height:62px}
+.bp-node em{font-style:normal;white-space:nowrap}
+.bp-node.reach{color:var(--bp-bone)}
+.bp-node.reach .bp-fig{filter:brightness(0) drop-shadow(0 0 1px var(--bp-sodium)) drop-shadow(0 0 7px #ffc861aa)}
+.bp-node.sel em{color:var(--bp-sodium)}
+.bp-node.sel .bp-fig{filter:brightness(0) drop-shadow(0 0 2px var(--bp-sodium)) drop-shadow(0 0 12px #ffc861)}
+.bp-node.done{opacity:.35}
+.bp-map .bp-node:hover:not(:disabled){background:#ffffff0d;border-color:transparent}
+.bp-mglyph{display:grid;grid-template-columns:repeat(7,1fr);width:22px;height:22px;padding:5px;box-sizing:content-box;border:1px solid #2e3660;background:#0d1122}
+.bp-mglyph i.on{background:var(--bp-slate)}
+.bp-node.reach .bp-mglyph{border-color:var(--bp-sodium)}.bp-node.reach .bp-mglyph i.on{background:var(--bp-bone)}
+.bp-node.sel .bp-mglyph{border-color:var(--bp-sodium);box-shadow:0 0 10px #ffc86166}.bp-node.sel .bp-mglyph i.on{background:var(--bp-sodium)}
+.bp-acts{display:grid;gap:4px;margin:0;padding:10px 16px;font:400 10px/1.4 var(--bp-led);letter-spacing:.08em;color:#5a6490}
+.bp-msheet{display:grid;grid-template-columns:104px 1fr;gap:12px;padding:14px 16px calc(16px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--bp-line);background:#0b0e1c}
+.bp-mpor{position:relative;height:150px;overflow:hidden;border:1px solid var(--bp-line);background:radial-gradient(ellipse at 50% 30%,#232a52,#0b0e1c);display:grid;place-items:center}
+.bp-mpor .bp-mglyph{transform:scale(2.2)}
+.bp-mpor-btn{position:absolute;inset:0;padding:0;border:0;background:none;cursor:zoom-in}
+.bp-mpor-btn img{position:absolute;left:50%;top:0;width:150%;transform:translateX(-50%)}
+.bp-map .bp-mpor-btn:hover:not(:disabled){background:none}
+.bp-minfo{display:grid;gap:5px;align-content:start;min-width:0}
+.bp-mtag{font:400 10px/1 var(--bp-led);letter-spacing:.12em;color:var(--bp-slate);text-transform:uppercase}
+.bp-mname{font:400 22px/1.1 var(--bp-impact)}
+.bp-mline{font:italic 400 15px/1.35 var(--bp-ko);color:var(--bp-bone)}
+.bp-mhp{display:grid;grid-template-columns:repeat(12,1fr) auto;gap:2px;align-items:center;max-width:180px}
+.bp-mhp i{height:4px;background:#e8e0c8}.bp-mhp i.lost{background:#e8e0c833}
+.bp-mhp b{margin-left:6px;font:400 10px/1 var(--bp-led);color:var(--bp-slate);font-weight:400}
+.bp-mrw{font-size:13px;color:var(--bp-bone-dim)}
+.bp-mgo{grid-column:1/-1;appearance:none;border:1px solid var(--bp-sodium);border-radius:2px;background:var(--bp-sodium);color:#1a1204!important;padding:14px;min-height:52px;font:400 19px/1 var(--bp-impact)!important;cursor:pointer}
+.bp-map .bp-mgo:hover:not(:disabled){background:#ffd584;border-color:var(--bp-sodium)}
+.bp-mgo:disabled{background:transparent;color:var(--bp-slate)!important;border-color:var(--bp-line);cursor:default}
+/* landscape / desktop: route on the left running left→right, the pitcher panel on the right */
+.bp-map.wide .bp-mbody{grid-template-rows:none;grid-template-columns:minmax(0,1fr) clamp(240px,30vw,400px)}
+.bp-map.wide .bp-mleft{grid-template-rows:auto minmax(200px,1fr) auto}
+.bp-map.wide .bp-mhead{padding:10px 16px}
+.bp-map.wide .bp-mhead h1{margin-top:8px}
+.bp-map.wide .bp-msheet{grid-template-columns:1fr;grid-template-rows:1fr auto auto;border-top:0;border-left:1px solid var(--bp-line);padding-top:0}
+.bp-map.wide .bp-mpor{height:auto;min-height:160px;border:0;margin:0 -16px}
+.bp-map.wide .bp-mpor-btn img{top:4%;width:auto;height:118%}
+@media (orientation:landscape) and (max-height:500px){
+  .bp-map.wide .bp-mhead{padding:4px 12px}
+  .bp-map.wide .bp-mhead h1{font-size:18px;margin-top:2px}
+  .bp-map.wide .bp-mpor{min-height:90px}
+  .bp-mname{font-size:18px}.bp-mline{font-size:13px}
+  .bp-mgo{min-height:44px;padding:8px;font-size:16px!important}
+  .bp-node .bp-fig{height:30px}.bp-node.boss .bp-fig{height:44px}
+  .bp-acts{display:none}
+}
