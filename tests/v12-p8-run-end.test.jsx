@@ -64,6 +64,7 @@ describe('opponent art on the end and reward screens',()=>{
   });
   it('the reward screen shows the knocked-out pitcher only when she has authored art',()=>{
     const app=require('node:fs').readFileSync(require('node:path').resolve(process.cwd(),'src/duel/App.jsx'),'utf8');
-    expect(app).toContain("{pitcherPortraits[s.v10?.opponent?.artId]&&<img className=\"opponent-art reward-opponent-art\"");
+    expect(app).toContain("{pitcherPortraits[s.v10?.opponent?.artId]&&<button type=\"button\" className=\"opponent-art reward-opponent-art pitcher-reward-inspect\"");
+    expect(app).toContain("onClick={e=>openPitcher(s.v10.opponent,e)}");
   });
 });

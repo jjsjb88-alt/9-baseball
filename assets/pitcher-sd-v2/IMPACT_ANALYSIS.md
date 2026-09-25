@@ -23,3 +23,17 @@ Two pitchers, Cobalt Impact and Neon Trick, turn toward screen-right during thei
 ## Runtime roster integration (2026-09-25)
 
 The new atlases are currently absent from the game and pushing assets alone cannot make varied pitchers appear. Map each combat node to an authored roster entry of the same tier, keep the initial Red Rush encounter, and select its matching atlas and portrait in combat/map/reward views. UI/layout: existing actor and portrait boxes are reused; inspect PC and narrow landscape. Input/gestures: no changes. Game logic/balance: opponent stats and archetypes remain as generated; only visible name and art ID change. Save/load: old nodes lacking art IDs keep the legacy sprite. Mobile viewport and scrolling: existing CSS footprint reused, verify narrow screens. User flow: map preview, battle and reward use the same opponent identity. Tests/regression: add roster mapping and atlas resolution tests, run full suite and smoke reports. Build/deploy: Vite includes eleven additional transparent atlas imports, so verify production build and bundle output.
+
+## Pitcher portrait enlargement (2026-09-25)
+
+| Axis | Impact | Response |
+| --- | --- | --- |
+| UI / layout | Impact | Add a scoped full-screen portrait dialog and visual zoom affordances in map, combat, and reward; keep other overlays unchanged. |
+| Input / gestures | Impact | Portraits become buttons; support click/tap, Enter/Space, Escape and backdrop close. Keep route selection, cards and 9-zone actions separate. |
+| Game logic / balance | No impact | Enlargement never calls engine actions or changes combat values. |
+| Save / load | No impact | Dialog state is ephemeral React state, outside the save schema. |
+| Mobile viewport | Impact | Limit dialog art to available dvh/safe area; preserve both portrait bottom sheet and short-landscape report. |
+| Scroll / overflow | Impact | Scope scrolling to the dialog. Do not change html/body/root overflow or map scroll rules. |
+| User flow | Impact | Allow art inspection from map preview, active combat and reward, with close returning focus to the opener. |
+| Tests / regression | Impact | Add direct map/dialog interaction and focus/Escape tests; run full tests and smoke reports. |
+| Build / deploy | Impact | Build and inspect desktop, narrow portrait and short landscape; verify deployed Pages after publishing. |

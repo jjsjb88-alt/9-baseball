@@ -153,7 +153,7 @@ function roadPath(a,b,rowCount){
   return `M ${p.x1} ${p.y1} C ${p.x1} ${mid}, ${p.x2} ${mid}, ${p.x2} ${p.y2}`;
 }
 
-export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableIds=[],onSelect,redRushPortrait=null,pitcherPortraits={}}){
+export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableIds=[],onSelect,onInspectPitcher,redRushPortrait=null,pitcherPortraits={}}){
   const reduced=useReducedMotion();
   const acts=useMemo(()=>buildActs(nodes),[nodes]);
   const reachable=useMemo(()=>new Set(reachableIds||[]),[reachableIds]);
@@ -342,7 +342,7 @@ export default function RunMap({nodes=[],edges=[],currentNodeId=null,reachableId
           {preview?(
             <>
               <div className={`v10-preview-diorama v10-preview-diorama-${preview.type}`}>
-                {preview.opponent?.artId&&pitcherPortraits[preview.opponent.artId]&&<img className="v10-preview-red-rush-art" src={pitcherPortraits[preview.opponent.artId]} alt={preview.opponent.name+" 투수 전신 원화"}/>}
+                {preview.opponent?.artId&&pitcherPortraits[preview.opponent.artId]&&<button type="button" className="v10-preview-portrait-button" aria-label={preview.opponent.name+" 투수 큰 그림 보기"} onClick={e=>onInspectPitcher?.(preview.opponent,e)}><img className="v10-preview-red-rush-art" src={pitcherPortraits[preview.opponent.artId]} alt={preview.opponent.name+" 투수 전신 원화"}/><span aria-hidden="true">↗ 확대</span></button>}
                 <PixelDiorama type={preview.type} opponent={preview.opponent}/>
                 {preview.opponent&&<ZoneFingerprint opponent={preview.opponent}/>}
                 <span className="v10-preview-emblem"><MapIcon type={preview.type}/></span>

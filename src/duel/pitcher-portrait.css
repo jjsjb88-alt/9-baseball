@@ -1,0 +1,25 @@
+/* Pitcher art inspection is scoped to portrait controls and never changes page overflow. */
+.v10-map-preview .v10-preview-portrait-button{position:absolute;inset:0;z-index:4;width:100%;height:100%;padding:0;border:0;background:transparent;cursor:zoom-in}
+.v10-map-preview .v10-preview-portrait-button .v10-preview-red-rush-art{display:block}
+.v10-map-preview .v10-preview-portrait-button span{position:absolute;right:8px;bottom:8px;z-index:5;padding:5px 8px;background:#091a21dd;border:1px solid #dfbd78;color:#ffebba;font-size:11px;font-weight:800}
+.v10-map-preview .v10-preview-portrait-button:hover span,.v10-map-preview .v10-preview-portrait-button:focus-visible span{background:#e8c37d;color:#102027}
+.v10-map-preview .v10-preview-portrait-button:focus-visible{outline:3px solid #ffe4a2;outline-offset:-4px}
+@media (max-width:899px) and (orientation:portrait),(orientation:landscape) and (max-height:500px){
+  .v10-run-map-screen .v10-map-preview:has(.v10-preview-portrait-button) .v10-preview-diorama{pointer-events:auto!important}
+  .v10-map-preview .v10-preview-portrait-button span{right:3px;bottom:3px;padding:3px 5px;font-size:10px}
+}
+.duel-combat .pitcher-inspect-hitbox{position:absolute;inset:0;z-index:35;width:100%;height:100%;padding:0;border:0;background:transparent;cursor:zoom-in}
+.duel-combat .pitcher-inspect-hitbox span{position:absolute;top:2px;right:2px;padding:3px 5px;border:1px solid #d7bb80;background:#102630dd;color:#ffe7a9;font-size:10px;font-weight:800;line-height:1}
+.duel-combat .pitcher-inspect-hitbox:focus-visible{outline:3px solid #ffe4a2;outline-offset:-4px}
+.reward-screen .pitcher-reward-inspect{display:block;width:min(40vw,130px);height:min(22dvh,170px);padding:0;border:0;background:transparent;cursor:zoom-in}
+.reward-screen .pitcher-reward-inspect img{display:block;width:100%;height:100%;object-fit:contain;image-rendering:pixelated}
+.reward-screen .pitcher-reward-inspect:focus-visible{outline:3px solid #ffe4a2}
+.pitcher-portrait-backdrop{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:calc(12px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left));background:#020a0de8;overflow:auto;overscroll-behavior:contain}
+.pitcher-portrait-dialog{box-sizing:border-box;display:flex;flex-direction:column;width:min(760px,100%);max-height:calc(100dvh - 24px);overflow:hidden;border:2px solid #e5c280;background:linear-gradient(150deg,#19333a,#09191e 70%);box-shadow:0 18px 70px #000d;color:#f7edcf}
+.pitcher-portrait-dialog header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border-bottom:1px solid #866a43}
+.pitcher-portrait-dialog header span{display:block;color:#cda764;font-size:10px;font-weight:800;letter-spacing:2px}
+.pitcher-portrait-dialog h2{margin:3px 0 0;font-size:clamp(17px,4vw,24px)}
+.pitcher-portrait-dialog header button{min-width:60px;min-height:44px;padding:6px 10px;border:1px solid #dfbd78;background:#213c42;color:#fff2cf;font-size:14px;cursor:pointer}
+.pitcher-portrait-dialog header button:focus-visible{outline:3px solid #fff2bf;outline-offset:2px}
+.pitcher-portrait-frame{display:grid;place-items:center;min-height:0;overflow:auto;padding:8px;background:radial-gradient(ellipse at 50% 40%,#5b343c 0,#172a33 55%,#071217 100%)}
+.pitcher-portrait-frame img{display:block;width:auto;max-width:100%;height:auto;max-height:calc(100dvh - 142px - env(safe-area-inset-top) - env(safe-area-inset-bottom));object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 12px 14px #000b)}
