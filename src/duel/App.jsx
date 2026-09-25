@@ -790,11 +790,14 @@ export default function Duel(){
   const current=useRef(s),lock=useRef(false),timers=useRef([]),tourDismissed=useRef(false);
   const [cardDetail,setCardDetail]=useState(null),detailOpener=useRef(null);
   const [fxImpactAt,setFxImpactAt]=useState(0);
-  /* V13 BALLPARK: the new battle screen, opt-in while it grows (?park=1 turns it on and remembers, ?park=0 off;
-     ?ng=1 and the 9zone-ng key are its first name) */
-  const [parkOn]=useState(()=>{if(typeof window==='undefined')return false;const u=new URLSearchParams(window.location.search),q=u.get('park')??u.get('ng');
-    try{if(localStorage.getItem('9zone-ng')==='1'){localStorage.setItem('9zone-park','1');localStorage.removeItem('9zone-ng');}
-      if(q==='1')localStorage.setItem('9zone-park','1');if(q==='0')localStorage.removeItem('9zone-park');return localStorage.getItem('9zone-park')==='1';}catch{return q==='1';}});
+  /* V13 BALLPARK is the default screen set (user 2026-09-25: the plain address kept showing the old
+     version). ?park=0 switches back to the legacy screens and remembers; ?park=1 clears that.
+     The test build keeps the legacy screens as its default so their suites still cover them. */
+  const [parkOn]=useState(()=>{const fallback=import.meta.env.MODE!=='test';if(typeof window==='undefined')return fallback;
+    const u=new URLSearchParams(window.location.search),q=u.get('park')??u.get('ng');
+    try{localStorage.removeItem('9zone-ng');
+      if(q==='0')localStorage.setItem('9zone-park','0');if(q==='1')localStorage.setItem('9zone-park','1');
+      const v=localStorage.getItem('9zone-park');return v==='0'?false:v==='1'?true:fallback;}catch{return q==='0'?false:q==='1'?true:fallback;}});
   const [inspectedPitcher,setInspectedPitcher]=useState(null),portraitOpener=useRef(null);
   const openPitcher=(opponent,e)=>{if(!opponent||!pitcherPortraits[opponent.artId])return;portraitOpener.current=e?.currentTarget||document.activeElement;setInspectedPitcher(opponent)};
   const closePitcher=()=>{setInspectedPitcher(null);const opener=portraitOpener.current;portraitOpener.current=null;setTimeout(()=>{if(opener?.isConnected)opener.focus()},0)};

@@ -141,8 +141,14 @@ describe('V13 BALLPARK BP-2 pitch in the scene',()=>{
       expect(document.querySelector('.bp-verdict')).toBeNull();
     }
   });
+  it('an explicit ?park=0 choice is remembered as off',()=>{
+    localStorage.setItem('9zone-park','0');
+    let s=createV10Duel(1);s=enterV10Node(s,'a1-entry');saveV10Duel(localStorage,s);
+    render(<Duel/>);fireEvent.click(screen.getByRole('button',{name:'MAIN RUN 이어하기',exact:true}));
+    expect(document.querySelector('.bp-battle')).toBeNull();
+  });
   it('remembers the first flag name',()=>{
-    localStorage.setItem('9zone-ng','1');
+    localStorage.setItem('9zone-park','1');
     let s=createV10Duel(1);s=enterV10Node(s,'a1-entry');saveV10Duel(localStorage,s);
     render(<Duel/>);fireEvent.click(screen.getByRole('button',{name:'MAIN RUN 이어하기',exact:true}));
     expect(document.querySelector('.bp-battle')).not.toBeNull();
