@@ -7,24 +7,19 @@ import path from 'node:path';
 import Duel from '../src/duel/App.jsx';
 import {createV10Duel,saveV10Duel,readV10Duel,selectV10Map} from '../src/duel/engine.js';
 
-// V13 BALLPARK BP-3 — the run map as silhouettes (docs/design/v13/BALLPARK.md), opt-in with ?park=1.
+// V13 BALLPARK BP-3 — the run map as silhouettes (docs/design/v13/BALLPARK.md).
 beforeEach(()=>{localStorage.clear()});
 afterEach(()=>{cleanup()});
 
 function open(park=true){
   const s=createV10Duel(7);saveV10Duel(localStorage,s);
-  if(park)localStorage.setItem('9zone-park','1');
+  
   render(<Duel/>);fireEvent.click(screen.getByRole('button',{name:'MAIN RUN 이어하기',exact:true}));
   return s;
 }
 const go=()=>screen.getByTestId('bp-map-go');
 
 describe('V13 BALLPARK map',()=>{
-  it('stays off without the flag',()=>{
-    open(false);
-    expect(document.querySelector('.bp-map')).toBeNull();
-    expect(document.querySelector('.v10-run-map-screen')).not.toBeNull();
-  });
   it('shows the current act only, the reachable node lit and chosen',()=>{
     const s=open(),m=selectV10Map(s);
     const act1=m.nodes.filter(n=>n.act===1);

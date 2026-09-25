@@ -2,6 +2,7 @@ import React,{useLayoutEffect,useRef,useState} from 'react';
 import {CARDS} from './cards.js';
 import {publicProbabilities,V10_SWING_STACK_MAX} from './engine.js';
 import {intentLines,hpTicks,ZONE_WORDS} from './ballpark-copy.js';
+import ZoneLinks from './ZoneLinks.jsx';
 import './ballpark.css';
 
 /* V13 BALLPARK — the battle as one ballpark scene (docs/design/v13/BALLPARK.md).
@@ -35,7 +36,7 @@ const CardGlyph=({zones})=><span className="bp-glyph" aria-hidden="true">{Array.
 export default function BallparkBattle({
   s,hand,selected,swingStack,choice,locked=false,
   pitcher,label,pitcherArt,batterArt,
-  fxStage=null,shot=null,impactAt=0,playToken=0,onNext=null,nextLabel='',
+  fxStage=null,shot=null,impactAt=0,playToken=0,onNext=null,nextLabel='',vfx=null,
   onSelect,onAim,onStack,onSwing,onTake,onDetail,onPile,
 }){
   const b=s.battle,rootRef=useRef(null),sceneRef=useRef(null),pitcherRef=useRef(null),zoneRef=useRef(null),flightRef=useRef(null);
@@ -130,7 +131,7 @@ export default function BallparkBattle({
       <span className="bp-piles"><button type="button" onClick={()=>onPile?.('draw')}>덱 {b.draw?.length??0}</button><button type="button" onClick={()=>onPile?.('discard')}>버림 {b.discard?.length??0}</button></span>
     </div>
 
-    <section className="bp-scene" ref={sceneRef}>
+    <section className={'bp-scene'+(inFx?' fx-stage-'+fxStage+(shot?' fx-'+(shot.grade||shot.kind):''):'')} ref={sceneRef} aria-label="승부 구장">
       <div className="bp-bg" aria-hidden="true"/>
       <div className="bp-haze" aria-hidden="true"/>
       <div className="bp-pitcher" ref={pitcherRef} aria-hidden="true">{pitcherArt}</div>
@@ -141,6 +142,9 @@ export default function BallparkBattle({
         <small aria-hidden="true">HP {judged&&!landed?(pitcher?.hp||0)+(pitcher?.lastDamage||0):pitcher?.hp} / {pitcher?.maxHp}</small>
       </div>
       {showVerdict&&<div className={'bp-verdict'+(good?' good':'')} key={'v'+playToken+(shot.title||'')} role="status"><strong>{call||shot.title}</strong>{(outNote||call&&shot.title&&shot.title!==call)&&<small>{outNote||shot.title}</small>}</div>}
+      {inFx&&vfx}
+      {inFx&&<i className="bp-flash" key={'x'+playToken+fxStage} aria-hidden="true"/>}
+      {fxStage==='slowmo'&&shot?.motion?.slowmo>0&&<span className="bp-slowmo" aria-hidden="true">{shot.grade==='near-miss'||shot.grade==='near-miss-k'?'ONE ZONE':shot.grade==='homer'||shot.grade==='grand-slam'?'TIME STOPS':'SLOW'}</span>}
       {judged&&inFx&&!landed&&<i className="bp-flight" ref={flightRef} key={'f'+playToken} aria-hidden="true"/>}
       <div className="bp-batter" aria-hidden="true">{batterArt}</div>
 
@@ -152,9 +156,11 @@ export default function BallparkBattle({
             aria-label={word+(dead?' · 던지지 않는 코스':'')+(b.aimZone===z?' · 노림':'')} aria-pressed={b.aimZone===z}
             className={'bp-cell'+(dead?' dead':'')+(cover.has(z)?' cover':'')+(support.has(z)?' assist':'')+(aimAt===z?' aim':'')+(armed?' target':'')+(actual?' actual'+(good?' good':''):'')}
             style={{'--heat':dead?0:Math.min(1,share*3).toFixed(2)}}>
-            {dead&&!cover.has(z)&&<small className="bp-dead">안 던짐</small>}{tok.map(t=><b key={t.n} className="bp-token">{t.n}</b>)}{actual&&<i className="bp-pitch-mark" aria-label="실제 공"/>}
+            {dead&&!cover.has(z)&&<small className="bp-dead">안 던짐</small>}{tok.map(t=><b key={t.n} className="bp-token" data-board-order={t.n}>{t.n}</b>)}{actual&&<i className="bp-pitch-mark" aria-label="실제 공"/>}
           </button>;
         })}
+        {/* CONNECT: the order links the engine scored, solid = connected (+HP back), dashed = broken */}
+        <ZoneLinks links={judged?r.stackLinks:stack.length?choice?.stackPlan?.links:null}/>
         <span className="bp-side l">몸쪽</span><span className="bp-side r">바깥쪽</span>
         {/* the ball band: the ring around the nine cells is where balls go. Swing at one = a whiff,
             watch one = a ball. It is drawn so the out-of-zone pitch has a place players can see. */}
@@ -173,7 +179,7 @@ export default function BallparkBattle({
     <p className="bp-coach">{coach}</p>
 
     <div className="bp-hand" aria-label="손패">
-      <button type="button" className={'bp-card basic'+(selected==='basic'?' main':'')} aria-pressed={selected==='basic'} disabled={!deciding} onClick={()=>pickSwing('basic')}>
+      <button type="button" className={'bp-card basic'+(selected==='basic'?' main':'')} data-card-kind="basic" aria-pressed={selected==='basic'} disabled={!deciding} onClick={()=>pickSwing('basic')}>
         <CardGlyph zones={[b.aimZone]}/><strong>맨손 스윙</strong>{selected==='basic'&&<b className="bp-order">1</b>}
       </button>
       {swingCards.map(cardButton)}
@@ -191,7 +197,7 @@ export default function BallparkBattle({
         {verb}{verbSub&&<small>{verbSub}</small>}
       </button>
       <button type="button" className="bp-verb wait" data-testid="bp-take" disabled={!deciding} onClick={onTake}>지켜본다<small>볼일 확률 {Math.round((probs[9]||0)*100)}%</small></button>
-      {mainEntry&&deciding&&<button type="button" className="bp-info" aria-label={mainName+' 카드 설명'} onClick={()=>onDetail?.(mainEntry)}>ⓘ</button>}
+      {mainEntry&&deciding&&<button type="button" className="bp-info" aria-label={mainName+' 카드 설명'} onClick={e=>onDetail?.(mainEntry,e.currentTarget)}>ⓘ</button>}
     </div>}
   </main>;
 }

@@ -36,10 +36,10 @@ export function linkGeometry(links,centres,tokens={}){
 
 function measure(svg){
   const grid=svg?.parentElement;if(!grid)return null;
-  const box=grid.getBoundingClientRect(),cells=[...grid.querySelectorAll(':scope > .zone-cell')];
+  const box=grid.getBoundingClientRect(),cells=[...grid.querySelectorAll(':scope > .zone-cell, :scope > .bp-cell')];
   if(cells.length!==9)return null;
   const tokens={};
-  for(const t of grid.querySelectorAll('.zone-card-token[data-board-order]')){const r=(t.querySelector('i')||t).getBoundingClientRect();if(r.width)tokens[t.dataset.boardOrder]={x:r.left-box.left+r.width/2,y:r.top-box.top+r.height/2};}
+  for(const t of grid.querySelectorAll('.zone-card-token[data-board-order], .bp-token[data-board-order]')){const r=(t.querySelector('i')||t).getBoundingClientRect();if(r.width)tokens[t.dataset.boardOrder]={x:r.left-box.left+r.width/2,y:r.top-box.top+r.height/2};}
   return {w:box.width,h:box.height,tokens,centres:cells.map(c=>{const r=c.getBoundingClientRect();return {x:r.left-box.left+r.width/2,y:r.top-box.top+r.height/2};})};
 }
 
@@ -54,7 +54,7 @@ export default function ZoneLinks({links}){
     const ro=RO?new RO(update):null;ro?.observe(svg.parentElement);
     // the order tokens are placed by the direct-tap layer after React renders
     const MO=typeof MutationObserver!=='undefined'?MutationObserver:null;
-    const mo=MO?new MO(ms=>{if(ms.some(m=>[...m.addedNodes,...m.removedNodes].some(n=>n.classList?.contains('zone-card-token'))))update();}):null;
+    const mo=MO?new MO(ms=>{if(ms.some(m=>[...m.addedNodes,...m.removedNodes].some(n=>(n.classList?.contains('zone-card-token')||n.classList?.contains('bp-token')))))update();}):null;
     mo?.observe(svg.parentElement,{childList:true,subtree:true});
     return ()=>{ro?.disconnect();mo?.disconnect();};
   },[key]);

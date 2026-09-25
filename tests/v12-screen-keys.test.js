@@ -8,9 +8,10 @@ import path from 'node:path';
 const app=fs.readFileSync(path.resolve(process.cwd(),'src/duel/App.jsx'),'utf8');
 describe('top-level screens remount',()=>{
   it('gives every non-cinema <main> a distinct key',()=>{
-    const mains=[...app.matchAll(/<main\b([^>]{0,200})/g)].map(m=>m[1]).filter(a=>!a.includes('cinema-lab'));
+    /* legacy <main> screens (tutorial) and the ballpark screen components */
+    const mains=[...app.matchAll(/<(?:main|Ballpark\w+)\b([^>]{0,200})/g)].map(m=>m[1]).filter(a=>!a.includes('cinema-lab'));
     expect(mains.length).toBeGreaterThanOrEqual(8);
-    const keys=mains.map(a=>a.match(/key="([^"]+)"/)?.[1]);
+    const keys=mains.map(a=>a.match(/key=(?:"([^"]+)"|\{([^}]+)\})/)).map(m=>m?.[1]||m?.[2]);
     expect(keys.every(Boolean)).toBe(true);
     expect(new Set(keys).size).toBe(keys.length);
   });

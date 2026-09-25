@@ -344,3 +344,18 @@
 .bp-battle .bp-side{margin-top:26px}
 .bp-verb.wait small{font:400 12px/1.2 var(--bp-ko);opacity:.85}
 @media (orientation:landscape){.bp-band em{left:auto;right:-2px}}
+
+/* ---------- impact (cleanup: the legacy main-run arena had these; the ballpark now keeps them) ---------- */
+.bp-scene .pixel-vfx-canvas{position:absolute;inset:0;z-index:7;width:100%;height:100%;pointer-events:none;image-rendering:pixelated;mix-blend-mode:screen}
+.bp-flash{position:absolute;inset:0;z-index:6;pointer-events:none;opacity:0}
+.bp-scene.fx-stage-impact .bp-flash{background:radial-gradient(ellipse 45% 55% at 42% 58%,#fff8,transparent 70%);animation:bp-flash 180ms ease-out forwards}
+.bp-scene.fx-stage-impact:is(.fx-homer,.fx-grand-slam,.fx-extra,.fx-dead-center) .bp-flash{background:radial-gradient(ellipse 60% 70% at 42% 58%,#fff4c2cc,#ffc86144 45%,transparent 75%)}
+@keyframes bp-flash{0%{opacity:1}100%{opacity:0}}
+.bp-scene.fx-stage-impact:is(.fx-homer,.fx-grand-slam){animation:bp-shake 220ms steps(4) 1}
+@keyframes bp-shake{25%{transform:translate(3px,-2px)}50%{transform:translate(-3px,2px)}75%{transform:translate(2px,1px)}}
+.bp-slowmo{position:absolute;right:12px;bottom:12px;z-index:8;padding:4px 10px;background:#07080dcc;font:400 14px/1 var(--bp-led);letter-spacing:.2em;color:var(--bp-sodium)}
+.bp-scene.fx-stage-slowmo .bp-batter,.bp-scene.fx-stage-slowmo .bp-pitcher{filter:saturate(.7) drop-shadow(0 4px 3px #0005)}
+@media (prefers-reduced-motion:reduce){.bp-scene .pixel-vfx-canvas,.bp-flash{display:none}.bp-scene{animation:none!important}}
+/* CONNECT lines sit over the cells, under the order tokens */
+.bp-zone>.zone-links{z-index:4}
+.bp-token{z-index:5}

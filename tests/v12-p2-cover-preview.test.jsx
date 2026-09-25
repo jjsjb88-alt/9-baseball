@@ -44,22 +44,6 @@ describe('V12 P2-2 cover map from the engine',()=>{
   });
 });
 
-describe('V12 P2-2 hand cards carry the map',()=>{
-  it('marks swing cards with the engine cover map',()=>{
-    const s=v10();saveV10Duel(localStorage,s);
-    render(<Duel/>);fireEvent.click(screen.getByRole('button',{name:'MAIN RUN 이어하기',exact:true}));
-    fireEvent.click(screen.getByRole('button',{name:'스윙하기',exact:true}));
-    const cards=[...document.querySelectorAll('.duel-hand .duel-card.attack')];
-    expect(cards.length).toBeGreaterThan(1);
-    for(const c of cards){
-      const id=c.classList.contains('basic-card')?'basic':null;
-      const map=parseCoverMap(c.dataset.coverMap);
-      expect(map).toHaveLength(9);
-      if(id)for(let z=0;z<9;z++)expect(map[z]).toEqual([z]);
-    }
-  });
-});
-
 function board(mainPlaced=false){
   const cells=Array.from({length:9},(_,i)=>`<button class="zone-cell" data-z="${i}"></button>`).join('');
   // a cross card: its map is whatever the engine said — here a corner-clipped cross at zone 0

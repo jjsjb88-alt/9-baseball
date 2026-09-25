@@ -124,25 +124,23 @@ function beginV10(){
   return s;
 }
 
-describe('V12 P2-1 in the battle',()=>{
+describe('V12 P2-1 in the ballpark battle',()=>{
   it('marks every hand card with its kind so the detail can find it',()=>{
     beginV10();
-    fireEvent.click(screen.getByRole('button',{name:'스윙하기',exact:true}));
-    const cards=[...document.querySelectorAll('.duel-hand .duel-card')];
+    const cards=[...document.querySelectorAll('.bp-hand [data-card-kind]')];
     expect(cards.length).toBeGreaterThan(1);
-    for(const c of cards)expect(c.dataset.cardKind).toBeTruthy();
-    expect(document.querySelector('.duel-hand .basic-card').dataset.cardKind).toBe('basic');
+    expect(document.querySelector('.bp-hand .bp-card.basic').dataset.cardKind).toBe('basic');
   });
   it('opens the selected card from an explicit button and returns focus when closed',()=>{
     beginV10();
-    fireEvent.click(screen.getByRole('button',{name:'스윙하기',exact:true}));
-    fireEvent.click(screen.getByRole('button',{name:'BASIC SWING',exact:true}));
-    const open=screen.getByRole('button',{name:'BASIC SWING 카드 설명 열기'});
+    const card=document.querySelector('.bp-hand .bp-card:not(.basic)'),name=CARDS[card.dataset.cardKind].name;
+    fireEvent.click(card);
+    const open=screen.getByRole('button',{name:name+' 카드 설명'});
     open.focus();fireEvent.click(open);
-    const dialog=screen.getByRole('dialog',{name:'BASIC SWING 카드 설명'});
+    const dialog=screen.getByRole('dialog',{name:name+' 카드 설명'});
     fireEvent.keyDown(dialog,{key:'Escape'});
     act(()=>vi.runOnlyPendingTimers());
-    expect(screen.queryByRole('dialog',{name:'BASIC SWING 카드 설명'})).toBeNull();
+    expect(screen.queryByRole('dialog',{name:name+' 카드 설명'})).toBeNull();
     expect(document.activeElement).toBe(open);
   });
 });

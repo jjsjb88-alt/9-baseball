@@ -9,11 +9,12 @@ const parts=s=>{const out=[];let depth=0,cur='';for(const ch of s){if(ch==='(')d
 const rules=css.replace(/\/\*[\s\S]*?\*\//g,'').split('}').map(r=>r.split('{')).filter(r=>r.length===2&&r[0].trim());
 
 describe('V12 P1-2b battle HUD type floor, all states',()=>{
-  it('loads before the design-state type layer so the design state can refine it',()=>{
+  it('loads after the legacy battle layers',()=>{
     expect(fs.existsSync(cssUrl)).toBe(true);
     const at=main.indexOf('v12-battle-type-hud.css');
-    expect(at).toBeGreaterThan(main.indexOf('v12-battle-desktop.css'));
-    expect(at).toBeLessThan(main.indexOf('v12-battle-type.css'));
+    /* the design-state layers it sat between were removed with the legacy main-run battle (V13); it
+       still refines the tutorial battle, after every legacy layer */
+    expect(at).toBeGreaterThan(main.indexOf('golden-master.css'));
   });
 
   it('stays on the battle screen root and never sets a size below 12px',()=>{

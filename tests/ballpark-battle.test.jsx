@@ -10,7 +10,7 @@ import {createV10Duel,enterV10Node,saveV10Duel,readV10Duel} from '../src/duel/en
 import {BUILDS,CARDS,LINEUP} from '../src/duel/cards.js';
 import {intentLines,hpTicks} from '../src/duel/ballpark-copy.js';
 
-// V13 BALLPARK — the ballpark battle screen (docs/design/v13/BALLPARK.md), opt-in with ?park=1.
+// V13 BALLPARK — the ballpark battle screen (docs/design/v13/BALLPARK.md).
 beforeEach(()=>{localStorage.clear()});
 afterEach(()=>{cleanup()});
 
@@ -20,7 +20,7 @@ function begin(ng=true){
   s.nextId=s.deck.length;
   s=enterV10Node(s,'a1-entry');
   saveV10Duel(localStorage,s);
-  if(ng)localStorage.setItem('9zone-park','1');
+  
   render(<Duel/>);fireEvent.click(screen.getByRole('button',{name:'MAIN RUN 이어하기',exact:true}));
   return s;
 }
@@ -31,12 +31,14 @@ const cards=()=>[...document.querySelectorAll('.bp-hand .bp-card:not(.basic)')];
 const topLevel=sel=>{const out=[];let d=0,cur='';for(const ch of sel){if(ch==='(')d++;if(ch===')')d--;if(ch===','&&!d){out.push(cur);cur='';}else cur+=ch;}out.push(cur);return out;};
 
 describe('V13 BALLPARK battle',()=>{
-  it('stays off unless the flag is on: the legacy battle is untouched',()=>{
-    begin(false);
-    expect(document.querySelector('.bp-battle')).toBeNull();
-    expect(document.querySelector('.duel-combat')).not.toBeNull();
+  it('the main run always plays on the ballpark; there is no legacy switch left',()=>{
+    localStorage.setItem('9zone-park','0');
+    begin();
+    expect(document.querySelector('.bp-battle')).not.toBeNull();
+    expect(document.querySelector('.duel-combat')).toBeNull();
+    const app=fs.readFileSync(path.resolve('src/duel/App.jsx'),'utf8');
+    expect(app).not.toMatch(/parkOn|9zone-park/);
   });
-
   it('opens on the scene: nine zones, the hand, two verbs, and nothing to swing yet',()=>{
     begin();
     expect(document.querySelector('.bp-battle')).not.toBeNull();
@@ -140,19 +142,6 @@ describe('V13 BALLPARK BP-2 pitch in the scene',()=>{
       expect(swingBtn()).not.toBeNull();
       expect(document.querySelector('.bp-verdict')).toBeNull();
     }
-  });
-  it('an explicit ?park=0 choice is remembered as off',()=>{
-    localStorage.setItem('9zone-park','0');
-    let s=createV10Duel(1);s=enterV10Node(s,'a1-entry');saveV10Duel(localStorage,s);
-    render(<Duel/>);fireEvent.click(screen.getByRole('button',{name:'MAIN RUN 이어하기',exact:true}));
-    expect(document.querySelector('.bp-battle')).toBeNull();
-  });
-  it('remembers the first flag name',()=>{
-    localStorage.setItem('9zone-park','1');
-    let s=createV10Duel(1);s=enterV10Node(s,'a1-entry');saveV10Duel(localStorage,s);
-    render(<Duel/>);fireEvent.click(screen.getByRole('button',{name:'MAIN RUN 이어하기',exact:true}));
-    expect(document.querySelector('.bp-battle')).not.toBeNull();
-    expect(localStorage.getItem('9zone-park')).toBe('1');
   });
 });
 

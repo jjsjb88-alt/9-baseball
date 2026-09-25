@@ -1,9 +1,0 @@
-/* V12 P3-1 — committed cover on the 9ZONE, design state only (C1, D2).
-   Main cover: solid aim edge + a light wash. Support cover: a dashed teal ring inside the cell.
-   A cell under both shows both. Translucent only — the read shading, rate and ★ stay readable.
-   Colours: aim/cover-main #FFE4A2, cover-support #6FD7C6. The placement preview (P2-2, outline) and the
-   impact flash (stack-direct-tap ::before/::after) sit on top of this and are left alone. */
-.duel-combat.v12-design>.zone-panel .zone-grid .zone-cell.cover-main{border:2px solid #FFE4A2!important;background-image:linear-gradient(rgba(255,228,162,.16),rgba(255,228,162,.16))!important}
-.duel-combat.v12-design>.zone-panel .zone-grid .zone-cell.cover-support:not(.cover-main){border-color:rgba(111,215,198,.42)!important}
-.duel-combat.v12-design>.zone-panel .zone-grid .zone-cell.cover-support{position:relative!important}
-.duel-combat.v12-design>.zone-panel .zone-grid .zone-cell.cover-support:not(.board-impact)::after{content:""!important;position:absolute!important;inset:4px!important;border:2px dashed #6FD7C6!important;border-radius:inherit!important;background:rgba(111,215,198,.12)!important;pointer-events:none!important;z-index:1!important}

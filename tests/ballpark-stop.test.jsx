@@ -5,7 +5,7 @@ import {afterEach,beforeEach,describe,it,expect} from 'vitest';
 import Duel from '../src/duel/App.jsx';
 import {createV10Duel,enterV10Node,saveV10Duel,readV10Duel,playV10Action,setAimZone,claimV10Reward,v10RewardOptions,v10UtilityOptions} from '../src/duel/engine.js';
 
-// V13 BALLPARK BP-4 — reward and facility stops (docs/design/v13/BALLPARK.md), opt-in with ?park=1.
+// V13 BALLPARK BP-4 — reward and facility stops (docs/design/v13/BALLPARK.md).
 beforeEach(()=>{localStorage.clear()});
 afterEach(()=>{cleanup()});
 
@@ -15,7 +15,7 @@ function won(){
   return playV10Action(s,{type:'card',id:'basic'});
 }
 function open(s,park=true){
-  saveV10Duel(localStorage,s);if(park)localStorage.setItem('9zone-park','1');
+  saveV10Duel(localStorage,s);
   render(<Duel/>);fireEvent.click(screen.getByRole('button',{name:'MAIN RUN 이어하기',exact:true}));
 }
 const go=()=>screen.getByTestId('bp-stop-go'),skip=()=>screen.getByTestId('bp-stop-skip');
@@ -53,11 +53,6 @@ describe('V13 BALLPARK stops',()=>{
     expect(document.querySelector('[data-testid=bp-stop-go]')).toBeNull();
     expect(skip().textContent).toBe('지도로');
     fireEvent.click(skip());expect(readV10Duel(localStorage).phase).toBe('map');
-  });
-  it('stays off without the flag',()=>{
-    open(won(),false);
-    expect(document.querySelector('.bp-stop')).toBeNull();
-    expect(document.querySelector('.reward-screen')).not.toBeNull();
   });
 });
 
