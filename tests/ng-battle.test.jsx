@@ -27,6 +27,8 @@ const swingBtn=()=>screen.getByTestId('ng-swing');
 const cells=()=>[...document.querySelectorAll('.ng-cell')];
 const cards=()=>[...document.querySelectorAll('.ng-hand .ng-card:not(.basic)')];
 
+const topLevel=sel=>{const out=[];let d=0,cur='';for(const ch of sel){if(ch==='(')d++;if(ch===')')d--;if(ch===','&&!d){out.push(cur);cur='';}else cur+=ch;}out.push(cur);return out;};
+
 describe('V13 NG-1 night-game battle',()=>{
   it('stays off unless the flag is on: the legacy battle is untouched',()=>{
     begin(false);
@@ -95,7 +97,7 @@ describe('V13 NG-1 night-game battle',()=>{
   it('keeps every style under .ng-battle',()=>{
     const css=fs.readFileSync(path.resolve('src/duel/nightgame.css'),'utf8').replace(/\/\*[\s\S]*?\*\//g,'');
     const sels=[...css.matchAll(/([^{}]+)\{[^{}]*\}/g)].map(m=>m[1].trim()).filter(x=>!x.startsWith('@')&&!/^(to|from|\d+%)$/.test(x));
-    for(const sel of sels.map(x=>x.replace(/^@media[^{]*\{/,'').trim()))for(const part of sel.split(','))
+    for(const sel of sels.map(x=>x.replace(/^@media[^{]*\{/,'').trim()))for(const part of topLevel(sel))
       expect(part.trim()).toMatch(/^\.ng-/);
     expect(css).not.toMatch(/(^|[},])\s*(html|body|#root|\.duel-app|\.duel-combat)\b/);
   });
