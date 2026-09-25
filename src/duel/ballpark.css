@@ -40,10 +40,15 @@
 /* the 9ZONE: a broadcast strike zone in the scene */
 .bp-zone{position:absolute;left:38%;top:44%;width:56%;height:46%;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);border:2px solid #fff;box-shadow:0 0 0 1px #0009,0 2px 10px #0006;background:#07080d33;z-index:3}
 .bp-cell{position:relative;appearance:none;border:1px solid #ffffff66;border-radius:0;padding:0;cursor:pointer;background:rgba(255,200,97,calc(var(--heat,0)*.16));transition:background .12s,box-shadow .12s}
-.bp-cell.dead{background:repeating-linear-gradient(135deg,#07080d55 0 4px,transparent 4px 8px)}
-.bp-cell.cover{background:#ffc86124;border-color:#ffc861aa}
-.bp-cell.assist{box-shadow:inset 0 0 0 2px #9fb4ff88}
-.bp-cell.aim{background:#ffc86155;border:3px solid var(--bp-sodium);outline:3px solid var(--bp-sodium);outline-offset:-3px;z-index:1;box-shadow:inset 0 0 18px #ffc861aa,0 0 0 1px #0008,0 0 18px #ffc86188}
+/* cells the pitcher is not using yet: dark, and they say so (a hatch meant nothing to players) */
+.bp-cell.dead{background:#07080d99}
+.bp-dead{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);font:400 12px/1 var(--bp-ko);color:#ece4cf99;pointer-events:none}
+/* what the swing covers must read at a glance on a bright park: solid sodium fill, the rest dims */
+.bp-cell.cover{background:#ffc86170;border:2px solid var(--bp-sodium);z-index:1}
+.bp-zone.has-cover .bp-cell:not(.cover):not(.assist){background:#07080d8c}
+.bp-battle .bp-zone.has-cover .bp-cell.cover:hover:not(:disabled){background:#ffc86188}
+.bp-cell.assist{background:#9fb4ff55;box-shadow:inset 0 0 0 2px #9fb4ff}
+.bp-cell.aim{background:#ffc86199;border:3px solid var(--bp-sodium);z-index:2;box-shadow:inset 0 0 14px #fff6,0 0 16px #ffc86199}
 .bp-cell.aim::after{content:"";position:absolute;left:50%;top:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border:2px solid var(--bp-sodium);transform:rotate(45deg)}
 .bp-cell.target:hover{border-color:#9fb4ff}
 .bp-token{position:absolute;left:4px;top:4px;display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--bp-sodium);color:#1a1204;font:400 11px/1 var(--bp-led)}
@@ -149,13 +154,14 @@
 @keyframes bp-fly{to{transform:translate(var(--x1,0),var(--y1,0)) scale(1.15)}}
 .bp-cell.actual{border-color:#fff}
 .bp-cell.actual.good{background:#ffc86188}
+.bp-pitch-mark.outside{left:auto;right:-30px;top:50%}
 .bp-pitch-mark{position:absolute;left:50%;top:50%;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px #07080d,0 0 16px #fff;animation:bp-land 260ms ease-out both}
 .bp-cell.actual.good .bp-pitch-mark{background:var(--bp-sodium);box-shadow:0 0 0 2px #07080d,0 0 22px var(--bp-sodium)}
 @keyframes bp-land{from{transform:scale(2.2);opacity:0}}
 .bp-ball.actual{background:var(--bp-bone);color:#07080d}
 /* the verdict sits in the open sky left of the pitcher (portrait) / above the zone (landscape), never on the HP tag */
 .bp-verdict{position:absolute;left:4%;top:27%;z-index:6;display:grid;justify-items:start;transform-origin:left center;gap:4px;padding:10px 18px 12px;background:#07080de6;border-radius:2px;text-align:left;white-space:nowrap;animation:bp-pop 280ms cubic-bezier(.2,1.4,.4,1) both}
-.bp-verdict small{font:400 12px/1 var(--bp-ko);color:var(--bp-bone-dim)}
+.bp-verdict small{font:400 14px/1.2 var(--bp-ko);color:var(--bp-bone)}
 .bp-verdict strong{font:400 32px/1 var(--bp-impact);color:var(--bp-bone)}
 .bp-verdict.good strong{color:var(--bp-sodium);text-shadow:0 0 18px #ffc86166}
 @keyframes bp-pop{from{transform:scale(.6);opacity:0}}
@@ -311,3 +317,19 @@
   .bp-verbs.stop{padding-top:6px}
   .bp-verbs.stop{padding:6px 12px 8px}
 }
+
+/* ---------- BP-5 run end ---------- */
+.bp-endstats{display:flex;justify-content:center;gap:clamp(18px,6vw,56px);margin:0;padding:28px 16px;align-self:center}
+.bp-endstats div{display:grid;justify-items:center;gap:6px}
+.bp-endstats dt{font:400 11px/1 var(--bp-led);letter-spacing:.1em;color:var(--bp-slate)}
+.bp-endstats dd{margin:0;font:400 40px/1 var(--bp-impact);color:var(--bp-bone)}
+.bp-stop.bp-end.won .bp-stitle h1{color:var(--bp-sodium)}
+
+/* the app-wide button:disabled fade (duel.css) washed the zone out while a pitch resolves; the zone is
+   the result, so it stays at full strength */
+.bp-battle .bp-cell:disabled{opacity:1;filter:none;cursor:default}
+.bp-battle.resolving .bp-token-card span{visibility:hidden}
+.bp-cell.actual.good{background:#ffc861cc}
+/* a ball's chip sits under its mark beside the frame, clear of the verdict above the zone */
+@media (orientation:landscape){.bp-ball.actual{bottom:auto;top:calc(50% + 18px);left:calc(100% + 4px);margin:0}}
+@media (orientation:portrait){.bp-pitch-mark.outside{right:-22px;width:16px;height:16px}}

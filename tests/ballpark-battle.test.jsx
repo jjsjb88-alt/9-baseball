@@ -156,6 +156,37 @@ describe('V13 BALLPARK BP-2 pitch in the scene',()=>{
   });
 });
 
+describe('V13 BALLPARK playtest feedback 2026-09-25',()=>{
+  afterEach(()=>{vi.useRealTimers()});
+  it('cells the pitcher does not use say so instead of a hatch',()=>{
+    const s=begin();
+    const dead=[0,1,2,3,4,5,6,7,8].filter(z=>!s.battle.intent.repertoire.includes(z));
+    for(const z of dead)expect(cells()[z].querySelector('.bp-dead')?.textContent).toBe('안 던짐');
+    const css=fs.readFileSync(path.resolve('src/duel/ballpark.css'),'utf8');
+    expect(css).not.toMatch(/\.bp-cell\.dead\{[^}]*repeating-linear-gradient/);
+  });
+  it('a chosen card lights every covered cell and dims the rest',()=>{
+    begin();
+    const col=cards().find(c=>c.dataset.cardKind&&CARDS[c.dataset.cardKind].shape==='column');
+    if(!col)return;
+    fireEvent.click(col);fireEvent.click(cells()[4]);
+    expect([1,4,7].every(z=>cells()[z].classList.contains('cover'))).toBe(true);
+    expect(document.querySelector('.bp-zone').classList.contains('has-cover')).toBe(true);
+  });
+  it('the out-of-zone share is called a ball',()=>{
+    begin();
+    expect(document.querySelector('.bp-ball').textContent).toMatch(/^볼 \d+%$/);
+  });
+  it('the verdict leads with the baseball call',()=>{
+    vi.useFakeTimers();
+    begin();
+    fireEvent.click(cards()[0]);fireEvent.click(cells()[4]);fireEvent.click(swingBtn());
+    act(()=>{vi.advanceTimersByTime(6000)});
+    const call=document.querySelector('.bp-verdict strong').textContent;
+    expect(['안타','장타','홈런','만루 홈런','헛스윙','스트라이크','파울','볼','볼넷','아웃','희생타','삼진']).toContain(call);
+  });
+});
+
 describe('V13 ballpark copy helpers',()=>{
   it('hp ticks keep one lit while the pitcher stands',()=>{
     expect(hpTicks(72,72)).toBe(12);

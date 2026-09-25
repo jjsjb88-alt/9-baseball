@@ -35,6 +35,7 @@ import BattleReadout from './BattleReadout.jsx';
 import BallparkBattle from './BallparkBattle.jsx';
 import BallparkMap from './BallparkMap.jsx';
 import BallparkStop from './BallparkStop.jsx';
+import BallparkEnd from './BallparkEnd.jsx';
 import DecisionDebrief from './DecisionDebrief.jsx';
 import CardDetailSheet,{cardDetailOf,installCardDetailGestures} from './CardDetailSheet.jsx';
 import {installCoverPreview,coverMapOf} from './cover-preview.js';
@@ -978,6 +979,8 @@ export default function Duel(){
         onTarget={setSelected}
         onConfirm={action=>act(x=>chooseReward(x,action,s.build===DECKBUILDER_BUILD?null:growthChoice))}/>
       </main>
+    :isV10&&parkOn?<BallparkEnd key="screen-bp-end" won={s.phase==='won'} pitcher={s.pitcher} portrait={pitcherPortraits[s.v10?.opponent?.artId]||null}
+      cleared={s.runMap.completedNodeIds.length} hits={s.stats.hits} pitches={s.stats.pitches} onAgain={freshV10} onTitle={()=>setScreen('menu')} onInspect={(p,e)=>openPitcher(s.v10?.opponent,e)}/>
     :isV10?<main key="screen-result-a" className="duel-result stadium"><span className="eyebrow">{s.phase==='won'?'RUN COMPLETE':'THREE OUTS'}</span><h1>{s.phase==='won'?'마지막 투수까지 끌어내렸다.':'삼아웃. 이 승부는 여기서 끝났다.'}</h1><p>돌파한 칸 {s.runMap.completedNodeIds.length}개 · 덱 {s.deck.length}장 · 안타 {s.stats.hits} · 볼넷 {s.stats.walks} · 파울 {s.stats.fouls} · 헛스윙 {s.stats.whiffs} · {s.stats.pitches}구</p><p className="route-run-summary">지나온 칸 · {s.runMap.completedNodeIds.map(id=>s.runMap.nodes.find(n=>n.id===id)?.name).filter(Boolean).join(' → ')||'없음'}</p><RunEndSummary s={s} portrait={pitcherPortraits[s.v10?.opponent?.artId]||null}/><button className="primary" onClick={freshV10}>다시 도전</button><button onClick={()=>setModal('deck')}>덱 보기</button><button onClick={()=>setScreen('menu')}>타이틀로</button></main>
     :<main key="screen-result-b" className="duel-result stadium"><span className="eyebrow">{s.phase==='won'?'EVERYBODY HOME':'THREE OUTS'}</span><h1>{s.phase==='won'?'타순을 연결해, 경기를 뒤집었다.':'베이스에 남겨 둔 가능성.'}</h1><p>{s.victories}/4 승부 · 총 {s.stats.runs}득점 · 완료 타석 {s.stats.appearances}회 · {s.stats.pitches}구</p><p>{BUILDS[s.build].name} · 안타 {s.stats.hits} · 볼넷 {s.stats.walks} · 파울 {s.stats.fouls} · 헛스윙 {s.stats.whiffs}</p><GrowthSummary s={s}/><RunStory s={s}/>{s.build===DECKBUILDER_BUILD?<><p className="growth-run-summary">내가 만든 덱 · 시작 9장 → 최종 {s.deck.length}장 · 카드 추가 {s.rewards.filter(r=>r.type==='add').length} / 시설 {s.facilities?.length||0}회 / 유물 {s.relics.length}</p><p className="route-run-summary">상대 선택 · {s.routeHistory?.map((id,i)=>routeChoice(i,id)?.name).filter(Boolean).join(' → ')||'없음'} · 고위험 승리 {s.routeHistory?.filter((id,i)=>(routeChoice(i,id)?.statBonus||0)>0).length||0}회</p></> :<p className="growth-run-summary">성장이 만든 플레이 · 기다림 승부 {s.growthStats.patienceSwings}회 / 연결 안타 {s.growthStats.relayHits}회 / 행운 해방 {s.growthStats.fortuneUses}회</p>}{s.phase==='lost'&&<p>잔루 {b.bases.filter(Boolean).length}명. 출루는 성공했지만, 홈으로 돌려보내지 못했습니다.</p>}<button className="primary" onClick={fresh}>다시 도전</button><button onClick={()=>setModal('deck')}>덱 보기</button></main>}
     <CardDetailSheet detail={cardDetail} onClose={closeCardDetail}/>

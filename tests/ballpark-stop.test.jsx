@@ -60,3 +60,12 @@ describe('V13 BALLPARK stops',()=>{
     expect(document.querySelector('.reward-screen')).not.toBeNull();
   });
 });
+
+describe('V13 BALLPARK run end',()=>{
+  it('has two choices only: again or title',()=>{
+    let s=createV10Duel(0);s=enterV10Node(s,'a1-entry');s={...s,phase:'lost'};open(s);
+    const end=document.querySelector('.bp-end');
+    expect(end).not.toBeNull();
+    expect([...end.querySelectorAll('.bp-verbs button')].map(b=>b.textContent)).toEqual(['다시 도전','타이틀']);
+  });
+});

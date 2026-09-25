@@ -9,8 +9,23 @@ import './ballpark.css';
    `swingStack` [{id,aimZone}] the supports, and the parent plays them through playV10Action.
    BP-2: the pitch plays in the scene too — the ball flies to its zone at the impact beat, the
    verdict is one word, the HP ticks drop, and one button moves on. */
+/* the baseball call in one word, big (from the engine's result, not the flavour title); the flavour
+   line ("갈랐다", "한 칸 차이") goes under it. Hits are the only good calls besides walks/sacrifices. */
+const HIT_WORD={extra:'장타',homer:'홈런','grand-slam':'만루 홈런'};
+function callOf(r,shot){
+  if(!r)return '';
+  const k=/strikeout|-k$/.test(shot?.grade||'')||/K$/.test(shot?.kicker||'')?'삼진':null;
+  if(r.kind==='hit')return HIT_WORD[shot?.kind]||'안타';
+  if(r.kind==='whiff')return k||'헛스윙';
+  if(r.kind==='called')return k||'스트라이크';
+  if(r.kind==='foul')return k||'파울';
+  if(r.kind==='ball')return /볼넷/.test(r.label||'')?'볼넷':'볼';
+  if(r.kind==='out')return '아웃';
+  if(r.kind==='sacrifice')return '희생타';
+  return '';
+}
 const LANDED=new Set(['impact','slowmo','release','settle']);
-const GOOD=new Set(['hit','extra','homer','jammed','lucky','sacrifice','draw','survive']);
+
 
 /* the glyph already draws the coverage; the face keeps only what it adds (정확 적중 HP +50% …) */
 const effect=def=>(def.gives||[]).filter(g=>!/커버$/.test(g)).slice(0,1).join('');
@@ -91,7 +106,8 @@ export default function BallparkBattle({
   const coach=!deciding?'':choice?.problem||(armed?'덮을 칸을 누른다':lines.coach);
   const tokens=judged?[r.coverage?.length?{z:r.aimZone,n:1}:null,...(r.supportZones||[]).map((z,i)=>({z,n:i+2}))].filter(Boolean)
     :[selected&&!mainIsSkill?{z:b.aimZone,n:1}:null,...stack.map((x,i)=>({z:x.aimZone,n:i+2}))].filter(Boolean);
-  const good=GOOD.has(shot?.kind);
+  const call=judged?callOf(r,shot):'';
+  const good=judged&&(r.kind==='hit'||r.kind==='sacrifice'||call==='볼넷');
 
   const cardButton=x=>{
     const def=CARDS[x.entry.kind],problem=x.preview?.problem,inStack=stack.findIndex(y=>y.id===x.id);
@@ -121,11 +137,11 @@ export default function BallparkBattle({
         {damage>0&&<b className="bp-damage" key={'d'+playToken}>-{damage}</b>}
         <small aria-hidden="true">HP {judged&&!landed?(pitcher?.hp||0)+(pitcher?.lastDamage||0):pitcher?.hp} / {pitcher?.maxHp}</small>
       </div>
-      {showVerdict&&<div className={'bp-verdict'+(good?' good':'')} key={'v'+playToken+(shot.title||'')} role="status">{r?.label&&judged&&<small>{r.label}</small>}<strong>{shot.title}</strong></div>}
+      {showVerdict&&<div className={'bp-verdict'+(good?' good':'')} key={'v'+playToken+(shot.title||'')} role="status"><strong>{call||shot.title}</strong>{call&&shot.title&&shot.title!==call&&<small>{shot.title}</small>}</div>}
       {judged&&inFx&&!landed&&<i className="bp-flight" ref={flightRef} key={'f'+playToken} aria-hidden="true"/>}
       <div className="bp-batter" aria-hidden="true">{batterArt}</div>
 
-      <div className="bp-zone" ref={zoneRef} role="group" aria-label="노릴 코스">
+      <div className={'bp-zone'+(cover.size?' has-cover':'')} ref={zoneRef} role="group" aria-label="노릴 코스">
         {ZONE_WORDS.map((word,z)=>{
           const share=(probs[z]||0)/inZone,dead=!live.includes(z),tok=tokens.filter(t=>t.z===z);
           const actual=judged&&landed&&r.zone===z;
@@ -133,12 +149,13 @@ export default function BallparkBattle({
             aria-label={word+(dead?' · 던지지 않는 코스':'')+(b.aimZone===z?' · 노림':'')} aria-pressed={b.aimZone===z}
             className={'bp-cell'+(dead?' dead':'')+(cover.has(z)?' cover':'')+(support.has(z)?' assist':'')+(aimAt===z?' aim':'')+(armed?' target':'')+(actual?' actual'+(good?' good':''):'')}
             style={{'--heat':dead?0:Math.min(1,share*3).toFixed(2)}}>
-            {tok.map(t=><b key={t.n} className="bp-token">{t.n}</b>)}{actual&&<i className="bp-pitch-mark" aria-label="실제 공"/>}
+            {dead&&!cover.has(z)&&<small className="bp-dead">안 던짐</small>}{tok.map(t=><b key={t.n} className="bp-token">{t.n}</b>)}{actual&&<i className="bp-pitch-mark" aria-label="실제 공"/>}
           </button>;
         })}
         <span className="bp-side l">몸쪽</span><span className="bp-side r">바깥쪽</span>
-        {judged?<span className={'bp-ball'+(landed&&r.zone===9?' actual':'')}>{landed&&r.zone===9?'존 밖으로 빠졌다':'존 밖'}</span>
-          :<span className="bp-ball">존 밖 {Math.round((probs[9]||0)*100)}%</span>}
+        {/* a pitch outside the nine cells is a ball; it lands beside the frame */}
+        {judged?(landed&&r.zone===9&&<><span className="bp-ball actual">볼 · 존 밖</span><i className="bp-pitch-mark outside" aria-label="실제 공 · 존 밖"/></>)
+          :<span className="bp-ball">볼 {Math.round((probs[9]||0)*100)}%</span>}
       </div>
 
       <div className="bp-count" aria-label={`볼 ${b.balls} 스트라이크 ${b.strikes} 아웃 ${b.outs}`}>
