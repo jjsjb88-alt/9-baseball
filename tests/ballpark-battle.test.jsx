@@ -99,7 +99,7 @@ describe('V13 BALLPARK battle',()=>{
     const css=fs.readFileSync(path.resolve('src/duel/ballpark.css'),'utf8').replace(/\/\*[\s\S]*?\*\//g,'');
     const sels=[...css.matchAll(/([^{}]+)\{[^{}]*\}/g)].map(m=>m[1].trim()).filter(x=>!x.startsWith('@')&&!/^(to|from|\d+%)$/.test(x));
     for(const sel of sels.map(x=>x.replace(/^@media[^{]*\{/,'').trim()))for(const part of topLevel(sel))
-      expect(part.trim()).toMatch(/^(\.bp-|:is\(\.bp-battle,\.bp-map\))/);
+      expect(part.trim()).toMatch(/^(\.bp-|:is\(\.bp-battle,\.bp-map,\.bp-stop\))/);
     expect(css).not.toMatch(/(^|[},])\s*(html|body|#root|\.duel-app|\.duel-combat)\b/);
   });
 });

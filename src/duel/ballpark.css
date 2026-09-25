@@ -1,6 +1,6 @@
 /* V13 BALLPARK — battle scene (docs/design/v13/BALLPARK.md). Every rule lives under .bp-battle.
    One accent (--bp-sodium); the scene is the screen, panels sit on the letterbox. */
-.bp-battle,.bp-map{
+.bp-battle,.bp-map,.bp-stop{
   --bp-ink:#07080d;--bp-night:#141a33;--bp-bone:#ece4cf;--bp-bone-dim:#b7b09e;--bp-slate:#7b84a6;--bp-line:#2a3152;--bp-sodium:#ffc861;
   --bp-ko:"Gowun Dodum","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
   --bp-impact:"Black Han Sans","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
@@ -9,8 +9,8 @@
   background:var(--bp-ink);color:var(--bp-bone);font:15px/1.5 var(--bp-ko);
 }
 .bp-battle{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto auto auto;min-height:calc(100dvh - var(--bp-top))}
-:is(.bp-battle,.bp-map) button{font:inherit;color:inherit}
-:is(.bp-battle,.bp-map) button:focus-visible{outline:2px solid var(--bp-bone);outline-offset:2px}
+:is(.bp-battle,.bp-map,.bp-stop) button{font:inherit;color:inherit}
+:is(.bp-battle,.bp-map,.bp-stop) button:focus-visible{outline:2px solid var(--bp-bone);outline-offset:2px}
 .bp-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 14px;font:400 11px/1 var(--bp-led);letter-spacing:.1em;color:var(--bp-slate);text-transform:uppercase}
 .bp-bar b{font:400 13px/1 var(--bp-ko);letter-spacing:0;color:var(--bp-bone)}
 .bp-piles{display:flex;gap:6px}
@@ -104,9 +104,9 @@
   .bp-battle{height:calc(100dvh - var(--bp-top));min-height:0;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto minmax(0,1fr) auto auto;
     grid-template-areas:"bar bar" "scene scene" "coach verbs" "hand verbs"}
   .bp-battle>.bp-bar{grid-area:bar}.bp-battle>.bp-scene{grid-area:scene}.bp-battle>.bp-coach{grid-area:coach}.bp-battle>.bp-hand{grid-area:hand}
-  .bp-verbs{grid-area:verbs;grid-template-columns:1fr auto;align-content:end;width:clamp(170px,22vw,260px);padding:10px 16px 14px}
-  .bp-verb.go{grid-column:1/-1}
-  .bp-info{width:44px}
+  .bp-battle .bp-verbs{grid-area:verbs;grid-template-columns:1fr auto;align-content:end;width:clamp(170px,22vw,260px);padding:10px 16px 14px}
+  .bp-battle .bp-verb.go{grid-column:1/-1}
+  .bp-battle .bp-info{width:44px}
   .bp-bg{background-position:50% 70%}
   .bp-pitcher{left:57%;top:24%;height:40%}
   .bp-batter{left:1%;bottom:-4%;height:100%}
@@ -127,15 +127,15 @@
   .bp-card{flex-basis:96px;padding:7px;gap:4px}
   .bp-card span{display:none}
   .bp-token-card{flex-basis:70px}
-  .bp-verb{padding:7px 10px;font-size:17px!important;min-height:44px}
-  .bp-verb.go{grid-column:1}
-  .bp-verb.go small{display:none}
-  .bp-verbs{grid-template-columns:1fr auto;grid-template-rows:auto auto;width:auto}
-  .bp-verb.wait{grid-column:1;min-height:40px}
-  .bp-info{grid-column:2;grid-row:1/3}
+  .bp-battle .bp-verb{padding:7px 10px;font-size:17px!important;min-height:44px}
+  .bp-battle .bp-verb.go{grid-column:1}
+  .bp-battle .bp-verb.go small{display:none}
+  .bp-battle .bp-verbs{grid-template-columns:1fr auto;grid-template-rows:auto auto;width:auto}
+  .bp-battle .bp-verb.wait{grid-column:1;min-height:40px}
+  .bp-battle .bp-info{grid-column:2;grid-row:1/3}
   .bp-ptag{top:6%}
   .bp-pitcher{top:30%;height:44%}
-  .bp-verbs{padding:6px 12px 8px;gap:6px}
+  .bp-battle .bp-verbs{padding:6px 12px 8px;gap:6px}
   .bp-count{font-size:9px}
 }
 @media (prefers-reduced-motion:reduce){.bp-battle *{animation:none!important;transition:none!important}}
@@ -249,4 +249,65 @@
   .bp-mgo{min-height:44px;padding:8px;font-size:16px!important}
   .bp-node .bp-fig{height:30px}.bp-node.boss .bp-fig{height:44px}
   .bp-acts{display:none}
+}
+
+/* ---------- BP-4 reward & facility stops ---------- */
+/* one screen: the offers scroll inside, the buttons never leave the bottom (an ancestor's overflow breaks sticky) */
+.bp-stop{height:calc(100dvh - var(--bp-top));min-height:420px;display:grid;grid-template-rows:auto auto minmax(0,1fr) auto}
+.bp-offers{overflow-y:auto;overscroll-behavior:contain}
+.bp-stop .bp-piles b{color:var(--bp-sodium)}
+.bp-shead{position:relative;display:flex;align-items:flex-end;gap:12px;min-height:min(200px,26dvh);padding:16px;background:var(--bp-sky) 50% 60%/cover no-repeat;image-rendering:pixelated;overflow:hidden}
+.bp-shead::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,#07080d 100%)}
+.bp-sport{position:absolute;right:4%;bottom:-6px;z-index:1;height:118%;aspect-ratio:3/4;padding:0;border:0;background:none;cursor:zoom-in}
+.bp-sport img{height:100%;width:auto;filter:drop-shadow(0 6px 8px #0008)}
+.bp-stop .bp-sport:hover:not(:disabled){background:none}
+.bp-stitle{position:relative;z-index:2;display:grid;gap:4px;max-width:62%}
+.bp-stitle h1{margin:0;padding:6px 10px;background:#07080dcc;border-radius:2px;font:400 clamp(26px,7vw,40px)/1.1 var(--bp-impact);text-wrap:balance}
+.bp-stop.stop-reward .bp-stitle h1{color:var(--bp-sodium)}
+.bp-stitle p{margin:0;padding:4px 10px;background:#07080dcc;border-radius:2px;justify-self:start;font:italic 400 15px/1.4 var(--bp-ko);color:var(--bp-bone)}
+.bp-offers{display:flex;flex-wrap:wrap;gap:10px;align-content:flex-start;justify-content:center;padding:22px 16px 12px}
+.bp-offer{position:relative;flex:0 1 150px;min-height:150px;display:grid;gap:8px;align-content:start;text-align:left;padding:14px 12px;border:1px solid var(--bp-line);border-radius:3px;background:#0d1122;cursor:pointer;transition:transform .15s,border-color .15s}
+.bp-offer strong{font:400 17px/1.2 var(--bp-impact)}
+.bp-offer strong sup{color:var(--bp-sodium);font-size:12px}
+.bp-offer span{font-size:13px;line-height:1.4;color:var(--bp-bone-dim)}
+.bp-offer small{font:400 10px/1 var(--bp-led);letter-spacing:.08em;color:var(--bp-slate)}
+.bp-offer.on{transform:translateY(-8px);border-color:var(--bp-sodium);box-shadow:0 0 0 1px var(--bp-sodium),0 12px 30px #000}
+.bp-offer.skill{border-radius:24px}
+.bp-offer.relic{border-color:#4a5480;background:radial-gradient(circle at 50% 0,#232a52,#0d1122 70%)}
+.bp-mark{justify-self:start;padding:3px 7px;border:1px solid var(--bp-slate);border-radius:2px;font:400 11px/1 var(--bp-led);color:var(--bp-bone)}
+.bp-offer.on .bp-mark{border-color:var(--bp-sodium);color:var(--bp-sodium)}
+.bp-stop .bp-offer:hover:not(:disabled){background:#141a33;border-color:var(--bp-slate)}
+.bp-stop .bp-offer.on:hover:not(:disabled){border-color:var(--bp-sodium)}
+.bp-offer .bp-glyph{grid-template-columns:repeat(3,9px)}.bp-offer .bp-glyph i{width:9px;height:9px}
+.bp-stop.stop-locker .bp-offer.on{border-color:#ff8a6a;box-shadow:0 0 0 1px #ff8a6a,0 12px 30px #000}
+.bp-stop.stop-locker .bp-offer.on strong{text-decoration:line-through;text-decoration-color:#ff8a6a}
+.bp-verbs.stop{grid-template-columns:1.5fr 1fr;border-top:1px solid var(--bp-line);padding-top:12px}
+.bp-verbs.stop:has(> :only-child){grid-template-columns:1fr}
+.bp-verb.go:only-child{justify-items:center}
+.bp-stop .bp-verb.go:hover:not(:disabled){background:#ffd584;border-color:var(--bp-sodium)}
+.bp-stop .bp-verb.wait:hover:not(:disabled),.bp-stop .bp-piles button:hover:not(:disabled){background:#141a33;border-color:var(--bp-bone-dim)}
+@media (orientation:landscape){
+  .bp-stop{grid-template-columns:minmax(0,1fr);min-height:0}
+  .bp-stop .bp-verbs.stop{grid-template-columns:1.5fr 1fr;padding:10px 16px 14px}
+  .bp-shead{min-height:150px;background-position:50% 30%}
+  .bp-sport{right:10%}
+  .bp-verbs.stop{justify-self:end;width:min(100%,460px)}
+}
+@media (min-width:1080px) and (min-height:650px){
+  .bp-shead{min-height:340px;padding:28px 40px}
+  .bp-offers{gap:16px;padding-top:36px}
+  .bp-offer{flex-basis:210px;min-height:210px;padding:18px 16px;gap:10px}
+  .bp-offer strong{font-size:21px}.bp-offer span{font-size:15px}
+  .bp-offer .bp-glyph{grid-template-columns:repeat(3,12px)}.bp-offer .bp-glyph i{width:12px;height:12px}
+}
+@media (orientation:landscape) and (max-height:500px){
+  .bp-shead{min-height:92px;padding:8px 16px}
+  .bp-sport{height:130%}
+  .bp-stitle h1{font-size:22px}.bp-stitle p{font-size:13px}
+  .bp-offers{padding:14px 12px 4px;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;justify-content:flex-start;align-items:flex-start}
+  .bp-offer{flex:0 0 140px;min-height:0;padding:8px 10px;gap:4px}
+  .bp-offer.on{transform:translateY(-6px)}
+  .bp-offer strong{font-size:15px}.bp-offer span{font-size:12px}
+  .bp-verbs.stop{padding-top:6px}
+  .bp-verbs.stop{padding:6px 12px 8px}
 }
