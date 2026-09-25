@@ -12,12 +12,14 @@ import './ballpark.css';
 const LANDED=new Set(['impact','slowmo','release','settle']);
 const GOOD=new Set(['hit','extra','homer','jammed','lucky','sacrifice','draw','survive']);
 
+/* the glyph already draws the coverage; the face keeps only what it adds (정확 적중 HP +50% …) */
+const effect=def=>(def.gives||[]).filter(g=>!/커버$/.test(g)).slice(0,1).join('');
 const isSkill=entry=>CARDS[entry?.kind]?.type==='skill';
 const CardGlyph=({zones})=><span className="bp-glyph" aria-hidden="true">{Array.from({length:9},(_,z)=><i key={z} className={zones?.includes(z)?'on':''}/>)}</span>;
 
 export default function BallparkBattle({
   s,hand,selected,swingStack,choice,locked=false,
-  pitcher,batter,label,pitcherArt,batterArt,
+  pitcher,label,pitcherArt,batterArt,
   fxStage=null,shot=null,impactAt=0,playToken=0,onNext=null,nextLabel='',
   onSelect,onAim,onStack,onSwing,onTake,onDetail,onPile,
 }){
@@ -84,9 +86,9 @@ export default function BallparkBattle({
   const mainName=selected==='basic'?'맨손 스윙':mainEntry?CARDS[mainEntry.kind].name:null;
   const rate=choice?.damageRate!=null?'피해 ×'+Number(choice.damageRate).toFixed(2).replace(/0$/,''):'';
   const verb=mainIsSkill?'준비한다':'휘두른다';
-  const verbSub=!selected?'카드를 고른다':mainIsSkill?mainName+' · 준비 '+prepLeft+'회 남음'
-    :[mainName+(stack.length?' 외 '+stack.length+'장':''),ZONE_WORDS[b.aimZone]||'',rate].filter(Boolean).join(' · ');
-  const coach=!deciding&&shot?(showVerdict?shot.detail||'':''):choice?.problem||(armed?byId(armed)&&CARDS[byId(armed).entry.kind].name+' — 덮을 칸을 누른다.':lines.coach);
+  /* only what the board does not already show: the HP multiplier, or the prepare uses left */
+  const verbSub=!selected?'':mainIsSkill?prepLeft+'회 남음':rate;
+  const coach=!deciding?'':choice?.problem||(armed?'덮을 칸을 누른다':lines.coach);
   const tokens=judged?[r.coverage?.length?{z:r.aimZone,n:1}:null,...(r.supportZones||[]).map((z,i)=>({z,n:i+2}))].filter(Boolean)
     :[selected&&!mainIsSkill?{z:b.aimZone,n:1}:null,...stack.map((x,i)=>({z:x.aimZone,n:i+2}))].filter(Boolean);
   const good=GOOD.has(shot?.kind);
@@ -98,7 +100,7 @@ export default function BallparkBattle({
       data-card-kind={x.entry.kind} disabled={!deciding} onClick={()=>pickSwing(x.id)}>
       <CardGlyph zones={x.preview?.coverage}/>
       <strong>{def.name}{x.entry.plus&&<sup>+</sup>}</strong>
-      <span>{problem||(def.gives||[]).slice(0,2).join(' · ')}</span>
+      {(problem||effect(def))&&<span>{problem||effect(def)}</span>}
       {selected===x.id&&<b className="bp-order">1</b>}{inStack>=0&&<b className="bp-order">{inStack+2}</b>}
     </button>;
   };
@@ -106,7 +108,6 @@ export default function BallparkBattle({
   return <main ref={rootRef} className={'bp-battle'+(deciding?'':' resolving')+(inFx?' fx-'+fxStage:'')} aria-label="타석">
     <div className="bp-bar">
       <span>{label}</span>
-      <span>{b.batterIndex+1}번 · <b>#{batter?.number} {batter?.name}</b></span>
       <span className="bp-piles"><button type="button" onClick={()=>onPile?.('draw')}>덱 {b.draw?.length??0}</button><button type="button" onClick={()=>onPile?.('discard')}>버림 {b.discard?.length??0}</button></span>
     </div>
 
@@ -120,7 +121,6 @@ export default function BallparkBattle({
         {damage>0&&<b className="bp-damage" key={'d'+playToken}>-{damage}</b>}
         <small aria-hidden="true">HP {judged&&!landed?(pitcher?.hp||0)+(pitcher?.lastDamage||0):pitcher?.hp} / {pitcher?.maxHp}</small>
       </div>
-      {deciding&&lines.whisper&&<p className="bp-whisper">{lines.whisper}</p>}
       {showVerdict&&<div className={'bp-verdict'+(good?' good':'')} key={'v'+playToken+(shot.title||'')} role="status">{r?.label&&judged&&<small>{r.label}</small>}<strong>{shot.title}</strong></div>}
       {judged&&inFx&&!landed&&<i className="bp-flight" ref={flightRef} key={'f'+playToken} aria-hidden="true"/>}
       <div className="bp-batter" aria-hidden="true">{batterArt}</div>
@@ -153,7 +153,7 @@ export default function BallparkBattle({
 
     <div className="bp-hand" aria-label="손패">
       <button type="button" className={'bp-card basic'+(selected==='basic'?' main':'')} aria-pressed={selected==='basic'} disabled={!deciding} onClick={()=>pickSwing('basic')}>
-        <CardGlyph zones={[b.aimZone]}/><strong>맨손 스윙</strong><span>카드 없이 한 칸</span>{selected==='basic'&&<b className="bp-order">1</b>}
+        <CardGlyph zones={[b.aimZone]}/><strong>맨손 스윙</strong>{selected==='basic'&&<b className="bp-order">1</b>}
       </button>
       {swingCards.map(cardButton)}
       {prepCards.map(x=>{const def=CARDS[x.entry.kind],problem=x.preview?.problem;
@@ -164,10 +164,10 @@ export default function BallparkBattle({
     </div>
 
     {onNext&&!deciding&&s.phase!=='battle'?<div className="bp-verbs next">
-      <button type="button" className="bp-verb go" data-testid="bp-next" disabled={inFx} onClick={onNext}>{nextLabel.split(' · ')[0]}<small>{nextLabel.split(' · ').slice(1).join(' · ')}</small></button>
+      <button type="button" className="bp-verb go" data-testid="bp-next" disabled={inFx} onClick={onNext}>{nextLabel}</button>
     </div>:<div className="bp-verbs">
       <button type="button" className="bp-verb go" data-testid="bp-swing" disabled={!deciding||!selected||!!choice?.problem} onClick={onSwing}>
-        {verb}<small>{verbSub}</small>
+        {verb}{verbSub&&<small>{verbSub}</small>}
       </button>
       <button type="button" className="bp-verb wait" data-testid="bp-take" disabled={!deciding} onClick={onTake}>지켜본다</button>
       {mainEntry&&deciding&&<button type="button" className="bp-info" aria-label={mainName+' 카드 설명'} onClick={()=>onDetail?.(mainEntry)}>ⓘ</button>}

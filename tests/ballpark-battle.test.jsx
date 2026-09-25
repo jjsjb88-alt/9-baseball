@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import Duel from '../src/duel/App.jsx';
 import {createV10Duel,enterV10Node,saveV10Duel,readV10Duel} from '../src/duel/engine.js';
-import {BUILDS,CARDS} from '../src/duel/cards.js';
+import {BUILDS,CARDS,LINEUP} from '../src/duel/cards.js';
 import {intentLines,hpTicks} from '../src/duel/ballpark-copy.js';
 
 // V13 BALLPARK — the ballpark battle screen (docs/design/v13/BALLPARK.md), opt-in with ?park=1.
@@ -60,7 +60,7 @@ describe('V13 BALLPARK battle',()=>{
     fireEvent.click(cells()[5]);
     expect(readV10Duel(localStorage).battle.aimZone).toBe(5);
     expect(swingBtn().disabled).toBe(false);
-    expect(swingBtn().textContent).toContain('바깥쪽');
+    expect(swingBtn().textContent).toMatch(/^휘두른다피해 ×/);
     expect(cells()[5].classList.contains('aim')).toBe(true);
   });
 
@@ -73,7 +73,7 @@ describe('V13 BALLPARK battle',()=>{
     expect(cards()[1].classList.contains('support')).toBe(true);
     expect([...cells()[2].querySelectorAll('.bp-token')].map(t=>t.textContent)).toEqual(['2']);
     expect(readV10Duel(localStorage).battle.aimZone).toBe(4);
-    expect(swingBtn().textContent).toContain('외 1장');
+    expect(swingBtn().textContent).toMatch(/피해 ×0\.\d/);
   });
 
   it('tapping the main card again clears the board',()=>{
@@ -104,6 +104,18 @@ describe('V13 BALLPARK battle',()=>{
   });
 });
 
+describe('V13 BALLPARK lean text',()=>{
+  it('shows no batter name, no whisper, no restated coverage; the pitcher keeps his name',()=>{
+    const s=begin();
+    const text=document.querySelector('.bp-battle').textContent;
+    for(const p of LINEUP)expect(text).not.toContain(p.name);
+    expect(document.querySelector('.bp-whisper')).toBeNull();
+    expect(document.querySelector('.bp-ptag').textContent).toContain(s.pitcher.name);
+    for(const span of document.querySelectorAll('.bp-card span'))expect(span.textContent).not.toMatch(/커버$/);
+    expect(swingBtn().textContent).toBe('휘두른다');
+  });
+});
+
 describe('V13 BALLPARK BP-2 pitch in the scene',()=>{
   afterEach(()=>{vi.useRealTimers()});
   it('plays the pitch on the same screen: verdict word, the real ball on the zone, one button on',()=>{
@@ -119,6 +131,7 @@ describe('V13 BALLPARK BP-2 pitch in the scene',()=>{
     if(r.zone<9)expect(cells()[r.zone].classList.contains('actual')).toBe(true);
     else expect(document.querySelector('.bp-ball.actual')).not.toBeNull();
     const next=screen.getByTestId('bp-next');
+    expect(['다음 공','다음 타자']).toContain(next.textContent);
     expect(next.disabled).toBe(false);
     expect(document.querySelector('[data-testid=bp-swing]')).toBeNull();
     fireEvent.click(next);
