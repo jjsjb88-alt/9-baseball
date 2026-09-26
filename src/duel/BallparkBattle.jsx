@@ -31,6 +31,7 @@ function callOf(r,shot){
 const LANDED=new Set(['impact','slowmo','release','settle']);
 /* camera: which results push the lens in (BP-9). big = homer, mid = extra/dead-center, near = one-zone miss */
 export const CAMERA={homer:'big','grand-slam':'big',extra:'mid','dead-center':'mid','near-miss':'near','near-miss-k':'near'};
+export const STACK_COMMIT_MS=720;
 const lessonZoneName=z=>z===9?'존 밖':ZONE_WORDS[z]||'코스';
 
 
@@ -47,14 +48,15 @@ export default function BallparkBattle({
   autoLesson=false,autoPlan=null,onExitLesson=null,
 }){
   const b=s.battle,rootRef=useRef(null),sceneRef=useRef(null),pitcherRef=useRef(null),zoneRef=useRef(null),flightRef=useRef(null);
-  const r=b.revealed,inFx=!!fxStage,deciding=s.phase==='battle'&&!inFx&&!locked;
+  const [armed,setArmed]=useState(null),[commitBeat,setCommitBeat]=useState(null),commitTimer=useRef(null);
+  const r=b.revealed,inFx=!!fxStage,deciding=s.phase==='battle'&&!inFx&&!locked&&!commitBeat;
   const judged=!!r&&s.last?.kind!=='skill'&&(inFx||s.phase!=='battle');
   const landed=!inFx||LANDED.has(fxStage);
   const showVerdict=!!shot&&(inFx||s.phase!=='battle')&&(landed||!judged);
-  const [armed,setArmed]=useState(null);
   /* which actors Pixi has taken over (null = DOM actors only) */
   const [pixi,setPixi]=useState(null);
   const [canPixi]=useState(()=>!!batterPoses&&pixiAvailable());
+  useLayoutEffect(()=>()=>{if(commitTimer.current)clearTimeout(commitTimer.current);},[]);
   useLayoutEffect(()=>{
     const root=rootRef.current,header=document.querySelector('.duel-header');
     if(!root)return;
@@ -110,9 +112,31 @@ export default function BallparkBattle({
   }
   function pickPrep(id){if(locked)return;setArmed(null);onStack([]);onSelect(selected===id?null:id);}
   function pickZone(z){
-    if(locked)return;
+    if(locked||commitBeat)return;
     if(armed){onStack([...stack,{id:armed,aimZone:z}]);setArmed(null);return;}
     onAim(z);
+  }
+  function commitSwing(){
+    if(!deciding||!selected||choice?.problem)return;
+    // Solo swings stay instant. A 2–4 card STACK gets a brief commitment beat so the player
+    // can read the exact trade they authored before Pixi takes over the scene.
+    if(mainIsSkill||!stack.length){onSwing?.();return;}
+    const links=choice?.stackPlan?.links||[],coverage=choice?.coverage||[];
+    const cards=[mainName,...stack.map(x=>CARDS[byId(x.id)?.entry?.kind]?.name||'지원')].filter(Boolean);
+    const zones=[lessonZoneName(b.aimZone),...stack.map(x=>lessonZoneName(x.aimZone))];
+    setArmed(null);
+    setCommitBeat({
+      cards,zones,coverage:coverage.length,
+      hitChance:Math.round(coverage.reduce((sum,z)=>sum+(probs[z]||0),0)*100),
+      efficiency:Math.round((choice?.damageRate??1)*100),
+      connect:links.filter(x=>x.connected).length,
+      linkCount:links.length,
+    });
+    commitTimer.current=setTimeout(()=>{
+      commitTimer.current=null;
+      onSwing?.();
+      setCommitBeat(null);
+    },STACK_COMMIT_MS);
   }
 
   const mainName=selected==='basic'?'맨손 스윙':mainEntry?CARDS[mainEntry.kind].name:null;
@@ -182,7 +206,7 @@ export default function BallparkBattle({
     </button>;
   };
 
-  return <main ref={rootRef} className={'bp-battle'+(autoLesson?' auto-lesson':'')+(deciding?'':' resolving')+(inFx?' fx-'+fxStage:'')} aria-label="타석">
+  return <main ref={rootRef} className={'bp-battle'+(autoLesson?' auto-lesson':'')+(commitBeat?' committing':'')+(deciding?'':' resolving')+(inFx?' fx-'+fxStage:'')} aria-label="타석">
     <div className="bp-bar">
       <span>{label}</span>
       <span className="bp-piles"><button type="button" onClick={()=>onPile?.('draw')}>덱 {b.draw?.length??0}</button><button type="button" onClick={()=>onPile?.('discard')}>버림 {b.discard?.length??0}</button></span>
@@ -191,6 +215,19 @@ export default function BallparkBattle({
     <section className={'bp-scene'+(pixi?.batter?' pixi-batter':'')+(pixi?.pitcher?' pixi-pitcher':'')+(inFx?' fx-stage-'+fxStage+(shot?' fx-'+(shot.grade||shot.kind):''):'')+(cam?' cam-'+cam:'')} ref={sceneRef} aria-label="승부 구장">
       <div className="bp-bg bp-cam" aria-hidden="true"/>
       <div className="bp-haze" aria-hidden="true"/>
+      {commitBeat&&<aside className="bp-commit" data-testid="bp-commit" role="status" aria-live="assertive">
+        <span className="bp-commit-kicker">BATTING PLAN LOCKED</span>
+        <strong>{commitBeat.cards.length}장 STACK · 이제 지켜본다</strong>
+        <div className="bp-commit-cards" aria-label="확정한 배팅 플랜">
+          {commitBeat.cards.map((name,i)=><span key={i}><b>{i+1}</b>{name}<em>{commitBeat.zones[i]}</em></span>)}
+        </div>
+        <div className="bp-commit-stats">
+          <span><small>적중권</small><b>{commitBeat.hitChance}%</b></span>
+          <span><small>커버</small><b>{commitBeat.coverage}존</b></span>
+          <span><small>HP 효율</small><b>{commitBeat.efficiency}%</b></span>
+          <span><small>CONNECT</small><b>{commitBeat.connect}/{commitBeat.linkCount}</b></span>
+        </div>
+      </aside>}
       {autoLesson&&<aside className={'bp-auto-lesson '+lessonPhase} data-testid="bp-auto-lesson" aria-live="polite">
         <header>
           <span>BUILD → BATTLE</span>
@@ -305,7 +342,7 @@ export default function BallparkBattle({
     {onNext&&!deciding&&s.phase!=='battle'?<div className="bp-verbs next">
       <button type="button" className="bp-verb go" data-testid="bp-next" disabled={inFx} onClick={onNext}>{nextLabel}</button>
     </div>:<div className="bp-verbs">
-      <button type="button" className="bp-verb go" data-testid="bp-swing" disabled={!deciding||!selected||!!choice?.problem} onClick={onSwing}>
+      <button type="button" className="bp-verb go" data-testid="bp-swing" disabled={!deciding||!selected||!!choice?.problem} onClick={commitSwing}>
         {verb}{verbSub&&<small>{verbSub}</small>}
       </button>
       <button type="button" className="bp-verb wait" data-testid="bp-take" disabled={!deciding} onClick={onTake}>지켜본다</button>
