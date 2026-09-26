@@ -64,3 +64,14 @@ describe('V13 BALLPARK run end',()=>{
     expect([...end.querySelectorAll('.bp-verbs button')].map(b=>b.textContent)).toEqual(['다시 도전','타이틀']);
   });
 });
+
+describe('V13 reward voice',()=>{
+  it('the knocked-out pitcher says her knockout line, big, on the reward screen only',async()=>{
+    const {PITCHER_VOICE}=await import('../src/duel/pitcher-voice.js');
+    const s=won();open(s);
+    const q=screen.getByTestId('bp-kovoice');
+    expect(PITCHER_VOICE[s.v10.opponent.artId].knockout).toContain(q.textContent);
+    fireEvent.click(skip());
+    expect(screen.queryByTestId('bp-kovoice')).toBeNull();
+  });
+});

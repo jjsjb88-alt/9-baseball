@@ -1,6 +1,7 @@
 import React,{useState} from 'react';
 import {CARDS,upgradeText} from './cards.js';
 import {V10_RELICS} from './v10-relics.js';
+import {pitcherLine} from './pitcher-voice.js';
 import stadium from '../../assets/duel/stadium.png';
 import './ballpark.css';
 
@@ -43,12 +44,14 @@ export default function BallparkStop({kind,opponent=null,portrait=null,options=[
   /* the locker lists the whole deck: one button per card kind, not one per copy */
   const shown=kind==='locker'?options.filter((x,i)=>options.findIndex(y=>y.kind===x.kind)===i):options;
   const count=k=>deck.filter(d=>d.kind===k).length;
+  /* the knocked-out pitcher gets the last word: her line lands big, next to her portrait */
+  const voice=kind==='reward'?pitcherLine(opponent?.artId,'knockout',deckCount):'';
   const after=o?(o.type==='add'?deckCount+1:o.type==='remove'?deckCount-1:deckCount):deckCount;
   return <main className={'bp-stop stop-'+kind} aria-label={c.title(opponent)}>
     <div className="bp-bar"><span>{kind==='reward'?'승리':'쉬어 가는 곳'}</span><span className="bp-piles"><button type="button" onClick={onDeck}>덱 {deckCount}{after!==deckCount&&<> → <b>{after}</b></>}</button></span></div>
     <header className="bp-shead" style={{'--bp-sky':`url(${stadium})`}}>
       {portrait&&<button type="button" className="bp-sport" aria-label={opponent?.name+' 초상 크게 보기'} onClick={e=>onInspect?.(opponent,e)}><img alt="" src={portrait}/></button>}
-      <div className="bp-stitle"><h1>{c.title(opponent)}</h1><p>{options.length?c.line:EMPTY[kind]||''}</p></div>
+      <div className={'bp-stitle'+(voice?' has-voice':'')}>{voice&&<q className="bp-kovoice" data-testid="bp-kovoice">{voice}</q>}<h1>{c.title(opponent)}</h1><p>{options.length?c.line:EMPTY[kind]||''}</p></div>
     </header>
     <div className="bp-offers">
       {shown.map(x=>{const i=options.indexOf(x);return <Offer key={i} o={x} on={sel===i} count={kind==='locker'?count(x.kind):0} onClick={()=>setSel(sel===i?null:i)}/>;})}

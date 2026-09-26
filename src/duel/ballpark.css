@@ -462,3 +462,21 @@
   /* a prepare token keeps its circle (it stretched into a tall oval and squeezed the scene) */
   .bp-battle .bp-token-card{height:70px;min-height:0;align-self:flex-start}
 }
+
+/* reward: the knocked-out pitcher's last word — lands after a beat, big, with a heartbeat on her portrait */
+.bp-kovoice{position:relative;justify-self:start;max-width:100%;margin:0 0 6px;padding:10px 14px 11px;background:#fff8ec;border:2px solid #07080d;border-radius:14px 14px 4px 14px;box-shadow:4px 4px 0 #07080d,0 0 0 3px var(--bp-sodium),0 10px 28px #ff5a3a55;
+  font:400 clamp(17px,4.8vw,24px)/1.35 var(--bp-ko);color:#16101a;quotes:none;word-break:keep-all;text-wrap:balance;transform-origin:100% 100%;animation:bp-kovoice 520ms cubic-bezier(.2,1.5,.35,1) 380ms both}
+.bp-kovoice::before{content:"“";color:#e2452f;font-size:1.3em;line-height:0;margin-right:2px;vertical-align:-.2em}
+.bp-kovoice::after{content:"";position:absolute;right:-12px;bottom:6px;width:0;height:0;border:8px solid transparent;border-left:12px solid #07080d}
+@keyframes bp-kovoice{0%{opacity:0;transform:scale(.4) rotate(-4deg)}60%{opacity:1;transform:scale(1.08) rotate(1deg)}100%{opacity:1;transform:none}}
+.bp-stop.stop-reward .bp-shead{min-height:min(250px,34dvh)}
+.bp-stop.stop-reward .bp-sport img{animation:bp-heart 900ms ease-out 380ms both}
+@keyframes bp-heart{0%{transform:none;filter:drop-shadow(0 6px 8px #0008)}100%{transform:none;filter:drop-shadow(0 6px 8px #0008)}14%{transform:scale(1.05);filter:drop-shadow(0 0 18px #ff5a3aaa)}28%{transform:scale(.99)}42%{transform:scale(1.035);filter:drop-shadow(0 0 12px #ff5a3a88)}}
+.bp-stop.stop-reward .bp-sport{transform-origin:50% 100%}
+@media (orientation:landscape) and (max-height:500px){
+  .bp-stop.stop-reward .bp-shead{min-height:92px}
+  .bp-kovoice{font-size:15px;padding:5px 10px 6px;margin-bottom:2px}
+  .bp-stitle.has-voice p{display:none}
+}
+@media (min-width:1080px) and (min-height:650px){.bp-kovoice{font-size:26px;padding:14px 20px}}
+@media (prefers-reduced-motion:reduce){.bp-kovoice,.bp-stop.stop-reward .bp-sport img{animation:none}}
