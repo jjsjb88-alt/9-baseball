@@ -73,10 +73,11 @@ describe('V13 C3 the pitch in Pixi',()=>{
       for(const v of release[id])expect(v>=0&&v<=1).toBe(true);
     }
   });
-  it('draws the ball from the hand to the real cell, over the zone while the pitch plays',()=>{
+  it('draws the ball side-on, from the hand to the bat in front of the batter (user 2026-09-26: not at the camera)',()=>{
     const actors=read('src/duel/BallparkActors.jsx');
     expect(actors).toMatch(/RELEASE\[aid\]/);
-    expect(actors).toMatch(/boxes\.cells\[pz\]/);
+    expect(actors).not.toMatch(/boxes\.cells\[pz\]/);
+    expect(actors).toMatch(/const tx=bxc\+bh\*/);
     expect(read('src/duel/ballpark.css')).toMatch(/\.bp-scene\[class\*="fx-stage-"\] \.bp-pixi\{z-index:4\}/);
   });
 });

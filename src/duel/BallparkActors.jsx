@@ -225,16 +225,20 @@ export default function BallparkActors({sceneRef,pitcherAtlas,artId=null,batterP
         if(active&&pitcher&&p&&pz!=null&&boxes.zone&&!reduced&&t>=RED_RUSH_RELEASE_MS){
           const rp=RELEASE[aid]||[.05,.35],tw=pitcher.texture.width*pitcher.scale.x,th=pitcher.texture.height*pitcher.scale.y;
           const hx=pitcher.position.x-tw/2+rp[0]*tw,hy=pitcher.position.y-th+rp[1]*th;
-          const z=boxes.zone,cell=pz<9?boxes.cells[pz]:null;
-          const tx=cell?cell.x+cell.w/2:z.x+z.w+Math.min(40,z.w*.12),ty=cell?cell.y+cell.h/2:z.y+z.h*.55;
-          const unit=(b?b.h:z.h)/100,span=Math.max(1,impactAt-RED_RUSH_RELEASE_MS),k=(t-RED_RUSH_RELEASE_MS)/span;
+          /* side view, like the actors: the ball crosses from her hand to the bat's contact point in front of
+             the batter (row = height, column = a little in/out), it does not fly at the camera. The zone
+             overlay shows where it crossed with its own mark. Outside the zone (9) it passes wide and low. */
+          const z=boxes.zone,bb=b||{x:z.x-z.w,y:z.y,w:z.h,h:z.h},bh=bb.h,bxc=bb.x+bb.w/2,byb=bb.y+bb.h;
+          const row=pz<9?Math.floor(pz/3):2.4,col=pz<9?pz%3:2.6;
+          const tx=bxc+bh*(.39-(col-1)*.03),ty=byb-bh*(.53-row*.07);
+          const unit=bh/100,span=Math.max(1,impactAt-RED_RUSH_RELEASE_MS),k=(t-RED_RUSH_RELEASE_MS)/span;
           let bx,by,r,a=1;
-          if(k<=1){const e=Math.pow(k,1.25);bx=hx+(tx-hx)*e;by=hy+(ty-hy)*e-Math.sin(Math.PI*k)*unit*4;r=unit*(.9+1.6*e);}
+          if(k<=1){const e=Math.pow(k,1.1);bx=hx+(tx-hx)*e;by=hy+(ty-hy)*e-Math.sin(Math.PI*k)*unit*3;r=unit*(1.3+.4*e);}
           else{
             const u=Math.min(1,(t-impactAt)/(hit?650:160));a=1-u;
             if(hit){const g=sh?.grade||'',high=/homer|grand/.test(g),deep=/extra/.test(g);
-              bx=tx+u*(high?z.w*2.6:deep?z.w*2.2:z.w*1.6);by=ty-u*(high?z.h*2.2:deep?z.h*.9:z.h*.25)+(high?0:u*u*z.h*.5);r=unit*2.5*(1-u*.6);}
-            else{bx=tx-u*z.w*.35;by=ty+u*z.h*.12;r=unit*2.5*(1+u*.3);}
+              bx=tx+u*(high?bh*3.2:deep?bh*2.6:bh*1.8);by=ty-u*(high?bh*2:deep?bh*.8:bh*.2)+(high?0:u*u*bh*.45);r=unit*1.7*(1-u*.5);}
+            else{bx=tx-u*bh*.55;by=ty+u*bh*.06;r=unit*1.7;}
           }
           if(a>0){
             trail.unshift({x:bx,y:by,r});trail=trail.slice(0,7);
