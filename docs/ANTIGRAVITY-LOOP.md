@@ -98,7 +98,9 @@ npm test                 # 전체 테스트. 1개라도 실패하면 커밋 금�
 npm run build            # production build
 node scripts/zone-report.js 10   # smoke
 ```
-화면이 바뀌면 **스크린샷을 찍고 직접 본다** (Antigravity 브라우저 또는 Playwright):
+화면이 바뀌면 **스크린샷을 찍고 직접 본다**. 자동 도구: 개발 서버를 띄운 뒤
+`node scripts/qa-shots.mjs --url http://localhost:5173 --out work/qa` → 3뷰포트 × 지도/전투(선택·결과)/보상 PNG + `report.json`
+(가로 스크롤 · 전투 세로 넘침 · 투수가 HUD에 가림 · 보상 초상 잘림 · 콘솔 에러 자동 검사, 실패 시 exit 1).
 | 뷰포트 | 의미 |
 | --- | --- |
 | 412×743 | 실제 폰 세로 (브라우저 주소창 포함 높이) |
@@ -107,6 +109,10 @@ node scripts/zone-report.js 10   # smoke
 
 각 뷰포트에서 확인: 가로 스크롤 없음 / 세로 넘침 없음 / **투수 얼굴·몸이 UI에 가리지 않음** / 버튼이 화면 안.
 실행 못 한 검증은 **"못 함 + 이유"로 한 번만** 적는다. 재시도로 시간을 쓰지 않는다.
+
+### ⑥-b 검증 에이전트 · ⑦-b 리뷰 에이전트 (§8)
+구현 에이전트가 ⑥까지 끝내면 **다른 에이전트**가 `/ag-verify`, `/ag-review`를 돌린다. 둘 다 PASS/OK가 나와야 ⑧로 간다.
+FAIL/CHANGES면 구현 에이전트가 고치고 ⑥부터 다시.
 
 ### ⑦ 자기 리뷰 — `git diff origin/main...HEAD` 를 처음부터 끝까지 다시 읽기
 아래 체크를 PR 본문에 그대로 붙인다.
@@ -154,6 +160,7 @@ node scripts/zone-report.js 10   # smoke
 
 ## 6. 머지 — 사람만 한다
 머지 전 리뷰어(사용자 또는 Claude 세션) 확인 목록:
+0. Claude Code 서브에이전트 `ag-reviewer` = MERGE, `ag-qa` = PASS (§8.2)
 1. `PR Verify` 워크플로(테스트·빌드·smoke) 초록, `Impact Analysis Gate` 초록
 2. diff에 X1~X12 위반 없음
 3. 스크린샷 3뷰포트 확인 (특히 폰 세로에서 투수 가림 여부)
@@ -184,10 +191,50 @@ GitHub 저장소 설정 권장 (사용자가 직접): Settings → Branches → 
 
 ---
 
-## 8. 안티그래비티에 붙여 넣을 시작 프롬프트
+## 8. 서브에이전트 — 역할 분리
+
+같은 에이전트가 만들고 검사하면 자기 실수를 못 본다. 역할을 나누고, **코드를 쓰는 건 구현 에이전트 하나뿐**이다.
+
+### 8.1 안티그래비티 안 (Agent Manager에서 에이전트 3개)
+| 역할 | 워크플로 | 쓰기 권한 | 하는 일 |
+| --- | --- | --- | --- |
+| 구현 (Implementer) | `/ag-loop` | `ag/` 브랜치의 코드·테스트·QUEUE·LOG | §3 ①~⑥, ⑧~⑨ |
+| 검증 (Verifier) | `/ag-verify` | 없음 (`work/qa`만) | 테스트·빌드·smoke·`qa-shots` 실행 + 스크린샷 눈 검수 |
+| 리뷰 (Reviewer) | `/ag-review` | 없음 | diff를 X1~X12로 점검, 사라진 기능·영향도 불일치 확인 |
+
+규칙:
+- 세 에이전트는 **같은 `ag/` 브랜치 하나**를 본다. 브랜치를 새로 만들지 않는다. 병렬로 다른 과제를 돌리지 않는다 (X12).
+- 검증·리뷰 에이전트는 파일을 고치지 않는다. 고칠 것은 목록으로 구현 에이전트에게 넘긴다.
+- 순서: 구현 ⑥ → 검증 → 리뷰 → (고침 반복) → 구현 ⑧ PR → ⑨ 멈춤.
+- 검증·리뷰 결과 블록은 PR 본문 "회귀 검증" 아래에 그대로 붙인다.
+
+### 8.2 머지 전 (Claude Code 서브에이전트, `.claude/agents/`)
+사용자가 Claude Code 세션에서 "PR #N 검수해줘"라고 하면:
+| 에이전트 | 하는 일 | 판정 |
+| --- | --- | --- |
+| `ag-reviewer` | 별도 worktree에서 diff X1~X12 점검 + test/build/smoke 직접 실행 + 영향도 섹션 확인 | MERGE / CHANGES / BLOCKED |
+| `ag-qa` | `qa-shots.mjs` 3뷰포트 자동 검사 + PNG 눈 검수 (투수 가림, 잘림, §6 그래픽 기준) | PASS / ISSUES |
+
+**둘 다 MERGE·PASS일 때만** 사람이 Squash and merge 한다. 두 에이전트 모두 코드를 고치지 않는다.
+
+---
+
+## 9. 안티그래비티에 붙여 넣을 시작 프롬프트
+구현 에이전트:
 ```
-docs/ANTIGRAVITY-LOOP.md 를 읽고 그대로 한 바퀴만 진행해.
+docs/ANTIGRAVITY-LOOP.md 를 읽고 너는 §8.1의 구현 에이전트다. /ag-loop 로 한 바퀴만 진행해.
 main 에는 절대 push/merge 하지 말고, ag/ 브랜치 + Draft PR 까지만.
-§3 ① 시작 점검에서 멈춰야 하면 보고만 하고 끝내.
-끝나면 §7 형식으로 한국어로 보고해.
+§3 ⑥까지 끝나면 멈추고 "검증·리뷰 대기"라고 보고해.
+```
+검증 에이전트 (구현이 ⑥까지 끝난 뒤, 새 에이전트):
+```
+docs/ANTIGRAVITY-LOOP.md §8.1의 검증 에이전트다. 현재 ag/ 브랜치에서 /ag-verify 를 실행해. 파일은 고치지 마.
+```
+리뷰 에이전트 (새 에이전트):
+```
+docs/ANTIGRAVITY-LOOP.md §8.1의 리뷰 에이전트다. 현재 ag/ 브랜치에서 /ag-review 를 실행해. 파일은 고치지 마.
+```
+구현 에이전트에 결과 전달:
+```
+검증·리뷰 결과다: <붙여넣기>. 고칠 게 있으면 고치고 §3 ⑥부터 다시. 둘 다 통과면 ⑧ PR 열고 ⑨에서 멈춰.
 ```

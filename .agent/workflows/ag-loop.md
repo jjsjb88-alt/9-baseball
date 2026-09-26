@@ -7,6 +7,7 @@ description: 9ZONE 안티그래비티 루프 한 바퀴 (브랜치 + Draft PR �
 3. `git fetch origin main` 후 `git checkout -B ag/<YYYYMMDD>-<주제> origin/main`.
 4. §3 ②~⑦을 순서대로 진행한다. ③ 영향도 분석과 ④ 실패 테스트를 코드보다 먼저 한다.
 5. `npm test`, `npm run build`, `node scripts/zone-report.js 10`이 모두 통과해야 커밋한다.
-6. `git push -u origin <ag 브랜치>` 후 base `main`으로 Draft PR을 연다. 제목 앞 `[AG]`. 절대 merge 하지 않는다.
+5-b. 여기서 멈추고 "검증·리뷰 대기"라고 보고한다. 다른 에이전트가 `/ag-verify`, `/ag-review`를 돌린다 (§8.1). 둘 다 통과한 결과를 받은 뒤에만 6으로 간다.
+6. `git push -u origin <ag 브랜치>` 후 base `main`으로 Draft PR을 연다. 제목 앞 `[AG]`. 검증·리뷰 결과 블록을 본문에 붙인다. 절대 merge 하지 않는다.
 7. QUEUE 상태를 `[~]`로, `docs/antigravity/LOG.md`에 한 줄 추가 후 커밋·push.
 8. §7 형식으로 한국어 보고 후 멈춘다. 다음 항목은 시작하지 않는다.
