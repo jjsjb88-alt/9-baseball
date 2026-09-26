@@ -52,7 +52,7 @@ describe('V13 BALLPARK battle',()=>{
   it('speaks in short lines, not rules',()=>{
     const s=begin();
     const lines=intentLines(s.battle.intent);
-    expect(document.querySelector('.bp-coach').textContent).toBe(lines.coach);
+    expect(document.querySelector('.bp-coach-text').textContent).toBe(lines.coach);
     expect(lines.coach.length).toBeLessThan(30);
   });
 
@@ -198,7 +198,7 @@ describe('V13 BALLPARK BP-7 read the pitcher',()=>{
     render(<Duel/>);fireEvent.click(screen.getByRole('button',{name:'MAIN RUN 이어하기',exact:true}));
     fireEvent.click(cards()[0]);fireEvent.click(cells()[4]);fireEvent.click(swingBtn());
     act(()=>{vi.advanceTimersByTime(6000)});
-    expect(document.querySelector('.bp-coach').textContent).toContain('볼은 참으면 볼넷');
+    expect(document.querySelector('.bp-coach-text').textContent).toContain('볼은 참으면 볼넷');
     expect(localStorage.getItem('9zone-hint-chase')).toBe('done');
   });
 });

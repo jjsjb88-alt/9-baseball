@@ -3,6 +3,7 @@ import {CARDS} from './cards.js';
 import {publicProbabilities,V10_SWING_STACK_MAX,V10_RUNNER_PRESSURE,v10Shaken,v10MentalCap} from './engine.js';
 import {intentLines,hpTicks,ZONE_WORDS} from './ballpark-copy.js';
 import ZoneLinks from './ZoneLinks.jsx';
+import {pitcherLine,momentOf} from './pitcher-voice.js';
 import BallparkActors,{pixiAvailable} from './BallparkActors.jsx';
 import './ballpark.css';
 
@@ -131,6 +132,10 @@ export default function BallparkBattle({
   useLayoutEffect(()=>{if(chased&&chaseHint){setHintAt(playToken);setChaseHint(false);try{localStorage.setItem('9zone-hint-chase','done');}catch{}}},[chased,chaseHint,playToken]);
   const coach=firstChase?'볼은 참으면 볼넷이 된다. 바깥 띠로 올 것 같으면 지켜본다.':!deciding?'':choice?.problem||(armed?'덮을 칸을 누른다':lines.coach);
   const good=judged&&(r.kind==='hit'||r.kind==='sacrifice'||call==='볼넷');
+  /* the pitcher's one-liner: once when she takes the mound, then after each pitch that lands */
+  const moment=showVerdict&&judged&&landed?momentOf({call,chased:outNote==='볼에 손이 나갔다',knockedOut:(pitcher?.hp??1)===0})
+    :deciding&&!(b.history?.length)&&b.turn===1?'entry':null;
+  const voice=moment?pitcherLine(artId,moment,playToken):'';
 
   const cardButton=x=>{
     const def=CARDS[x.entry.kind],problem=x.preview?.problem,inStack=stack.findIndex(y=>y.id===x.id);
@@ -165,6 +170,7 @@ export default function BallparkBattle({
           <em>흔들림</em><span aria-hidden="true">{Array.from({length:mentalCap},(_,i)=><i key={i} className={i<shaken?'on':''}/>)}</span>
         </span>
         {deciding&&runners>0&&<span className="bp-press" data-testid="bp-press" aria-label={`주자 ${runners}명 · 안타 피해 +${runnerPct}%`}><em>주자 압박</em><b>+{runnerPct}%</b></span>}
+        {voice&&<q className={'bp-voice m-'+moment} key={'q'+playToken+moment} data-testid="bp-voice">{voice}</q>}
       </div>
       {showVerdict&&<div className={'bp-verdict'+(good?' good':'')} key={'v'+playToken+(shot.title||'')} role="status"><strong>{call||shot.title}</strong>{(outNote||call&&shot.title&&shot.title!==call)&&<small>{outNote||shot.title}</small>}</div>}
       {inFx&&vfx}
@@ -201,7 +207,7 @@ export default function BallparkBattle({
       </div>
     </section>
 
-    <p className="bp-coach">{coach}</p>
+    <p className={'bp-coach'+(voice?' has-voice':'')}><span className="bp-coach-text">{coach}</span>{voice&&<q className={'bp-voice-strip m-'+moment} key={'qs'+playToken+moment}><b>{pitcher?.name}</b>{voice}</q>}</p>
 
     <div className="bp-hand" aria-label="손패">
       <button type="button" className={'bp-card basic'+(selected==='basic'?' main':'')} data-card-kind="basic" aria-pressed={selected==='basic'} disabled={!deciding} onClick={()=>pickSwing('basic')}>

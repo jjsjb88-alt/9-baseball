@@ -401,3 +401,23 @@
 /* C3: while a pitch plays the ball and the swing belong in front of the zone; the landing mark waits for the ball */
 .bp-scene[class*="fx-stage-"] .bp-pixi{z-index:4}
 .bp-scene.pixi-pitcher .bp-pitch-mark{animation-delay:180ms}
+
+/* ---------- pitcher one-liners ---------- */
+.bp-voice{display:block;margin-top:4px;padding:5px 8px 6px;border-left:2px solid var(--bp-sodium);background:#07080d;font:italic 400 14px/1.35 var(--bp-ko);color:var(--bp-bone);quotes:none;white-space:normal;word-break:keep-all;animation:bp-voice 320ms cubic-bezier(.2,1.2,.4,1) both}
+.bp-voice::before{content:"“";color:var(--bp-sodium);margin-right:2px}
+.bp-voice::after{content:"”";color:var(--bp-sodium);margin-left:2px}
+.bp-voice.m-knockout,.bp-voice.m-homer{border-left-color:#ff8a6a}
+@keyframes bp-voice{from{opacity:0;transform:translateY(-4px)}}
+@media (orientation:landscape) and (max-height:500px){.bp-voice{font-size:12px;padding:3px 6px}}
+@media (prefers-reduced-motion:reduce){.bp-voice{animation:none}}
+/* the caption strip carries her line only where the scene is too short to hold it by her tag */
+.bp-voice-strip{display:none}
+@media (orientation:landscape) and (max-height:500px){
+  .bp-scene .bp-voice{display:none}
+  .bp-coach.has-voice .bp-coach-text{display:none}
+  .bp-voice-strip{display:inline;quotes:none;font:italic 400 13px/1.3 var(--bp-ko);color:var(--bp-bone)}
+  .bp-voice-strip b{font-style:normal;font-weight:400;color:var(--bp-sodium);margin-right:6px}
+  .bp-voice-strip::before{content:"“"}.bp-voice-strip::after{content:"”"}
+  /* a prepare token keeps its circle (it stretched into a tall oval and squeezed the scene) */
+  .bp-battle .bp-token-card{height:70px;min-height:0;align-self:flex-start}
+}
