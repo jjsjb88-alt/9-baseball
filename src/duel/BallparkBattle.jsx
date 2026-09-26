@@ -5,6 +5,7 @@ import {intentLines,hpTicks,ZONE_WORDS} from './ballpark-copy.js';
 import ZoneLinks from './ZoneLinks.jsx';
 import {pitcherLine,momentOf} from './pitcher-voice.js';
 import BallparkActors,{pixiAvailable} from './BallparkActors.jsx';
+import {lessonFor,planText} from './DecisionDebrief.jsx';
 import './ballpark.css';
 
 /* V13 BALLPARK — the battle as one ballpark scene (docs/design/v13/BALLPARK.md).
@@ -163,6 +164,11 @@ export default function BallparkBattle({
   const reviewText=lessonCombat
     ?(lessonCombat.verdict||call||'판정')+' · 실제 '+(lessonCombat.pitchLabel||'코스')+' · 투수 HP -'+(lessonCombat.damage||0)
     :(call||shot?.title||'결과를 확인한다');
+  const showDebrief=!autoLesson&&judged&&landed&&!inFx&&s.phase!=='battle'&&!!lessonCombat;
+  const debriefLesson=showDebrief?lessonFor(lessonCombat,r):null;
+  const debriefPlan=showDebrief?planText(lessonCombat):'';
+  const debriefActual=showDebrief?(lessonCombat.pitchLabel||lessonZoneName(r?.zone)):'';
+  const debriefDamage=showDebrief&&lessonCombat.damage>0?'HP -'+lessonCombat.damage:'';
 
   const cardButton=x=>{
     const def=CARDS[x.entry.kind],problem=x.preview?.problem,inStack=stack.findIndex(y=>y.id===x.id);
@@ -266,7 +272,25 @@ export default function BallparkBattle({
 
     <p className={'bp-coach'+(voice?' has-voice':'')}><span className="bp-coach-text">{coach}</span>{voice&&<q className={'bp-voice-strip m-'+moment} key={'qs'+playToken+moment}><b>{pitcher?.name}</b>{voice}</q>}</p>
 
-    <div className="bp-hand" aria-label="손패">
+    {showDebrief?<aside className={'bp-debrief tone-'+(debriefLesson?.tone||'neutral')} data-testid="bp-debrief" aria-label="이번 공 복기">
+      <div className="bp-dstep plan">
+        <span>PLAN</span>
+        <strong>{debriefPlan}</strong>
+        <small>{lessonCombat.aimLabel||'노림 코스'}</small>
+      </div>
+      <i aria-hidden="true">→</i>
+      <div className="bp-dstep actual">
+        <span>ACTUAL</span>
+        <strong>{debriefActual}</strong>
+        <small>{debriefDamage||lessonCombat.verdict||call}</small>
+      </div>
+      <i aria-hidden="true">→</i>
+      <div className="bp-dstep next">
+        <span>NEXT</span>
+        <strong>{debriefLesson?.title}</strong>
+        <small>{debriefLesson?.text}</small>
+      </div>
+    </aside>:<div className="bp-hand" aria-label="손패">
       <button type="button" className={'bp-card basic'+(selected==='basic'?' main':'')} data-card-kind="basic" aria-pressed={selected==='basic'} disabled={!deciding} onClick={()=>pickSwing('basic')}>
         <CardGlyph zones={[b.aimZone]}/><strong>맨손 스윙</strong>{selected==='basic'&&<b className="bp-order">1</b>}
       </button>
@@ -276,7 +300,7 @@ export default function BallparkBattle({
           data-card-kind={x.entry.kind} disabled={!deciding} onClick={()=>pickPrep(x.id)}>
           <strong>{def.name}</strong><span>{problem||'준비 '+prepLeft+'회'}</span>
         </button>;})}
-    </div>
+    </div>}
 
     {onNext&&!deciding&&s.phase!=='battle'?<div className="bp-verbs next">
       <button type="button" className="bp-verb go" data-testid="bp-next" disabled={inFx} onClick={onNext}>{nextLabel}</button>
