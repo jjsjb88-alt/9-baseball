@@ -77,6 +77,25 @@ describe('V13 BALLPARK battle',()=>{
     expect(readV10Duel(localStorage).battle.aimZone).toBe(4);
     expect(swingBtn().textContent).toMatch(/피해 ×0\.\d/);
   });
+  it('locks a multi-card plan before the pitch actually resolves',()=>{
+    vi.useFakeTimers();
+    const before=begin().stats.pitches;
+    fireEvent.click(cards()[0]);fireEvent.click(cells()[4]);
+    fireEvent.click(cards()[1]);fireEvent.click(cells()[2]);
+    fireEvent.click(swingBtn());
+    const beat=screen.getByTestId('bp-commit');
+    expect(beat.textContent).toContain('2장 STACK');
+    expect(beat.textContent).toContain('적중권');
+    expect(beat.textContent).toContain('HP 효율');
+    expect(beat.textContent).toContain('CONNECT');
+    expect(readV10Duel(localStorage).stats.pitches).toBe(before);
+    act(()=>{vi.advanceTimersByTime(719)});
+    expect(readV10Duel(localStorage).stats.pitches).toBe(before);
+    act(()=>{vi.advanceTimersByTime(1)});
+    expect(readV10Duel(localStorage).stats.pitches).toBe(before+1);
+    vi.useRealTimers();
+  });
+
 
   it('tapping the main card again clears the board',()=>{
     begin();
