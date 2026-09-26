@@ -1,5 +1,5 @@
 import React,{useEffect,useRef} from 'react';
-import {spriteGenFrameAt,spriteGenStateContract} from './spriteGenAtlas.js';
+import {spriteGenFrameAt,spriteGenStateContract,spriteGenSyncedFrameAt} from './spriteGenAtlas.js';
 
 const cache=new Map();
 
@@ -47,6 +47,8 @@ export default function SpriteGenAtlasCanvas({
   width,
   height,
   onFrame,
+  motionMap=null,
+  motion=null,
 }){
   const ref=useRef(null);
   const row=spriteGenStateContract(manifest,state);
@@ -67,7 +69,9 @@ export default function SpriteGenAtlasCanvas({
       const tick=now=>{
         if(!alive)return;
         const elapsed=Math.max(0,now-startedAt);
-        const frame=spriteGenFrameAt(manifest,state,elapsed);
+        const frame=motionMap&&motion
+          ?spriteGenSyncedFrameAt(manifest,state,motionMap,motion,elapsed)
+          :spriteGenFrameAt(manifest,state,elapsed);
         if(frame&&frame.index!==lastIndex){
           lastIndex=frame.index;
           drawFrame(ctx,img,frame,canvas.width,canvas.height);
@@ -82,7 +86,7 @@ export default function SpriteGenAtlasCanvas({
     }).catch(()=>{});
 
     return()=>{alive=false;cancelAnimationFrame(raf);};
-  },[sheet,manifest,state,playToken,row?.frameCount,row?.totalMs]);
+  },[sheet,manifest,state,playToken,row?.frameCount,row?.totalMs,motionMap,motion]);
 
   return <canvas
     ref={ref}
