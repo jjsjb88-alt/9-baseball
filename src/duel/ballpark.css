@@ -544,3 +544,21 @@
   .bp-stop.stop-reward>.bp-offers{padding-top:6px;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;align-content:flex-start}
   .bp-stop.stop-reward .bp-offer{flex:0 0 140px;min-height:88px}
 }
+
+/* BP-12 reward reveal — offers arrive face down and flip one by one after her line lands (pixel-style
+   scaleX flip: the back squeezes shut, the face opens). Signature cards burst gold, then keep a soft glow.
+   fill-mode backwards only, so the selected card's lift (.on) still works once the flip is done. */
+.bp-offer-back{position:absolute;inset:-1px;z-index:4;display:grid;place-items:center;border:1px solid #3a4270;border-radius:inherit;
+  background:repeating-linear-gradient(45deg,#141a33 0 6px,#10152b 6px 12px);box-shadow:inset 0 0 0 3px #0d1122,inset 0 0 0 4px #ffc86155;opacity:0;pointer-events:none}
+.bp-offer-back .bp-glyph{grid-template-columns:repeat(3,10px)}.bp-offer-back .bp-glyph i{width:10px;height:10px}
+.bp-offers.reveal .bp-offer{animation:bp-flip 360ms steps(6) calc(760ms + var(--i,0) * 170ms) backwards}
+.bp-offers.reveal .bp-offer-back{animation:bp-back calc(760ms + var(--i,0) * 170ms + 180ms) step-end both}
+@keyframes bp-flip{0%{transform:scaleX(1)}50%{transform:scaleX(.04)}100%{transform:scaleX(1)}}
+@keyframes bp-back{0%{opacity:1}100%{opacity:0}}
+.bp-offer.rare,.bp-stop.stop-reward .bp-offer.rare{border-color:#8a6a2a;background:radial-gradient(circle at 50% 0,#3a2e12,#0d1122e8 72%)}
+.bp-offer.rare::after{content:"";position:absolute;inset:-1px;border-radius:inherit;pointer-events:none;box-shadow:0 0 0 1px #ffc86199,0 0 18px #ffc86155;animation:bp-rare-breathe 2.4s ease-in-out infinite alternate}
+.bp-offers.reveal .bp-offer.rare::after{animation:bp-rare-burst 700ms ease-out calc(760ms + var(--i,0) * 170ms + 200ms) both,bp-rare-breathe 2.4s ease-in-out calc(760ms + var(--i,0) * 170ms + 900ms) infinite alternate}
+@keyframes bp-rare-burst{0%{opacity:0;box-shadow:0 0 0 1px #ffc861,0 0 0 #ffc861}35%{opacity:1;box-shadow:0 0 0 2px #fff4c2,0 0 42px 8px #ffc861cc}100%{opacity:1;box-shadow:0 0 0 1px #ffc86199,0 0 18px #ffc86155}}
+@keyframes bp-rare-breathe{from{box-shadow:0 0 0 1px #ffc86199,0 0 14px #ffc86144}to{box-shadow:0 0 0 1px #ffc861cc,0 0 26px #ffc86177}}
+.bp-rare-tag{justify-self:start;padding:2px 6px;border:1px solid var(--bp-sodium);border-radius:2px;font:normal 400 10px/1 var(--bp-led);letter-spacing:.1em;color:var(--bp-sodium)}
+@media (prefers-reduced-motion:reduce){.bp-offers.reveal .bp-offer,.bp-offers.reveal .bp-offer-back,.bp-offer.rare::after{animation:none!important}.bp-offers.reveal .bp-offer-back{opacity:0}}

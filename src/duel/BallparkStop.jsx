@@ -23,14 +23,19 @@ const Glyph=({zones})=><span className="bp-glyph" aria-hidden="true">{Array.from
 const SHAPE={point:[4],column:[1,4,7],row:[3,4,5],cross:[1,3,4,5,7],all:[0,1,2,3,4,5,6,7,8]};
 const effect=def=>(def?.gives||[]).filter(g=>!/커버$/.test(g)).slice(0,1).join('');
 
-function Offer({o,on,count,onClick}){
+/* reward reveal (BP-12): each offer starts face down and flips in turn; signature cards burst gold */
+const Back=()=><i className="bp-offer-back" aria-hidden="true"><Glyph zones={[0,2,4,6,8]}/></i>;
+function Offer({o,on,count,onClick,reveal=null}){
+  const rv=reveal==null?{}:{style:{'--i':reveal}};
   if(o.type==='relic'){const r=V10_RELICS[o.relic];
-    return <button type="button" className={'bp-offer relic'+(on?' on':'')} aria-pressed={on} onClick={onClick}>
-      <b className="bp-mark">{r?.mark}</b><strong>{r?.name}</strong><span>{r?.text}</span></button>;}
+    return <button type="button" className={'bp-offer relic'+(on?' on':'')} aria-pressed={on} onClick={onClick} {...rv}>
+      {reveal!=null&&<Back/>}<b className="bp-mark">{r?.mark}</b><strong>{r?.name}</strong><span>{r?.text}</span></button>;}
   if(o.type==='rest')return <button type="button" className={'bp-offer rest'+(on?' on':'')} aria-pressed={on} onClick={onClick}>
     <b className="bp-mark">+8</b><strong>컨디션 회복</strong><span>다음 경기 타격 +8</span></button>;
-  const def=CARDS[o.kind],skill=def?.type==='skill';
-  return <button type="button" className={'bp-offer'+(skill?' skill':'')+(on?' on':'')} aria-pressed={on} onClick={onClick} data-card-kind={o.kind}>
+  const def=CARDS[o.kind],skill=def?.type==='skill',rare=def?.rarity==='signature';
+  return <button type="button" className={'bp-offer'+(skill?' skill':'')+(rare?' rare':'')+(on?' on':'')} aria-pressed={on} onClick={onClick} data-card-kind={o.kind} {...rv}>
+    {reveal!=null&&<Back/>}
+    {rare&&<em className="bp-rare-tag">시그니처</em>}
     {skill?<b className="bp-mark">준비</b>:<Glyph zones={SHAPE[def?.shape]||[4]}/>}
     <strong>{def?.name}{o.type==='upgrade'&&<sup>+</sup>}</strong>
     <span>{o.type==='upgrade'?upgradeText(o.kind):effect(def)||def?.role}</span>
@@ -53,8 +58,8 @@ export default function BallparkStop({kind,opponent=null,portrait=null,options=[
       {portrait&&<button type="button" className="bp-sport" aria-label={opponent?.name+' 초상 크게 보기'} onClick={e=>onInspect?.(opponent,e)}><img alt="" src={portrait}/></button>}
       <div className={'bp-stitle'+(voice?' has-voice':'')}>{voice&&<q className="bp-kovoice" data-testid="bp-kovoice">{voice}</q>}<h1>{c.title(opponent)}</h1><p>{options.length?c.line:EMPTY[kind]||''}</p></div>
     </header>
-    <div className="bp-offers">
-      {shown.map(x=>{const i=options.indexOf(x);return <Offer key={i} o={x} on={sel===i} count={kind==='locker'?count(x.kind):0} onClick={()=>setSel(sel===i?null:i)}/>;})}
+    <div className={'bp-offers'+(kind==='reward'?' reveal':'')}>
+      {shown.map(x=>{const i=options.indexOf(x);return <Offer key={i} o={x} on={sel===i} count={kind==='locker'?count(x.kind):0} reveal={kind==='reward'?shown.indexOf(x):null} onClick={()=>setSel(sel===i?null:i)}/>;})}
     </div>
     <div className="bp-verbs stop">
       {!!options.length&&<button type="button" className="bp-verb go" data-testid="bp-stop-go" disabled={!o} onClick={()=>o&&onPick?.(o)}>{c.go}</button>}

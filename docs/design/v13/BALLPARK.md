@@ -239,3 +239,9 @@
 - 팔 채찍: 릴리스(76) 8프레임 전~3프레임 후, 직전 두 프레임이 따뜻한 빛으로 잔상 + 머리 뒤→손 스우시, 릴리스 순간 손끝 반짝임.
 - 강판: HP 0이 된 공은 연출 끝을 700ms 늘림(`withKnockoutHold`, 임팩트·릴리스 타이밍 불변). 히트스톱 뒤 120ms부터 맞은 순간 포즈로 멈춰 붉게 번쩍 → 흔들림 → 뒤로 기울며 주저앉고 어두워짐(투명 X) → 흙먼지. 이어서 보상 화면.
 - reduced-motion: 전부 끔. 회귀: tests/pitcher-effects.test.js.
+
+### BP-12 보상 카드 공개
+- 보상 화면만: 카드가 뒷면(사선 무늬 + 9존 문양)으로 도착 → 강판 대사 뒤 0.76s부터 한 장씩 170ms 간격으로 도트식 가로 뒤집기(steps(6) scaleX).
+- 시그니처(rarity:'signature') = 레어: 뒤집히는 순간 금빛 폭발 → 은은한 숨쉬기 글로우, '시그니처' 태그, 금빛 바탕.
+- fill-mode backwards라 선택 카드의 들림(.on)은 그대로. 시설 화면은 공개 연출 없음. reduced-motion이면 바로 앞면.
+- 회귀: tests/ballpark-stop.test.jsx `V13 reward reveal`.

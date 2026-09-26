@@ -86,3 +86,26 @@ describe('V13 reward stage (BP-8b)',()=>{
     expect(css).toMatch(/grid-template-areas:"bar bar" "por title" "por offers" "por verbs"/);
   });
 });
+
+describe('V13 reward reveal (BP-12)',()=>{
+  const css=require('node:fs').readFileSync('src/duel/ballpark.css','utf8');
+  it('reward offers flip in order, facility offers do not',async()=>{
+    const {default:BallparkStop}=await import('../src/duel/BallparkStop.jsx');
+    const opts=[{type:'add',kind:'basic'},{type:'add',kind:'wall'},{type:'add',kind:'basic'}];
+    render(<BallparkStop kind="reward" options={opts}/>);
+    expect(document.querySelector('.bp-offers').classList.contains('reveal')).toBe(true);
+    expect(offers().map(o=>o.style.getPropertyValue('--i'))).toEqual(['0','1','2']);
+    expect(offers().every(o=>o.querySelector('.bp-offer-back'))).toBe(true);
+    // signature = rare: gold class + tag, the rest stay plain
+    expect(offers().map(o=>o.classList.contains('rare'))).toEqual([false,true,false]);
+    expect(offers()[1].querySelector('.bp-rare-tag').textContent).toBe('시그니처');
+    cleanup();
+    render(<BallparkStop kind="shop" options={opts}/>);
+    expect(document.querySelector('.bp-offers').classList.contains('reveal')).toBe(false);
+    expect(document.querySelector('.bp-offer-back')).toBeNull();
+  });
+  it('the flip never locks the lift of a picked card, and reduced motion shows the faces at once',()=>{
+    expect(css).toMatch(/\.bp-offers\.reveal \.bp-offer\{animation:bp-flip [^}]*backwards\}/);
+    expect(css).toMatch(/@media \(prefers-reduced-motion:reduce\)\{\.bp-offers\.reveal \.bp-offer,/);
+  });
+});
