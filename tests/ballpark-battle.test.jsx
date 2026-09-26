@@ -143,6 +143,20 @@ describe('V13 BALLPARK BP-2 pitch in the scene',()=>{
       expect(document.querySelector('.bp-verdict')).toBeNull();
     }
   });
+  it('replaces the dead result hand with PLAN → ACTUAL → NEXT causal debrief',()=>{
+    vi.useFakeTimers();
+    begin();
+    fireEvent.click(cards()[0]);fireEvent.click(cells()[4]);fireEvent.click(swingBtn());
+    act(()=>{vi.advanceTimersByTime(6000)});
+    const d=screen.getByTestId('bp-debrief');
+    expect(d.textContent).toContain('PLAN');
+    expect(d.textContent).toContain('ACTUAL');
+    expect(d.textContent).toContain('NEXT');
+    expect(d.textContent).toMatch(/HP -\d+|스트라이크|볼|안타|파울|아웃|헛스윙/);
+    expect(document.querySelector('.bp-hand')).toBeNull();
+    expect(screen.getByTestId('bp-next').disabled).toBe(false);
+  });
+
 });
 
 describe('V13 BALLPARK playtest feedback 2026-09-25',()=>{
