@@ -480,3 +480,26 @@
 }
 @media (min-width:1080px) and (min-height:650px){.bp-kovoice{font-size:26px;padding:14px 20px}}
 @media (prefers-reduced-motion:reduce){.bp-kovoice,.bp-stop.stop-reward .bp-sport img{animation:none}}
+
+/* BP-9 camera — the world layers (.bp-cam: stadium, Pixi actors, DOM actors when Pixi is off) zoom as one
+   around the bat's contact point (--cam-x/--cam-y, set per pitch). The zone and HUD never zoom.
+   big = homer: punch in, creep, hold, ease back (release+settle share one animation name so the stage change never restarts it). mid = extra/dead-center. near = one-zone miss: slow creep + letterbox. */
+.bp-scene.cam-big{--cam-z:1.16;--cam-z2:1.2}
+.bp-scene.cam-mid{--cam-z:1.07;--cam-z2:1.09}
+.bp-scene.cam-near{--cam-z:1;--cam-z2:1.07}
+.bp-scene[class*="cam-"] .bp-cam{transform-origin:calc(var(--cam-x,40%) - var(--ox,0px)) calc(var(--cam-y,70%) - var(--oy,0px));will-change:transform}
+.bp-scene.pixi-batter .bp-batter.bp-cam,.bp-scene.pixi-pitcher .bp-pitcher.bp-cam{animation:none!important}
+.bp-scene:is(.cam-big,.cam-mid).fx-stage-impact .bp-cam{animation:bp-cam-in 110ms cubic-bezier(.2,.9,.3,1) both}
+.bp-scene[class*="cam-"].fx-stage-slowmo .bp-cam{animation:bp-cam-hold 420ms cubic-bezier(.25,.6,.4,1) both}
+.bp-scene[class*="cam-"]:is(.fx-stage-release,.fx-stage-settle) .bp-cam{animation:bp-cam-out 240ms cubic-bezier(.5,0,.3,1) both}
+.bp-scene.cam-big:is(.fx-stage-release,.fx-stage-settle) .bp-cam{animation-duration:360ms;animation-delay:100ms}
+@keyframes bp-cam-in{from{transform:none}to{transform:scale(var(--cam-z))}}
+@keyframes bp-cam-hold{from{transform:scale(var(--cam-z))}to{transform:scale(var(--cam-z2))}}
+@keyframes bp-cam-out{from{transform:scale(var(--cam-z2))}to{transform:none}}
+.bp-scene.cam-mid.fx-stage-impact{animation:bp-shake-s 160ms steps(3) 1}
+@keyframes bp-shake-s{33%{transform:translate(2px,-1px)}66%{transform:translate(-2px,1px)}}
+.bp-letterbox{position:absolute;inset:0;z-index:5;pointer-events:none}
+.bp-letterbox::before,.bp-letterbox::after{content:"";position:absolute;left:0;right:0;height:9%;background:#07080d;animation:bp-lb 180ms cubic-bezier(.2,.8,.3,1) both}
+.bp-letterbox::before{top:0;transform-origin:top}.bp-letterbox::after{bottom:0;transform-origin:bottom}
+@keyframes bp-lb{from{transform:scaleY(0)}}
+@media (prefers-reduced-motion:reduce){.bp-scene[class*="cam-"] .bp-cam,.bp-scene.cam-mid.fx-stage-impact{animation:none!important}.bp-letterbox{display:none}}

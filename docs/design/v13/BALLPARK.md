@@ -218,3 +218,10 @@
 - 강판된 투수의 knockout 대사(`pitcherLine(artId,'knockout')`)를 초상 옆 말풍선으로 크게 띄운다. 380ms 뒤 튀어나오고 초상은 두 번 쿵쾅(heartbeat).
 - 보상 화면만. 시설 화면엔 없음. 짧은 가로에선 안내 한 줄을 숨겨 높이 유지. reduced-motion이면 애니메이션 없음.
 - 회귀: tests/ballpark-stop.test.jsx `V13 reward voice`. 412×915 / 844×390 / 1440×900 가로 스크롤 없음 확인.
+
+### BP-9 카메라 연출
+- 월드 레이어(.bp-cam: 구장 배경, Pixi 캔버스, Pixi 꺼졌을 때 DOM 배우)만 배트 접점(--cam-x/--cam-y) 기준으로 확대. 존·HUD·판정은 확대 안 함.
+- 홈런(big) 1.16→1.2 펀치인 후 복귀, 장타·정타(mid) 1.07→1.09 + 약한 흔들림, 한 칸 차이(near) 슬로 비트에서 1.07 서서히 + 레터박스.
+- Pixi 배우 시계: slowmo 단계 0.35배, 이후 2배로 따라잡음(`SLOW_RATE`,`CATCH_RATE`). 히트스톱 유지.
+- 복귀 애니메이션은 release+settle에서 같은 이름을 써서 단계 전환 때 재시작 안 함. near 복귀 240ms(release→끝 ≈250ms 안).
+- reduced-motion: 카메라·레터박스 끔. 회귀: tests/ballpark-camera.test.jsx. 412×915 / 844×390 확인.

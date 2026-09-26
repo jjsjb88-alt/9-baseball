@@ -28,6 +28,8 @@ function callOf(r,shot){
   return '';
 }
 const LANDED=new Set(['impact','slowmo','release','settle']);
+/* camera: which results push the lens in (BP-9). big = homer, mid = extra/dead-center, near = one-zone miss */
+export const CAMERA={homer:'big','grand-slam':'big',extra:'mid','dead-center':'mid','near-miss':'near','near-miss-k':'near'};
 const lessonZoneName=z=>z===9?'존 밖':ZONE_WORDS[z]||'코스';
 
 
@@ -131,6 +133,15 @@ export default function BallparkBattle({
   const [hintAt,setHintAt]=useState(null);
   const chased=!deciding&&outNote==='볼에 손이 나갔다'&&landed;
   const firstChase=chased&&(chaseHint||hintAt===playToken);
+  /* the lens pivots on the bat's contact point; every .bp-cam layer gets its own offset so they zoom as one */
+  const cam=inFx&&shot?CAMERA[shot.grade]||null:null;
+  useLayoutEffect(()=>{
+    const scene=sceneRef.current;if(!cam||!scene)return;
+    const bat=scene.querySelector('.bp-batter');if(!bat)return;
+    scene.style.setProperty('--cam-x',Math.round(bat.offsetLeft+bat.offsetWidth*.58)+'px');
+    scene.style.setProperty('--cam-y',Math.round(bat.offsetTop+bat.offsetHeight*.52)+'px');
+    for(const el of scene.querySelectorAll('.bp-cam')){el.style.setProperty('--ox',el.offsetLeft+'px');el.style.setProperty('--oy',el.offsetTop+'px');}
+  },[cam,playToken]);
   useLayoutEffect(()=>{if(chased&&chaseHint){setHintAt(playToken);setChaseHint(false);try{localStorage.setItem('9zone-hint-chase','done');}catch{}}},[chased,chaseHint,playToken]);
   const coach=firstChase?'볼은 참으면 볼넷이 된다. 바깥 띠로 올 것 같으면 지켜본다.':!deciding?'':choice?.problem||(armed?'덮을 칸을 누른다':lines.coach);
   const good=judged&&(r.kind==='hit'||r.kind==='sacrifice'||call==='볼넷');
@@ -171,8 +182,8 @@ export default function BallparkBattle({
       <span className="bp-piles"><button type="button" onClick={()=>onPile?.('draw')}>덱 {b.draw?.length??0}</button><button type="button" onClick={()=>onPile?.('discard')}>버림 {b.discard?.length??0}</button></span>
     </div>
 
-    <section className={'bp-scene'+(pixi?.batter?' pixi-batter':'')+(pixi?.pitcher?' pixi-pitcher':'')+(inFx?' fx-stage-'+fxStage+(shot?' fx-'+(shot.grade||shot.kind):''):'')} ref={sceneRef} aria-label="승부 구장">
-      <div className="bp-bg" aria-hidden="true"/>
+    <section className={'bp-scene'+(pixi?.batter?' pixi-batter':'')+(pixi?.pitcher?' pixi-pitcher':'')+(inFx?' fx-stage-'+fxStage+(shot?' fx-'+(shot.grade||shot.kind):''):'')+(cam?' cam-'+cam:'')} ref={sceneRef} aria-label="승부 구장">
+      <div className="bp-bg bp-cam" aria-hidden="true"/>
       <div className="bp-haze" aria-hidden="true"/>
       {autoLesson&&<aside className={'bp-auto-lesson '+lessonPhase} data-testid="bp-auto-lesson" aria-live="polite">
         <header>
@@ -202,7 +213,7 @@ export default function BallparkBattle({
         </div>}
       </aside>}
       {canPixi&&<BallparkActors sceneRef={sceneRef} pitcherAtlas={pitcherAtlas} artId={artId} batterPoses={batterPoses} pitchZone={judged?r.zone:null} shot={shot} fxStage={fxStage} playToken={playToken} onReady={setPixi}/>}
-      <div className="bp-pitcher" ref={pitcherRef} aria-hidden="true">{pitcherArt}</div>
+      <div className="bp-pitcher bp-cam" ref={pitcherRef} aria-hidden="true">{pitcherArt}</div>
       <div className="bp-ptag" aria-label={`${pitcher?.name} 투수 HP ${pitcher?.hp} / ${pitcher?.maxHp}`}>
         <span>{pitcher?.name}</span>
         <span className="bp-ticks" aria-hidden="true">{Array.from({length:12},(_,i)=><i key={i} className={tickClass(i)}/>)}</span>
@@ -219,8 +230,9 @@ export default function BallparkBattle({
       {inFx&&vfx}
       {inFx&&<i className="bp-flash" key={'x'+playToken+fxStage} aria-hidden="true"/>}
       {fxStage==='slowmo'&&shot?.motion?.slowmo>0&&<span className="bp-slowmo" aria-hidden="true">{shot.grade==='near-miss'||shot.grade==='near-miss-k'?'ONE ZONE':shot.grade==='homer'||shot.grade==='grand-slam'?'TIME STOPS':'SLOW'}</span>}
+      {cam==='near'&&fxStage==='slowmo'&&<i className="bp-letterbox" key={'lb'+playToken} aria-hidden="true"/>}
       {judged&&inFx&&!landed&&!pixi?.pitcher&&<i className="bp-flight" ref={flightRef} key={'f'+playToken} aria-hidden="true"/>}
-      <div className="bp-batter" aria-hidden="true">{batterArt}</div>
+      <div className="bp-batter bp-cam" aria-hidden="true">{batterArt}</div>
 
       <div className={'bp-zone'+(cover.size?' has-cover':'')} ref={zoneRef} role="group" aria-label="노릴 코스">
         {ZONE_WORDS.map((word,z)=>{

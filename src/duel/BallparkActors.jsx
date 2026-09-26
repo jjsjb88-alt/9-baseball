@@ -20,6 +20,8 @@ export function pixiAvailable(){
 }
 
 const HIT_STOP_MS=90;
+/* slow-mo: during the 'slowmo' beat the actors' clock runs at SLOW_RATE, then catches up at CATCH_RATE (BP-9) */
+export const SLOW_RATE=.35,CATCH_RATE=2;
 /* pixel art stays even: whole-number scale when the art is enlarged at least 2x (x3.2 made some
    art pixels 3 screen pixels wide and others 4) */
 const crisp=(sc,dpr)=>sc*dpr>=2?Math.max(1,Math.floor(sc*dpr))/dpr:sc;
@@ -91,7 +93,7 @@ export default function BallparkActors({sceneRef,pitcherAtlas,artId=null,batterP
       };
 
       /* one clock per pitch */
-      let token=null,start=0,timeline=[{pose:'ready',at:0}],swing=false,hit=false,impactAt=0,stopUntil=0,stopAt=0,dusted={},prevPose='ready',prevPoses=[];
+      let token=null,start=0,timeline=[{pose:'ready',at:0}],swing=false,hit=false,impactAt=0,stopUntil=0,stopAt=0,vclock=0,lastNow=0,debt=0,rate=1,dusted={},prevPose='ready',prevPoses=[];
       const begin=now=>{
         const {shot:sh}=live.current;
         const eff=sh&&pitchFrames?redRushBatterShot(sh,reduced):sh;
@@ -99,7 +101,7 @@ export default function BallparkActors({sceneRef,pitcherAtlas,artId=null,batterP
         swing=timeline.some(k=>k.pose==='swing-mid');
         hit=swing&&BATTER_MOTION_V3_HIT_GRADES.has(sh?.grade);
         impactAt=timeline.find(k=>k.pose==='contact')?.at??timeline.find(k=>k.pose==='follow-through-early')?.at??0;
-        start=now;stopUntil=0;stopAt=0;dusted={};prevPoses=[];shownIndex=0;trail=[];measure();
+        start=now;vclock=0;lastNow=now;debt=0;stopUntil=0;stopAt=0;dusted={};prevPoses=[];shownIndex=0;trail=[];measure();
       };
       /* a key pose is never skipped: on a slow frame the timeline may jump two poses, but the screen
          advances one authored pose per rendered frame, so every silhouette is seen */
@@ -114,7 +116,12 @@ export default function BallparkActors({sceneRef,pitcherAtlas,artId=null,batterP
         const active=!!stage&&!!sh&&hasPitchVisual(sh);
         if(active&&tok!==token){token=tok;begin(now);}
         if(!active)token=null;
-        let t=active?now-start:0;
+        let t=0;
+        if(active){
+          const dt=now-lastNow;lastNow=now;
+          rate=reduced?1:stage==='slowmo'?SLOW_RATE:debt>0?CATCH_RATE:1;
+          vclock+=dt*rate;debt=Math.max(0,debt+dt*(1-rate));t=vclock;
+        }else rate=1;
         // hit-stop: the clock stands still for a beat at contact
         if(active&&hit&&!reduced){
           if(!stopAt&&t>=impactAt){stopAt=now;stopUntil=now+HIT_STOP_MS;}
@@ -165,7 +172,7 @@ export default function BallparkActors({sceneRef,pitcherAtlas,artId=null,batterP
           if(active&&hit&&!dusted.hit&&stopAt){dusted.hit=1;if(!reduced)spawnDust(x+b.w*.3,y-b.h*.02,16,b.h);}
         }
         // what is on screen, for QA and tests
-        const host=hostRef.current;if(host){host.dataset.pose=prevPose;host.dataset.frame=pitcher?String(active?redRushFrameAt(t):0):'';host.dataset.stop=stopAt&&now<stopUntil?'1':'0';}
+        const host=hostRef.current;if(host){host.dataset.pose=prevPose;host.dataset.frame=pitcher?String(active?redRushFrameAt(t):0):'';host.dataset.stop=stopAt&&now<stopUntil?'1':'0';host.dataset.rate=String(rate);}
         /* the pitch: out of the hand on the release frame, toward the camera (it grows), onto its cell at
            contact; a hit leaves into the field, anything else carries on into the catcher */
         ball.clear();
@@ -199,5 +206,5 @@ export default function BallparkActors({sceneRef,pitcherAtlas,artId=null,batterP
     return ()=>{alive=false;ro?.disconnect();cleanup.forEach(f=>f());onReady?.(null);try{app?.destroy(true,{children:true});}catch{}};
   },[pitcherAtlas]);
 
-  return <div ref={hostRef} className="bp-pixi" aria-hidden="true"/>;
+  return <div ref={hostRef} className="bp-pixi bp-cam" aria-hidden="true"/>;
 }
