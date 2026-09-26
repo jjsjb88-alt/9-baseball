@@ -34,7 +34,7 @@ describe('9-zone strategic UI',()=>{
     localStorage.setItem('9zone-lineup-v3','legacy');render(<Duel/>);
     fireEvent.click(screen.getByRole('button',{name:/몸쪽 장타/}));
     fireEvent.change(screen.getByLabelText('비교용 시드'),{target:{value:'42'}});
-    fireEvent.click(screen.getByRole('button',{name:'튜토리얼 시작'}));
+    fireEvent.click(screen.getByRole('button',{name:'기존 튜토리얼'}));
     expect(readDuel(localStorage).build).toBe('pull');expect(readDuel(localStorage).initialSeed).toBe(42);expect(localStorage.getItem('9zone-lineup-v3')).toBe('legacy');
   });
   it('tour walks six real targets; escape dismisses and does not reopen',()=>{

@@ -45,7 +45,7 @@ describe('V9 main-run UI',()=>{
 
   it('makes the map an actual opponent choice before a main-run battle',()=>{
     render(<Duel/>);
-    fireEvent.click(screen.getByRole('button',{name:'튜토리얼 시작'}));
+    fireEvent.click(screen.getByRole('button',{name:'기존 튜토리얼'}));
     const routes=screen.getByRole('region',{name:'상대 경로 선택'});
     expect(routes).toBeTruthy();
     expect(screen.queryByRole('button',{name:'이 상대와 승부 시작'})).toBeNull();
