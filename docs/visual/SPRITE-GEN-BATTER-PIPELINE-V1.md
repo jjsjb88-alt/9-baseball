@@ -405,12 +405,76 @@ Sprite-Gen manifest는 atlas geometry의 SSOT다.
 **현재 게임 화면 변화 0.**
 
 ### Phase B — Existing anchors ingest
-현재 approved/reviewed 10 pose를 external run에 넣고 deterministic extraction/align을 적용한다.
+
+현재 approved/reviewed 10 pose를 **생성하지 않고 먼저 import run으로 넣는다.**
+Sprite-Gen의 `unpack-atlas --pngs-dir`는 별도 PNG 폴더를 curator-ready run으로 가져올 수 있다.
+
+권장 staging layout:
+
+```
+sprite-gen-input/
+  _base/
+    batter-golden-master.png
+  swing/
+    01-ready.png
+    02-load.png
+    03-trigger.png
+    04-swing-start.png
+    05-swing-mid.png
+    06-contact.png
+    07-follow-early.png
+    08-follow-late.png
+    09-finish.png
+    10-settle.png
+    _refs/
+      anchor-ready.png
+      anchor-contact.png
+```
+
+숫자 prefix가 play order를 고정한다.
+
+실행 형태:
+
+```bash
+sprite-gen unpack-atlas --pngs-dir sprite-gen-input/ --out-dir <run-dir>
+sprite-gen curation --run-dir <run-dir> --lang ko
+```
+
+여기서 먼저 생성 AI를 전혀 쓰지 않고:
+- 현재 10포즈의 순서
+- 발/몸 기준 흔들림
+- 실제 표시 크기
+- atlas / manifest 소비 경로
+
+를 검증한다.
+
+그 다음에만 pairwise Tween을 연다.
+
+예:
+
+```bash
+$SPRITE_GEN_ROOT/.venv/bin/python \
+  $SPRITE_GEN_ROOT/scripts/interpolate_frames.py \
+  --run-dir <run-dir> \
+  --state swing \
+  --between 4 5 \
+  --provider codex \
+  --t 0.5 \
+  --label swing_mid_to_contact_050 \
+  --extract
+```
+
+주의:
+- `--between`은 해당 state primary strip의 component index다. import 후 실제 index를 curator에서 확인한다.
+- Tween 생성물은 final frame이 아니라 take다.
+- 새 take는 deterministic extraction을 다시 거친 뒤 curator에서 play sequence에 넣는다.
+- identity drift가 보이면 local warp로 숨기지 않고 해당 take를 reroll한다.
 
 결과:
 - base 10 pose baseline atlas
 - alignment QA report
 - 기존 V3와 1:1 비교
+- 문제 구간만 추가한 tween candidate pool
 
 ### Phase C — In-between
 각 approved pair에 제한적 tween을 생성한다.
