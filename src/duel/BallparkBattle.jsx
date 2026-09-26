@@ -1,6 +1,6 @@
 import React,{useLayoutEffect,useRef,useState} from 'react';
 import {CARDS} from './cards.js';
-import {publicProbabilities,V10_SWING_STACK_MAX} from './engine.js';
+import {publicProbabilities,V10_SWING_STACK_MAX,V10_RUNNER_PRESSURE,v10Shaken,v10MentalCap} from './engine.js';
 import {intentLines,hpTicks,ZONE_WORDS} from './ballpark-copy.js';
 import ZoneLinks from './ZoneLinks.jsx';
 import './ballpark.css';
@@ -81,6 +81,12 @@ export default function BallparkBattle({
   const ticks=hpTicks(pitcher?.hp,pitcher?.maxHp),ticksWere=judged?hpTicks((pitcher?.hp||0)+(pitcher?.lastDamage||0),pitcher?.maxHp):ticks;
   /* lit, lit until the ball lands, then dropping, then gone */
   const tickClass=i=>i<ticks?'':i<ticksWere?(landed?'drop':''):'lost';
+  /* 멘탈 게이지: 실점으로 쌓이는 흔들림. 칸 수 = 막별 상한(1막 3 · 2막 2 · 3막 1). 공이 닿기 전엔 이전 값. */
+  const mentalCap=v10MentalCap(s),combat=s.v10?.lastCombat;
+  const shaken=judged&&!landed&&Number.isInteger(combat?.shakenBefore)?combat.shakenBefore:v10Shaken(s);
+  const shakenRose=judged&&landed&&combat?.shakenAfter>combat?.shakenBefore;
+  /* 주자 압박: 지금 루상 주자로 안타를 치면 붙는 피해 배율 */
+  const runners=(b.bases||[]).filter(Boolean).length,runnerPct=Math.round(runners*V10_RUNNER_PRESSURE*100);
 
   function pickSwing(id){
     if(locked)return;
@@ -149,6 +155,11 @@ export default function BallparkBattle({
         <span className="bp-ticks" aria-hidden="true">{Array.from({length:12},(_,i)=><i key={i} className={tickClass(i)}/>)}</span>
         {damage>0&&<b className="bp-damage" key={'d'+playToken}>-{damage}</b>}
         <small aria-hidden="true">HP {judged&&!landed?(pitcher?.hp||0)+(pitcher?.lastDamage||0):pitcher?.hp} / {pitcher?.maxHp}</small>
+        <span className={'bp-mental'+(shaken?' shaken':'')+(shaken>=mentalCap?' max':'')+(shakenRose?' rose':'')} data-testid="bp-mental"
+          data-shaken={shaken} data-cap={mentalCap} key={'m'+shaken} aria-label={`투수 흔들림 ${shaken} / ${mentalCap}`+(shaken?' · 볼 증가 · 읽기 +1':'')}>
+          <em>흔들림</em><span aria-hidden="true">{Array.from({length:mentalCap},(_,i)=><i key={i} className={i<shaken?'on':''}/>)}</span>
+        </span>
+        {deciding&&runners>0&&<span className="bp-press" data-testid="bp-press" aria-label={`주자 ${runners}명 · 안타 피해 +${runnerPct}%`}><em>주자 압박</em><b>+{runnerPct}%</b></span>}
       </div>
       {showVerdict&&<div className={'bp-verdict'+(good?' good':'')} key={'v'+playToken+(shot.title||'')} role="status"><strong>{call||shot.title}</strong>{(outNote||call&&shot.title&&shot.title!==call)&&<small>{outNote||shot.title}</small>}</div>}
       {inFx&&vfx}
