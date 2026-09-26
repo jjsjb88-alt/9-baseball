@@ -79,7 +79,10 @@ export function validateSpriteGenManifest(manifest,{state='swing',cellSize=null,
   const row=rowContract(manifest,state);
   const layout=manifest?.frame_layout||{};
 
-  if(manifest?.degraded_static_fallback===true){
+  if(manifest?.game_input!=='sprite-sheet-alpha.png'){
+    errors.push('game_input must be "sprite-sheet-alpha.png"');
+  }
+  if(manifest?.degraded_static_fallback!==false){
     errors.push('degraded_static_fallback must be false for animated batter assets');
   }
   if(!row){
@@ -92,7 +95,9 @@ export function validateSpriteGenManifest(manifest,{state='swing',cellSize=null,
 
   const animationFrames=Number(manifest?.animation?.rows?.[state]?.frames);
   const layoutFrames=manifest?.frame_layout?.rows?.[state]?.length||0;
-  if(Number.isInteger(animationFrames)&&animationFrames!==layoutFrames){
+  if(!Number.isInteger(animationFrames)||animationFrames<=0){
+    errors.push(`animation.frames for "${state}" must be a positive integer`);
+  }else if(animationFrames!==layoutFrames){
     errors.push(`animation.frames (${animationFrames}) does not match frame_layout count (${layoutFrames})`);
   }
 
