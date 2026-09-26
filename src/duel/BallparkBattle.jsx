@@ -28,6 +28,7 @@ function callOf(r,shot){
   return '';
 }
 const LANDED=new Set(['impact','slowmo','release','settle']);
+const lessonZoneName=z=>z===9?'존 밖':ZONE_WORDS[z]||'코스';
 
 
 /* the glyph already draws the coverage; the face keeps only what it adds (정확 적중 HP +50% …) */
@@ -40,6 +41,7 @@ export default function BallparkBattle({
   pitcher,label,pitcherArt,batterArt,
   fxStage=null,shot=null,impactAt=0,playToken=0,onNext=null,nextLabel='',vfx=null,pitcherAtlas=null,artId=null,batterPoses=null,
   onSelect,onAim,onStack,onSwing,onTake,onDetail,onPile,
+  autoLesson=false,autoPlan=null,onExitLesson=null,
 }){
   const b=s.battle,rootRef=useRef(null),sceneRef=useRef(null),pitcherRef=useRef(null),zoneRef=useRef(null),flightRef=useRef(null);
   const r=b.revealed,inFx=!!fxStage,deciding=s.phase==='battle'&&!inFx&&!locked;
@@ -137,6 +139,20 @@ export default function BallparkBattle({
     :deciding&&!(b.history?.length)&&b.turn===1?'entry':null;
   const voice=moment?pitcherLine(artId,moment,playToken):'';
 
+  /* Experimental lesson: keep the real battle, but explicitly separate the Slay-the-Spire
+     decision from the autobattler payoff. The player plans; once the verb is pressed,
+     their inputs are done and Pixi gets the stage until the result is readable. */
+  const lessonPhase=deciding?'plan':inFx?'watch':judged?'review':'plan';
+  const lessonCombat=s.v10?.lastCombat||null;
+  const currentPlanCards=selected?[mainName,...stack.map(x=>CARDS[byId(x.id)?.entry?.kind]?.name||'지원')].filter(Boolean):[];
+  const currentPlanZones=selected&&!mainIsSkill?[lessonZoneName(b.aimZone),...stack.map(x=>lessonZoneName(x.aimZone))]:[];
+  const lessonCards=lessonPhase==='plan'?currentPlanCards:(autoPlan?.cards||[]);
+  const lessonZones=lessonPhase==='plan'?currentPlanZones:(autoPlan?.zones||[]);
+  const watchBeat={windup:'투수가 시작한다',impact:'빌드가 부딪힌다',slowmo:'판정 순간',release:'결과가 전개된다',settle:'마무리'}[fxStage]||'자동 실행 중';
+  const reviewText=lessonCombat
+    ?(lessonCombat.verdict||call||'판정')+' · 실제 '+(lessonCombat.pitchLabel||'코스')+' · 투수 HP -'+(lessonCombat.damage||0)
+    :(call||shot?.title||'결과를 확인한다');
+
   const cardButton=x=>{
     const def=CARDS[x.entry.kind],problem=x.preview?.problem,inStack=stack.findIndex(y=>y.id===x.id);
     const state=selected===x.id?' main':inStack>=0?' support':armed===x.id?' armed':'';
@@ -149,7 +165,7 @@ export default function BallparkBattle({
     </button>;
   };
 
-  return <main ref={rootRef} className={'bp-battle'+(deciding?'':' resolving')+(inFx?' fx-'+fxStage:'')} aria-label="타석">
+  return <main ref={rootRef} className={'bp-battle'+(autoLesson?' auto-lesson':'')+(deciding?'':' resolving')+(inFx?' fx-'+fxStage:'')} aria-label="타석">
     <div className="bp-bar">
       <span>{label}</span>
       <span className="bp-piles"><button type="button" onClick={()=>onPile?.('draw')}>덱 {b.draw?.length??0}</button><button type="button" onClick={()=>onPile?.('discard')}>버림 {b.discard?.length??0}</button></span>
@@ -158,6 +174,33 @@ export default function BallparkBattle({
     <section className={'bp-scene'+(pixi?.batter?' pixi-batter':'')+(pixi?.pitcher?' pixi-pitcher':'')+(inFx?' fx-stage-'+fxStage+(shot?' fx-'+(shot.grade||shot.kind):''):'')} ref={sceneRef} aria-label="승부 구장">
       <div className="bp-bg" aria-hidden="true"/>
       <div className="bp-haze" aria-hidden="true"/>
+      {autoLesson&&<aside className={'bp-auto-lesson '+lessonPhase} data-testid="bp-auto-lesson" aria-live="polite">
+        <header>
+          <span>BUILD → BATTLE</span>
+          <button type="button" onClick={onExitLesson}>체험 종료</button>
+        </header>
+        <ol aria-label="전략 자동전투 흐름">
+          <li className={lessonPhase==='plan'?'on':''}><b>1</b><span>설계</span></li>
+          <li className={lessonPhase==='watch'?'on':''}><b>2</b><span>자동 실행</span></li>
+          <li className={lessonPhase==='review'?'on':''}><b>3</b><span>복기</span></li>
+        </ol>
+        {lessonPhase==='plan'&&<div className="bp-auto-copy">
+          <strong>{selected?'이 빌드를 확정한다':'먼저 빌드를 만든다'}</strong>
+          <small>{selected?'버튼을 누른 뒤에는 손을 떼고 결과를 본다.':'카드와 존을 고른다. 지원 카드를 얹으면 한 번의 스윙이 길어진다.'}</small>
+        </div>}
+        {lessonPhase==='watch'&&<div className="bp-auto-copy watch">
+          <strong>AUTO RESOLVE · {watchBeat}</strong>
+          <small>지금은 조작하지 않는다. 방금 만든 빌드가 투수와 싸우는 장면을 본다.</small>
+        </div>}
+        {lessonPhase==='review'&&<div className="bp-auto-copy review">
+          <strong>{reviewText}</strong>
+          <small>{lessonCombat?.connectCount?'CONNECT '+lessonCombat.connectCount+' · 연결 보너스가 실제 피해에 반영됐다.':autoPlan?.kind==='take'?'지켜보기 역시 하나의 빌드 선택이다. 다음 공의 정보와 손패를 산다.':'노린 코스와 실제 공을 비교하고 다음 설계를 바꾼다.'}</small>
+        </div>}
+        {!!lessonCards.length&&<div className="bp-auto-plan" aria-label="현재 빌드">
+          {lessonCards.map((name,i)=><span key={i}><b>{i+1}</b>{name}{lessonZones[i]?<em>{lessonZones[i]}</em>:null}</span>)}
+          {autoPlan?.coverage>0&&lessonPhase!=='plan'&&<i>{autoPlan.coverage}존 커버</i>}
+        </div>}
+      </aside>}
       {canPixi&&<BallparkActors sceneRef={sceneRef} pitcherAtlas={pitcherAtlas} artId={artId} batterPoses={batterPoses} pitchZone={judged?r.zone:null} shot={shot} fxStage={fxStage} playToken={playToken} onReady={setPixi}/>}
       <div className="bp-pitcher" ref={pitcherRef} aria-hidden="true">{pitcherArt}</div>
       <div className="bp-ptag" aria-label={`${pitcher?.name} 투수 HP ${pitcher?.hp} / ${pitcher?.maxHp}`}>
