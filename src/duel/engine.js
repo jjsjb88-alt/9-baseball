@@ -13,6 +13,14 @@ function draw(s,n){const b=s.battle;while(n-->0&&b.hand.length<9){if(!b.draw.len
 // PUBLIC is the actual sampling distribution. No false odds, no input-dependent reroll.
 // V10 opponents advertise their actual pitch identity on the map; V9 keeps stage defaults.
 const v10Opponent=s=>s?.version===10?s.v10?.opponent:null;
+/* V10 주자·멘탈 (2026-09-26)
+   - 주자 압박: 안타 직전 루상 주자 1명당 기본 피해 +10%.
+   - 멘탈: 실점 1점당 흔들림 +1. 흔들림 단계마다 볼 비중 +35%, 1단계 이상이면 읽기 +1.
+     득점 없이 끝난 타석마다 1단계 회복. 막이 오를수록 상한이 낮아 멘탈이 단단하다(1막 3 · 2막 2 · 3막 1). */
+export const V10_RUNNER_PRESSURE=.10;
+export const V10_MENTAL=Object.freeze({ballBoost:.35,capByAct:Object.freeze({1:3,2:2,3:1})});
+export const v10MentalCap=s=>V10_MENTAL.capByAct[v10Opponent(s)?.act]??V10_MENTAL.capByAct[1];
+export const v10Shaken=s=>s?.version===10&&Number.isInteger(s.battle?.shaken)?Math.max(0,Math.min(v10MentalCap(s),s.battle.shaken)):0;
 export const BALL_BY_ACT=Object.freeze({1:.35,2:1,3:1});
 const livePitchConfig=s=>{
   const base=STAGES[s.stage],opponent=v10Opponent(s);
@@ -32,7 +40,7 @@ export function readLevel(s){
   const score=observeScore(s.deck);
   const base=score>=READ_THRESHOLDS[1]?2:score>=READ_THRESHOLDS[0]?1:0;
   const facilityScout=s.build===DECKBUILDER_BUILD&&s.stage>0&&s.facilities?.[s.stage-1]?.type==='scouting'?1:0;
-  return Math.min(2,base+((s.relics||[]).includes('scope')?1:0)+facilityScout);
+  return Math.min(2,base+((s.relics||[]).includes('scope')?1:0)+facilityScout+(v10Shaken(s)?1:0));
 }
 export const activeRoute=s=>s?.build===DECKBUILDER_BUILD?routeChoice(s.stage,s.route):null;
 export const battleTarget=s=>STAGES[s.stage].target+(activeRoute(s)?.targetDelta||0);
@@ -55,6 +63,9 @@ export function baseIntent(s){
   /* V13: balls (pitches outside the nine cells) come in by act. Act 1 teaches reading, so the first
      pitchers rarely throw one; Act 2 and 3 keep their full ball rate (playtest 2026-09-25). */
   const act=v10Opponent(s)?.act;if(act)weights[9]*=BALL_BY_ACT[act]??1;
+  // V10 멘탈: 실점으로 흔들린 투수는 볼이 늘어난다. 공개 확률은 그대로 실제 분포다.
+  const shaken=v10Shaken(s);
+  if(shaken){weights[9]*=1+V10_MENTAL.ballBoost*shaken;detail+=` 실점으로 흔들림 ${shaken}단계 · 볼이 늘어납니다.`;}
   if(b.balls===3){weights[9]*=.4;detail+=' 3볼에서는 스트라이크 비중이 높아집니다.';}
   // Zones outside the repertoire are not thrown at all. This is what makes the first pitcher readable.
   const live=repertoire(s),width=repertoireWidth(s);
@@ -714,8 +725,20 @@ export function playV10Action(state,action){
     ?(CARDS[choice]?.pressure||0):0;
   const pressureBase=precisionRate?damageForOutcome(outcome,next.pitcher.foulStreak||0).damage:0;
   const precisionBonus=precisionRate?Math.max(0,Math.round(pressureBase*relicPlan.damageRate*precisionRate)):0;
+  // 주자 압박: 공 던지기 전 루상 주자 수 기준. 안타일 때만.
+  const runnersBefore=(state.battle?.bases||[]).filter(Boolean).length;
+  const runnerRate=r.kind==='hit'?runnersBefore*V10_RUNNER_PRESSURE:0;
+  const runnerBonus=runnerRate?Math.max(0,Math.round(damageForOutcome(outcome,0).damage*relicPlan.damageRate*runnerRate)):0;
   const applied=applyPitcherOutcome(next.pitcher,outcome,{pitchId:next.stats.pitches,damageMultiplier:relicPlan.damageRate,
-    damageBonus:relicPlan.damageBonus+precisionBonus});
+    damageBonus:relicPlan.damageBonus+precisionBonus+runnerBonus});
+  // 멘탈: 타석이 끝날 때만 갱신. 실점이면 흔들림 누적, 무실점이면 1단계 회복.
+  const runsScored=Math.max(0,(next.battle?.runs||0)-(state.battle?.runs||0));
+  const shakenBefore=v10Shaken(state),paEnded=(next.battle?.results?.length||0)>(state.battle?.results?.length||0);
+  let shakenAfter=shakenBefore;
+  if(next.battle&&paEnded){
+    shakenAfter=runsScored?Math.min(v10MentalCap(next),shakenBefore+runsScored):Math.max(0,shakenBefore-1);
+    next.battle.shaken=shakenAfter;
+  }
   next.pitcher=applied.pitcher;
   const supportNames=(r.supportKinds||[]).map(k=>CARDS[k]?.name||k);
   const supportAims=(r.supportZones||[]).map(v10ZoneLabel);
@@ -725,10 +748,17 @@ export function playV10Action(state,action){
     verdict:r.label,damage:applied.result.damage,baseDamage:applied.result.baseDamage,damageRate:relicPlan.damageRate,
     baseStackDamageRate:r.stackBaseDamageRate??v10SwingDamageRate(stackCardCount),orderedStackDamageRate:stackDamageRate,
     connectCount:r.stackConnectCount||0,connectBonus:r.stackConnectBonus||0,stackLinks:r.stackLinks||[],stackSteps:r.stackSteps||[],
-    relicBonus:relicPlan.damageBonus,precisionRate,precisionBonus,totalDamageBonus:relicPlan.damageBonus+precisionBonus,
+    relicBonus:relicPlan.damageBonus,precisionRate,precisionBonus,totalDamageBonus:relicPlan.damageBonus+precisionBonus+runnerBonus,
+    runnersBefore,runnerRate,runnerBonus,runsScored,shakenBefore,shakenAfter,
     relicEvents:relicPlan.events,cardCount:stackCardCount,hpAfter:applied.result.hpAfter,
   }};
-  const pressureEvents=precisionBonus?['정타 노림 · 정확 적중 +'+precisionBonus+' HP']:[];
+  const pressureEvents=[
+    ...(precisionBonus?['정타 노림 · 정확 적중 +'+precisionBonus+' HP']:[]),
+    ...(runnerBonus?['주자 '+runnersBefore+'명 압박 · +'+Math.round(runnerRate*100)+'% · +'+runnerBonus+' HP']:[]),
+    ...(shakenAfter>shakenBefore?['투수 흔들림 '+shakenAfter+'/'+v10MentalCap(next)+' · 볼 증가 · 읽기 +1']
+      :shakenAfter<shakenBefore?['투수 안정 · 흔들림 '+shakenAfter+'/'+v10MentalCap(next)]
+      :runsScored&&shakenAfter===v10MentalCap(next)&&v10MentalCap(next)<3?['노련한 투수 · 흔들림 상한 '+shakenAfter+'단계']:[]),
+  ];
   if((relicPlan.events.length||pressureEvents.length)&&next.last?.events)
     next.last.events=[...pressureEvents,...relicPlan.events.map(e=>'유물 · '+e),...next.last.events];
   if(next.pitcher.hp<=0){
