@@ -37,7 +37,7 @@ const CardGlyph=({zones})=><span className="bp-glyph" aria-hidden="true">{Array.
 export default function BallparkBattle({
   s,hand,selected,swingStack,choice,locked=false,
   pitcher,label,pitcherArt,batterArt,
-  fxStage=null,shot=null,impactAt=0,playToken=0,onNext=null,nextLabel='',vfx=null,pitcherAtlas=null,batterPoses=null,
+  fxStage=null,shot=null,impactAt=0,playToken=0,onNext=null,nextLabel='',vfx=null,pitcherAtlas=null,artId=null,batterPoses=null,
   onSelect,onAim,onStack,onSwing,onTake,onDetail,onPile,
 }){
   const b=s.battle,rootRef=useRef(null),sceneRef=useRef(null),pitcherRef=useRef(null),zoneRef=useRef(null),flightRef=useRef(null);
@@ -153,7 +153,7 @@ export default function BallparkBattle({
     <section className={'bp-scene'+(pixi?.batter?' pixi-batter':'')+(pixi?.pitcher?' pixi-pitcher':'')+(inFx?' fx-stage-'+fxStage+(shot?' fx-'+(shot.grade||shot.kind):''):'')} ref={sceneRef} aria-label="승부 구장">
       <div className="bp-bg" aria-hidden="true"/>
       <div className="bp-haze" aria-hidden="true"/>
-      {canPixi&&<BallparkActors sceneRef={sceneRef} pitcherAtlas={pitcherAtlas} batterPoses={batterPoses} shot={shot} fxStage={fxStage} playToken={playToken} onReady={setPixi}/>}
+      {canPixi&&<BallparkActors sceneRef={sceneRef} pitcherAtlas={pitcherAtlas} artId={artId} batterPoses={batterPoses} pitchZone={judged?r.zone:null} shot={shot} fxStage={fxStage} playToken={playToken} onReady={setPixi}/>}
       <div className="bp-pitcher" ref={pitcherRef} aria-hidden="true">{pitcherArt}</div>
       <div className="bp-ptag" aria-label={`${pitcher?.name} 투수 HP ${pitcher?.hp} / ${pitcher?.maxHp}`}>
         <span>{pitcher?.name}</span>
@@ -170,7 +170,7 @@ export default function BallparkBattle({
       {inFx&&vfx}
       {inFx&&<i className="bp-flash" key={'x'+playToken+fxStage} aria-hidden="true"/>}
       {fxStage==='slowmo'&&shot?.motion?.slowmo>0&&<span className="bp-slowmo" aria-hidden="true">{shot.grade==='near-miss'||shot.grade==='near-miss-k'?'ONE ZONE':shot.grade==='homer'||shot.grade==='grand-slam'?'TIME STOPS':'SLOW'}</span>}
-      {judged&&inFx&&!landed&&<i className="bp-flight" ref={flightRef} key={'f'+playToken} aria-hidden="true"/>}
+      {judged&&inFx&&!landed&&!pixi?.pitcher&&<i className="bp-flight" ref={flightRef} key={'f'+playToken} aria-hidden="true"/>}
       <div className="bp-batter" aria-hidden="true">{batterArt}</div>
 
       <div className={'bp-zone'+(cover.size?' has-cover':'')} ref={zoneRef} role="group" aria-label="노릴 코스">

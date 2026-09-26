@@ -398,3 +398,6 @@
 /* the DOM actors keep their boxes (Pixi reads them for layout) but stop drawing once Pixi has them */
 .bp-scene.pixi-batter .bp-batter>*,.bp-scene.pixi-pitcher .bp-pitcher>*{visibility:hidden}
 .bp-scene.pixi-batter .bp-batter,.bp-scene.pixi-pitcher .bp-pitcher{filter:none}
+/* C3: while a pitch plays the ball and the swing belong in front of the zone; the landing mark waits for the ball */
+.bp-scene[class*="fx-stage-"] .bp-pixi{z-index:4}
+.bp-scene.pixi-pitcher .bp-pitch-mark{animation-delay:180ms}

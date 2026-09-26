@@ -63,3 +63,20 @@ describe('V13 C2 Pixi actor layer',()=>{
     expect(css).toMatch(/\.bp-scene\.pixi-batter \.bp-batter>\*,\.bp-scene\.pixi-pitcher \.bp-pitcher>\*\{visibility:hidden\}/);
   });
 });
+
+describe('V13 C3 the pitch in Pixi',()=>{
+  it('has a release point for every pitcher atlas, inside the frame',async()=>{
+    const release=JSON.parse(read('src/duel/pitcher-release.json'));
+    const {pitcherAtlases}=await import('../src/duel/pitcher-visuals.js');
+    for(const id of Object.keys(pitcherAtlases)){
+      expect(release[id],id).toBeTruthy();
+      for(const v of release[id])expect(v>=0&&v<=1).toBe(true);
+    }
+  });
+  it('draws the ball from the hand to the real cell, over the zone while the pitch plays',()=>{
+    const actors=read('src/duel/BallparkActors.jsx');
+    expect(actors).toMatch(/RELEASE\[aid\]/);
+    expect(actors).toMatch(/boxes\.cells\[pz\]/);
+    expect(read('src/duel/ballpark.css')).toMatch(/\.bp-scene\[class\*="fx-stage-"\] \.bp-pixi\{z-index:4\}/);
+  });
+});

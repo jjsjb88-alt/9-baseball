@@ -1,6 +1,7 @@
 import React,{useEffect,useRef} from 'react';
 import {batterMotionV3Timeline,BATTER_MOTION_V3_HIT_GRADES} from './batterMotionV3.js';
-import {redRushBatterShot,redRushFrameAt,hasPitchVisual} from './pitcher-sd.js';
+import {redRushBatterShot,redRushFrameAt,hasPitchVisual,RED_RUSH_RELEASE_MS} from './pitcher-sd.js';
+import RELEASE from './pitcher-release.json';
 
 /* V13 C2 — the batter and the pitcher drawn by PixiJS (WebGL) over the CSS stadium.
    The art is the repository's: the pitcher's 120-frame atlas and the batter's ten authored key poses.
@@ -24,9 +25,9 @@ const HIT_STOP_MS=90;
 const crisp=(sc,dpr)=>sc*dpr>=2?Math.max(1,Math.floor(sc*dpr))/dpr:sc;
 const IDLE_BREATH_MS=2600;
 
-export default function BallparkActors({sceneRef,pitcherAtlas,batterPoses,shot,fxStage,playToken,onReady}){
+export default function BallparkActors({sceneRef,pitcherAtlas,artId=null,batterPoses,shot,fxStage,playToken,pitchZone=null,onReady}){
   const hostRef=useRef(null),live=useRef({});
-  live.current={shot,fxStage,playToken};
+  live.current={shot,fxStage,playToken,pitchZone,artId};
 
   useEffect(()=>{
     if(!pixiAvailable())return;
@@ -64,6 +65,8 @@ export default function BallparkActors({sceneRef,pitcherAtlas,batterPoses,shot,f
       const flash=new PIXI.Sprite(poseTex.ready);flash.anchor.set(.5,1);flash.blendMode='add';flash.alpha=0;world.addChild(flash);
       const arc=new PIXI.Graphics();world.addChild(arc);
       const dust=new PIXI.Container();world.addChild(dust);
+      const ball=new PIXI.Graphics();world.addChild(ball);
+      let trail=[];
       const dustPool=[];
 
       /* layout: read the DOM actor boxes, so CSS keeps owning where the actors stand */
@@ -72,6 +75,7 @@ export default function BallparkActors({sceneRef,pitcherAtlas,batterPoses,shot,f
         const scene=sceneRef.current;if(!scene)return;
         const sr=scene.getBoundingClientRect(),rel=el=>{if(!el)return null;const r=el.getBoundingClientRect();return {x:r.left-sr.left,y:r.top-sr.top,w:r.width,h:r.height};};
         boxes.b=rel(scene.querySelector('.bp-batter'));boxes.p=rel(scene.querySelector('.bp-pitcher'));
+        boxes.cells=[...scene.querySelectorAll('.bp-cell')].map(rel);boxes.zone=rel(scene.querySelector('.bp-zone'));
       };
       measure();
       ro=typeof ResizeObserver!=='undefined'?new ResizeObserver(measure):null;
@@ -95,7 +99,7 @@ export default function BallparkActors({sceneRef,pitcherAtlas,batterPoses,shot,f
         swing=timeline.some(k=>k.pose==='swing-mid');
         hit=swing&&BATTER_MOTION_V3_HIT_GRADES.has(sh?.grade);
         impactAt=timeline.find(k=>k.pose==='contact')?.at??timeline.find(k=>k.pose==='follow-through-early')?.at??0;
-        start=now;stopUntil=0;stopAt=0;dusted={};prevPoses=[];shownIndex=0;
+        start=now;stopUntil=0;stopAt=0;dusted={};prevPoses=[];shownIndex=0;trail=[];measure();
       };
       /* a key pose is never skipped: on a slow frame the timeline may jump two poses, but the screen
          advances one authored pose per rendered frame, so every silhouette is seen */
@@ -162,6 +166,33 @@ export default function BallparkActors({sceneRef,pitcherAtlas,batterPoses,shot,f
         }
         // what is on screen, for QA and tests
         const host=hostRef.current;if(host){host.dataset.pose=prevPose;host.dataset.frame=pitcher?String(active?redRushFrameAt(t):0):'';host.dataset.stop=stopAt&&now<stopUntil?'1':'0';}
+        /* the pitch: out of the hand on the release frame, toward the camera (it grows), onto its cell at
+           contact; a hit leaves into the field, anything else carries on into the catcher */
+        ball.clear();
+        const {pitchZone:pz,artId:aid}=live.current;
+        if(active&&pitcher&&p&&pz!=null&&boxes.zone&&!reduced&&t>=RED_RUSH_RELEASE_MS){
+          const rp=RELEASE[aid]||[.05,.35],tw=pitcher.texture.width*pitcher.scale.x,th=pitcher.texture.height*pitcher.scale.y;
+          const hx=pitcher.position.x-tw/2+rp[0]*tw,hy=pitcher.position.y-th+rp[1]*th;
+          const z=boxes.zone,cell=pz<9?boxes.cells[pz]:null;
+          const tx=cell?cell.x+cell.w/2:z.x+z.w+Math.min(40,z.w*.12),ty=cell?cell.y+cell.h/2:z.y+z.h*.55;
+          const unit=(b?b.h:z.h)/100,span=Math.max(1,impactAt-RED_RUSH_RELEASE_MS),k=(t-RED_RUSH_RELEASE_MS)/span;
+          let bx,by,r,a=1;
+          if(k<=1){const e=Math.pow(k,1.25);bx=hx+(tx-hx)*e;by=hy+(ty-hy)*e-Math.sin(Math.PI*k)*unit*4;r=unit*(.9+1.6*e);}
+          else{
+            const u=Math.min(1,(t-impactAt)/(hit?650:160));a=1-u;
+            if(hit){const g=sh?.grade||'',high=/homer|grand/.test(g),deep=/extra/.test(g);
+              bx=tx+u*(high?z.w*2.6:deep?z.w*2.2:z.w*1.6);by=ty-u*(high?z.h*2.2:deep?z.h*.9:z.h*.25)+(high?0:u*u*z.h*.5);r=unit*2.5*(1-u*.6);}
+            else{bx=tx-u*z.w*.35;by=ty+u*z.h*.12;r=unit*2.5*(1+u*.3);}
+          }
+          if(a>0){
+            trail.unshift({x:bx,y:by,r});trail=trail.slice(0,7);
+            trail.forEach((q,i)=>{if(i)ball.circle(q.x,q.y,q.r*(1-i*.1)).fill({color:hit&&k>1?0xffe08a:0xffffff,alpha:a*(.32-i*.045)});});
+            ball.circle(bx,by,r+1.5).fill({color:0x07080d,alpha:.6*a});
+            ball.circle(bx,by,r).fill({color:0xffffff,alpha:a});
+            ball.rect(bx-r*.5,by-r*.15,r*.5,Math.max(1,r*.3)).fill({color:0xd23a3a,alpha:.8*a});
+          }
+        } else trail=[];
+        if(host)host.dataset.ball=trail.length?'1':'0';
         for(const d of [...dust.children]){d.x+=d.vx;d.y+=d.vy;d.vy+=.25;d.life-=.03;d.alpha=Math.max(0,d.life);if(d.life<=0){dust.removeChild(d);dustPool.push(d);}}
       });
     })().catch(()=>{onReady?.(null);});
