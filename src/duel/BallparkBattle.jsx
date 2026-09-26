@@ -27,6 +27,7 @@ function callOf(r,shot){
   return '';
 }
 const LANDED=new Set(['impact','slowmo','release','settle']);
+const lessonZoneName=z=>z===9?'존 밖':ZONE_WORDS[z]||'코스';
 
 
 /* the glyph already draws the coverage; the face keeps only what it adds (정확 적중 HP +50% …) */
@@ -139,7 +140,7 @@ export default function BallparkBattle({
   const lessonPhase=deciding?'plan':inFx?'watch':judged?'review':'plan';
   const lessonCombat=s.v10?.lastCombat||null;
   const currentPlanCards=selected?[mainName,...stack.map(x=>CARDS[byId(x.id)?.entry?.kind]?.name||'지원')].filter(Boolean):[];
-  const currentPlanZones=selected&&!mainIsSkill?[v10ZoneName(b.aimZone),...stack.map(x=>v10ZoneName(x.aimZone))]:[];
+  const currentPlanZones=selected&&!mainIsSkill?[lessonZoneName(b.aimZone),...stack.map(x=>lessonZoneName(x.aimZone))]:[];
   const lessonCards=lessonPhase==='plan'?currentPlanCards:(autoPlan?.cards||[]);
   const lessonZones=lessonPhase==='plan'?currentPlanZones:(autoPlan?.zones||[]);
   const watchBeat={windup:'투수가 시작한다',impact:'빌드가 부딪힌다',slowmo:'판정 순간',release:'결과가 전개된다',settle:'마무리'}[fxStage]||'자동 실행 중';
