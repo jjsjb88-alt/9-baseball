@@ -9,6 +9,7 @@ description: 9ZONE 리뷰 에이전트 — ag/ 브랜치 diff를 금지 목록 X
 3. X1~X12를 하나씩 판정한다. 새로 호출된 함수·클래스는 grep으로 실제 존재를 확인한다.
 4. 삭제된 줄 중 사라진 기능·테스트가 있는지 따로 본다.
 5. PR 본문 초안의 영향도 9축이 실제 diff와 맞는지 본다 (영향 없음이라 했는데 해당 파일을 건드렸는지).
+5-b. 화면 변경이면 §11.2 판정도 한다: `work/compare/*.png`만 보고 `judgement.json`을 채운다. `.key.json`과 diff는 판정이 끝날 때까지 보지 않는다. 그 뒤 `node scripts/compare-shots.mjs --reveal`.
 6. 결과를 구현 에이전트에게 넘기고 이 역할을 끝낸다.
 
 ```

@@ -195,6 +195,7 @@ GitHub 저장소 설정 권장 (사용자가 직접): Settings → Branches → 
 - 브랜치 / PR: ag/... / #번호 (Draft|Ready)
 - 바꾼 것: <한두 줄>
 - 검증: test <통과 N개|실패> · build <성공|실패> · smoke <성공|실패> · 스크린샷 <3뷰포트|일부|못 함>
+- 품질: <before 평균> → <after 평균> (IMPROVED|NOT_IMPROVED) · 가장 약한 축 <R?> (화면 변경 없으면 "해당 없음")
 - 못 한 것 / 위험: <없으면 "없음">
 - 프리뷰: <URL> (Vercel 체크 성공 | 실패 | 대기)
 - 다음: <다음 QUEUE 항목 | 큐 비어 있음 → 루프 종료>
@@ -238,7 +239,9 @@ docs/ANTIGRAVITY-LOOP.md 를 읽고 너는 §8.1의 구현 에이전트다. /ag-
 - 나에게 묻지 말고 진행해. 막히면 §5대로 안전한 쪽으로 결정하고 PR에 기록한 뒤 다음 항목으로.
 - main 에는 절대 push/merge 하지 마. PR도 머지·승인하지 마. ag/ 브랜치 + PR + Vercel 프리뷰 URL 까지만.
 - 각 항목의 검증·리뷰는 §8.1대로 검증/리뷰 에이전트를 직접 띄워서 (안 되면 역할을 바꿔서) 통과시켜.
-- 항목마다 §7 형식으로 한국어 보고를 남기고, 큐가 비면 전체 요약(항목·PR·프리뷰 URL 목록)으로 끝내.
+- 화면이 바뀌는 항목은 §11대로 전/후 스크린샷을 기준 이미지와 블라인드 비교해서 IMPROVED일 때만 Ready PR로 올려.
+- 큐가 비어도 품질이 BAR_MET이 아니면 §11.4대로 가장 약한 축을 개선하는 [auto] 항목을 만들어 계속해. BAR_MET이거나 연속 3번 개선 실패면 멈춰.
+- 항목마다 §7 형식으로 한국어 보고를 남기고, 끝나면 전체 요약(항목·PR·프리뷰 URL·품질 점수 추이)으로 끝내.
 ```
 
 ---
@@ -261,3 +264,44 @@ UI 그림(말풍선·버튼·카드 틀 …)이 필요한 QUEUE 항목은 이 �
 5. 이후는 §3 ⑥부터 동일 (테스트·빌드·qa-shots·검증·리뷰·PR·프리뷰). PR 본문에 preview 시트와 report 요약을 붙인다.
 
 에셋 PNG는 새 이미지 추가이지만 **이 흐름과 검사를 통과한 것만** X10 예외로 허용한다.
+
+---
+
+## 11. 품질 루프 — 상업 레퍼런스 수준이 될 때까지, 실제로 나아졌는지 증명하며
+
+기준: [`docs/art/QUALITY-BAR.md`](art/QUALITY-BAR.md) (8축, 기준 이미지 = 5점, 목표 평균 4.3·모든 축 4 이상).
+**화면에 보이는 변경이 있는 모든 항목**은 PR을 Ready로 올리기 전에 아래 증명을 통과해야 한다.
+
+### 11.1 전/후 스크린샷
+```bash
+# before = main
+git worktree add ../ag-before origin/main && (cd ../ag-before && ln -s ../9-baseball/node_modules node_modules)
+(cd ../ag-before && npx vite --port 5198 &) ; node scripts/qa-shots.mjs --url http://localhost:5198 --out work/qa-before
+# after = 이 브랜치
+(npx vite --port 5199 &) ; node scripts/qa-shots.mjs --url http://localhost:5199 --out work/qa-after
+node scripts/compare-shots.mjs --before work/qa-before --after work/qa-after
+```
+→ `work/compare/*.png` = **[기준 | A | B]**, A/B 순서 무작위, 정답은 `work/compare/.key.json`에 숨김.
+
+### 11.2 블라인드 판정 — 구현 에이전트가 하지 않는다
+- **리뷰 에이전트**(또는 새로 띄운 판정 에이전트)가 시트를 보고 `work/compare/judgement.json`의 모든 시트·8축에 A, B 점수(1~5)를 적는다.
+- `.key.json`을 **열지 않는다.** 코드·diff도 보지 않고 **그림만** 보고 판정한다.
+- 다른 에이전트를 띄울 수 없으면: 구현 에이전트가 판정하되 PR에 "자기 판정(블라인드 약함)"이라고 표시한다.
+- 다 적은 뒤 `node scripts/compare-shots.mjs --reveal` → 축별 before/after, **IMPROVED / NOT_IMPROVED**, BAR 여부가 나오고 `docs/art/QUALITY-LOG.md`에 한 줄 기록된다.
+
+### 11.3 판정에 따른 행동
+| 결과 | 행동 |
+| --- | --- |
+| IMPROVED | Ready PR. 본문에 폰 세로 시트 3장(`work/compare/phone-portrait-*.png`)을 `docs/art/quality/<브랜치>/`에 넣어 커밋·링크, reveal 출력 붙이기 |
+| NOT_IMPROVED | Ready 금지. 가장 많이 떨어진 축을 고쳐 11.1부터 다시 (**최대 3회**). 그래도 안 되면 Draft PR + "개선 증명 실패" + 판정 기록, 항목 `[!]` |
+| 기능 항목인데 점수가 떨어짐 (어떤 축이든 −1 초과) | 기능이 맞아도 Ready 금지. 화면 회귀부터 고친다 |
+
+### 11.4 품질 목표 루프 (큐가 비어도 계속)
+- QUEUE가 비었고 QUALITY-LOG 마지막 결과가 **BAR_MET이 아니면**, 새 일을 지어내지 말라는 §3 ①의 예외로 **`[auto]` 항목을 스스로 하나 만든다**:
+  - 대상은 reveal이 알려준 **가장 약한 축** 하나.
+  - 범위는 UI 에셋(§10), `ballpark.css`, 표시 컴포넌트(`Ballpark*.jsx`)만. 게임 규칙·수치·저장·전역 CSS는 금지(X7~X9 그대로).
+  - QUEUE에 `- [ ] [auto] <축>: <무엇을>` 으로 적고 일반 항목처럼 진행.
+- **멈춤 조건**
+  - BAR_MET → "기준 도달" 보고 후 종료.
+  - **연속 3개 항목이 NOT_IMPROVED** (정체) → 종료. 보고에 "무엇이 막고 있는지"를 적는다. 대개 UI 코드로는 못 넘는 부분이다: 캐릭터·배경 그림 자체, 동료 캐릭터 같은 기획. 필요한 그림 명세(§10 형식)와 기획 결정 목록을 남긴다.
+- 매 항목 보고(§7)에 `품질: before → after (IMPROVED|NOT_IMPROVED) · 가장 약한 축` 한 줄을 추가한다.
