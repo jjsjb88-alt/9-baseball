@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
-import {pathToFileURL} from 'node:url';
 import {validateSpriteGenManifest} from '../../src/duel/spriteGenAtlas.js';
 
 function fail(message){
