@@ -46,6 +46,47 @@
 .bp-whisper{position:absolute;right:14px;top:28%;margin:0;max-width:40%;padding:5px 9px;border-radius:2px;background:#07080dcc;text-align:right;font:italic 400 15px/1.3 var(--bp-ko);color:var(--bp-bone);z-index:2}
 .bp-whisper::before{content:none}
 
+
+/* Strategy -> autobattle tutorial. Only the explicit sandbox gets this layer. */
+.bp-battle.auto-lesson .bp-auto-lesson{
+  position:absolute;left:2%;top:2%;z-index:9;width:min(38%,210px);display:grid;gap:7px;
+  padding:9px 10px;border:1px solid #ece4cf55;border-radius:2px;background:#07080dea;
+  box-shadow:0 8px 28px #0009;pointer-events:none;
+}
+.bp-auto-lesson header{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.bp-auto-lesson header span{font:400 9px/1 var(--bp-led);letter-spacing:.12em;color:var(--bp-sodium)}
+.bp-auto-lesson header button{pointer-events:auto;appearance:none;border:0;border-bottom:1px solid #ece4cf66;background:none;padding:2px 0;font:400 10px/1 var(--bp-ko)!important;color:var(--bp-bone-dim)!important;cursor:pointer}
+.bp-auto-lesson ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.bp-auto-lesson li{display:flex;align-items:center;gap:4px;min-width:0;padding:4px 5px;border:1px solid #2a3152;background:#0d1122;color:#7b84a6;font-size:10px;line-height:1}
+.bp-auto-lesson li b{display:grid;place-items:center;width:14px;height:14px;border:1px solid currentColor;font:400 8px/1 var(--bp-led)}
+.bp-auto-lesson li span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bp-auto-lesson li.on{border-color:var(--bp-sodium);color:var(--bp-bone);background:#33270f}
+.bp-auto-copy{display:grid;gap:2px}
+.bp-auto-copy strong{font:400 14px/1.15 var(--bp-impact);color:var(--bp-bone)}
+.bp-auto-copy small{font:400 11px/1.3 var(--bp-ko);color:var(--bp-bone-dim)}
+.bp-auto-lesson.watch{border-color:var(--bp-sodium);box-shadow:0 0 0 1px #ffc86144,0 8px 28px #0009}
+.bp-auto-lesson.watch .bp-auto-copy strong{color:var(--bp-sodium)}
+.bp-auto-lesson.review{border-color:#9fb4ff88}
+.bp-auto-plan{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.bp-auto-plan span{display:inline-flex;align-items:center;gap:4px;max-width:100%;padding:3px 5px;border:1px solid #ece4cf44;background:#141a33;font-size:10px;line-height:1.1}
+.bp-auto-plan span b{font:400 8px/1 var(--bp-led);color:var(--bp-sodium)}
+.bp-auto-plan span em{font-style:normal;color:#9fb4ff}
+.bp-auto-plan>i{font:400 9px/1 var(--bp-led);font-style:normal;color:var(--bp-slate)}
+.bp-battle.auto-lesson.resolving .bp-hand{opacity:.2}
+.bp-battle.auto-lesson.resolving .bp-verbs{opacity:.35}
+@media (orientation:landscape){
+  .bp-battle.auto-lesson .bp-auto-lesson{left:23%;top:2%;width:min(31%,290px);padding:7px 9px;gap:5px}
+  .bp-auto-copy small{font-size:10px}
+}
+@media (orientation:landscape) and (max-height:430px){
+  .bp-battle.auto-lesson .bp-auto-lesson{left:22%;width:30%;padding:5px 7px;gap:4px}
+  .bp-auto-lesson header span,.bp-auto-lesson header button{font-size:8px!important}
+  .bp-auto-lesson li{padding:3px;font-size:9px}
+  .bp-auto-copy strong{font-size:12px}
+  .bp-auto-copy small{display:none}
+  .bp-auto-plan{display:none}
+}
+
 /* the 9ZONE: a broadcast strike zone in the scene */
 .bp-zone{position:absolute;left:38%;top:44%;width:56%;height:46%;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);border:2px solid #fff;box-shadow:0 0 0 1px #0009,0 2px 10px #0006;background:#07080d33;z-index:3}
 .bp-cell{position:relative;appearance:none;border:1px solid #ffffff66;border-radius:0;padding:0;cursor:pointer;background:rgba(255,200,97,calc(var(--heat,0)*.16));transition:background .12s,box-shadow .12s}
