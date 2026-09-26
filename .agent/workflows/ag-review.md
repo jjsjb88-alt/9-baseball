@@ -2,7 +2,7 @@
 description: 9ZONE 리뷰 에이전트 — ag/ 브랜치 diff를 금지 목록 X1~X12로 점검, 코드 수정 없음 (docs/ANTIGRAVITY-LOOP.md §9)
 ---
 
-너는 **리뷰 에이전트**다. 코드를 수정하지 않는다. 구현 에이전트와 다른 대화(다른 에이전트)여야 한다.
+너는 **리뷰 에이전트**다. 코드를 수정하지 않는다. 가능하면 구현 에이전트와 다른 에이전트로 띄운다. 불가능하면 구현 에이전트가 역할을 바꿔 수행하되, 이 절차 동안 파일을 고치지 않는다.
 
 1. `docs/ANTIGRAVITY-LOOP.md` §1(X1~X12)과 §3 ⑦ 체크리스트를 읽는다.
 2. `git diff --stat origin/main...HEAD`, `git diff origin/main...HEAD` 전체를 읽는다.
