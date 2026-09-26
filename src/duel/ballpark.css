@@ -73,6 +73,45 @@
 .bp-auto-plan span b{font:400 8px/1 var(--bp-led);color:var(--bp-sodium)}
 .bp-auto-plan span em{font-style:normal;color:#9fb4ff}
 .bp-auto-plan>i{font:400 9px/1 var(--bp-led);font-style:normal;color:var(--bp-slate)}
+
+/* BP-13 — stack COMMIT beat. Only multi-card plans pause here; solo swings remain immediate.
+   This is the dramatic hinge between strategy input and the PixiJS autoplay payoff. */
+.bp-commit{position:absolute;left:50%;top:10%;z-index:12;width:min(88%,430px);transform:translateX(-50%);
+  display:grid;gap:7px;padding:11px 12px 12px;border:1px solid var(--bp-sodium);border-radius:2px;
+  background:#07080df2;box-shadow:0 0 0 1px #ffc86133,0 18px 44px #000b;pointer-events:none;
+  animation:bp-commit-in 720ms cubic-bezier(.2,.85,.25,1) both}
+.bp-commit-kicker{font:400 9px/1 var(--bp-led);letter-spacing:.15em;color:var(--bp-sodium)}
+.bp-commit>strong{font:400 clamp(17px,4.5vw,24px)/1.05 var(--bp-impact);color:var(--bp-bone)}
+.bp-commit-cards{display:flex;gap:4px;flex-wrap:wrap}
+.bp-commit-cards>span{display:inline-flex;align-items:center;gap:4px;padding:4px 6px;border:1px solid #ece4cf44;background:#141a33;font:400 10px/1.1 var(--bp-ko);color:var(--bp-bone)}
+.bp-commit-cards b{display:grid;place-items:center;width:15px;height:15px;border:1px solid var(--bp-sodium);font:400 8px/1 var(--bp-led);color:var(--bp-sodium)}
+.bp-commit-cards em{font-style:normal;color:#9fb4ff}
+.bp-commit-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.bp-commit-stats>span{display:grid;gap:2px;padding:5px 6px;border-top:1px solid var(--bp-line);background:#0d1122}
+.bp-commit-stats small{font:400 8px/1 var(--bp-led);letter-spacing:.08em;color:var(--bp-slate)}
+.bp-commit-stats b{font:400 14px/1 var(--bp-impact);color:var(--bp-bone)}
+.bp-battle.committing .bp-zone{filter:saturate(.75) brightness(.78)}
+.bp-battle.committing .bp-pitcher,.bp-battle.committing .bp-batter{filter:brightness(.82)}
+.bp-battle.committing .bp-verbs{opacity:.28;pointer-events:none}
+@keyframes bp-commit-in{
+  0%{opacity:0;transform:translateX(-50%) scale(.92)}
+  18%{opacity:1;transform:translateX(-50%) scale(1.02)}
+  72%{opacity:1;transform:translateX(-50%) scale(1)}
+  100%{opacity:0;transform:translateX(-50%) scale(.98)}
+}
+@media (orientation:portrait) and (max-width:430px){
+  .bp-commit{top:7%;width:92%;gap:6px;padding:9px 10px}
+  .bp-commit>strong{font-size:18px}
+  .bp-commit-cards>span{font-size:9px;padding:3px 5px}
+  .bp-commit-stats b{font-size:12px}
+}
+@media (orientation:landscape) and (max-height:500px){
+  .bp-commit{top:3%;width:min(56%,520px);gap:4px;padding:6px 8px}
+  .bp-commit>strong{font-size:15px}
+  .bp-commit-cards{display:none}
+  .bp-commit-stats>span{padding:3px 5px}
+  .bp-commit-stats b{font-size:11px}
+}
 .bp-battle.auto-lesson.resolving .bp-hand{opacity:.2}
 .bp-battle.auto-lesson.resolving .bp-verbs{opacity:.35}
 @media (orientation:landscape){
