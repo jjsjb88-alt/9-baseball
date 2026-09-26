@@ -92,6 +92,9 @@ describe('V13 BALLPARK battle',()=>{
     act(()=>{vi.advanceTimersByTime(719)});
     expect(readV10Duel(localStorage).stats.pitches).toBe(before);
     act(()=>{vi.advanceTimersByTime(1)});
+    // the beat hands over to the app's STACK resolve (App.act → stackResolveDuration), which persists the pitch
+    expect(screen.queryByTestId('bp-commit')).toBeNull();
+    act(()=>{vi.advanceTimersByTime(5000)});
     expect(readV10Duel(localStorage).stats.pitches).toBe(before+1);
     vi.useRealTimers();
   });
