@@ -73,6 +73,45 @@
 .bp-auto-plan span b{font:400 8px/1 var(--bp-led);color:var(--bp-sodium)}
 .bp-auto-plan span em{font-style:normal;color:#9fb4ff}
 .bp-auto-plan>i{font:400 9px/1 var(--bp-led);font-style:normal;color:var(--bp-slate)}
+
+/* BP-13 — stack COMMIT beat. Only multi-card plans pause here; solo swings remain immediate.
+   This is the dramatic hinge between strategy input and the PixiJS autoplay payoff. */
+.bp-commit{position:absolute;left:50%;top:10%;z-index:12;width:min(88%,430px);transform:translateX(-50%);
+  display:grid;gap:7px;padding:11px 12px 12px;border:1px solid var(--bp-sodium);border-radius:2px;
+  background:#07080df2;box-shadow:0 0 0 1px #ffc86133,0 18px 44px #000b;pointer-events:none;
+  animation:bp-commit-in 720ms cubic-bezier(.2,.85,.25,1) both}
+.bp-commit-kicker{font:400 9px/1 var(--bp-led);letter-spacing:.15em;color:var(--bp-sodium)}
+.bp-commit>strong{font:400 clamp(17px,4.5vw,24px)/1.05 var(--bp-impact);color:var(--bp-bone)}
+.bp-commit-cards{display:flex;gap:4px;flex-wrap:wrap}
+.bp-commit-cards>span{display:inline-flex;align-items:center;gap:4px;padding:4px 6px;border:1px solid #ece4cf44;background:#141a33;font:400 10px/1.1 var(--bp-ko);color:var(--bp-bone)}
+.bp-commit-cards b{display:grid;place-items:center;width:15px;height:15px;border:1px solid var(--bp-sodium);font:400 8px/1 var(--bp-led);color:var(--bp-sodium)}
+.bp-commit-cards em{font-style:normal;color:#9fb4ff}
+.bp-commit-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.bp-commit-stats>span{display:grid;gap:2px;padding:5px 6px;border-top:1px solid var(--bp-line);background:#0d1122}
+.bp-commit-stats small{font:400 8px/1 var(--bp-led);letter-spacing:.08em;color:var(--bp-slate)}
+.bp-commit-stats b{font:400 14px/1 var(--bp-impact);color:var(--bp-bone)}
+.bp-battle.committing .bp-zone{filter:saturate(.75) brightness(.78)}
+.bp-battle.committing .bp-pitcher,.bp-battle.committing .bp-batter{filter:brightness(.82)}
+.bp-battle.committing .bp-verbs{opacity:.28;pointer-events:none}
+@keyframes bp-commit-in{
+  0%{opacity:0;transform:translateX(-50%) scale(.92)}
+  18%{opacity:1;transform:translateX(-50%) scale(1.02)}
+  72%{opacity:1;transform:translateX(-50%) scale(1)}
+  100%{opacity:0;transform:translateX(-50%) scale(.98)}
+}
+@media (orientation:portrait) and (max-width:430px){
+  .bp-commit{top:7%;width:92%;gap:6px;padding:9px 10px}
+  .bp-commit>strong{font-size:18px}
+  .bp-commit-cards>span{font-size:9px;padding:3px 5px}
+  .bp-commit-stats b{font-size:12px}
+}
+@media (orientation:landscape) and (max-height:500px){
+  .bp-commit{top:3%;width:min(56%,520px);gap:4px;padding:6px 8px}
+  .bp-commit>strong{font-size:15px}
+  .bp-commit-cards{display:none}
+  .bp-commit-stats>span{padding:3px 5px}
+  .bp-commit-stats b{font-size:11px}
+}
 .bp-battle.auto-lesson.resolving .bp-hand{opacity:.2}
 .bp-battle.auto-lesson.resolving .bp-verbs{opacity:.35}
 @media (orientation:landscape){
@@ -118,6 +157,27 @@
 /* letterbox: coach, hand, verbs */
 .bp-coach{margin:0;padding:12px 16px 0;font:italic 400 15px/1.4 var(--bp-ko);color:var(--bp-bone-dim);min-height:1.4em}
 .bp-hand{display:flex;gap:8px;overflow-x:auto;padding:18px 16px 8px;scrollbar-width:none;align-items:flex-start}
+
+/* BP-12 — close the strategy loop after Pixi resolves the pitch.
+   The disabled hand used to linger here, so the result looked finished but taught nothing.
+   Replace it with one compact causal chain: what I committed → what arrived → what to change. */
+.bp-debrief{display:grid;grid-template-columns:minmax(0,.9fr) auto minmax(0,.72fr) auto minmax(0,1.45fr);gap:7px;align-items:stretch;margin:0;padding:10px 16px 8px;background:#07080d}
+.bp-debrief>i{align-self:center;font-style:normal;font:400 11px/1 var(--bp-led);color:#505a78}
+.bp-dstep{min-width:0;display:grid;align-content:start;gap:3px;padding:8px 9px;border:1px solid var(--bp-line);border-radius:2px;background:#0d1122}
+.bp-dstep>span{font:400 9px/1 var(--bp-led);letter-spacing:.12em;color:var(--bp-slate)}
+.bp-dstep>strong{font:400 14px/1.2 var(--bp-impact);color:var(--bp-bone)}
+.bp-dstep>small{font:400 11px/1.3 var(--bp-ko);color:var(--bp-bone-dim)}
+.bp-dstep.actual{text-align:center;background:#11162a}
+.bp-dstep.actual>strong{color:var(--bp-sodium)}
+.bp-debrief.tone-success .bp-dstep.next{border-color:#557f69}.bp-debrief.tone-success .bp-dstep.next>strong{color:#b7e6ca}
+.bp-debrief.tone-warn .bp-dstep.next{border-color:#7d6a3d}.bp-debrief.tone-warn .bp-dstep.next>strong{color:#efd18a}
+.bp-debrief.tone-danger .bp-dstep.next{border-color:#80504b}.bp-debrief.tone-danger .bp-dstep.next>strong{color:#e7a097}
+@media (orientation:portrait) and (max-width:430px){
+  .bp-debrief{grid-template-columns:1fr auto 1fr;grid-template-areas:"plan arrow actual" "next next next";gap:5px;padding:9px 12px 7px}
+  .bp-dstep.plan{grid-area:plan}.bp-dstep.actual{grid-area:actual}.bp-dstep.next{grid-area:next}
+  .bp-debrief>i:first-of-type{grid-area:arrow}.bp-debrief>i:last-of-type{display:none}
+  .bp-dstep{padding:7px}.bp-dstep>strong{font-size:13px}.bp-dstep>small{font-size:10px}
+}
 .bp-card{position:relative;flex:0 0 108px;display:grid;gap:6px;align-content:start;text-align:left;padding:10px;border:1px solid var(--bp-line);border-radius:3px;background:#0d1122;cursor:pointer;transition:transform .15s,border-color .15s}
 .bp-card strong{font:400 15px/1.2 var(--bp-impact)}
 .bp-card strong sup{color:var(--bp-sodium);font-size:11px}
@@ -174,12 +234,14 @@
   .bp-bases{left:auto;right:22px;top:14px}
   .bp-coach{padding-top:8px}
   .bp-hand{padding:14px 16px 12px}
+  .bp-debrief{padding:8px 16px 10px}
 }
 @media (orientation:landscape) and (max-height:500px){
   .bp-bar{padding:4px 12px}
   .bp-piles button{min-height:26px;padding:4px 6px}
   .bp-coach{font-size:13px;padding-top:4px}
   .bp-hand{padding:10px 12px 8px;gap:6px}
+  .bp-debrief{padding:5px 12px 6px;gap:4px}.bp-dstep{padding:5px 6px}.bp-dstep>strong{font-size:12px}.bp-dstep>small{font-size:9px}
   .bp-card{flex-basis:96px;padding:7px;gap:4px}
   .bp-card span{display:none}
   .bp-token-card{flex-basis:70px}
