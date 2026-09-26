@@ -92,5 +92,5 @@
 
 ## 7. 안티그래비티(Antigravity) 에이전트
 
-안티그래비티는 `main`에 직접 push·merge하지 않는다. `ag/` 브랜치 + Draft PR까지만 하고 멈춘다.
-작업 절차·금지 목록·멈춤 조건은 [`docs/ANTIGRAVITY-LOOP.md`](docs/ANTIGRAVITY-LOOP.md), 작업 목록은 `docs/antigravity/QUEUE.md`.
+안티그래비티는 `main`에 직접 push·merge하지 않는다. 항목마다 `ag/` 브랜치 + PR + Vercel 프리뷰까지만 하고, 사용자에게 묻지 않고 다음 항목으로 넘어간다.
+작업 절차·금지 목록·막힘 처리는 [`docs/ANTIGRAVITY-LOOP.md`](docs/ANTIGRAVITY-LOOP.md), 작업 목록은 `docs/antigravity/QUEUE.md`.
