@@ -30,3 +30,9 @@ export function redRushBatterShot(shot,reduced=false){
   if(!hasPitchVisual(shot)||reduced)return shot;
   return {...shot,motion:{...redRushTimeline(shot.motion),syncToPitcher:true}};
 }
+/* BP-11: the pitch that knocks her out holds the scene a beat longer, so the collapse lands before
+   the reward screen takes over. Only the tail (settle) grows; impact/release timing is unchanged. */
+export const KNOCKOUT_HOLD_MS=700;
+export function withKnockoutHold(timeline,knockedOut){
+  return knockedOut&&timeline?{...timeline,duration:timeline.duration+KNOCKOUT_HOLD_MS}:timeline;
+}

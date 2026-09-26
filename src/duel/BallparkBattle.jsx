@@ -212,7 +212,7 @@ export default function BallparkBattle({
           {autoPlan?.coverage>0&&lessonPhase!=='plan'&&<i>{autoPlan.coverage}존 커버</i>}
         </div>}
       </aside>}
-      {canPixi&&<BallparkActors sceneRef={sceneRef} pitcherAtlas={pitcherAtlas} artId={artId} batterPoses={batterPoses} pitchZone={judged?r.zone:null} shot={shot} fxStage={fxStage} playToken={playToken} onReady={setPixi}/>}
+      {canPixi&&<BallparkActors sceneRef={sceneRef} pitcherAtlas={pitcherAtlas} artId={artId} batterPoses={batterPoses} pitchZone={judged?r.zone:null} shot={shot} fxStage={fxStage} playToken={playToken} knockedOut={judged&&(pitcher?.hp??1)===0} onReady={setPixi}/>}
       <div className="bp-pitcher bp-cam" ref={pitcherRef} aria-hidden="true">{pitcherArt}</div>
       <div className="bp-pcol">
       <div className="bp-ptag" aria-label={`${pitcher?.name} 투수 HP ${pitcher?.hp} / ${pitcher?.maxHp}`}>

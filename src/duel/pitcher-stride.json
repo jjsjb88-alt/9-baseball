@@ -1,0 +1,62 @@
+{
+ "regular-01-red-rush": [
+  52,
+  0.031,
+  0.938
+ ],
+ "boss-01-emerald-tyrant": [
+  51,
+  0.109,
+  0.949
+ ],
+ "boss-02-platinum-halo": [
+  51,
+  0.098,
+  0.953
+ ],
+ "boss-03-black-eclipse": [
+  51,
+  0.047,
+  0.949
+ ],
+ "elite-01-cobalt-impact": [
+  51,
+  0.051,
+  0.957
+ ],
+ "elite-02-neon-trick": [
+  51,
+  0.07,
+  0.961
+ ],
+ "elite-03-wine-bluff": [
+  51,
+  0.055,
+  0.949
+ ],
+ "regular-02-teal-mirage": [
+  51,
+  0.047,
+  0.953
+ ],
+ "regular-03-amber-sinker": [
+  51,
+  0.078,
+  0.957
+ ],
+ "regular-04-ivory-ace": [
+  51,
+  0.082,
+  0.953
+ ],
+ "regular-05-violet-sting": [
+  51,
+  0.051,
+  0.949
+ ],
+ "regular-06-rose-paint": [
+  51,
+  0.066,
+  0.953
+ ]
+}

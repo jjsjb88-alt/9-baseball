@@ -1,7 +1,8 @@
 import React,{useEffect,useRef} from 'react';
 import {batterMotionV3Timeline,BATTER_MOTION_V3_HIT_GRADES} from './batterMotionV3.js';
-import {redRushBatterShot,redRushFrameAt,hasPitchVisual,RED_RUSH_RELEASE_MS} from './pitcher-sd.js';
+import {redRushBatterShot,redRushFrameAt,hasPitchVisual,RED_RUSH_RELEASE_MS,RED_RUSH_RELEASE_FRAME as RELEASE_FRAME} from './pitcher-sd.js';
 import RELEASE from './pitcher-release.json';
+import STRIDE from './pitcher-stride.json';
 
 /* V13 C2 — the batter and the pitcher drawn by PixiJS (WebGL) over the CSS stadium.
    The art is the repository's: the pitcher's 120-frame atlas and the batter's ten authored key poses.
@@ -10,7 +11,9 @@ import RELEASE from './pitcher-release.json';
      portrait/landscape layout is kept, and share one ground shadow and one idle breath;
    - the pitch runs on one clock: pitcher frame = redRushFrameAt(t), batter pose = the V3 timeline;
    - the fast part of the swing gets an on-twos smear (the previous pose, fading) and a bat arc;
-   - contact holds both actors (hit-stop), flashes the batter and kicks dirt at his front foot.
+   - contact holds both actors (hit-stop), flashes the batter and kicks dirt at his front foot;
+   - the pitcher (BP-11): dirt where her front foot lands, an arm whip (two fading frames + a swoosh
+     from behind her head to the hand) and a glint at release, and a collapse when she is knocked out.
    Without WebGL (old devices, the test DOM) nothing mounts and the DOM actors stay visible. */
 
 export function pixiAvailable(){
@@ -26,10 +29,12 @@ export const SLOW_RATE=.35,CATCH_RATE=2;
    art pixels 3 screen pixels wide and others 4) */
 const crisp=(sc,dpr)=>sc*dpr>=2?Math.max(1,Math.floor(sc*dpr))/dpr:sc;
 const IDLE_BREATH_MS=2600;
+/* pitcher effects (BP-11): the whip runs from WHIP_FROM frames before release to WHIP_TO after */
+export const WHIP_FROM=8,WHIP_TO=3,KO_DELAY_MS=120,KO_FALL_MS=380;
 
-export default function BallparkActors({sceneRef,pitcherAtlas,artId=null,batterPoses,shot,fxStage,playToken,pitchZone=null,onReady}){
+export default function BallparkActors({sceneRef,pitcherAtlas,artId=null,batterPoses,shot,fxStage,playToken,pitchZone=null,knockedOut=false,onReady}){
   const hostRef=useRef(null),live=useRef({});
-  live.current={shot,fxStage,playToken,pitchZone,artId};
+  live.current={shot,fxStage,playToken,pitchZone,artId,knockedOut};
 
   useEffect(()=>{
     if(!pixiAvailable())return;
@@ -60,8 +65,10 @@ export default function BallparkActors({sceneRef,pitcherAtlas,artId=null,batterP
       /* scene graph: shadows, smear ghosts, actors, arc, flash, dust */
       const world=new PIXI.Container();app.stage.addChild(world);
       const shadows=new PIXI.Graphics();world.addChild(shadows);
+      const pGhosts=pitchFrames?[0,1].map(()=>{const g=new PIXI.Sprite(pitchFrames[0]);g.anchor.set(.5,1);g.alpha=0;g.blendMode='add';world.addChild(g);return g;}):[];
       const pitcher=pitchFrames?new PIXI.Sprite(pitchFrames[0]):null;
       if(pitcher){pitcher.anchor.set(.5,1);world.addChild(pitcher);}
+      const whip=new PIXI.Graphics();world.addChild(whip);
       const ghosts=[0,1].map(()=>{const g=new PIXI.Sprite(poseTex.ready);g.anchor.set(.5,1);g.alpha=0;world.addChild(g);return g;});
       const batter=new PIXI.Sprite(poseTex.ready);batter.anchor.set(.5,1);world.addChild(batter);
       const flash=new PIXI.Sprite(poseTex.ready);flash.anchor.set(.5,1);flash.blendMode='add';flash.alpha=0;world.addChild(flash);
@@ -93,7 +100,7 @@ export default function BallparkActors({sceneRef,pitcherAtlas,artId=null,batterP
       };
 
       /* one clock per pitch */
-      let token=null,start=0,timeline=[{pose:'ready',at:0}],swing=false,hit=false,impactAt=0,stopUntil=0,stopAt=0,vclock=0,lastNow=0,debt=0,rate=1,dusted={},prevPose='ready',prevPoses=[];
+      let token=null,start=0,timeline=[{pose:'ready',at:0}],swing=false,hit=false,impactAt=0,stopUntil=0,stopAt=0,vclock=0,lastNow=0,debt=0,rate=1,koFrame=null,dusted={},prevPose='ready',prevPoses=[];
       const begin=now=>{
         const {shot:sh}=live.current;
         const eff=sh&&pitchFrames?redRushBatterShot(sh,reduced):sh;
@@ -101,7 +108,7 @@ export default function BallparkActors({sceneRef,pitcherAtlas,artId=null,batterP
         swing=timeline.some(k=>k.pose==='swing-mid');
         hit=swing&&BATTER_MOTION_V3_HIT_GRADES.has(sh?.grade);
         impactAt=timeline.find(k=>k.pose==='contact')?.at??timeline.find(k=>k.pose==='follow-through-early')?.at??0;
-        start=now;vclock=0;lastNow=now;debt=0;stopUntil=0;stopAt=0;dusted={};prevPoses=[];shownIndex=0;trail=[];measure();
+        start=now;vclock=0;lastNow=now;debt=0;koFrame=null;stopUntil=0;stopAt=0;dusted={};prevPoses=[];shownIndex=0;trail=[];measure();
       };
       /* a key pose is never skipped: on a slow frame the timeline may jump two poses, but the screen
          advances one authored pose per rendered frame, so every silhouette is seen */
@@ -131,12 +138,50 @@ export default function BallparkActors({sceneRef,pitcherAtlas,artId=null,batterP
         const breath=reduced?0:Math.sin(now/IDLE_BREATH_MS*Math.PI*2);
         shadows.clear();
 
+        whip.clear();
         if(pitcher&&p){
-          pitcher.texture=pitchFrames[active?redRushFrameAt(t):0];
+          const fi=active?redRushFrameAt(t):0,{artId:aid0,knockedOut:ko}=live.current;
+          pitcher.texture=pitchFrames[fi];
           const sc=crisp(p.h/pitcher.texture.height,app.renderer.resolution);
+          const px=p.x+p.w/2,py=p.y+p.h,tw=pitcher.texture.width*sc,th=pitcher.texture.height*sc;
           pitcher.scale.set(sc,sc*(active?1:1+breath*.008));
-          pitcher.position.set(p.x+p.w/2,p.y+p.h);
-          shadows.ellipse(p.x+p.w/2,p.y+p.h-p.h*.03,p.w*.26,p.h*.035).fill({color:0x000000,alpha:.35});
+          pitcher.position.set(px,py);pitcher.rotation=0;pitcher.alpha=1;pitcher.tint=0xffffff;
+          let shadowW=p.w*.26;
+          // stride: dirt where the front foot lands
+          const st=STRIDE[aid0]||[51,.05,.95];
+          if(active&&!dusted.plant&&fi>=st[0]){dusted.plant=1;if(!reduced)spawnDust(px-tw/2+st[1]*tw,py-th+st[2]*th,7,p.h*1.4);}
+          // arm whip: the two frames before trail in warm light, a swoosh from behind her head to the hand
+          const w0=RELEASE_FRAME-WHIP_FROM,w1=RELEASE_FRAME+WHIP_TO,whipOn=active&&!reduced&&fi>=w0&&fi<=w1;
+          pGhosts.forEach((g,i)=>{
+            if(whipOn&&fi-(i+1)*2>=0){g.texture=pitchFrames[fi-(i+1)*2];g.scale.copyFrom(pitcher.scale);g.position.copyFrom(pitcher.position);g.alpha=i?.14:.26;g.tint=0xffd9a0;}
+            else g.alpha=0;
+          });
+          if(whipOn){
+            const rp=RELEASE[aid0]||[.05,.35],k=Math.min(1,(fi-w0)/WHIP_FROM),fade=fi>RELEASE_FRAME?1-(fi-RELEASE_FRAME)/(WHIP_TO+1):1;
+            const ax=px-tw/2+.62*tw,ay=py-th+.12*th,cx=px-tw/2+.3*tw,cy=py-th-.06*th,hx=px-tw/2+rp[0]*tw,hy=py-th+rp[1]*th;
+            const q=u=>[(1-u)*(1-u)*ax+2*(1-u)*u*cx+u*u*hx,(1-u)*(1-u)*ay+2*(1-u)*u*cy+u*u*hy];
+            const from=Math.max(0,k-.55),N=10,wd=Math.max(2,p.h*.035);
+            for(let i=0;i<N;i++){const u0=from+(k-from)*i/N,u1=from+(k-from)*(i+1)/N,[x0,y0]=q(u0),[x1,y1]=q(u1);
+              whip.moveTo(x0,y0).lineTo(x1,y1).stroke({width:wd*(.35+.65*(i+1)/N),color:i>N-3?0xffffff:0xffe08a,alpha:.55*fade*(i+1)/N,cap:'round'});}
+            if(fi>=RELEASE_FRAME&&fi<=RELEASE_FRAME+1){const r=p.h*.06;whip.circle(hx,hy,r).fill({color:0xffffff,alpha:.5});whip.circle(hx,hy,r*2).fill({color:0xffc861,alpha:.18});}
+          }
+          // knockout: after the hit lands she flinches (white), staggers, and sinks back off the mound
+          if(active&&ko&&!reduced){
+            const since=t-impactAt-HIT_STOP_MS-KO_DELAY_MS;
+            if(since>0){
+              // her pose freezes where the hit found her; she leans back, crumples and goes dark (not transparent)
+              if(koFrame==null)koFrame=fi;
+              pitcher.texture=pitchFrames[koFrame];
+              const f=Math.min(1,since/KO_FALL_MS),e=1-Math.pow(1-f,3);
+              const shake=since<180?Math.sin(since/18)*p.h*.02*(1-since/180):0;
+              pitcher.position.set(px+shake+e*p.w*.08,py+e*p.h*.06);
+              pitcher.rotation=e*.26;pitcher.scale.y=pitcher.scale.x*(1-e*.14);
+              const dim=Math.round(255-e*(255-150));pitcher.tint=since<90?0xffb0a0:(dim<<16)|(Math.round(dim*.92)<<8)|Math.round(dim*1.0);
+              shadowW=p.w*(.26+e*.1);
+              if(!dusted.ko&&since>KO_FALL_MS*.7){dusted.ko=1;spawnDust(px,py-p.h*.02,12,p.h*1.6);}
+            }
+          }
+          shadows.ellipse(px,py-p.h*.03,shadowW,p.h*.035).fill({color:0x000000,alpha:.35});
         }
         if(b){
           // hit-stop always holds the contact pose (the no-skip rule may still be a pose behind)
@@ -172,7 +217,7 @@ export default function BallparkActors({sceneRef,pitcherAtlas,artId=null,batterP
           if(active&&hit&&!dusted.hit&&stopAt){dusted.hit=1;if(!reduced)spawnDust(x+b.w*.3,y-b.h*.02,16,b.h);}
         }
         // what is on screen, for QA and tests
-        const host=hostRef.current;if(host){host.dataset.pose=prevPose;host.dataset.frame=pitcher?String(active?redRushFrameAt(t):0):'';host.dataset.stop=stopAt&&now<stopUntil?'1':'0';host.dataset.rate=String(rate);}
+        const host=hostRef.current;if(host){host.dataset.pose=prevPose;host.dataset.frame=pitcher?String(active?redRushFrameAt(t):0):'';host.dataset.stop=stopAt&&now<stopUntil?'1':'0';host.dataset.rate=String(rate);host.dataset.whip=whip.visible&&pGhosts.some(g=>g.alpha>0)?'1':'0';host.dataset.ko=pitcher&&pitcher.rotation>0?'1':'0';}
         /* the pitch: out of the hand on the release frame, toward the camera (it grows), onto its cell at
            contact; a hit leaves into the field, anything else carries on into the catcher */
         ball.clear();

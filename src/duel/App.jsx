@@ -12,7 +12,7 @@ import './pitcher-sd.css';
 import redRushAtlas from '../../assets/pitcher-sd-v1/red-rush-pitch-120-atlas.png';
 import redRushPortrait from '../../assets/pitcher-mobs-v1/regular-01-red-rush.png';
 import {pitcherAtlases,pitcherPortraits} from './pitcher-visuals.js';
-import {RED_RUSH_ASSET_ID,hasPitchVisual,redRushFrameAt,redRushTimeline,redRushBatterShot} from './pitcher-sd.js';
+import {RED_RUSH_ASSET_ID,hasPitchVisual,redRushFrameAt,redRushTimeline,redRushBatterShot,withKnockoutHold} from './pitcher-sd.js';
 import './v11-stack-core.css';
 import './adaptive-performance.css';
 import {coverageText} from './information.js';
@@ -892,7 +892,7 @@ export default function Duel(){
     const pitchJudgement=!!next.battle?.revealed&&next.last?.kind!=='skill';
     const nextNode=next.runMap?.nodes?.find(n=>n.id===next.runMap.currentNodeId);
     const baseTimeline=presentationTimeline(shot,reduced);
-    const timeline=pitcherAtlases[nextNode?.opponent?.artId]&&pitchJudgement?redRushTimeline(baseTimeline,reduced):baseTimeline;
+    const timeline=withKnockoutHold(pitcherAtlases[nextNode?.opponent?.artId]&&pitchJudgement?redRushTimeline(baseTimeline,reduced):baseTimeline,next.version===10&&pitchJudgement&&!reduced&&next.pitcher?.hp===0);
     lock.current=true;revealArena();setFxImpactAt(timeline.impactAt||0);setFx(next.last);setFxStage('windup');setFrame(1);
     if(sound)cue(pitchJudgement?'pitch':shot?.cue||next.last.kind);
     const stakes=stakesFor(next),scheduled=[
