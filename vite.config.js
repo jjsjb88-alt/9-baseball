@@ -14,9 +14,10 @@ export default defineConfig({
       output: {
         codeSplitting: {
           groups: [
+            // PixiJS (V13 actors) is imported lazily and must stay out of the eager vendor chunk
             {
               name: "vendor",
-              test: /node_modules[\\/]/,
+              test: /node_modules[\\/](?!.*(pixi|earcut|eventemitter3|@xmldom|parse-svg-path|ismobilejs|gifuct|tiny-lru))/,
             },
           ],
         },

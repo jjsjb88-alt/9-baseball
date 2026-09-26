@@ -3,6 +3,7 @@ import {CARDS} from './cards.js';
 import {publicProbabilities,V10_SWING_STACK_MAX} from './engine.js';
 import {intentLines,hpTicks,ZONE_WORDS} from './ballpark-copy.js';
 import ZoneLinks from './ZoneLinks.jsx';
+import BallparkActors,{pixiAvailable} from './BallparkActors.jsx';
 import './ballpark.css';
 
 /* V13 BALLPARK — the battle as one ballpark scene (docs/design/v13/BALLPARK.md).
@@ -36,7 +37,7 @@ const CardGlyph=({zones})=><span className="bp-glyph" aria-hidden="true">{Array.
 export default function BallparkBattle({
   s,hand,selected,swingStack,choice,locked=false,
   pitcher,label,pitcherArt,batterArt,
-  fxStage=null,shot=null,impactAt=0,playToken=0,onNext=null,nextLabel='',vfx=null,
+  fxStage=null,shot=null,impactAt=0,playToken=0,onNext=null,nextLabel='',vfx=null,pitcherAtlas=null,batterPoses=null,
   onSelect,onAim,onStack,onSwing,onTake,onDetail,onPile,
 }){
   const b=s.battle,rootRef=useRef(null),sceneRef=useRef(null),pitcherRef=useRef(null),zoneRef=useRef(null),flightRef=useRef(null);
@@ -45,6 +46,9 @@ export default function BallparkBattle({
   const landed=!inFx||LANDED.has(fxStage);
   const showVerdict=!!shot&&(inFx||s.phase!=='battle')&&(landed||!judged);
   const [armed,setArmed]=useState(null);
+  /* which actors Pixi has taken over (null = DOM actors only) */
+  const [pixi,setPixi]=useState(null);
+  const [canPixi]=useState(()=>!!batterPoses&&pixiAvailable());
   useLayoutEffect(()=>{
     const root=rootRef.current,header=document.querySelector('.duel-header');
     if(!root)return;
@@ -140,9 +144,10 @@ export default function BallparkBattle({
       <span className="bp-piles"><button type="button" onClick={()=>onPile?.('draw')}>덱 {b.draw?.length??0}</button><button type="button" onClick={()=>onPile?.('discard')}>버림 {b.discard?.length??0}</button></span>
     </div>
 
-    <section className={'bp-scene'+(inFx?' fx-stage-'+fxStage+(shot?' fx-'+(shot.grade||shot.kind):''):'')} ref={sceneRef} aria-label="승부 구장">
+    <section className={'bp-scene'+(pixi?.batter?' pixi-batter':'')+(pixi?.pitcher?' pixi-pitcher':'')+(inFx?' fx-stage-'+fxStage+(shot?' fx-'+(shot.grade||shot.kind):''):'')} ref={sceneRef} aria-label="승부 구장">
       <div className="bp-bg" aria-hidden="true"/>
       <div className="bp-haze" aria-hidden="true"/>
+      {canPixi&&<BallparkActors sceneRef={sceneRef} pitcherAtlas={pitcherAtlas} batterPoses={batterPoses} shot={shot} fxStage={fxStage} playToken={playToken} onReady={setPixi}/>}
       <div className="bp-pitcher" ref={pitcherRef} aria-hidden="true">{pitcherArt}</div>
       <div className="bp-ptag" aria-label={`${pitcher?.name} 투수 HP ${pitcher?.hp} / ${pitcher?.maxHp}`}>
         <span>{pitcher?.name}</span>

@@ -382,3 +382,10 @@
   .bp-pct{top:60%}
 }
 .bp-cell:has(.bp-pct) .bp-token{width:15px;height:15px;left:2px;top:2px;font-size:9px}
+
+/* ---------- C2 Pixi actors ---------- */
+.bp-pixi{position:absolute;inset:0;z-index:2;pointer-events:none}
+.bp-pixi canvas{display:block;width:100%;height:100%;image-rendering:pixelated}
+/* the DOM actors keep their boxes (Pixi reads them for layout) but stop drawing once Pixi has them */
+.bp-scene.pixi-batter .bp-batter>*,.bp-scene.pixi-pitcher .bp-pitcher>*{visibility:hidden}
+.bp-scene.pixi-batter .bp-batter,.bp-scene.pixi-pitcher .bp-pitcher{filter:none}
