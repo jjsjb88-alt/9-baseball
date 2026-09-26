@@ -7,6 +7,7 @@ import {
 } from '../src/duel/spriteGenAtlas.js';
 
 const manifest={
+  game_input:'sprite-sheet-alpha.png',
   degraded_static_fallback:false,
   animation:{
     rows:{
