@@ -195,7 +195,7 @@ export default function BallparkBattle({
           {lessonCards.map((name,i)=><span key={i}><b>{i+1}</b>{name}{lessonZones[i]?<em>{lessonZones[i]}</em>:null}</span>)}
           {autoPlan?.coverage>0&&lessonPhase!=='plan'&&<i>{autoPlan.coverage}존 커버</i>}
         </div>}
-      </aside>
+      </aside>}
       {canPixi&&<BallparkActors sceneRef={sceneRef} pitcherAtlas={pitcherAtlas} artId={artId} batterPoses={batterPoses} pitchZone={judged?r.zone:null} shot={shot} fxStage={fxStage} playToken={playToken} onReady={setPixi}/>}
       <div className="bp-pitcher" ref={pitcherRef} aria-hidden="true">{pitcherArt}</div>
       <div className="bp-ptag" aria-label={`${pitcher?.name} 투수 HP ${pitcher?.hp} / ${pitcher?.maxHp}`}>
