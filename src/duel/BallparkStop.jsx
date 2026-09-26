@@ -47,9 +47,9 @@ export default function BallparkStop({kind,opponent=null,portrait=null,options=[
   /* the knocked-out pitcher gets the last word: her line lands big, next to her portrait */
   const voice=kind==='reward'?pitcherLine(opponent?.artId,'knockout',deckCount):'';
   const after=o?(o.type==='add'?deckCount+1:o.type==='remove'?deckCount-1:deckCount):deckCount;
-  return <main className={'bp-stop stop-'+kind} aria-label={c.title(opponent)}>
+  return <main className={'bp-stop stop-'+kind} aria-label={c.title(opponent)} style={{'--bp-sky':`url(${stadium})`}}>
     <div className="bp-bar"><span>{kind==='reward'?'승리':'쉬어 가는 곳'}</span><span className="bp-piles"><button type="button" onClick={onDeck}>덱 {deckCount}{after!==deckCount&&<> → <b>{after}</b></>}</button></span></div>
-    <header className="bp-shead" style={{'--bp-sky':`url(${stadium})`}}>
+    <header className="bp-shead">
       {portrait&&<button type="button" className="bp-sport" aria-label={opponent?.name+' 초상 크게 보기'} onClick={e=>onInspect?.(opponent,e)}><img alt="" src={portrait}/></button>}
       <div className={'bp-stitle'+(voice?' has-voice':'')}>{voice&&<q className="bp-kovoice" data-testid="bp-kovoice">{voice}</q>}<h1>{c.title(opponent)}</h1><p>{options.length?c.line:EMPTY[kind]||''}</p></div>
     </header>

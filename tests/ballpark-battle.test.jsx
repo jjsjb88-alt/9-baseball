@@ -214,3 +214,13 @@ describe('V13 ballpark copy helpers',()=>{
     expect(intentLines({name:'새 패턴',detail:'설명'})).toEqual({whisper:'새 패턴',coach:'설명'});
   });
 });
+
+describe('V13 BP-10 the pitcher stays visible',()=>{
+  const css=fs.readFileSync(path.resolve('src/duel/ballpark.css'),'utf8');
+  it('portrait: HP strip at the top, her line beside her, not stacked over her',()=>{
+    expect(css).toMatch(/\.bp-pcol\{display:contents\}/);
+    expect(css).toMatch(/\.bp-ptag\{position:absolute;right:8px;top:8px/);
+    expect(css).toMatch(/\.bp-scene \.bp-voice\{position:absolute;left:4%/);
+    expect(css).toMatch(/\.bp-pitcher\{left:auto;right:5%;top:auto;bottom:35%;height:31%\}/);
+  });
+});

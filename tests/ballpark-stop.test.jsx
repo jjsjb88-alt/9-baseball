@@ -75,3 +75,14 @@ describe('V13 reward voice',()=>{
     expect(screen.queryByTestId('bp-kovoice')).toBeNull();
   });
 });
+
+describe('V13 reward stage (BP-8b)',()=>{
+  const css=require('node:fs').readFileSync('src/duel/ballpark.css','utf8');
+  it('never crops her: the portrait is contained, not overflowing its header',()=>{
+    expect(css).toMatch(/\.bp-stop\.stop-reward \.bp-sport img\{width:100%;height:100%;object-fit:contain/);
+  });
+  it('the offers rise over her legs on phones, and sit beside her in landscape',()=>{
+    expect(css).toMatch(/\.bp-stop\.stop-reward \.bp-offers\{position:relative;z-index:3;margin-top:-86px/);
+    expect(css).toMatch(/grid-template-areas:"bar bar" "por title" "por offers" "por verbs"/);
+  });
+});

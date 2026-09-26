@@ -29,7 +29,8 @@
 .bp-pitcher{position:absolute;left:44%;top:18%;height:24%;aspect-ratio:1;filter:drop-shadow(0 3px 2px #0005)}
 .bp-batter{position:absolute;left:-16%;bottom:-2%;height:64%;aspect-ratio:1;filter:drop-shadow(0 4px 3px #0005)}
 .bp-pitcher>*,.bp-batter>*{display:block;width:100%;height:100%;image-rendering:pixelated}
-.bp-ptag{position:absolute;left:43%;top:9%;width:32%;display:grid;gap:4px;padding:6px 8px;border-radius:2px;background:#07080dcc;font-size:13px;line-height:1;z-index:2}
+.bp-pcol{position:absolute;left:43%;top:9%;width:32%;display:grid;gap:4px;align-content:start;z-index:2}
+.bp-ptag{display:grid;gap:4px;padding:6px 8px;border-radius:2px;background:#07080dcc;font-size:13px;line-height:1}
 .bp-ticks{display:grid;grid-template-columns:repeat(12,1fr);gap:2px}
 .bp-ticks i{height:4px;background:#e8e0c8;box-shadow:0 0 4px #fff4}
 .bp-ticks i.lost{background:#e8e0c833;box-shadow:none}
@@ -165,7 +166,7 @@
   .bp-bg{background-position:50% 70%}
   .bp-pitcher{left:57%;top:24%;height:40%}
   .bp-batter{left:1%;bottom:-4%;height:100%}
-  .bp-ptag{left:61%;top:10%;width:16%}
+  .bp-pcol{left:61%;top:10%;width:16%}
   .bp-whisper{right:auto;left:74%;top:40%;max-width:22%;text-align:left}
   .bp-whisper::before{margin-left:0}
   .bp-zone{left:34%;top:18%;width:auto;height:72%;aspect-ratio:3/4}
@@ -188,7 +189,7 @@
   .bp-battle .bp-verbs{grid-template-columns:1fr auto;grid-template-rows:auto auto;width:auto}
   .bp-battle .bp-verb.wait{grid-column:1;min-height:40px}
   .bp-battle .bp-info{grid-column:2;grid-row:1/3}
-  .bp-ptag{top:6%}
+  .bp-pcol{top:6%}
   .bp-pitcher{top:30%;height:44%}
   .bp-battle .bp-verbs{padding:6px 12px 8px;gap:6px}
   .bp-count{font-size:9px}
@@ -238,10 +239,18 @@
 @media (orientation:portrait){
   /* any portrait box is narrower than the 16:9 park, so `cover` scales it by height and the ground
      stays at 64% of the scene whatever the phone; the scene gives up height before the hand does */
-  .bp-scene{aspect-ratio:3/4;max-height:min(68dvh,calc(100dvh - var(--bp-top) - 340px));min-height:280px;width:100%}
+  .bp-scene{aspect-ratio:3/4;max-height:min(72dvh,calc(100dvh - var(--bp-top) - 312px));min-height:280px;width:100%}
   .bp-bg{background-position:54% 0}
-  .bp-pitcher{left:auto;right:12%;top:auto;bottom:33%;height:21%}
-  .bp-ptag{left:auto;right:4%;top:21%;width:40%}
+  /* she is the show: a clear lane on the right, the HP strip above her head, her line beside her (BP-10) */
+  .bp-pitcher{left:auto;right:5%;top:auto;bottom:35%;height:31%}
+  .bp-battle>.bp-hand{padding-top:12px}
+  .bp-pcol{display:contents}
+  .bp-ptag{position:absolute;right:8px;top:8px;width:46%;z-index:2;padding:5px 7px;gap:3px}
+  .bp-scene .bp-voice{position:absolute;left:4%;top:40%;max-width:54%;margin:0;z-index:6;padding:7px 10px 8px;border:2px solid #07080d;border-radius:12px 12px 3px 12px;background:#fff8ec;color:#16101a;font:400 15px/1.35 var(--bp-ko);box-shadow:3px 3px 0 #07080d,0 0 0 2px var(--bp-sodium);transform-origin:100% 100%;animation:bp-voice-pop 360ms cubic-bezier(.2,1.5,.35,1) both}
+  .bp-scene .bp-voice::before{color:#e2452f}
+  .bp-scene .bp-voice::after{content:"";position:absolute;right:-11px;bottom:5px;border:7px solid transparent;border-left:10px solid #07080d;margin:0}
+  .bp-scene .bp-voice.m-knockout,.bp-scene .bp-voice.m-homer{box-shadow:3px 3px 0 #07080d,0 0 0 2px #ff8a6a}
+  .bp-verdict{top:19%}
   .bp-batter{left:-15%;bottom:-1%;height:58%}
   .bp-zone{left:38%;top:auto;bottom:calc(4% + 22px);width:50%;height:32%}
   .bp-bases{top:84px}
@@ -449,8 +458,9 @@
 .bp-voice::after{content:"”";color:var(--bp-sodium);margin-left:2px}
 .bp-voice.m-knockout,.bp-voice.m-homer{border-left-color:#ff8a6a}
 @keyframes bp-voice{from{opacity:0;transform:translateY(-4px)}}
+@keyframes bp-voice-pop{from{opacity:0;transform:scale(.5)}60%{opacity:1;transform:scale(1.06)}}
 @media (orientation:landscape) and (max-height:500px){.bp-voice{font-size:12px;padding:3px 6px}}
-@media (prefers-reduced-motion:reduce){.bp-voice{animation:none}}
+@media (prefers-reduced-motion:reduce){.bp-voice,.bp-scene .bp-voice{animation:none}}
 /* the caption strip carries her line only where the scene is too short to hold it by her tag */
 .bp-voice-strip{display:none}
 @media (orientation:landscape) and (max-height:500px){
@@ -469,12 +479,10 @@
 .bp-kovoice::before{content:"“";color:#e2452f;font-size:1.3em;line-height:0;margin-right:2px;vertical-align:-.2em}
 .bp-kovoice::after{content:"";position:absolute;right:-12px;bottom:6px;width:0;height:0;border:8px solid transparent;border-left:12px solid #07080d}
 @keyframes bp-kovoice{0%{opacity:0;transform:scale(.4) rotate(-4deg)}60%{opacity:1;transform:scale(1.08) rotate(1deg)}100%{opacity:1;transform:none}}
-.bp-stop.stop-reward .bp-shead{min-height:min(250px,34dvh)}
 .bp-stop.stop-reward .bp-sport img{animation:bp-heart 900ms ease-out 380ms both}
 @keyframes bp-heart{0%{transform:none;filter:drop-shadow(0 6px 8px #0008)}100%{transform:none;filter:drop-shadow(0 6px 8px #0008)}14%{transform:scale(1.05);filter:drop-shadow(0 0 18px #ff5a3aaa)}28%{transform:scale(.99)}42%{transform:scale(1.035);filter:drop-shadow(0 0 12px #ff5a3a88)}}
 .bp-stop.stop-reward .bp-sport{transform-origin:50% 100%}
 @media (orientation:landscape) and (max-height:500px){
-  .bp-stop.stop-reward .bp-shead{min-height:92px}
   .bp-kovoice{font-size:15px;padding:5px 10px 6px;margin-bottom:2px}
   .bp-stitle.has-voice p{display:none}
 }
@@ -503,3 +511,36 @@
 .bp-letterbox::before{top:0;transform-origin:top}.bp-letterbox::after{bottom:0;transform-origin:bottom}
 @keyframes bp-lb{from{transform:scaleY(0)}}
 @media (prefers-reduced-motion:reduce){.bp-scene[class*="cam-"] .bp-cam,.bp-scene.cam-mid.fx-stage-impact{animation:none!important}.bp-letterbox{display:none}}
+
+/* BP-8b reward stage — she is the point: full body, face never cropped, the offers rise in front of her legs.
+   Portrait is contained in its box (right/bottom anchored); phones stack stage → cards, landscape puts her in the left column. */
+.bp-stop.stop-reward .bp-shead{flex-direction:column;align-items:flex-start;justify-content:flex-start;height:clamp(290px,46dvh,520px);min-height:0;padding:14px 16px 96px}
+.bp-stop.stop-reward .bp-shead::after{background:linear-gradient(180deg,transparent 58%,#07080dcc 80%,#07080d 100%);z-index:1}
+.bp-stop.stop-reward .bp-sport{top:5%;bottom:0;right:-6%;width:78%;height:auto;aspect-ratio:auto}
+.bp-stop.stop-reward .bp-sport img{width:100%;height:100%;object-fit:contain;object-position:right bottom;transform-origin:70% 100%}
+.bp-stop.stop-reward .bp-stitle{max-width:58%;z-index:2}
+.bp-stop.stop-reward .bp-stitle h1{word-break:keep-all}
+.bp-stop.stop-reward .bp-offers{position:relative;z-index:3;margin-top:-86px;padding-top:0}
+.bp-stop.stop-reward .bp-offer{min-height:124px;background:#0d1122e8;backdrop-filter:blur(3px);box-shadow:0 8px 24px #000a}
+/* landscape: the stadium fills the whole stop, she stands in the left column, her line + the offers on the right */
+@media (orientation:landscape){
+  .bp-stop.stop-reward{grid-template-columns:minmax(0,38%) minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr) auto;grid-template-areas:"bar bar" "por title" "por offers" "por verbs";
+    background:linear-gradient(180deg,#07080d 0,#07080d00 18%,#07080d00 45%,#07080de6 88%),var(--bp-sky) 50% 60%/cover no-repeat;image-rendering:pixelated}
+  .bp-stop.stop-reward>.bp-bar{grid-area:bar}
+  .bp-stop.stop-reward>.bp-shead{display:contents}
+  .bp-stop.stop-reward .bp-shead::after{display:none}
+  .bp-stop.stop-reward .bp-sport{grid-area:por;position:relative;inset:auto;width:100%;height:100%;min-height:0;overflow:visible}
+  .bp-stop.stop-reward .bp-sport img{object-position:center bottom;transform-origin:50% 100%}
+  .bp-stop.stop-reward .bp-stitle{grid-area:title;max-width:min(100%,620px);padding:12px 16px 0 4px}
+  .bp-stop.stop-reward .bp-stitle h1{justify-self:start}
+  .bp-stop.stop-reward .bp-kovoice{border-radius:14px 14px 14px 4px;transform-origin:0 100%}
+  .bp-stop.stop-reward .bp-kovoice::after{right:auto;left:-12px;border-left:8px solid transparent;border-right:12px solid #07080d}
+  .bp-stop.stop-reward>.bp-offers{grid-area:offers;margin-top:0;padding:14px 16px 12px 4px;align-content:center;justify-content:flex-start}
+  .bp-stop.stop-reward>.bp-verbs{grid-area:verbs}
+}
+@media (orientation:landscape) and (max-height:500px){
+  .bp-stop.stop-reward .bp-stitle{padding-top:6px}
+  .bp-stop.stop-reward .bp-stitle h1{font-size:20px}
+  .bp-stop.stop-reward>.bp-offers{padding-top:6px;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;align-content:flex-start}
+  .bp-stop.stop-reward .bp-offer{flex:0 0 140px;min-height:88px}
+}
