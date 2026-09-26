@@ -74,6 +74,38 @@ export function spriteGenElapsedAtFrame(manifest,state,index){
   return elapsedMs;
 }
 
+export function spriteGenSyncedElapsed(manifest,state,motionMap,motion,elapsedMs){
+  const row=rowContract(manifest,state);
+  if(!row)return null;
+
+  const contactIndex=Number(motionMap?.markers?.contact);
+  const targetImpact=Number(motion?.impactAt);
+  const targetDuration=Number(motion?.duration);
+  if(!Number.isInteger(contactIndex)||contactIndex<0||
+    !finitePositive(targetImpact)||!finitePositive(targetDuration)||targetImpact>=targetDuration){
+    return Math.max(0,Number(elapsedMs)||0);
+  }
+
+  const nativeImpact=spriteGenElapsedAtFrame(manifest,state,contactIndex);
+  if(nativeImpact==null||nativeImpact<=0||nativeImpact>=row.totalMs){
+    return Math.max(0,Number(elapsedMs)||0);
+  }
+
+  const target=Math.max(0,Math.min(Number(elapsedMs)||0,targetDuration));
+  if(target<=targetImpact){
+    return nativeImpact*(target/targetImpact);
+  }
+
+  const targetPost=Math.max(1,targetDuration-targetImpact);
+  const nativePost=row.totalMs-nativeImpact;
+  return nativeImpact+nativePost*((target-targetImpact)/targetPost);
+}
+
+export function spriteGenSyncedFrameAt(manifest,state,motionMap,motion,elapsedMs){
+  const synced=spriteGenSyncedElapsed(manifest,state,motionMap,motion,elapsedMs);
+  return spriteGenFrameAt(manifest,state,synced==null?elapsedMs:synced);
+}
+
 export function validateSpriteGenManifest(manifest,{state='swing',cellSize=null,minFrames=1}={}){
   const errors=[];
   const row=rowContract(manifest,state);
