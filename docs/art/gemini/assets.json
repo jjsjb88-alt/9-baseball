@@ -1,0 +1,17 @@
+{
+  "scale": 4,
+  "palette": ["#07080d","#141a33","#2a3152","#7b84a6","#ece4cf","#b7b09e","#ffc861","#d23a3a","#c8923a","#8a5a32"],
+  "assets": {
+    "A1":  {"name":"A1-bubble","slice":12,"cells":[[96,48],[96,48],[96,48]],"states":["plain","tail-right","tail-left"]},
+    "A2":  {"name":"A2-nametab","slice":6,"cells":[[48,14],[48,14]],"states":["navy","stitch"]},
+    "A3":  {"name":"A3-panel","slice":10,"cells":[[64,40]],"states":["base"]},
+    "A4":  {"name":"A4-button-primary","slice":10,"cells":[[80,24],[80,24],[80,24]],"states":["normal","pressed","disabled"]},
+    "A5":  {"name":"A5-button-secondary","slice":10,"cells":[[80,24],[80,24],[80,24]],"states":["normal","pressed","disabled"]},
+    "A6":  {"name":"A6-card-frame","slice":8,"cells":[[40,56],[40,56],[40,56],[40,56]],"states":["common","selected","signature","skill"]},
+    "A7":  {"name":"A7-card-back","slice":0,"cells":[[40,56]],"states":["back"]},
+    "A8":  {"name":"A8-steps","slice":0,"cells":[[16,16],[16,16],[16,16],[16,4],[16,4]],"states":["node-off","node-current","node-done","line-off","line-on"]},
+    "A9":  {"name":"A9-hp","slice":0,"cells":[[64,8],[4,6],[4,6],[4,6]],"states":["frame","seg-full","seg-lost","seg-empty"],"sliceCells":{"frame":3}},
+    "A10": {"name":"A10-map-node","slice":0,"cells":[[24,24],[24,24],[24,24],[24,24],[24,24]],"states":["battle","elite","boss","facility","locked"]},
+    "A11": {"name":"A11-icons","slice":0,"cells":[[12,12],[12,12],[12,12],[12,12],[12,12],[12,12],[12,12],[12,12],[12,12],[12,12],[12,12],[12,12]],"states":["deck","discard","sound-on","sound-off","help","locker","training","shop","rest","runner","shaken","signature"]}
+  }
+}
