@@ -3,6 +3,8 @@ import {
   spriteGenElapsedAtFrame,
   spriteGenFrameAt,
   spriteGenStateContract,
+  spriteGenSyncedElapsed,
+  spriteGenSyncedFrameAt,
   validateSpriteGenManifest,
 } from '../src/duel/spriteGenAtlas.js';
 
@@ -55,6 +57,17 @@ describe('spriteGenAtlas',()=>{
     expect(spriteGenElapsedAtFrame(manifest,'swing',0)).toBe(0);
     expect(spriteGenElapsedAtFrame(manifest,'swing',1)).toBe(100);
     expect(spriteGenElapsedAtFrame(manifest,'swing',2)).toBe(250);
+  });
+
+  it('maps native contact timing onto the existing presentation impact',()=>{
+    const motionMap={markers:{contact:2}};
+    const motion={impactAt:1000,duration:2000};
+    expect(spriteGenSyncedElapsed(manifest,'swing',motionMap,motion,0)).toBe(0);
+    expect(spriteGenSyncedElapsed(manifest,'swing',motionMap,motion,500)).toBe(125);
+    expect(spriteGenSyncedElapsed(manifest,'swing',motionMap,motion,1000)).toBe(250);
+    expect(spriteGenSyncedElapsed(manifest,'swing',motionMap,motion,1500)).toBe(375);
+    expect(spriteGenSyncedElapsed(manifest,'swing',motionMap,motion,2000)).toBe(500);
+    expect(spriteGenSyncedFrameAt(manifest,'swing',motionMap,motion,1000)?.index).toBe(2);
   });
 
   it('exposes a normalized row contract',()=>{
