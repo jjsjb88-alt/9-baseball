@@ -1,0 +1,67 @@
+name: Gemini UI Capture
+
+on:
+  push:
+    branches:
+      - codex/gemini-ui-capture
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out capture branch
+        uses: actions/checkout@v6
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install project dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Add Playwright to runner only
+        run: pnpm add -D @playwright/test@1.55.0 --lockfile=false
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Build site
+        run: pnpm build
+
+      - name: Start preview
+        run: |
+          pnpm preview --host 127.0.0.1 --port 4173 > /tmp/9zone-preview.log 2>&1 &
+          echo $! > /tmp/9zone-preview.pid
+          for i in {1..60}; do
+            if curl -fsS http://127.0.0.1:4173/9-baseball/ >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/9zone-preview.log
+          exit 1
+
+      - name: Capture 390x844 and 844x390 states
+        env:
+          CAPTURE_BASE_URL: http://127.0.0.1:4173/9-baseball/
+          CAPTURE_DIR: artifacts/gemini-ui-capture
+        run: node scripts/capture-gemini-ui.mjs
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: gemini-ui-capture
+          path: artifacts/gemini-ui-capture
+          if-no-files-found: error
+          retention-days: 1
