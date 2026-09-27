@@ -179,6 +179,9 @@
   .bp-dstep{padding:7px}.bp-dstep>strong{font-size:13px}.bp-dstep>small{font-size:10px}
 }
 .bp-card{position:relative;flex:0 0 108px;display:grid;gap:6px;align-content:start;text-align:left;padding:10px;border:1px solid var(--bp-line);border-radius:3px;background:#0d1122;cursor:pointer;transition:transform .15s,border-color .15s}
+.bp-card-art{display:block;width:100%;aspect-ratio:4/3;background-repeat:no-repeat;background-size:200% 200%;border:1px solid #33415f;border-radius:2px;box-shadow:inset 0 0 0 1px #ffffff12;image-rendering:auto}
+.bp-card.main .bp-card-art{border-color:var(--bp-sodium);box-shadow:0 0 12px #ffc86155,inset 0 0 0 1px #ffffff26}
+.bp-card.support .bp-card-art,.bp-card.armed .bp-card-art{border-color:#9fb4ff}
 .bp-card strong{font:400 15px/1.2 var(--bp-impact)}
 .bp-card strong sup{color:var(--bp-sodium);font-size:11px}
 .bp-card span{font-size:12px;line-height:1.35;color:var(--bp-bone-dim)}
@@ -313,7 +316,7 @@
   .bp-scene .bp-voice::after{content:"";position:absolute;right:-11px;bottom:5px;border:7px solid transparent;border-left:10px solid #07080d;margin:0}
   .bp-scene .bp-voice.m-knockout,.bp-scene .bp-voice.m-homer{box-shadow:3px 3px 0 #07080d,0 0 0 2px #ff8a6a}
   .bp-verdict{top:19%}
-  .bp-batter{left:-15%;bottom:-1%;height:58%}
+  .bp-batter{left:-12%;bottom:-2%;height:72%}
   .bp-zone{left:38%;top:auto;bottom:calc(4% + 22px);width:50%;height:32%}
   .bp-bases{top:84px}
 }

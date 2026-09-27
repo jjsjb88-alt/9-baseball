@@ -32,7 +32,7 @@ const IDLE_BREATH_MS=2600;
 /* pitcher effects (BP-11): the whip runs from WHIP_FROM frames before release to WHIP_TO after */
 export const WHIP_FROM=8,WHIP_TO=3,KO_DELAY_MS=120,KO_FALL_MS=380;
 
-export default function BallparkActors({sceneRef,pitcherAtlas,artId=null,batterPoses,shot,fxStage,playToken,pitchZone=null,knockedOut=false,onReady}){
+export default function BallparkActors({sceneRef,pitcherAtlas,artId=null,batterPoses,batterSheet=null,shot,fxStage,playToken,pitchZone=null,knockedOut=false,onReady}){
   const hostRef=useRef(null),live=useRef({});
   live.current={shot,fxStage,playToken,pitchZone,artId,knockedOut};
 
@@ -50,10 +50,19 @@ export default function BallparkActors({sceneRef,pitcherAtlas,artId=null,batterP
       hostRef.current.appendChild(app.canvas);
       PIXI.TextureSource.defaultOptions.scaleMode='nearest';
 
-      /* textures */
+      /* textures — V14 preview uses one 3x3 authored sheet. The runtime still exposes the
+         existing ten-pose contract; READY is reused for LOAD so timing/gameplay stay untouched. */
       const poseNames=Object.keys(batterPoses);
       const poseTex={};
-      await Promise.all(poseNames.map(async n=>{poseTex[n]=await PIXI.Assets.load(batterPoses[n]);poseTex[n].source.scaleMode='nearest';}));
+      if(batterSheet){
+        const sheet=await PIXI.Assets.load(batterSheet);sheet.source.scaleMode='nearest';
+        const fw=sheet.width/3,fh=sheet.height/3;
+        const frames=Array.from({length:9},(_,k)=>new PIXI.Texture({source:sheet.source,frame:new PIXI.Rectangle((k%3)*fw,Math.floor(k/3)*fh,fw,fh)}));
+        const order={ready:0,load:0,trigger:1,'swing-start':2,'swing-mid':3,contact:4,'follow-through-early':5,'follow-through-late':6,finish:7,settle:8};
+        for(const n of poseNames)poseTex[n]=frames[order[n]??0];
+      }else{
+        await Promise.all(poseNames.map(async n=>{poseTex[n]=await PIXI.Assets.load(batterPoses[n]);poseTex[n].source.scaleMode='nearest';}));
+      }
       let pitchFrames=null;
       if(pitcherAtlas){
         const atlas=await PIXI.Assets.load(pitcherAtlas);atlas.source.scaleMode='nearest';
@@ -253,7 +262,7 @@ export default function BallparkActors({sceneRef,pitcherAtlas,artId=null,batterP
       });
     })().catch(()=>{onReady?.(null);});
     return ()=>{alive=false;ro?.disconnect();cleanup.forEach(f=>f());onReady?.(null);try{app?.destroy(true,{children:true});}catch{}};
-  },[pitcherAtlas]);
+  },[pitcherAtlas,batterSheet]);
 
   return <div ref={hostRef} className="bp-pixi bp-cam" aria-hidden="true"/>;
 }

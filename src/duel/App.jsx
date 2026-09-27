@@ -81,6 +81,7 @@ import batterRebootSwingMidV3 from '../../assets/batter-reboot-v3/batter-swing-m
 import batterRebootFollowEarlyV3 from '../../assets/batter-reboot-v3/batter-follow-through-early.png';
 import batterRebootFollowLateV3 from '../../assets/batter-reboot-v3/batter-follow-through-late.png';
 import batterRebootSettleV3 from '../../assets/batter-reboot-v3/batter-settle.png';
+import batterV14PreviewSheet from '../../assets/ui-kit/batter/batter-v14-preview-sheet.png';
 
 /* 엔진은 lastCombat.choice를 카드 kind로, actualPitch를 존 번호로 준다. 화면 문구로 옮기는 건 연결부 일이다. */
 const v10ZoneName=zone=>zone===9?'존 밖':ZONES[zone]||'코스 미확인';
@@ -985,7 +986,7 @@ export default function Duel(){
       pitcherArt={pitcherAtlas?<PitcherAtlasSprite atlas={pitcherAtlas} stage={fxStage} shot={fxPresentation} playToken={s.stats.pitches}/>:<Sprite who="pitcher" stage={fxStage} shot={fxPresentation} golden variant={pitcherForm} playToken={s.stats.pitches}/>}
       batterArt={<Sprite who="batter" stage={fxStage} shot={fxPresentation} golden playToken={s.stats.pitches} syncRedRush={redRushEncounter}/>}
       fxStage={fxStage} shot={fxPresentation||resultPresentation} impactAt={fxImpactAt} playToken={s.stats.pitches}
-      pitcherAtlas={pitcherAtlas} artId={v10Node?.opponent?.artId} batterPoses={BATTER_REBOOT_V3}
+      pitcherAtlas={pitcherAtlas} artId={v10Node?.opponent?.artId} batterPoses={BATTER_REBOOT_V3} batterSheet={batterV14PreviewSheet}
       vfx={<PixelVFX stage={fxStage} shot={fxPresentation} token={s.stats.pitches} drawCore={false} quality={perfTier}/>}
       onNext={s.phase==='pitch'?()=>{setAutoPlan(null);act(doNextPitch)}:s.phase==='between'?()=>{setAutoPlan(null);act(doNextBatter)}:null}
       nextLabel={s.phase==='pitch'?'다음 공':s.phase==='between'?'다음 타자':''}

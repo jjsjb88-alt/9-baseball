@@ -6,6 +6,7 @@ import ZoneLinks from './ZoneLinks.jsx';
 import {pitcherLine,momentOf} from './pitcher-voice.js';
 import BallparkActors,{pixiAvailable} from './BallparkActors.jsx';
 import {lessonFor,planText} from './DecisionDebrief.jsx';
+import battleCoreV14PreviewSheet from '../../assets/ui-kit/cards/battle-core-v14-preview-sheet.png';
 import './ballpark.css';
 
 /* V13 BALLPARK — the battle as one ballpark scene (docs/design/v13/BALLPARK.md).
@@ -36,6 +37,7 @@ export const STACK_COMMIT_MS=720;
 export const LURE_PCT=30;
 /* card role chip colours, inside the ballpark palette */
 const ROLE_TONE={'장타':'gold','정타':'red','범위':'bone','진루':'brass'};
+const BATTLE_CARD_ART_POS={strike:'0% 0%',rally:'100% 0%',slug:'0% 100%',defend:'100% 100%'};
 const lessonZoneName=z=>z===9?'존 밖':ZONE_WORDS[z]||'코스';
 
 
@@ -47,7 +49,7 @@ const CardGlyph=({zones})=><span className="bp-glyph" aria-hidden="true">{Array.
 export default function BallparkBattle({
   s,hand,selected,swingStack,choice,locked=false,
   pitcher,label,pitcherArt,batterArt,
-  fxStage=null,shot=null,impactAt=0,playToken=0,onNext=null,nextLabel='',vfx=null,pitcherAtlas=null,artId=null,batterPoses=null,
+  fxStage=null,shot=null,impactAt=0,playToken=0,onNext=null,nextLabel='',vfx=null,pitcherAtlas=null,artId=null,batterPoses=null,batterSheet=null,
   onSelect,onAim,onStack,onSwing,onTake,onDetail,onPile,
   autoLesson=false,autoPlan=null,onExitLesson=null,
 }){
@@ -206,7 +208,9 @@ export default function BallparkBattle({
     const state=selected===x.id?' main':inStack>=0?' support':armed===x.id?' armed':'';
     return <button key={x.id} type="button" className={'bp-card'+state+(problem?' off':'')} aria-pressed={selected===x.id||inStack>=0}
       data-card-kind={x.entry.kind} disabled={!deciding} onClick={()=>pickSwing(x.id)}>
-      <CardGlyph zones={x.preview?.coverage}/>
+      {BATTLE_CARD_ART_POS[x.entry.kind]
+        ?<i className="bp-card-art" aria-hidden="true" style={{backgroundImage:`url(${battleCoreV14PreviewSheet})`,backgroundPosition:BATTLE_CARD_ART_POS[x.entry.kind]}}/>
+        :<CardGlyph zones={x.preview?.coverage}/>}
       {def.role&&<em className={'bp-role r-'+(ROLE_TONE[def.role]||'plain')}>{def.role}</em>}
       <strong>{def.name}{x.entry.plus&&<sup>+</sup>}</strong>
       {(problem||effect(def))&&<span>{problem||effect(def)}</span>}
@@ -263,7 +267,7 @@ export default function BallparkBattle({
           {autoPlan?.coverage>0&&lessonPhase!=='plan'&&<i>{autoPlan.coverage}존 커버</i>}
         </div>}
       </aside>}
-      {canPixi&&<BallparkActors sceneRef={sceneRef} pitcherAtlas={pitcherAtlas} artId={artId} batterPoses={batterPoses} pitchZone={judged?r.zone:null} shot={shot} fxStage={fxStage} playToken={playToken} knockedOut={judged&&(pitcher?.hp??1)===0} onReady={setPixi}/>}
+      {canPixi&&<BallparkActors sceneRef={sceneRef} pitcherAtlas={pitcherAtlas} artId={artId} batterPoses={batterPoses} batterSheet={batterSheet} pitchZone={judged?r.zone:null} shot={shot} fxStage={fxStage} playToken={playToken} knockedOut={judged&&(pitcher?.hp??1)===0} onReady={setPixi}/>}
       <div className="bp-pitcher bp-cam" ref={pitcherRef} aria-hidden="true">{pitcherArt}</div>
       <div className="bp-pcol">
       <div className="bp-ptag" aria-label={`${pitcher?.name} 투수 HP ${pitcher?.hp} / ${pitcher?.maxHp}`}>
