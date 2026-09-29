@@ -169,6 +169,7 @@ const BATTER_REBOOT_V3={
   'follow-through-late':batterRebootFollowLateV3,
   finish:batterRebootFinish,
   settle:batterRebootSettleV3,
+  'miss-recovery':batterRebootSettleV3,
 };
 const ACTOR_ASSETS=[...new Set([...BATTER_SWING_V2,...BATTER_MISS_V2,...PITCHER_PITCH_V2,...PITCHER_K_V2,batterSwingV4,pitcherPitchV4,batterHomerHeroV3,...Object.values(BATTER_HERO_V5),...Object.values(BATTER_REBOOT_V3),...Object.values(PITCHER_RELEASE_V3)])];
 /* the legacy actor frames only play on the tutorial (v9) screens; the main run (v10) is all ballpark,

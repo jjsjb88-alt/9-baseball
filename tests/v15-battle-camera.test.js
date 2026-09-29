@@ -42,7 +42,10 @@ describe('V15 portrait battle camera matches the target mockup',()=>{
     const poses=['ready','load','trigger','swing-start','swing-mid','contact','follow-through-early','follow-through-late','finish','settle'];
     for(const p of poses)expect(v.order[p],p).toBeLessThan(m.batter.frames.length);
     expect(v.order.contact).toBe(m.batter.frames.findIndex(f=>f.file==='batter-contact.png'));
+    expect(v.order['miss-recovery']).toBe(m.batter.frames.findIndex(f=>f.file==='batter-miss-recovery.png'));
+    expect(m.batter.frames[v.order['miss-recovery']].offset_y_in_sheet).toBe(41);
     const app=fs.readFileSync('src/duel/App.jsx','utf8');
     expect(app).toContain('batterSheet={BATTER_V15_SHEET}');
+    expect(app).toContain("'miss-recovery':batterRebootSettleV3");
   });
 });

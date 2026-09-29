@@ -1,7 +1,8 @@
 /* V15 hero batter (assets/production-art/battle-portrait-v15, see its README): the target mockup's
-   over-the-shoulder adult batter, 7 keyposes on one baseline-aligned 4x2 sheet.
-   The runtime still plays the ten-pose batterMotionV3 contract; poses without their own drawing
-   reuse the nearest keypose (trigger holds LOAD, the late follow/finish/settle hold FOLLOW-THROUGH).
+   over-the-shoulder adult batter, 8 keyposes on one baseline-aligned 4x2 sheet.
+   The runtime plays the ten-pose batterMotionV3 contract plus a miss-only recovery pose.
+   Poses without their own drawing reuse the nearest keypose (trigger holds LOAD;
+   the late hit follow/finish/settle hold FOLLOW-THROUGH).
    HD illustration, not 1:1 pixel art: it is sampled smooth when scaled down.
 
    #103 M09: the runtime sheet is the master at half size (512x768 cells, 2048x1536). The batter is
@@ -20,7 +21,7 @@ export const BATTER_V15_SHEET={
   cols:4,rows:2,smooth:true,
   /* feet touch the ground 1527/1536 down each cell (manifest.json baseline_px) */
   baseline:1527/1536,
-  order:{ready:0,load:1,trigger:1,'swing-start':2,'swing-mid':3,contact:4,'follow-through-early':5,'follow-through-late':6,finish:6,settle:6},
+  order:{ready:0,load:1,trigger:1,'swing-start':2,'swing-mid':3,contact:4,'follow-through-early':5,'follow-through-late':6,finish:6,settle:6,'miss-recovery':7},
 };
 
 /* one pose of a sheet as CSS background values (the DOM fallback) */

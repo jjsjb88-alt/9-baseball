@@ -567,6 +567,14 @@
    3072
   ]
  },
+ "3c7a0d42bb68f19fc733f1bbd8cd05c9d73d191d": {
+  "file": "3c7a0d42bb68-tide-vesper-release.webp",
+  "src": "pitcher-study-v2/source/tide-vesper-release.png",
+  "size": [
+   533,
+   800
+  ]
+ },
  "f497c062e2765c300999541108cd05b3abb1f3f1": {
   "file": "f497c062e276-impact-slash.webp",
   "src": "production-art/battle-polish-v16/impact-slash.png",
@@ -615,17 +623,9 @@
    1536
   ]
  },
- "5a24ae7b15fd5611413ea7550b23c22a63a3a40d": {
-  "file": "5a24ae7b15fd-batter-sheet-runtime.webp",
+ "d26ba1a4e9e45deecced10cb11ba2ece28771e65": {
+  "file": "d26ba1a4e9e4-batter-sheet-runtime.webp",
   "src": "production-art/battle-portrait-v15/batter-sheet-runtime.png",
-  "size": [
-   2048,
-   1536
-  ]
- },
- "a64329f3a10694de9c7b632880ebeacc52535cf1": {
-  "file": "a64329f3a106-batter-sheet.webp",
-  "src": "production-art/battle-portrait-v15/batter-sheet.png",
   "size": [
    2048,
    1536

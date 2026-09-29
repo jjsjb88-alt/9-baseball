@@ -39,6 +39,7 @@ RULES = [
     (r'^production-art/mockup-world-v15/map-node-.*\.png$', dict(long=256, q=85)),  # ~60px nodes
     (r'^production-art/mockup-world-v15/frame-reward-.*\.png$', dict(long=512, q=90)),  # card-size frame overlay
     (r'^production-art/mockup-world-v15/.*\.png$',  dict(keep=True, q=80)),  # full-screen keyart / map plate
+    (r'^pitcher-study-v2/source/.*-release\.png$', dict(long=800, q=84)),  # pitcher portrait cutouts
     (r'^pitcher-mobs-v1/.*\.png$',                  dict(long=720, q=85)),   # transparent roster cutouts
     (r'^duel/stadium.*\.png$',                      dict(keep=True, q=80)),  # full-screen stadium plates
 ]

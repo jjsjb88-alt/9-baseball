@@ -72,8 +72,7 @@ export function batterMotionV3Timeline(shot){
       {pose:'swing-mid',at:swingMidAt},
       {pose:'follow-through-early',at:rounded(followEarlyAt)},
       {pose:'follow-through-late',at:rounded(followLateAt)},
-      {pose:'finish',at:rounded(finishAt)},
-      {pose:'settle',at:rounded(settleAt)},
+      {pose:'miss-recovery',at:rounded(finishAt)},
       {pose:'ready',at:rounded(duration)},
     ];
   }

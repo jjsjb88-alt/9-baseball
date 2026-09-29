@@ -7,7 +7,8 @@
 | 자산 | 파일 | 용도 |
 | --- | --- | --- |
 | 타자 키포즈 7장 | `batter-ready.png`, `batter-load.png`, `batter-swing-start.png`, `batter-swing-mid.png`, `batter-contact.png`, `batter-follow-early.png`, `batter-follow-through.png` | 같은 인물의 준비 → 코일 → 스윙 → 임팩트 → 팔로스루 |
-| 타자 시트·미리보기 | `batter-sheet.png`, `batter-animatic.webp` | 1024×1536 셀 7개, 4열×2행, 왼쪽부터 시간순 |
+| 타자 시트·미리보기 | `batter-sheet.png`, `batter-animatic.webp` | 1024×1536 셀 8개, 4열×2행. 마지막 셀은 헛스윙 전용 |
+| 타자 헛스윙 회복 | `batter-miss-recovery.png` | 심판캠 구도의 #9 타자 헛스윙 후 배트를 낮추는 포즈. 시트의 여덟 번째 셀에 연결 |
 | 레드 러시 키포즈 3장 | `red-rush-windup.png`, `red-rush-stride.png`, `red-rush-release.png` | 기존 여성 투수의 와인드업 → 스트라이드 → 릴리스 |
 | 투수 시트·미리보기 | `red-rush-sheet.png`, `red-rush-animatic.webp` | 1024×1536 셀 3개 |
 | 배경 | `stadium-portrait.png` | 타자석 시점의 도시 야구장, 문자·UI 없는 불투명 플레이트 |
@@ -31,3 +32,9 @@
 ## 확인 결과와 남은 작업
 
 모든 캐릭터/VFX PNG는 알파 채널이 있고 경기장만 불투명하다. 프레임 크기와 불투명 영역은 `manifest.json`에 기록했다. 기존 화면에 실제 연결하거나 QUALITY-BAR 통과 판정을 하지는 않았다. 7장/3장 키포즈만으로는 완성된 고프레임 애니메이션이 아니므로, 추가 인비트윈 및 412×743/844×390/1440×900 런타임 검수가 필요하다.
+
+## 2026-09-30 헛스윙 포즈 추가
+
+- [MLB 심판캠 타격 영상](https://www.mlb.com/video/shohei-ohtani-s-hr-through-the-eyes-of-ump-cam)의 준비·스윙 구간을 화면에서 확인했다. 카메라 가까운 타자가 크게 보이고 두 손과 배트가 전경을 통과한다는 구도만 참고했으며, 영상 프레임을 에셋에 복사하지 않았다.
+- 기존 #9 외형을 유지한 새 포즈를 `batter-miss-recovery.png`에 보존했다. 원본은 1024×1536 RGBA이고, 128 초과 알파의 발끝을 1527px 공통 기준선에 맞춰 41px 내렸다. `scripts/build-batter-miss-recovery.py`가 두 시트의 빈 여덟 번째 칸을 재생성한다.
+- V10 헛스윙 결과에서만 이 포즈를 보여준다. 안타의 contact·finish 시퀀스와 전투 판정은 그대로다. 생성 초안의 여분 다리·신발을 발견해 원본을 두 다리·두 신발로 다시 제작하고 시트를 갱신했다. 수정본의 게임 화면, 실제 Pixi 재생의 연속 동작 및 10화면 품질 판정은 별도 검수가 남는다.

@@ -58,6 +58,14 @@
         "y": 1536,
         "duration_ms": 260,
         "offset_y_in_sheet": 74
+      },
+      {
+        "file": "batter-miss-recovery.png",
+        "x": 3072,
+        "y": 1536,
+        "duration_ms": 270,
+        "offset_y_in_sheet": 41,
+        "result": "miss-only"
       }
     ],
     "preview": "batter-animatic.webp"

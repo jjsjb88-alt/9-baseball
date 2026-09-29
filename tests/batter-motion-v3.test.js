@@ -37,9 +37,14 @@ describe('batter motion loop v3',()=>{
 
   it('misses still swing through both bridges without showing false contact',()=>{
     const miss={grade:'near-miss',motion:{duration:1500,impactAt:300,settleAt:1100,freeze:16,slowmo:380}};
-    const poses=batterMotionV3Timeline(miss).map(x=>x.pose);
+    const timeline=batterMotionV3Timeline(miss),poses=timeline.map(x=>x.pose);
     expect(poses).toContain('swing-mid');
     expect(poses).toContain('follow-through-late');
+    expect(poses).toContain('miss-recovery');
     expect(poses).not.toContain('contact');
+    const recovery=timeline.find(x=>x.pose==='miss-recovery');
+    expect(batterMotionV3PoseAt(miss,recovery.at+1)).toBe('miss-recovery');
+    expect(batterMotionV3PoseAt(miss,miss.motion.duration)).toBe('ready');
+    expect(batterMotionV3Timeline(solid).map(x=>x.pose)).not.toContain('miss-recovery');
   });
 });
