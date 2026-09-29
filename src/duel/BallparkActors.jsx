@@ -174,6 +174,7 @@ export default function BallparkActors({sceneRef,pitcherAtlas,artId=null,batterP
           vclock+=dt*rate;debt=Math.max(0,debt+dt*(1-rate));t=vclock;
         }else rate=1;
         // hit-stop: the clock stands still for a beat at contact
+        // SPRITEBREW-HOOK(판정/contact): impactAt = batter swing keyFrame. Start 'swing'/'miss' at impactAt-keyOffsetMs (spritebrew-frames.js).
         if(active&&hit&&!reduced){
           if(!stopAt&&t>=impactAt){stopAt=now;stopUntil=now+HIT_STOP_MS;}
           if(stopAt){t=now<stopUntil?impactAt:t-HIT_STOP_MS;}
@@ -186,6 +187,8 @@ export default function BallparkActors({sceneRef,pitcherAtlas,artId=null,batterP
         impactFx.clear();
         if(slashSprite&&(!active||!hit||reduced))slashSprite.alpha=0;
         if(pitcher&&p){
+          // SPRITEBREW-HOOK(와인드업/릴리스): t<RED_RUSH_RELEASE_MS-keyOffsetMs(release) → pitcher 'windup', then 'release'
+          // (keyFrame on RELEASE_FRAME); !active → 'idle'. Swap only after frames land; the 120f atlas stays the fallback.
           const fi=active?redRushFrameAt(t):0,{artId:aid0,knockedOut:ko}=live.current;
           pitcher.texture=pitchFrames[fi];
           const sc=crisp(p.h/pitcher.texture.height,app.renderer.resolution);
@@ -237,6 +240,8 @@ export default function BallparkActors({sceneRef,pitcherAtlas,artId=null,batterP
           if(inStop){const ci=timeline.findIndex(k=>k.pose==='contact');if(ci>=0)shownIndex=ci;}
           const pose=active?(inStop?'contact':poseAt(t)):(shownIndex=0,'ready');
           if(pose!==prevPose){prevPoses.unshift({pose:prevPose,at:now});prevPoses=prevPoses.slice(0,2);prevPose=pose;}
+          // SPRITEBREW-HOOK(스윙): !active → batter 'idle' loop; active → 'swing' (hit) / 'miss' frames keyed to impactAt.
+          // Keep inStop holding the contact frame. poseTex stays the fallback until the frames land.
           const tex=poseTex[pose]||poseTex.ready;
           batter.texture=tex;flash.texture=tex;
           /* the sheet's feet sit on its baseline, not the cell's bottom edge */

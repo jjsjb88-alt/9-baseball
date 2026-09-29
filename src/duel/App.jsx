@@ -1022,7 +1022,7 @@ export default function Duel(){
     {error&&<div className="save-error" role="alert">{error}<button onClick={()=>s&&persist(s)}>저장 재시도</button></div>}
     {screen==='cinema'?<CinemaLab sound={sound} onBack={()=>setScreen('menu')}/>
     :screen==='menu'?<TitleScreen key="screen-title" run={titleRun||titleTutorial} onNew={()=>titleRun&&!titleRun.ended?setModal('new10'):freshV10()} onContinue={()=>{if(titleRun){persist(titleSave);setScreen('run')}else if(titleTutorial)setScreen('run')}} onDeck={()=>{if(titleRun)persist(titleSave);if(titleRun||titleTutorial)setModal('deck')}} onDex={e=>openPitcher(pitcherRoster[0],e)} onSettings={()=>setModal('settings')}/>
-:showBattle&&isV10?<BallparkBattle key="screen-bp-battle" s={s} hand={hand} selected={selected} swingStack={swingStack} choice={choice} locked={!!stackResolve}
+:showBattle&&isV10?/* SPRITEBREW-HOOK(DOM 폴백): pitcherArt/batterArt → <SpritePlayer character=… animation=… fallback={현재 Sprite}/> once frames land (Pixi path: BallparkActors) */<BallparkBattle key="screen-bp-battle" s={s} hand={hand} selected={selected} swingStack={swingStack} choice={choice} locked={!!stackResolve}
       label={v10Node?.act+'막'} pitcher={s.pitcher}
       pitcherArt={pitcherAtlas?<PitcherAtlasSprite atlas={pitcherAtlas} stage={fxStage} shot={fxPresentation} playToken={s.stats.pitches}/>:<Sprite who="pitcher" stage={fxStage} shot={fxPresentation} golden variant={pitcherForm} playToken={s.stats.pitches}/>}
       batterArt={<Sprite who="batter" stage={fxStage} shot={fxPresentation} golden playToken={s.stats.pitches} syncRedRush={redRushEncounter} sheet={BATTER_V15_SHEET}/>}

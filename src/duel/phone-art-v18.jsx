@@ -29,6 +29,7 @@ export function HomeRunCut(){
   return <span className="hr-cut" aria-hidden="true">
     <i className="hr-plate" style={{backgroundImage:`url(${hrPlate})`}}/>
     <img className="hr-trail" alt="" src={hrTrail}/>
+    {/* SPRITEBREW-HOOK(홈런): <SpritePlayer character="batter" animation="homerun" fallback={this img}/> once frames land */}
     <img className="hr-batter" alt="" src={hrBatter}/>
   </span>;
 }
