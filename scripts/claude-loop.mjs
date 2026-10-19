@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const expectedRepo = 'jbseo-commits/9-baseball';
+const expectedRepo = 'jjsjb88-alt/9-baseball';
 const args = process.argv.slice(2);
 if (args.length > 1 || args.some(a => !['--check', '--run', '--dry-run'].includes(a))) {
   console.error('Usage: node scripts/claude-loop.mjs [--check | --dry-run | --run]');

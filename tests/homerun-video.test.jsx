@@ -31,7 +31,7 @@ afterEach(() => {
 
 describe('HomerunVideo eligibility', () => {
   it('pins the streamed MP4 to the canonical raw repository asset path', () => {
-    expect(HOMER_VIDEO_URL).toMatch(/^https:\/\/raw\.githubusercontent\.com\/jbseo-commits\/9-baseball\/[a-f0-9]{40}\/assets\/production-art\/homer-video-v1\/homer-v1\.mp4$/);
+    expect(HOMER_VIDEO_URL).toMatch(/^https:\/\/raw\.githubusercontent\.com\/jjsjb88-alt\/9-baseball\/[a-f0-9]{40}\/assets\/production-art\/homer-video-v1\/homer-v1\.mp4$/);
   });
 
   it('allows only reduced-motion-safe V10 home runs and grand slams', () => {

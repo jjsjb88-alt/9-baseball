@@ -2,11 +2,11 @@
 
 > **2026-10-01 제작 현황:** A01–A09, C01–C11 콘셉트 그림과 C101–C137 카드별 그림은 원본·규격·100px 판독을 확인했다. A 묶음은 `assets/production-art/phone-assets-v18/`, C 묶음은 `assets/cards-v15/`에 있다. [QA 기록](PHONE_ASSET_QA_2026-09-28.md)을 참고한다. 다음 확정 제작 순서는 C138이다. B01–B23은 정체성·기존 재사용·합성 결과를 먼저 판단하는 조건부 슬롯이다. 모바일 최종 배치·10화면 목업 합격·C138–C235 제작은 아직 끝나지 않았다.
 
-초기 감사 기준: 2026-09-28. 현재 상태는 GitHub `jbseo-commits/9-baseball`의 `main`과 대조한다. **이 파일의 A01–A09만으로 10개 목업은 완성되지 않는다.** 2026-09-28에 **C항목(V16 보상 카드 일러스트 C01–C11, C101~)**이 추가됐다. 전체 화면별 기존/부족/검수 목록은 [`FULL_MOCKUP_ASSET_AUDIT_2026-09-28.md`](FULL_MOCKUP_ASSET_AUDIT_2026-09-28.md)에 있다. 새 채팅은 두 파일과 `docs/art/MOCKUP_FIDELITY_PLAN_2026-09-28.md`, `docs/art/working/RED_RUSH_REUSE_GAP_MATRIX_2026-09-28.md`를 읽고 **현재 GitHub 파일과 새 업로드를 다시 확인**한 뒤 확정·조건부·기존 검수 항목을 모두 보여준다. 코드 연결과 10화면 품질 통과 여부는 별도다.
+초기 감사 기준: 2026-09-28. 현재 상태는 GitHub `jjsjb88-alt/9-baseball`의 `main`과 대조한다. **이 파일의 A01–A09만으로 10개 목업은 완성되지 않는다.** 2026-09-28에 **C항목(V16 보상 카드 일러스트 C01–C11, C101~)**이 추가됐다. 전체 화면별 기존/부족/검수 목록은 [`FULL_MOCKUP_ASSET_AUDIT_2026-09-28.md`](FULL_MOCKUP_ASSET_AUDIT_2026-09-28.md)에 있다. 새 채팅은 두 파일과 `docs/art/MOCKUP_FIDELITY_PLAN_2026-09-28.md`, `docs/art/working/RED_RUSH_REUSE_GAP_MATRIX_2026-09-28.md`를 읽고 **현재 GitHub 파일과 새 업로드를 다시 확인**한 뒤 확정·조건부·기존 검수 항목을 모두 보여준다. 코드 연결과 10화면 품질 통과 여부는 별도다.
 
 ## 새 채팅에서 쓸 문장
 
-> `jbseo-commits/9-baseball`의 `main` 브랜치에 있는 `docs/art/FULL_MOCKUP_ASSET_AUDIT_2026-09-28.md`, `docs/art/PHONE_ASSET_QUEUE.md`, `docs/art/V16-CARD-ART-QUEUE.md`를 읽고 현재 GitHub와 대조해 **10개 목업 전체의 기존/확정 부족/조건부 에셋과 C항목(V16 카드 일러스트)**을 보여줘. 이미 제작된 파일과 연결 상태를 다시 확인하고, 첫 번째 확정 미완료 항목만 휴대폰에서 만들 수 있도록 구체적인 이미지 제작 프롬프트를 줘. 내가 PNG를 한 장씩 올리면 원본과 목업을 비교해 검수하고, 합격한 파일만 새 버전 폴더와 체크리스트에 반영해. 레드 러시는 여성형을 유지해.
+> `jjsjb88-alt/9-baseball`의 `main` 브랜치에 있는 `docs/art/FULL_MOCKUP_ASSET_AUDIT_2026-09-28.md`, `docs/art/PHONE_ASSET_QUEUE.md`, `docs/art/V16-CARD-ART-QUEUE.md`를 읽고 현재 GitHub와 대조해 **10개 목업 전체의 기존/확정 부족/조건부 에셋과 C항목(V16 카드 일러스트)**을 보여줘. 이미 제작된 파일과 연결 상태를 다시 확인하고, 첫 번째 확정 미완료 항목만 휴대폰에서 만들 수 있도록 구체적인 이미지 제작 프롬프트를 줘. 내가 PNG를 한 장씩 올리면 원본과 목업을 비교해 검수하고, 합격한 파일만 새 버전 폴더와 체크리스트에 반영해. 레드 러시는 여성형을 유지해.
 
 ## 진행 규칙
 

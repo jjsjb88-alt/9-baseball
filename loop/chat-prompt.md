@@ -1,6 +1,6 @@
 # 야구 채팅 분업 한 바퀴
 
-jbseo-commits/9-baseball에서 이번 사용자 요청을 한 항목만 진행해.
+jjsjb88-alt/9-baseball에서 이번 사용자 요청을 한 항목만 진행해.
 AGENTS.md 전체와 docs/chat-loop.md를 먼저 읽고 프로젝트 필수 자료·품질·중단 조건을 따라.
 현재 채팅의 네이티브 서브에이전트를 사용해 메인은 계획·통합, explorer/worker/researcher는 필요한 범위, 별도 reviewer는 큰 계획 전·반복 오류·긴 작업 완료 전 검토를 맡아.
 모델 선택 도구가 지원할 때 Luna/high 작업자와 Sol/high 검수자를 명시하고, 메인은 사용자가 선택한 채팅 모델을 유지해. 실제 모델이나 도구 지원이 확인되지 않으면 분업 성공으로 꾸미지 마.

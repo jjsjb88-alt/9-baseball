@@ -24,7 +24,7 @@ reviewer는 Claude `/advisor`의 이름만 바꾼 내장 기능이 아닙니다.
 
 ## 컴퓨터에서 실행
 
-저장소에서 이 PR의 브랜치를 checkout/pull한 뒤 Node.js 20 이상과 로그인된 최신 Codex CLI로 실행합니다. 원격 인증 계정과 대상이 `jbseo-commits`인지 쓰기 전에 별도로 확인합니다. 런처의 origin 검사는 인증 계정 검사를 대신하지 않습니다.
+저장소에서 이 PR의 브랜치를 checkout/pull한 뒤 Node.js 20 이상과 로그인된 최신 Codex CLI로 실행합니다. 원격 인증 계정과 대상이 `jjsjb88-alt`인지 쓰기 전에 별도로 확인합니다. 런처의 origin 검사는 인증 계정 검사를 대신하지 않습니다.
 
 터미널 1 — 화면:
 

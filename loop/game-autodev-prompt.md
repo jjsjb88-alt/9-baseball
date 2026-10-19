@@ -3,7 +3,7 @@
 저장소가 연결된 Codex·OpenCode·Claude 세션에 아래를 붙여 넣는다. 기본 실행은 로컬 작업 브랜치, 최대 6회차/120분이다. 이미 허용된 GitHub 게시 범위는 재사용하며 공개 배포는 별도 범위다. 문서 생성 요청만으로 실행하지 않는다.
 
 ```text
-jbseo-commits/9-baseball의 게임 자율개발을 시작해.
+jjsjb88-alt/9-baseball의 게임 자율개발을 시작해.
 
 AGENTS.md 전체와 loop/GAME-AUTODEV.md, loop/autodev/QUEUE.md,
 loop/autodev/PLAYTEST.md, loop/autodev/TEMPLATES.md를 먼저 읽어.

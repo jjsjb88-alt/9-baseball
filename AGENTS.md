@@ -13,7 +13,7 @@
 
 ## 새 채팅의 에셋 현황 안내
 
-사용자가 남은 GitHub 에셋이나 휴대폰 제작 순서를 물으면 `jbseo-commits/9-baseball`의 최신 `main`을 기준으로 [`docs/art/FULL_MOCKUP_ASSET_AUDIT_2026-09-28.md`](docs/art/FULL_MOCKUP_ASSET_AUDIT_2026-09-28.md), [`docs/art/PHONE_ASSET_QUEUE.md`](docs/art/PHONE_ASSET_QUEUE.md), [`docs/art/V16-CARD-ART-QUEUE.md`](docs/art/V16-CARD-ART-QUEUE.md)를 읽는다. 실제 파일과 화면 연결 상태를 다시 확인해 10개 목업 전체의 기존·완료·확정 미완료·조건부 항목을 보여준다. 휴대폰용 제작 프롬프트는 맨 앞의 확정 미완료 에셋 한 장만 안내한다. 여성형 레드 러시를 유지하고 기존 자산을 중복 제작하지 않는다.
+사용자가 남은 GitHub 에셋이나 휴대폰 제작 순서를 물으면 `jjsjb88-alt/9-baseball`의 최신 `main`을 기준으로 [`docs/art/FULL_MOCKUP_ASSET_AUDIT_2026-09-28.md`](docs/art/FULL_MOCKUP_ASSET_AUDIT_2026-09-28.md), [`docs/art/PHONE_ASSET_QUEUE.md`](docs/art/PHONE_ASSET_QUEUE.md), [`docs/art/V16-CARD-ART-QUEUE.md`](docs/art/V16-CARD-ART-QUEUE.md)를 읽는다. 실제 파일과 화면 연결 상태를 다시 확인해 10개 목업 전체의 기존·완료·확정 미완료·조건부 항목을 보여준다. 휴대폰용 제작 프롬프트는 맨 앞의 확정 미완료 에셋 한 장만 안내한다. 여성형 레드 러시를 유지하고 기존 자산을 중복 제작하지 않는다.
 
 이 저장소에서 기능 추가/수정/리팩터링을 할 때는 **영향도 분석(Impact Analysis)을 구현보다 먼저 수행한다.**
 

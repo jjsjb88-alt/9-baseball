@@ -4,7 +4,7 @@ import homerPoster from '../../assets/production-art/homer-video-v1/poster.jpg';
 import { getBgmVolume, isBgmPlaying, setBgmVolume } from './bgm.js';
 import './homerun-video.css';
 
-export const HOMER_VIDEO_URL = 'https://raw.githubusercontent.com/jbseo-commits/9-baseball/1b207e16d25b62412467ffe26ea5830e5a170485/assets/production-art/homer-video-v1/homer-v1.mp4';
+export const HOMER_VIDEO_URL = 'https://raw.githubusercontent.com/jjsjb88-alt/9-baseball/1b207e16d25b62412467ffe26ea5830e5a170485/assets/production-art/homer-video-v1/homer-v1.mp4';
 const NO_PROGRESS_MS = 8000;
 const INITIAL_LOAD_MS = 30000;
 const MAX_PLAY_MS = 45000;
